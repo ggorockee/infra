@@ -1,0 +1,234 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: SQS and EventBridge Scheduler configuration for EC2 instance scheduling
+
+Resources:
+
+  #############################################################
+  # SQS queue for receiving EC2 scheduling actions
+  #############################################################
+  EC2ScheduleQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: EC2ScheduleActions
+      MessageRetentionPeriod: 1209600
+      VisibilityTimeout: 60
+
+  #############################################################
+  # IAM Role for EventBridge Scheduler to send messages to SQS
+  #############################################################
+  SchedulerToSQSRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: SchedulerToSQSRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AllowSQSSendMessage
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: sqs:SendMessage
+                Resource: !GetAtt EC2ScheduleQueue.Arn
+
+  #############################################################
+  # EventBridge Scheduler rule to START EC2 instances
+  #############################################################
+  EC2StartSchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: ec2-schedule-start
+      ScheduleExpression: cron(0 19 * * ? *)
+      ScheduleExpressionTimezone: Asia/Seoul
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !GetAtt EC2ScheduleQueue.Arn
+        RoleArn: !GetAtt SchedulerToSQSRole.Arn
+        Input: |
+          {
+            "action": "start",
+            "instance_ids": ["i-03b4e8aa81cec9079", "i-05367a9ba0be1e327"]
+          }
+
+  #############################################################
+  # EventBridge Scheduler rule to STOP EC2 instances
+  #############################################################
+  EC2StopSchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: ec2-schedule-stop
+      ScheduleExpression: cron(0 3 * * ? *)
+      ScheduleExpressionTimezone: Asia/Seoul
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Target:
+        Arn: !GetAtt EC2ScheduleQueue.Arn
+        RoleArn: !GetAtt SchedulerToSQSRole.Arn
+        Input: |
+          {
+            "action": "stop",
+            "instance_ids": ["i-03b4e8aa81cec9079", "i-05367a9ba0be1e327"]
+          }
+
+  #############################################################
+  # IAM Role for Lambda execution (SNS, SQS, EC2, Logs permissions)
+  #############################################################
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: EC2ScheduleLambdaRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaSNSPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource:
+                  - !Ref EC2ScheduleSNSTopic
+        - PolicyName: LambdaSQSEC2Policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource: !GetAtt EC2ScheduleQueue.Arn
+              - Effect: Allow
+                Action:
+                  - ec2:StartInstances
+                  - ec2:StopInstances
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+
+  #############################################################
+  # Lambda function to process SQS messages and control EC2
+  #############################################################
+  EC2ScheduleActionHandler:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: !Sub
+        - Stack ${AWS::StackName} Function ${ResourceName}
+        - ResourceName: EC2ScheduleActionHandler
+      FunctionName: EC2ScheduleActionHandler
+      Handler: index.handler
+      Runtime: python3.13
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 60
+      MemorySize: 3008
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+          import os
+
+          ec2 = boto3.client('ec2')
+          sns = boto3.client('sns')
+
+          SNS_TOPIC_ARN = os.environ['SNS_TOPIC_ARN']  # Read SNS Topic ARN from environment variable
+
+          def lambda_handler(event, context):
+              for record in event['Records']:
+                  body = json.loads(record['body'])
+                  action = body.get('action')
+                  instance_ids = body.get('instance_ids', [])
+                  result = None
+                  message = ""
+                  if action == "start":
+                      result = ec2.start_instances(InstanceIds=instance_ids)
+                      message = f"Started instances: {instance_ids}"
+                  elif action == "stop":
+                      result = ec2.stop_instances(InstanceIds=instance_ids)
+                      message = f"Stopped instances: {instance_ids}"
+                  else:
+                      message = f"Unknown action: {action}"
+
+                  # Send result message to SNS
+                  sns.publish(
+                      TopicArn=SNS_TOPIC_ARN,
+                      Subject=f"EC2 {action} result",
+                      Message=message
+                  )
+              return {"statusCode": 200}
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref EC2ScheduleSNSTopic
+
+  #############################################################
+  # Event source mapping: Trigger Lambda from SQS messages
+  #############################################################
+  SQSInvokeLambdaMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt EC2ScheduleQueue.Arn
+      FunctionName: !GetAtt EC2ScheduleActionHandler.Arn
+      BatchSize: 1
+      Enabled: true
+
+  #############################################################
+  # SNS topic for EC2 scheduling notifications
+  #############################################################
+  EC2ScheduleSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: EC2ScheduleSNSTopic
+      TopicName: EC2ScheduleSNSTopic
+
+  #############################################################
+  # SNS subscription to send email notifications
+  #############################################################
+  EC2ScheduleSNSSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref EC2ScheduleSNSTopic
+      Protocol: email
+      Endpoint: ggorockee@gmail.com
+
+  #############################################################
+  # Lambda permission: Allow SNS to invoke Lambda function
+  #############################################################
+  EC2ScheduleSNSLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt EC2ScheduleActionHandler.Arn
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref EC2ScheduleSNSTopic
+
+Outputs:
+  SQSQueueURL:
+    Description: SQS Queue URL
+    Value: !Ref EC2ScheduleQueue
+  SQSQueueARN:
+    Description: SQS Queue ARN
+    Value: !GetAtt EC2ScheduleQueue.Arn
+
+Metadata:
+  AWS::Composer::Groups:
+    Group:
+      Label: EventBridge
+      Members:
+        - EC2StopSchedule
+        - EC2StartSchedule
+Transform: AWS::Serverless-2016-10-31
