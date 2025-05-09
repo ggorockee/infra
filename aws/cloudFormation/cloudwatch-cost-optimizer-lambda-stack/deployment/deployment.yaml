@@ -1,21 +1,3 @@
 template-file-path: aws/cloudFormation/cloudwatch-cost-optimizer-lambda-stack/stack.yaml
-parameters:
-  LogGroupName:
-    Type: String
-    Description: CloudWatch Log Group name to optimize cost
-  S3BucketName:
-    Type: String
-    Description: S3 bucket name to store logs
-  RetentionInDays:
-    Type: Number
-    Default: 7
-    Description: Retention period (in days) for the CloudWatch Log Group
-  BatchSize:
-    Type: Number
-    Default: 100
-    Description: Maximum number of log events processed per Lambda invocation
-  BatchWindow:
-    Type: Number
-    Default: 60
-    Description: Maximum batching window in seconds for Lambda
+parameters: {}
 tags: {}
