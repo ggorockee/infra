@@ -132,7 +132,7 @@ Resources:
         - Stack ${AWS::StackName} Function ${ResourceName}
         - ResourceName: EC2ScheduleActionHandler
       FunctionName: EC2ScheduleActionHandler
-      Handler: index.handler
+      Handler: lambda_function.lambda_handler
       Runtime: python3.13
       Role: !GetAtt LambdaExecutionRole.Arn
       Timeout: 60
