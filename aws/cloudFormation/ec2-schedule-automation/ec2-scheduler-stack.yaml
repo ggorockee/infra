@@ -43,7 +43,7 @@ Resources:
     Type: AWS::Scheduler::Schedule
     Properties:
       Name: ec2-schedule-start
-      ScheduleExpression: cron(43 0 * * ? *)
+      ScheduleExpression: cron(0 19 * * ? *)
       ScheduleExpressionTimezone: Asia/Seoul
       FlexibleTimeWindow:
         Mode: 'OFF'
@@ -63,7 +63,7 @@ Resources:
     Type: AWS::Scheduler::Schedule
     Properties:
       Name: ec2-schedule-stop
-      ScheduleExpression: cron(40 0 * * ? *)
+      ScheduleExpression: cron(0 3 * * ? *)
       ScheduleExpressionTimezone: Asia/Seoul
       FlexibleTimeWindow:
         Mode: 'OFF'
