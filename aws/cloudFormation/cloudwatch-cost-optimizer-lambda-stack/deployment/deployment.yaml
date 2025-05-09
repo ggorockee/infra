@@ -1,10 +1,14 @@
-Parameters:
+
+template-file-path: aws/cloudFormation/cloudwatch-cost-optimizer-lambda-stack/stack.yaml
+
+parameters:
   LogGroupName:
     Type: String
     Description: CloudWatch Log Group name to optimize cost
   S3BucketName:
     Type: String
     Description: S3 bucket name to store logs
+    Default: ggorockee-cloudwatch-log
   RetentionInDays:
     Type: Number
     Default: 7
@@ -17,7 +21,4 @@ Parameters:
     Type: Number
     Default: 60
     Description: Maximum batching window in seconds for Lambda
-
-template-file-path: aws/cloudFormation/cloudwatch-cost-optimizer-lambda-stack/stack.yaml
-parameters: {}
 tags: {}
