@@ -82,9 +82,19 @@ Resources:
         Variables:
           S3_BUCKET: !Ref S3BucketName
 
+  # --- Lambda Invoke Permission for CloudWatch Logs ---
+  LogToS3LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt LogToS3Lambda.Arn
+      Action: lambda:InvokeFunction
+      Principal: logs.amazonaws.com
+      SourceArn: !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroupName}:*
+
   # --- CloudWatch Logs Subscription Filter to Trigger Lambda ---
   LogGroupSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
+    DependsOn: LogToS3LambdaInvokePermission
     Properties:
       LogGroupName: !Ref LogGroupName
       FilterPattern: ''
