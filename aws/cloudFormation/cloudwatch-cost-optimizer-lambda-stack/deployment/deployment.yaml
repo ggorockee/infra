@@ -3,7 +3,7 @@ parameters:
   LogGroupName: /aws/lambda/EC2ScheduleActionHandler           # 실제 CloudWatch 로그 그룹 이름으로 변경
   S3BucketName: EC2ScheduleActionHandler          # 실제 S3 버킷 이름으로 변경
   RetentionInDays: 7                   # 필요에 따라 값 변경 가능
-  BatchSize: 100                       # 필요에 따라 값 변경 가능
+  BatchSize: 101                       # 필요에 따라 값 변경 가능
   BatchWindow: 60                      # 필요에 따라 값 변경 가능
 
 tags: {}
