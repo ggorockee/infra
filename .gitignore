@@ -92,3 +92,4 @@ terraform.rc
 # End of https://www.toptal.com/developers/gitignore/api/terraform,visualstudiocode,macos
 key
 aws/cloudFormation/.vscode
+aws/cloudFormation/cloudwatch-cost-optimizer-lambda-stack/.vscode

@@ -1,0 +1,86 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Lambda Cloud Stack for Reducing CloudWatch Costs (with Batch Processing)
+
+Resources:
+  # --- IAM Role for Lambda Function ---
+  LogToS3LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LogToS3Policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:*
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                Resource: !Sub arn:aws:s3:::${S3BucketName}/*
+
+  # --- Lambda Function for Batch Processing and S3 Upload ---
+  LogToS3Lambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Role: !GetAtt LogToS3LambdaRole.Arn
+      Runtime: python3.12
+      Timeout: 120
+      Code:
+        ZipFile: |
+          import boto3
+          import gzip
+          import base64
+          import json
+          import os
+          import datetime
+
+          s3 = boto3.client('s3')
+          def handler(event, context):
+              logs = []
+              for record in event['records']:
+                  payload = base64.b64decode(record['data'])
+                  data = gzip.decompress(payload)
+                  log_data = json.loads(data)
+                  logs.append(log_data)
+              # Save batched logs as a single file
+              timestamp = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H-%M-%S')
+              key = f"batch_logs/{timestamp}_{context.aws_request_id}.json"
+              s3.put_object(Bucket=os.environ['S3_BUCKET'], Key=key, Body=json.dumps(logs))
+              return {'statusCode': 200}
+
+      Environment:
+        Variables:
+          S3_BUCKET: !Ref S3BucketName
+
+  # --- CloudWatch Logs Subscription Filter to Trigger Lambda ---
+  LogGroupSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      LogGroupName: !Ref LogGroupName
+      FilterPattern: ''
+      DestinationArn: !GetAtt LogToS3Lambda.Arn
+
+  # --- Set Retention Policy for Log Group ---
+  SetRetentionPolicy:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Ref LogGroupName
+      RetentionInDays: !Ref RetentionInDays
+
+Outputs:
+  LambdaFunctionName:
+    Description: Name of the created Lambda function
+    Value: !Ref LogToS3Lambda
+  S3Bucket:
+    Description: Name of the S3 bucket where logs are stored
+    Value: !Ref S3BucketName
