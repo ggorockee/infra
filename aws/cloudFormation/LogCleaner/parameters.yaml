@@ -1,0 +1,4 @@
+template-file-path: aws/cloudFormation/LogCleaner/template.yaml
+parameters:
+  ScheduleExpression: cron(0 3 * * ? *)
+tags: {}
