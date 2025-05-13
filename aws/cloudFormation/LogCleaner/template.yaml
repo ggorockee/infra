@@ -13,7 +13,7 @@ Resources:
           - Effect: Allow
             Principal:
               Service: lambda.amazonaws.com
-            Action: sts.AssumeRole
+            Action: sts:AssumeRole
       Path: /
       Policies:
         - PolicyName: LogCleanerPolicy
