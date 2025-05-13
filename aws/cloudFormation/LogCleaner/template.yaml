@@ -36,6 +36,7 @@ Resources:
       Handler: index.lambda_handler
       Role: !GetAtt LogCleanerRole.Arn
       Runtime: python3.13
+      FunctionName: LogCleanerFunction
       Timeout: 300
       MemorySize: 128
       Code:
