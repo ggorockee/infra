@@ -1,0 +1,131 @@
+Parameters:
+  ScheduleExpression:
+    Type: String
+    Default: cron(0 3 * * ? *)
+    Description: 'Lambda 실행 스케줄 (기본: 매일 오전 3시 UTC)'
+Resources:
+  LogCleanerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts.AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: LogCleanerPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:DescribeLogGroups
+                  - logs:DescribeLogStreams
+                  - logs:DeleteLogStream
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - logs:PutLogEvents
+                Resource: '*'
+  Function:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt LogCleanerRole.Arn
+      Runtime: python3.13
+      Timeout: 300
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          import boto3
+          import os
+          from datetime import datetime, timezone, timedelta
+
+          def lambda_handler(event, context):
+              logs = boto3.client('logs')
+              now = datetime.now(timezone.utc)
+              paginator = logs.get_paginator('describe_log_groups')
+              deleted = 0
+
+              for page in paginator.paginate():
+                  for group in page['logGroups']:
+                      group_name = group['logGroupName']
+                      retention = group.get('retentionInDays')
+                      if not retention:
+                          continue  # 무한 보존 그룹은 스킵
+
+                      # retention 기간 계산
+                      cutoff = now - timedelta(days=retention)
+                      stream_paginator = logs.get_paginator('describe_log_streams')
+                      for s_page in stream_paginator.paginate(logGroupName=group_name):
+                          for stream in s_page['logStreams']:
+                              # 마지막 이벤트가 cutoff 이전이면 삭제
+                              last_event = stream.get('lastEventTimestamp')
+                              if last_event and datetime.fromtimestamp(last_event/1000, timezone.utc) < cutoff:
+                                  try:
+                                      logs.delete_log_stream(
+                                          logGroupName=group_name,
+                                          logStreamName=stream['logStreamName']
+                                      )
+                                      deleted += 1
+                                  except Exception as e:
+                                      print(f"Error deleting {stream['logStreamName']}: {e}")
+
+              print(f"Deleted {deleted} old log streams.")
+
+  LogCleanerSchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      ScheduleExpression: !Ref ScheduleExpression
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      ScheduleExpressionTimezone: Asia/Seoul
+      State: ENABLED
+      Target:
+        Arn: !GetAtt LogCleanerFunction.Arn
+        RoleArn: !GetAtt SchedulerExecutionRolePolicy.Arn
+
+  LogCleanerInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref LogCleanerFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt LogCleanerSchedule.Arn
+
+  SchedulerExecutionRolePolicy:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - scheduler.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: SchedulerLambdaInvokePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: !GetAtt LogCleanerSchedule.Arn
+
+Outputs:
+  LambdaFunctionName:
+    Description: Lambda 함수 이름
+    Value: !Ref LogCleanerFunction
+  LambdaRoleName:
+    Description: Lambda 실행 역할 이름
+    Value: !Ref LogCleanerRole
+  Schedule:
+    Description: 실행 스케줄
+    Value: !Ref ScheduleExpression
