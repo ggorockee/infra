@@ -30,7 +30,7 @@ Resources:
                 Action:
                   - logs:PutLogEvents
                 Resource: '*'
-  Function:
+  LogCleanerFunction:
     Type: AWS::Lambda::Function
     Properties:
       Handler: lambda_function.lambda_handler
@@ -117,7 +117,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - lambda:InvokeFunction
-                Resource: !GetAtt LogCleanerSchedule.Arn
+                Resource: !GetAtt LogCleanerFunction.Arn
 
 Outputs:
   LambdaFunctionName:
