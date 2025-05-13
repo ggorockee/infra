@@ -41,41 +41,60 @@ Resources:
       MemorySize: 128
       Code:
         ZipFile: |
-          import boto3
           import os
-          from datetime import datetime, timezone, timedelta
-
+          import time
+          import boto3
+          from datetime import datetime, timedelta
+          from zoneinfo import ZoneInfo  # Python 3.9+ 기본 내장
+          
+          # 타임존 설정 (Lambda 환경에서 동작 보장)
+          os.environ['TZ'] = 'Asia/Seoul'
+          time.tzset()
+          
           def lambda_handler(event, context):
               logs = boto3.client('logs')
-              now = datetime.now(timezone.utc)
-              paginator = logs.get_paginator('describe_log_groups')
+              kst = ZoneInfo('Asia/Seoul')
+              now = datetime.now(kst)  # KST 현재 시간
               deleted = 0
-
-              for page in paginator.paginate():
-                  for group in page['logGroups']:
+          
+              # 모든 로그 그룹 조회
+              log_groups_paginator = logs.get_paginator('describe_log_groups')
+              for groups_page in log_groups_paginator.paginate():
+                  for group in groups_page['logGroups']:
                       group_name = group['logGroupName']
-                      retention = group.get('retentionInDays')
-                      if not retention:
-                          continue  # 무한 보존 그룹은 스킵
-
-                      # retention 기간 계산
-                      cutoff = now - timedelta(days=retention)
-                      stream_paginator = logs.get_paginator('describe_log_streams')
-                      for s_page in stream_paginator.paginate(logGroupName=group_name):
-                          for stream in s_page['logStreams']:
-                              # 마지막 이벤트가 cutoff 이전이면 삭제
+                      retention_days = group.get('retentionInDays')
+                      
+                      # 무한 보존 그룹 건너뛰기
+                      if not retention_days:
+                          continue
+                          
+                      # 보존 기간 계산 (KST 기준)
+                      cutoff_time = now - timedelta(days=retention_days)
+                      
+                      # 로그 스트림 조회 및 처리
+                      streams_paginator = logs.get_paginator('describe_log_streams')
+                      for streams_page in streams_paginator.paginate(logGroupName=group_name):
+                          for stream in streams_page['logStreams']:
                               last_event = stream.get('lastEventTimestamp')
-                              if last_event and datetime.fromtimestamp(last_event/1000, timezone.utc) < cutoff:
-                                  try:
-                                      logs.delete_log_stream(
-                                          logGroupName=group_name,
-                                          logStreamName=stream['logStreamName']
-                                      )
-                                      deleted += 1
-                                  except Exception as e:
-                                      print(f"Error deleting {stream['logStreamName']}: {e}")
+                              
+                              if last_event:
+                                  # UTC 타임스탬프 → KST 시간 변환
+                                  event_time = datetime.fromtimestamp(
+                                      last_event / 1000,  # 밀리초 → 초 변환
+                                      tz=kst
+                                  )
+                                  
+                                  # 보존 기간 초과 시 삭제
+                                  if event_time < cutoff_time:
+                                      try:
+                                          logs.delete_log_stream(
+                                              logGroupName=group_name,
+                                              logStreamName=stream['logStreamName']
+                                          )
+                                          deleted += 1
+                                      except Exception as e:
+                                          print(f"[삭제 실패] {group_name}/{stream['logStreamName']}: {str(e)}")
 
-              print(f"Deleted {deleted} old log streams.")
 
   LogCleanerSchedule:
     Type: AWS::Scheduler::Schedule
