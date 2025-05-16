@@ -1,4 +1,4 @@
-name: 'Terraform Plan v2'
+name: 'Terraform Plan v3'
 on:
   push:
     branches: [ dev ]
