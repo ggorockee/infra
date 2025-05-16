@@ -33,5 +33,12 @@ jobs:
         with:
           terraform_version: 1.6.0
 
+      # 캐시 삭제 및 초기화 추가
+      - name: Clean Terraform Cache
+        run: rm -rf .terraform  # 캐시 강제 삭제
+
+      - name: Terraform Init
+        run: terraform init -reconfigure  # 백엔드 강제 재설정
+
       - name: Terraform Apply
         run: terraform apply -auto-approve -input=false
