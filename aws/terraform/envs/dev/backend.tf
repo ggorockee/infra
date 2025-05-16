@@ -1,3 +1,4 @@
+# terraform backend setting
 terraform {
   backend "s3" {
     bucket = "value"
