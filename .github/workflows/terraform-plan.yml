@@ -1,6 +1,6 @@
 name: 'Terraform Plan'
 on:
-  pull_request:
+  push:
     branches: [ dev ]
     paths:
       - 'aws/terraform/**'
