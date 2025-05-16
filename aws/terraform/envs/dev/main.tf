@@ -1,4 +1,3 @@
-# update
 module "vpc" {
   source = "../../modules/vpc"
   # vpc_cidr = [ string ]
