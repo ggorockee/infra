@@ -1,0 +1,33 @@
+name: 'Terraform Apply v3'
+on:
+  workflow_run:
+    workflows: ['Terraform Plan v3']
+    types:
+      - completed
+
+env:
+  AWS_REGION: ap-northeast-2
+  AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+
+jobs:
+  apply:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./aws/terraform/envs/dev
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.0
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -input=false
