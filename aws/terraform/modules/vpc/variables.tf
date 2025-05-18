@@ -36,3 +36,9 @@ variable "username" {
   type        = string
   default     = "arpegez"
 }
+
+variable "owner" {
+  description = "owner"
+  type        = string
+  default     = "arpegezz"
+}
