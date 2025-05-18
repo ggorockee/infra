@@ -4,6 +4,8 @@ module "vpc" {
   owner  = "arpegezz"
 }
 
+
+
 # module "eks" {
 #   source = "../../modules/eks"
 # }
@@ -16,6 +18,14 @@ data "terraform_remote_state" "network" {
     key    = "dev/terraform.tfstate"
     region = "ap-northeast-2" # 버킷 리전
   }
+}
+
+
+####### VPC Endpoint #######
+module "vpc-endpoint" {
+  source     = "../../modules/vpc-endpoint"
+  vpc_id     = data.terraform_remote_state.network.outputs.vpc_id
+  subnet_ids = data.terraform_remote_state.network.outputs.private_subnet_ids
 }
 
 data "aws_iam_role" "SSM" {
