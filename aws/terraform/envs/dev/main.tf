@@ -57,3 +57,10 @@ module "vpn" {
   }
 }
 
+module "eip_vpn" {
+  source      = "../../modules/eip_attach"
+  instance_id = module.vpn.instance_id
+  tags = {
+    "owner" = "arpegezz"
+  }
+}
