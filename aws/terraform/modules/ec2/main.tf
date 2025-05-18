@@ -42,6 +42,27 @@ resource "aws_instance" "this" {
   instance_type          = var.instance_type
   subnet_id              = var.subnet_id
   vpc_security_group_ids = [local.final_sg_id]
+  iam_instance_profile   = var.iam_instance_profile != "" ? var.iam_instance_profile : null
+
+
+
+  dynamic "ebs_block_device" {
+    for_each = var.ebs_block_device
+    content {
+      device_name = ebs_block_device.value.device_name
+      volume_size = ebs_block_device.value.volume_size
+      volume_type = ebs_block_device.value.volume_type
+    }
+  }
+
+
+  root_block_device {
+    volume_type           = var.root_block_device.volume_type
+    volume_size           = var.root_block_device.volume_size
+    iops                  = var.root_block_device.iops
+    throughput            = var.root_block_device.throughput
+    delete_on_termination = var.root_block_device.delete_on_termination
+  }
 
   tags = {
     Name = var.instance_name
