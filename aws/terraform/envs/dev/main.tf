@@ -1,12 +1,12 @@
 # VPC Setting
-module "vpc" {
-  source = "../../modules/vpc"
-  owner  = "arpegezz"
-}
+# module "vpc" {
+#   source = "../../modules/vpc"
+#   owner  = "arpegezz"
+# }
 
-module "eks" {
-  source = "../../modules/eks"
-}
+# module "eks" {
+#   source = "../../modules/eks"
+# }
 
 
 # data "terraform_remote_state" "network" {
