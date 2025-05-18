@@ -62,5 +62,6 @@ module "eip_vpn" {
   instance_id = module.vpn.instance_id
   tags = {
     "owner" = "arpegezz"
+    "Name"  = "OPENVPN"
   }
 }
