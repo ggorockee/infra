@@ -46,6 +46,7 @@ resource "aws_instance" "this" {
 
 
 
+
   dynamic "ebs_block_device" {
     for_each = var.ebs_block_device
     content {
