@@ -44,3 +44,30 @@ variable "security_group_ingress" {
     cidr_blocks = list(string)
   }))
 }
+
+
+variable "root_block_device" {
+  type = object({
+    volume_type           = string               # gp3, gp2, io1, io2, st1, sc1 등
+    volume_size           = number               # GiB 단위, 예: 30GiB
+    iops                  = optional(number)     # gp3/io1/io2에서만 사용, 필요시 지정
+    throughput            = optional(number)     # gp3에서만 사용, 필요시 지정
+    delete_on_termination = optional(bool, true) # 인스턴스 종료 시 EBS 삭제
+  })
+}
+
+variable "ebs_block_device" {
+  type = map(object({
+    volume_type           = string               # gp3, gp2, io1, io2, st1, sc1 등
+    volume_size           = number               # GiB 단위, 예: 30GiB
+    iops                  = optional(number)     # gp3/io1/io2에서만 사용, 필요시 지정
+    throughput            = optional(number)     # gp3에서만 사용, 필요시 지정
+    delete_on_termination = optional(bool, true) # 인스턴스 종료 시 EBS 삭제
+  }))
+}
+
+
+variable "iam_instance_profile" {
+  type    = string
+  default = ""
+}
