@@ -35,7 +35,7 @@ module "vpn" {
       protocol    = "tcp"
       from_port   = "943"
       to_port     = "943"
-      cidr_block  = ["0.0.0.0/0"]
+      cidr_blocks = ["0.0.0.0/0"]
     }
 
     UDP = {
@@ -43,7 +43,7 @@ module "vpn" {
       protocol    = "udp"
       from_port   = "1194"
       to_port     = "1194"
-      cidr_block  = ["0.0.0.0/0"]
+      cidr_blocks = ["0.0.0.0/0"]
     }
   }
 }
