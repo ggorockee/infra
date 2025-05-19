@@ -10,7 +10,7 @@ resource "aws_iam_role" "sso_admin" {
     Statement = [{
       Effect = "Allow",
       Principal = {
-        AWS = each.value.arn
+        AWS = each.value.arns
       }, # 최종 사용자
       Action = "sts:AssumeRole"
     }]
