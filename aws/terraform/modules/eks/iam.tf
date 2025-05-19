@@ -41,7 +41,7 @@ resource "aws_iam_role_policy_attachment" "eks_admin" {
     if length(aws_iam_role.devops_admin) > 0
   }
   role       = aws_iam_role.devops_admin[0].name
-  policy_arn = "arn:aws:iam::aws:policy/${each.value}"
+  policy_arn = "arn:aws:eks::aws:cluster-access-policy/${each.value}"
 }
 
 # resource "aws_iam_role_policy_attachment" "this" {
