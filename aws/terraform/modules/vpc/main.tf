@@ -42,7 +42,7 @@ resource "aws_subnet" "private" {
   count                   = length(var.private_subnets)
   vpc_id                  = aws_vpc.this.id
   cidr_block              = var.private_subnets[count.index]
-  availability_zone       = var.azs[count.index]
+  availability_zone       = var.private_azs[count.index]
   map_public_ip_on_launch = false # 퍼블릭 IP 자동 할당
   tags                    = merge(var.tags, { Name = "${var.username}-private-subnet-${count.index + 1}" })
 }

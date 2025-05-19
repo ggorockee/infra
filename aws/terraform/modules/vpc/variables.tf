@@ -13,13 +13,19 @@ variable "public_subnets" {
 variable "private_subnets" {
   description = "퍼블릭 서브넷 CIDR 목록"
   type        = list(string)
-  default     = ["10.0.100.0/23"]
+  default     = ["10.0.100.0/23", "10.0.103.0/23"]
 }
 
 variable "azs" {
   description = "가용 영역 목록"
   type        = list(string)
   default     = ["ap-northeast-2c"]
+}
+
+variable "private_azs" {
+  description = "가용 영역 목록"
+  type        = list(string)
+  default     = ["ap-northeast-2c", "ap-northeast-2a"]
 }
 
 variable "tags" {
