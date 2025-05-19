@@ -2,7 +2,7 @@
 resource "aws_iam_role" "sso_admin" {
   for_each = {
     for key, entry in var.iam_access_entries : key => entry
-    if key == "SSO" && lenth(entry.arns) > 0
+    if key == "SSO" && length(entry.arns) > 0
   }
   name = "SSO-Admin"
   assume_role_policy = jsonencode({
@@ -10,7 +10,7 @@ resource "aws_iam_role" "sso_admin" {
     Statement = [{
       Effect = "Allow",
       Principal = {
-        AWS = entry.arns
+        AWS = each.value.arn
       }, # 최종 사용자
       Action = "sts:AssumeRole"
     }]

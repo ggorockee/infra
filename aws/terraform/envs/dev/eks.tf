@@ -56,8 +56,8 @@ module "eks" {
     ingress_from_specific_cidr = {
       description = "Allow All TCP from specific CIDR"
       protocol    = "tcp"
-      from_port   = 0
-      to_port     = 0
+      from_port   = 1
+      to_port     = 65535
       type        = "ingress"
       cidr_blocks = ["10.0.1.16/32"]
     }
