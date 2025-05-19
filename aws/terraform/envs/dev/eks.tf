@@ -14,7 +14,7 @@ module "eks" {
       desired_capacity = 1
       min_capacity     = 1
       instance_type    = "t3.micro"
-      subnet_ids       = "subnet-09c6f9126ea69fbe0"
+      subnet_ids       = ["subnet-09c6f9126ea69fbe0"]
     }
   }
   tags = {
