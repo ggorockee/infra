@@ -74,6 +74,7 @@ module "eks" {
     }
   }
 
-  cluster_enabled_log_types = []
-  cluster_encryption_config = []
+  cluster_enabled_log_types   = []
+  cluster_encryption_config   = []
+  create_cloudwatch_log_group = false
 }
