@@ -24,7 +24,7 @@ module "eks" {
       max_capacity     = config.max_capacity
       min_capacity     = config.min_capacity
       instance_type    = config.instance_type
-      subnets          = config.subnets
+      subnet_ids          = config.subnet_ids
     }
   }
 

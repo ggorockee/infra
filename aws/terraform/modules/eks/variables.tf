@@ -25,7 +25,7 @@ variable "eks_managed_node_groups" {
     max_capacity     = number       # 2
     min_capacity     = number       # 1
     instance_type    = string       # "t3.micro"
-    subnets          = list(string) # subnet
+    subnet_ids          = list(string) # subnet
   }))
 }
 
