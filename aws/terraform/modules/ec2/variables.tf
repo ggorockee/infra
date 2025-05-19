@@ -37,11 +37,12 @@ variable "vpc_id" {
 
 variable "security_group_ingress" {
   type = map(object({
-    description = string
-    protocol    = string
-    from_port   = number
-    to_port     = number
-    cidr_blocks = list(string)
+    description     = string
+    protocol        = string
+    from_port       = number
+    to_port         = number
+    cidr_blocks     = list(string)
+    security_groups = optional(list(string))
   }))
 }
 

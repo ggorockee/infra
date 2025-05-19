@@ -60,6 +60,14 @@ module "vpn" {
       to_port     = "1194"
       cidr_blocks = ["0.0.0.0/0"]
     }
+
+    MONITORING = {
+      description     = "Monitoring"
+      protocol        = "tcp"
+      from_port       = "1"
+      to_port         = "65535"
+      security_groups = ["sg-028906b0634539e95"]
+    }
   }
 }
 
