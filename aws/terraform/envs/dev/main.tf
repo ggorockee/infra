@@ -6,10 +6,6 @@ module "vpc" {
 
 
 
-# module "eks" {
-#   source = "../../modules/eks"
-# }
-
 
 data "terraform_remote_state" "network" {
   backend = "s3"
