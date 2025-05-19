@@ -31,25 +31,25 @@ output "ssm_vpc_endpoint_network_interface_ids" {
 }
 
 ## EKS
-output "eks_access_entries" {
-  description = "Map of access entries created and their attributes"
-  value       = module.eks.access_entries
-}
+# output "eks_access_entries" {
+#   description = "Map of access entries created and their attributes"
+#   value       = module.eks.access_entries
+# }
 
 
 
-output "eks_access_policy_associations" {
-  description = "Map of eks cluster access policy associations created and their attributes"
-  value       = module.eks.access_policy_associations
-}
+# output "eks_access_policy_associations" {
+#   description = "Map of eks cluster access policy associations created and their attributes"
+#   value       = module.eks.access_policy_associations
+# }
 
 
 
 
-output "eks_cloudwatch_log_group_arn" {
-  description = "Arn of cloudwatch log group created"
-  value       = module.eks.cloudwatch_log_group_arn
-}
+# output "eks_cloudwatch_log_group_arn" {
+#   description = "Arn of cloudwatch log group created"
+#   value       = module.eks.cloudwatch_log_group_arn
+# }
 
 
 
