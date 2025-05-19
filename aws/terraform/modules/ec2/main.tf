@@ -15,12 +15,12 @@ resource "aws_security_group" "new" {
   dynamic "ingress" {
     for_each = var.security_group_ingress
     content {
-      from_port       = length(ingress.value["from_port"]) > 0 ? ingress.value["from_port"] : null
-      to_port         = length(ingress.value["to_port"]) > 0 ? ingress.value["to_port"] : null
-      protocol        = length(ingress.value["protocol"]) > 0 ? ingress.value["protocol"] : null
-      description     = length(ingress.value["description"]) > 0 ? ingress.value["description"] : null
-      cidr_blocks     = length(ingress.value["cidr_blocks"]) > 0 ? ingress.value["cidr_blocks"] : null
-      security_groups = length(ingress.value["security_groups"]) > 0 ? ingress.value["security_groups"] : null
+      from_port       = ingress.value["from_port"]
+      to_port         = ingress.value["to_port"]
+      protocol        = ingress.value["protocol"]
+      description     = ingress.value["description"]
+      cidr_blocks     = length(ingress.value.cidr_blocks) > 0 ? ingress.value.cidr_blocks : null
+      security_groups = length(ingress.value.security_groups) > 0 ? ingress.value.security_groups : null
     }
   }
 
