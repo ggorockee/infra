@@ -1,11 +1,14 @@
 
 
 module "eks" {
-  source                         = "../../modules/eks"
-  vpc_id                         = data.terraform_remote_state.network.outputs.vpc_id
-  eks_cluster_name               = "arpegezz-eks-cluster"
-  eks_version                    = "1.31"
-  private_subnet_ids             = data.terraform_remote_state.network.outputs.private_subnet_ids
+  source           = "../../modules/eks"
+  vpc_id           = data.terraform_remote_state.network.outputs.vpc_id
+  eks_cluster_name = "arpegezz-eks-cluster"
+  eks_version      = "1.31"
+  private_subnet_ids = [
+    data.terraform_remote_state.network.outputs.private_subnet_ids[0],
+    data.terraform_remote_state.network.outputs.public_subnet_ids[0]
+  ]
   cluster_endpoint_public_access = false
   eks_managed_node_groups = {
     ARPEGEZZ-NODEGROUP = {
