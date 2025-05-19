@@ -17,7 +17,10 @@ module "eks" {
       desired_capacity = 1
       min_capacity     = 1
       instance_type    = "t3.micro"
-      subnet_ids       = data.terraform_remote_state.network.outputs.private_subnet_ids
+      subnet_ids = [
+        data.terraform_remote_state.network.outputs.private_subnet_ids[0],
+        data.terraform_remote_state.network.outputs.public_subnet_ids[0]
+      ]
     }
   }
   tags = {
