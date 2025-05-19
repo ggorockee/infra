@@ -16,6 +16,10 @@ module "eks" {
 
   access_entries = local.access_entries
 
+  cluster_enabled_log_types = var.cluster_enabled_log_types
+  cluster_encryption_config = var.cluster_encryption_config
+
+
   cluster_security_group_additional_rules = length(var.cluster_security_group_additional_rules) > 0 ? var.cluster_security_group_additional_rules : {}
 
   node_security_group_additional_rules = length(var.node_security_group_additional_rules) > 0 ? var.node_security_group_additional_rules : {}

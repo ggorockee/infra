@@ -73,4 +73,7 @@ module "eks" {
       cidr_blocks = ["0.0.0.0/0"]
     }
   }
+
+  cluster_enabled_log_types = []
+  cluster_encryption_config = []
 }
