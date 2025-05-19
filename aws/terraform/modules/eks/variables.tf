@@ -25,7 +25,7 @@ variable "eks_managed_node_groups" {
     max_capacity     = number       # 2
     min_capacity     = number       # 1
     instance_type    = string       # "t3.micro"
-    subnet_ids          = list(string) # subnet
+    subnet_ids       = list(string) # subnet
   }))
 }
 
@@ -35,6 +35,11 @@ variable "tags" {
 
 variable "enable_irsa" {
   type = bool
+}
+
+variable "authentication_mode" {
+  type        = string
+  description = "api"
 }
 
 variable "default_addon_versions" {
@@ -65,13 +70,44 @@ variable "cluster_addons" {
   default = {}
 }
 
-variable "access_entries" {
-  description = "Access entries for IAM roles and their policy associations"
+# variable "access_entries" {
+#   description = "Access entries for IAM roles and their policy associations"
+#   type = map(object({
+#     principal_arn = string
+#     policy_associations = map(object({
+#       policy_arn = string
+#     }))
+#   }))
+#   default = {}
+# }
+
+variable "iam_access_entries" {
+  description = "Key: SSO, ROLE"
   type = map(object({
-    principal_arn = string
-    policy_associations = map(object({
-      policy_arn = string
-    }))
+    arns = optional(list(string), [])
   }))
-  default = {}
+}
+
+variable "additional_eks_managed_policyment" {
+  description = "AmazonEKSClusterAdminPolicy | ..."
+  type        = list(string)
+  default     = []
+}
+
+variable "eks_access_entries" {
+  description = "EKS access entries configuration"
+  type        = map(any)
+  default     = {}
+}
+
+variable "cluster_security_group_additional_rules" {
+  description = "Additional rules for the cluster security group"
+  type        = map(any)
+  default     = {}
+}
+
+variable "node_security_group_additional_rules" {
+  description = "Additional rules for the node security group"
+  type        = map(any)
+  default     = {}
 }

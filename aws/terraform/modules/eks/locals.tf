@@ -44,17 +44,17 @@ locals {
 
   merged_addons = merge(local.base_addon_config, var.cluster_addons)
 
-
-  access_entries = {
-    DevOpsAdmin = {
-      principal_arn = aws_iam_role.devops_admin.arn # 실제 리소스 참조
-      policy_associations = {
-        eks-admin = {
-          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-        }
-      }
+  access_entries = merge(
+    var.eks_access_entries,
+    # 기본값이나 추가적인 설정이 필요할 경우 여기에 정의
+    {
+      # 예: 기본 액세스 엔트리 추가
+      # "example_user" = {
+      #   kubernetes_groups = ["viewers"]
+      #   principal_arn     = "arn:aws:iam::123456789012:user/example-user"
+      # }
     }
-  }
+  )
 
 }
 

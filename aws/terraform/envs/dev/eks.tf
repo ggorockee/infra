@@ -18,7 +18,8 @@ module "eks" {
     }
   }
   tags = {
-    Name = "ekscluster"
+    Owner      = "arpegezz"
+    Managed_By = "Terraform"
   }
 
   enable_irsa = true
@@ -38,6 +39,38 @@ module "eks" {
 
     eks-pod-identity-agent = {
       addon_version = null
+    }
+  }
+
+  iam_access_entries = {
+    SSO = {
+      arns = ["arn:aws:iam::329599650491:user/ggorockee_saa_03"]
+    }
+  }
+
+  additional_eks_managed_policyment = ["AmazonEKSClusterAdminPolicy"]
+
+  authentication_mode = "api"
+
+  cluster_security_group_additional_rules = {
+    ingress_from_specific_cidr = {
+      description = "Allow All TCP from specific CIDR"
+      protocol    = "tcp"
+      from_port   = 0
+      to_port     = 0
+      type        = "ingress"
+      cidr_blocks = ["10.0.1.16/32"]
+    }
+  }
+
+  node_security_group_additional_rules = {
+    egress_all = {
+      description = "Allow all outbound traffic"
+      protocol    = "-1"
+      from_port   = 0
+      to_port     = 0
+      type        = "egress"
+      cidr_blocks = ["0.0.0.0/0"]
     }
   }
 }

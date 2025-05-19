@@ -12,10 +12,13 @@ module "eks" {
 
   enable_irsa = var.enable_irsa
 
-  authentication_mode = "API"
+  authentication_mode = var.authentication_mode
 
   access_entries = local.access_entries
 
+  cluster_security_group_additional_rules = length(var.cluster_security_group_additional_rules) > 0 ? var.cluster_security_group_additional_rules : {}
+
+  node_security_group_additional_rules = length(var.node_security_group_additional_rules) > 0 ? var.node_security_group_additional_rules : {}
 
   eks_managed_node_groups = {
     for ng_name, config in var.eks_managed_node_groups : ng_name => {
@@ -24,10 +27,12 @@ module "eks" {
       max_capacity     = config.max_capacity
       min_capacity     = config.min_capacity
       instance_type    = config.instance_type
-      subnet_ids          = config.subnet_ids
+      subnet_ids       = config.subnet_ids
     }
   }
 
-  tags = var.tags
+  tags = merge({
+    Owner = "arpegezz",
+  }, var.tags)
 }
 
