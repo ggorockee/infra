@@ -50,7 +50,7 @@ module "eks" {
 
   additional_eks_managed_policyment = ["AmazonEKSClusterAdminPolicy"]
 
-  authentication_mode = "api"
+  authentication_mode = "API"
 
   cluster_security_group_additional_rules = {
     ingress_from_specific_cidr = {

@@ -39,7 +39,7 @@ variable "enable_irsa" {
 
 variable "authentication_mode" {
   type        = string
-  description = "api"
+  description = "API|API_AND_CONFIG_MAP|CONFIG_MAP"
 }
 
 variable "default_addon_versions" {
