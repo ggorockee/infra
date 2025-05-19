@@ -41,7 +41,7 @@ variable "security_group_ingress" {
     protocol        = string
     from_port       = number
     to_port         = number
-    cidr_blocks     = list(string)
+    cidr_blocks     = optional(list(string))
     security_groups = optional(list(string))
   }))
 }
