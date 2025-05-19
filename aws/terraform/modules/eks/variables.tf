@@ -111,3 +111,10 @@ variable "node_security_group_additional_rules" {
   type        = map(any)
   default     = {}
 }
+
+variable "cluster_enabled_log_types" {
+  type = list(string)
+}
+variable "cluster_encryption_config" {
+  type = list(any)
+}
