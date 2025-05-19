@@ -118,3 +118,7 @@ variable "cluster_enabled_log_types" {
 variable "cluster_encryption_config" {
   type = list(any)
 }
+
+variable "create_cloudwatch_log_group" {
+  type = bool
+}

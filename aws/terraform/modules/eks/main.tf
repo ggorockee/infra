@@ -16,8 +16,9 @@ module "eks" {
 
   access_entries = local.access_entries
 
-  cluster_enabled_log_types = var.cluster_enabled_log_types
-  cluster_encryption_config = var.cluster_encryption_config
+  cluster_enabled_log_types   = var.cluster_enabled_log_types
+  cluster_encryption_config   = var.cluster_encryption_config
+  create_cloudwatch_log_group = var.create_cloudwatch_log_group
 
 
   cluster_security_group_additional_rules = length(var.cluster_security_group_additional_rules) > 0 ? var.cluster_security_group_additional_rules : {}
