@@ -64,6 +64,7 @@ data "aws_ami" "eks_worker" {
 # 4) User-data(bootstrap.sh) 구성
 #----------------------------------------------------------------
 data "template_cloudinit_config" "node_userdata" {
+  for_each      = var.self_managed_node_groups
   gzip          = false
   base64_encode = false
 
