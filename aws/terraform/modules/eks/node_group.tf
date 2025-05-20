@@ -1,0 +1,110 @@
+data "aws_eks_cluster" "cluster" {
+  name       = module.eks.cluster_name
+  depends_on = [module.eks]
+}
+
+data "aws_eks_cluster_auth" "cluster" {
+  name       = module.eks.cluster_name
+  depends_on = [module.eks]
+}
+
+# 0) EC2가 Assume 할 수 있는 Policy 문서
+data "aws_iam_policy_document" "ec2_assume" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+  }
+}
+
+# 1) IAM Role 생성
+resource "aws_iam_role" "self_node_role" {
+  for_each = var.self_managed_node_groups
+
+  name               = "${each.value.name}-role"
+  assume_role_policy = data.aws_iam_policy_document.ec2_assume.json
+}
+
+resource "aws_iam_role_policy_attachment" "self_node_policies" {
+  for_each = local.policy_attachments
+
+  # 이제 each.value.node_group 은 "ARPEGEZZ-NODEGROUP" 과 같은 문자열
+  role       = aws_iam_role.self_node_role[each.value.node_group].name
+  policy_arn = "arn:aws:iam::aws:policy/${each.value.policy_name}"
+}
+
+
+# 3) Instance Profile 생성
+resource "aws_iam_instance_profile" "self_node_profile" {
+  for_each = var.self_managed_node_groups
+
+  name = "${each.value.name}-instance-profile"
+  role = aws_iam_role.self_node_role[each.key].name
+}
+
+
+
+#----------------------------------------------------------------
+# 3) EKS-Optimized AMI 가져오기
+#----------------------------------------------------------------
+data "aws_ami" "eks_worker" {
+  most_recent = true
+  owners      = ["602401143452"] # EKS official
+  filter {
+    name   = "name"
+    values = ["amazon-eks-node-${var.eks_version}-*"]
+  }
+}
+
+#----------------------------------------------------------------
+# 4) User-data(bootstrap.sh) 구성
+#----------------------------------------------------------------
+data "template_cloudinit_config" "node_userdata" {
+  for_each      = var.self_managed_node_groups
+  gzip          = false
+  base64_encode = false
+
+  part {
+    content_type = "text/x-shellscript"
+    content      = <<-EOF
+      #!/bin/bash
+      /etc/eks/bootstrap.sh ${module.eks.cluster_name} \
+        --kubelet-extra-args '--node-labels=nodegroup=${each.value.name}'
+    EOF
+  }
+}
+
+#----------------------------------------------------------------
+# 5) Launch Template
+#----------------------------------------------------------------
+resource "aws_launch_template" "self_node" {
+  for_each      = var.self_managed_node_groups
+  name_prefix   = "${each.value.name}-lt-"
+  image_id      = data.aws_ami.eks_worker.id
+  instance_type = each.value.instance_type
+
+  iam_instance_profile {
+    name = aws_iam_instance_profile.self_node_profile[each.key].name
+  }
+
+  network_interfaces {
+    security_groups             = [module.eks.node_security_group_id]
+    associate_public_ip_address = false
+  }
+
+  user_data = base64encode(
+    data.template_cloudinit_config.node_userdata[each.key].rendered
+
+  )
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      Name = each.value.name
+      # 이 태그가 있어야 Kube API 서버가 노드를 인식합니다.
+      "kubernetes.io/cluster/${module.eks.cluster_name}" = "owned"
+    }
+  }
+}
