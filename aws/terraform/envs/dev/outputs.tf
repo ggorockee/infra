@@ -15,6 +15,7 @@ output "private_subnet_ids" {
 }
 
 
+
 output "ssm_vpc_endpoint_ids" {
   description = "생성된 SSM VPC 엔드포인트의 ID 목록"
   value       = module.vpc-endpoint.ssm_vpc_endpoint_ids

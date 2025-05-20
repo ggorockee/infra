@@ -13,3 +13,4 @@ output "private_subnet_ids" {
   description = "퍼블릭 서브넷 ID 목록"
   value       = aws_subnet.private[*].id
 }
+

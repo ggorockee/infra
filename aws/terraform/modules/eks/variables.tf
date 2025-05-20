@@ -18,7 +18,11 @@ variable "cluster_endpoint_public_access" {
   type = bool
 }
 
-variable "eks_managed_node_groups" {
+variable "cluster_endpoint_private_access" {
+  type = bool
+}
+
+variable "self_managed_node_groups" {
   type = map(object({
     name             = string       # ARPEGEZZ-NODEGROUP
     desired_capacity = number       # 1
@@ -121,4 +125,22 @@ variable "cluster_encryption_config" {
 
 variable "create_cloudwatch_log_group" {
   type = bool
+}
+
+variable "using_nat" {
+  type = bool
+}
+
+variable "worker_policies" {
+  type = list(string)
+}
+
+variable "auto_scaling_config" {
+  type = map(object({
+    name             = string
+    desired_capacity = number
+    min_size         = number
+    max_size         = number
+    subnet_ids       = optional(list(string), [])
+  }))
 }
