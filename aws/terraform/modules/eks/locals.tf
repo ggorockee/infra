@@ -58,5 +58,23 @@ locals {
 
   private_route_table_ids = data.aws_route_tables.private.ids
 
+
+  policy_attachments = {
+    for attachment in flatten([
+      for ng_name, obj in var.worker_policies : [
+        for pname in obj.policy_names : {
+          key         = "${ng_name}-${pname}"
+          node_group  = ng_name
+          policy_name = pname
+        }
+      ]
+    ]) :
+    attachment.key => {
+      node_group  = attachment.node_group
+      policy_name = attachment.policy_name
+    }
+  }
+
+
 }
 

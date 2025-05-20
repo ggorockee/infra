@@ -28,15 +28,11 @@ resource "aws_iam_role" "self_node_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "self_node_policies" {
-  for_each = {
-    for ng, policy in var.worker_policies : "${ng}-${basename(policy)}" => {
-      ng     = ng
-      policy = policy
-    }
-  }
+  for_each = local.policy_attachments
 
-  role       = aws_iam_role.self_node_role[each.value.ng].name
-  policy_arn = each.value.policy
+  # 이제 each.value.node_group 은 "ARPEGEZZ-NODEGROUP" 과 같은 문자열
+  role       = aws_iam_role.self_node_role[each.value.node_group].name
+  policy_arn = "arn:aws:iam::aws:policy/${each.value.policy_name}"
 }
 
 

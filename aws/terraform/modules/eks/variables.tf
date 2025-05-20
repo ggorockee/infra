@@ -132,7 +132,9 @@ variable "using_nat" {
 }
 
 variable "worker_policies" {
-  type = list(string)
+  type = map(object({
+    policy_names = list(string)
+  }))
 }
 
 variable "auto_scaling_config" {

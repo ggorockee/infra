@@ -23,11 +23,13 @@ module "eks" {
     }
   }
 
-  worker_policies = [
-    "AmazonEKSWorkerNodePolicy",
-    "AmazonEKS_CNI_Policy",
-    "AmazonEC2ContainerRegistryReadOnly",
-  ]
+  worker_policies = {
+    ARPEGEZZ-NODEGROUP = [
+      "AmazonEKSWorkerNodePolicy",
+      "AmazonEKS_CNI_Policy",
+      "AmazonEC2ContainerRegistryReadOnly",
+    ]
+  }
 
   auto_scaling_config = {
     ARPEGEZZ-NODEGROUP = {
