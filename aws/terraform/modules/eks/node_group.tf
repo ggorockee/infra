@@ -97,12 +97,8 @@ resource "aws_launch_template" "self_node" {
   }
 
   user_data = base64encode(
-    replace(
-      data.template_cloudinit_config.node_userdata.rendered,
-      # for_each를 활용하려면 template_cloudinit_config 을 locals 내에서 렌더링하거나
-      # 본 예제처럼 static하게 사용하세요.
-      "{{each.value.name}}", each.value.name
-    )
+    data.template_cloudinit_config.node_userdata[each.key].rendered
+
   )
 
   tag_specifications {
