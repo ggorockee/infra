@@ -8,16 +8,17 @@ module "eks" {
   private_subnet_ids = data.terraform_remote_state.network.outputs.private_subnet_ids
 
   cluster_endpoint_public_access = false
-  eks_managed_node_groups = {
-    ARPEGEZZ-NODEGROUP = {
-      name             = "ARPEGEZZ-NODEGROUP"
-      max_capacity     = 2
-      desired_capacity = 1
-      min_capacity     = 1
-      instance_type    = "t3.micro"
-      subnet_ids       = data.terraform_remote_state.network.outputs.private_subnet_ids
-    }
-  }
+  eks_managed_node_groups        = {}
+  # eks_managed_node_groups = {
+  #   ARPEGEZZ-NODEGROUP = {
+  #     name             = "ARPEGEZZ-NODEGROUP"
+  #     max_capacity     = 2
+  #     desired_capacity = 1
+  #     min_capacity     = 1
+  #     instance_type    = "t3.micro"
+  #     subnet_ids       = data.terraform_remote_state.network.outputs.private_subnet_ids
+  #   }
+  # }
   tags = {
     Owner      = "arpegezz"
     Managed_By = "Terraform"
