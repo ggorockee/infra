@@ -49,7 +49,7 @@ module "eks" {
     }
   }
 
-  additional_eks_managed_policyment = ["AmazonEKSClusterAdminPolicy"]
+  additional_eks_managed_policyment = ["AmazonEKSClusterPolicy"]
 
   authentication_mode = "API"
 
