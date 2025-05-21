@@ -82,3 +82,7 @@ variable "cluster_policies" {
     "AmazonEKSServicePolicy"
   ]
 }
+
+variable "create_kms_key" {
+  type = bool
+}

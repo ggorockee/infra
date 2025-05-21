@@ -26,4 +26,5 @@ module "eks" {
   create_cloudwatch_log_group     = false
   authentication_mode             = "API"
   using_nat                       = false
+  create_kms_key = false
 }
