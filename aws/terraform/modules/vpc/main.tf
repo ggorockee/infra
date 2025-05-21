@@ -44,6 +44,9 @@ resource "aws_subnet" "private" {
   cidr_block              = var.private_subnets[count.index]
   availability_zone       = var.private_azs[count.index]
   map_public_ip_on_launch = false # 퍼블릭 IP 자동 할당
-  tags                    = merge(var.tags, { Name = "${var.username}-private-subnet-${count.index + 1}" })
+  tags                    = merge(var.tags, { 
+    Name = "${var.username}-private-subnet-${count.index + 1}"
+    "kubernetes.io/role/internal-elb" = 1
+    })
 }
 
