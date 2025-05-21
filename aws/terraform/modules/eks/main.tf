@@ -26,6 +26,6 @@ module "eks" {
 
   # Self-managed Node Groups
   self_managed_node_groups = var.self_managed_node_groups
-  create_kms_key = var.create_kms_key
+  create_kms_key           = var.create_kms_key
 }
 
