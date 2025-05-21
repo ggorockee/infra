@@ -27,5 +27,5 @@ module "eks" {
   authentication_mode             = "API"
   using_nat                       = false
   create_kms_key                  = false
-  cluster_encryption_config = []
+  cluster_encryption_config       = []
 }
