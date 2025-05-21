@@ -12,19 +12,19 @@ resource "aws_security_group" "vpce" {
 
   # 내부에서 HTTPS 호출 허용 (EKS/ECR/STS 등)
   ingress {
-    description      = "Allow HTTPS from private subnets"
-    from_port        = 443
-    to_port          = 443
-    protocol         = "tcp"
-    cidr_blocks      = [data.aws_vpc.eks.cidr_block]
+    description = "Allow HTTPS from private subnets"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [data.aws_vpc.eks.cidr_block]
   }
 
   # 외부 통신은 모두 허용
   egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
@@ -33,7 +33,7 @@ resource "aws_security_group" "vpce" {
 }
 
 resource "aws_vpc_endpoint" "eks_api" {
-  count = var.using_nat ? 0 : 1
+  count              = var.using_nat ? 0 : 1
   vpc_id             = var.vpc_id
   service_name       = "com.amazonaws.${var.region}.eks"
   vpc_endpoint_type  = "Interface"
@@ -42,7 +42,7 @@ resource "aws_vpc_endpoint" "eks_api" {
 }
 
 resource "aws_vpc_endpoint" "ecr_api" {
-  count = var.using_nat ? 0 : 1
+  count              = var.using_nat ? 0 : 1
   vpc_id             = var.vpc_id
   service_name       = "com.amazonaws.${var.region}.ecr.api"
   vpc_endpoint_type  = "Interface"
@@ -51,7 +51,7 @@ resource "aws_vpc_endpoint" "ecr_api" {
 }
 
 resource "aws_vpc_endpoint" "ecr_dkr" {
-  count = var.using_nat ? 0 : 1
+  count              = var.using_nat ? 0 : 1
   vpc_id             = var.vpc_id
   service_name       = "com.amazonaws.${var.region}.ecr.dkr"
   vpc_endpoint_type  = "Interface"
@@ -60,7 +60,7 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
 }
 
 resource "aws_vpc_endpoint" "sts" {
-  count = var.using_nat ? 0 : 1
+  count              = var.using_nat ? 0 : 1
   vpc_id             = var.vpc_id
   service_name       = "com.amazonaws.${var.region}.sts"
   vpc_endpoint_type  = "Interface"
@@ -69,7 +69,7 @@ resource "aws_vpc_endpoint" "sts" {
 }
 
 resource "aws_vpc_endpoint" "s3" {
-  count = var.using_nat ? 0 : 1
+  count             = var.using_nat ? 0 : 1
   vpc_id            = var.vpc_id
   service_name      = "com.amazonaws.${var.region}.s3"
   vpc_endpoint_type = "Gateway"

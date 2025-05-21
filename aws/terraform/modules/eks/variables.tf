@@ -1,5 +1,5 @@
 variable "region" {
-  type = string
+  type    = string
   default = "ap-northeast-2"
 }
 
@@ -28,42 +28,42 @@ variable "private_subnet_ids" {
 variable "private_route_table_ids" {
   description = "S3 Gateway Endpoint를 위한 private route table IDs"
   type        = list(string)
-  default = []
+  default     = []
 }
 
 variable "vpce_security_group_ids" {
   description = "Interface Endpoint에 붙일 Security Group IDs"
   type        = list(string)
-  default = [ ]
+  default     = []
 }
 
 variable "self_managed_node_groups" {
   description = "Self-managed node group definitions (map of objects)"
-  type        = map(object({
-    instance_type         = string
-    asg_desired_capacity  = number
-    asg_min_size          = number
-    asg_max_size          = number
-    disk_size             = number
+  type = map(object({
+    instance_type        = string
+    asg_desired_capacity = number
+    asg_min_size         = number
+    asg_max_size         = number
+    disk_size            = number
     # key_name, labels, tags 등 추가 필드도 가능
   }))
-  default     = {}
+  default = {}
 }
 
 variable "cluster_endpoint_private_access" {
   type = bool
 }
-variable "cluster_endpoint_public_access"{
+variable "cluster_endpoint_public_access" {
   type = bool
 }
-variable "manage_aws_auth"{
+variable "manage_aws_auth" {
   type = bool
 }
-variable "enable_irsa"{
+variable "enable_irsa" {
   type = bool
 }
 
-variable "create_cloudwatch_log_group"{
+variable "create_cloudwatch_log_group" {
   type = bool
 }
 variable "authentication_mode" {
@@ -71,14 +71,14 @@ variable "authentication_mode" {
 }
 
 variable "using_nat" {
-  type = bool
+  type    = bool
   default = true
 }
 
 variable "cluster_policies" {
   type = list(string)
   default = [
-  "AmazonEKSClusterPolicy",
-  "AmazonEKSServicePolicy"
-]
+    "AmazonEKSClusterPolicy",
+    "AmazonEKSServicePolicy"
+  ]
 }
