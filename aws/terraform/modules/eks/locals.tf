@@ -15,7 +15,7 @@ locals {
   access_entries = {
     cluster_assume_role = {
       principal_arn = aws_iam_role.eks_cluster.arn
-      type          = "AWS_IAM_ROLE"
+      type          = "STANDARD"
     }
   }
 }
