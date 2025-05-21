@@ -4,9 +4,6 @@ module "vpc" {
   owner  = "arpegezz"
 }
 
-
-
-
 data "terraform_remote_state" "network" {
   backend = "s3"
   config = {
