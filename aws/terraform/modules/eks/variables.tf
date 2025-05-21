@@ -1,148 +1,84 @@
+variable "region" {
+  type = string
+  default = "ap-northeast-2"
+}
+
+variable "cluster_name" {
+  description = "EKS 클러스터 이름"
+  type        = string
+}
+
+variable "cluster_version" {
+  description = "EKS 버전"
+  type        = string
+  default     = "1.31"
+}
+
+
 variable "vpc_id" {
-  type = string
-}
-
-variable "eks_cluster_name" {
-  type = string
-}
-
-variable "eks_version" {
-  type = string
+  description = "기존 VPC ID"
+  type        = string
 }
 
 variable "private_subnet_ids" {
-  type = list(string)
+  description = "EKS 노드를 위한 private subnet IDs"
+  type        = list(string)
 }
 
-variable "cluster_endpoint_public_access" {
-  type = bool
+variable "private_route_table_ids" {
+  description = "S3 Gateway Endpoint를 위한 private route table IDs"
+  type        = list(string)
+  default = []
+}
+
+variable "vpce_security_group_ids" {
+  description = "Interface Endpoint에 붙일 Security Group IDs"
+  type        = list(string)
+  default = [ ]
+}
+
+variable "self_managed_node_groups" {
+  description = "Self-managed node group definitions (map of objects)"
+  type        = map(object({
+    instance_type         = string
+    asg_desired_capacity  = number
+    asg_min_size          = number
+    asg_max_size          = number
+    disk_size             = number
+    # key_name, labels, tags 등 추가 필드도 가능
+  }))
+  default     = {}
 }
 
 variable "cluster_endpoint_private_access" {
   type = bool
 }
-
-variable "self_managed_node_groups" {
-  type = map(object({
-    name             = string       # ARPEGEZZ-NODEGROUP
-    desired_capacity = number       # 1
-    max_capacity     = number       # 2
-    min_capacity     = number       # 1
-    instance_type    = string       # "t3.micro"
-    subnet_ids       = list(string) # subnet
-  }))
+variable "cluster_endpoint_public_access"{
+  type = bool
 }
-
-variable "tags" {
-  type = map(string)
+variable "manage_aws_auth"{
+  type = bool
 }
-
-variable "enable_irsa" {
+variable "enable_irsa"{
   type = bool
 }
 
+variable "create_cloudwatch_log_group"{
+  type = bool
+}
 variable "authentication_mode" {
-  type        = string
-  description = "API|API_AND_CONFIG_MAP|CONFIG_MAP"
-}
-
-variable "default_addon_versions" {
-  description = "기본 애드온 버전"
-  type = object({
-    coredns                = string
-    kube-proxy             = string
-    vpc-cni                = string
-    eks-pod-identity-agent = string
-  })
-  default = {
-    coredns                = "v1.13.5-eksbuild.3"
-    kube-proxy             = "v1.31.2-eksbuild.1"
-    vpc-cni                = "v1.19.3-eksbuild.2"
-    eks-pod-identity-agent = null # "v1.3.0-eksbuild.1"
-  }
-}
-
-variable "cluster_addons" {
-  description = "EKS 클러스터 애드온 구성"
-  type = map(object({
-    addon_version        = optional(string, null)
-    resolve_conflicts    = optional(string, "OVERWRITE")
-    configuration_values = optional(string, null)
-    tags                 = optional(map(string), {})
-    most_recent          = optional(bool, false)
-  }))
-  default = {}
-}
-
-# variable "access_entries" {
-#   description = "Access entries for IAM roles and their policy associations"
-#   type = map(object({
-#     principal_arn = string
-#     policy_associations = map(object({
-#       policy_arn = string
-#     }))
-#   }))
-#   default = {}
-# }
-
-variable "iam_access_entries" {
-  description = "Key: SSO, ROLE"
-  type = map(object({
-    arns = optional(list(string), [])
-  }))
-}
-
-variable "additional_eks_managed_policyment" {
-  description = "AmazonEKSClusterAdminPolicy | ..."
-  type        = list(string)
-  default     = []
-}
-
-variable "eks_access_entries" {
-  description = "EKS access entries configuration"
-  type        = map(any)
-  default     = {}
-}
-
-variable "cluster_security_group_additional_rules" {
-  description = "Additional rules for the cluster security group"
-  type        = map(any)
-  default     = {}
-}
-
-variable "node_security_group_additional_rules" {
-  description = "Additional rules for the node security group"
-  type        = map(any)
-  default     = {}
-}
-
-variable "cluster_enabled_log_types" {
-  type = list(string)
-}
-variable "cluster_encryption_config" {
-  type = list(any)
-}
-
-variable "create_cloudwatch_log_group" {
-  type = bool
+  type = string
 }
 
 variable "using_nat" {
   type = bool
+  default = true
 }
 
-variable "worker_policies" {
-  type = map(object({
-    policy_names = list(string)
-  }))
-}
-
-variable "auto_scaling_config" {
-  type = map(object({
-    name             = string
-    desired_capacity = number
-    min_size         = number
-    max_size         = number
-    subnet_ids       = optional(list(string), [])
-  }))
+variable "cluster_policies" {
+  type = list(string)
+  default = [
+  "AmazonEKSClusterPolicy",
+  "AmazonEKSServicePolicy"
+]
 }

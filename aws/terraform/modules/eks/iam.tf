@@ -1,52 +1,35 @@
-# 1. SSO-Admin 역할 생성
-resource "aws_iam_role" "sso_admin" {
-  for_each = {
-    for key, entry in var.iam_access_entries : key => entry
-    if key == "SSO" && length(entry.arns) > 0
+// ─────────────────────────────────────────────────────────────
+// EKS 클러스터용 IAM Role 생성
+// ─────────────────────────────────────────────────────────────
+
+# 1) AssumeRole 정책 문서
+
+data "aws_iam_policy_document" "eks_cluster_assume" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["eks.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
   }
-  name = "SSO-Admin"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Principal = {
-        AWS = each.value.arns
-      }, # 최종 사용자
-      Action = "sts:AssumeRole"
-    }]
-  })
 }
 
-# 2. DevOpsAdmin 역할 생성 (SSO-Admin 참조)
-resource "aws_iam_role" "devops_admin" {
-  count = length(aws_iam_role.sso_admin) > 0 ? 1 : 0
-  name  = "DevOpsAdmin"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Principal = {
-        AWS = one(values(aws_iam_role.sso_admin)[*].arn)
-      }, # SSO-Admin ARN 사용
-      Action = "sts:AssumeRole"
-    }]
-  })
-  depends_on = [aws_iam_role.sso_admin]
+# IAM Role 생성
+resource "aws_iam_role" "eks_cluster" {
+  name               = "${var.cluster_name}-cluster-role"
+  assume_role_policy = data.aws_iam_policy_document.eks_cluster_assume.json
+
+  tags = {
+    "Name" = "${var.cluster_name}-cluster-role"
+  }
 }
 
-resource "aws_iam_role_policy_attachment" "eks_admin" {
+# 3) 필요한 AWS 관리형 정책 연결
+resource "aws_iam_role_policy_attachment" "cluster_policy" {
   for_each = {
-    for i, policy in var.additional_eks_managed_policyment
-    : tostring(i) => policy
-    if length(aws_iam_role.devops_admin) > 0
+    for key, value in var.cluster_policies : key => value
   }
-  role       = aws_iam_role.devops_admin[0].name
+  role       = aws_iam_role.eks_cluster.name
   policy_arn = "arn:aws:iam::aws:policy/${each.value}"
 }
-
-# resource "aws_iam_role_policy_attachment" "this" {
-#   for_each = local.access_entries
-
-#   role       = each.value.principal_arn
-#   policy_arn = each.value.policy_associations["eks-admin"].policy_arn
-# }
