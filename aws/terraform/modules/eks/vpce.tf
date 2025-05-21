@@ -38,7 +38,7 @@ resource "aws_vpc_endpoint" "eks_api" {
   service_name       = "com.amazonaws.${var.region}.eks"
   vpc_endpoint_type  = "Interface"
   subnet_ids         = var.private_subnet_ids
-  security_group_ids = var.vpce_security_group_ids
+  security_group_ids = [aws_security_group.vpce.id]
 }
 
 resource "aws_vpc_endpoint" "ecr_api" {
@@ -47,7 +47,7 @@ resource "aws_vpc_endpoint" "ecr_api" {
   service_name       = "com.amazonaws.${var.region}.ecr.api"
   vpc_endpoint_type  = "Interface"
   subnet_ids         = var.private_subnet_ids
-  security_group_ids = var.vpce_security_group_ids
+  security_group_ids = [aws_security_group.vpce.id]
 }
 
 resource "aws_vpc_endpoint" "ecr_dkr" {
@@ -56,7 +56,7 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
   service_name       = "com.amazonaws.${var.region}.ecr.dkr"
   vpc_endpoint_type  = "Interface"
   subnet_ids         = var.private_subnet_ids
-  security_group_ids = var.vpce_security_group_ids
+  security_group_ids = [aws_security_group.vpce.id]
 }
 
 resource "aws_vpc_endpoint" "sts" {
@@ -65,7 +65,7 @@ resource "aws_vpc_endpoint" "sts" {
   service_name       = "com.amazonaws.${var.region}.sts"
   vpc_endpoint_type  = "Interface"
   subnet_ids         = var.private_subnet_ids
-  security_group_ids = var.vpce_security_group_ids
+  security_group_ids = [aws_security_group.vpce.id]
 }
 
 resource "aws_vpc_endpoint" "s3" {
