@@ -231,8 +231,3 @@ output "eks_self_managed_node_groups_autoscaling_group_names" {
   description = "List of the autoscaling group names created by self-managed node groups"
   value       = module.eks.self_managed_node_groups_autoscaling_group_names
 }
-
-output "node_group_role_arns" {
-  description = "각 Node Group의 IAM Role ARN"
-  value       = module.eks.node_group_role_arns
-}
