@@ -95,3 +95,17 @@ variable "cluster_encryption_config" {
   }))
   default = []
 }
+
+variable "ebs_csi_irsa_role" {
+  description = "ebs csi driver 설정"
+  type = object({
+    terraform_version             = string
+    create_role                   = bool
+    role_name                     = string
+    oidc_fully_qualified_subjects = list(string)
+    attach_ebs_csi_policy         = bool
+  })
+  default = {
+
+  }
+}
