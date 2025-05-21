@@ -1,80 +1,21 @@
 locals {
-  _base_addon_config = {
-    coredns = {
-      addon_version     = try(var.cluster_addons.coredns.addon_version, var.default_addon_versions.coredns)
-      resolve_conflicts = "OVERWRITE"
-      #   configuration_values = jsonencode({
-      #     resources = {
-      #       limits   = { cpu = "200m", memory = "256Mi" }
-      #       requests = { cpu = "100m", memory = "128Mi" }
-      #     }
-      #   })
-    }
-    kube-proxy = {
-      addon_version     = try(var.cluster_addons["kube-proxy"].addon_version, var.default_addon_versions["kube-proxy"])
-      resolve_conflicts = "OVERWRITE"
-    }
-    vpc-cni = {
-      addon_version     = try(var.cluster_addons["vpc-cni"].addon_version, var.default_addon_versions["vpc-cni"])
-      resolve_conflicts = "OVERWRITE"
-      #   configuration_values = jsonencode({
-      #     env = {
-      #       ENABLE_PREFIX_DELEGATION = "true"
-      #       WARM_IP_TARGET           = "5"
-      #       ENABLE_IPv6              = "false"
-      #     }
-      #   })
-    }
-    eks-pod-identity-agent = {
-      addon_version     = try(var.cluster_addons["eks-pod-identity-agent"].addon_version, var.default_addon_versions["eks-pod-identity-agent"])
-      resolve_conflicts = "OVERWRITE"
-    }
+  # API 엔드포인트 접근 제어
+  cluster_endpoint_private_access = var.cluster_endpoint_private_access # true
+  cluster_endpoint_public_access  = var.cluster_endpoint_public_access  # false
 
-  }
+  # aws-auth ConfigMap 자동 관리 해제 (AssumeRole 방식)
+  manage_aws_auth = var.manage_aws_auth # false
 
-  base_addon_config = {
-    for key, config in local._base_addon_config :
-    key => merge(config, {
-      tags = merge(
-        var.tags,
-        try(config.tags, {})
-      )
-    })
-  }
+  # IRSA/OIDC 사용
+  enable_irsa = var.enable_irsa # true
 
-  merged_addons = merge(local.base_addon_config, var.cluster_addons)
+  # CloudWatch Logs 비활성화
+  create_cloudwatch_log_group = var.create_cloudwatch_log_group # false
 
-  access_entries = merge(
-    var.eks_access_entries,
-    # 기본값이나 추가적인 설정이 필요할 경우 여기에 정의
-    {
-      # 예: 기본 액세스 엔트리 추가
-      # "example_user" = {
-      #   kubernetes_groups = ["viewers"]
-      #   principal_arn     = "arn:aws:iam::123456789012:user/example-user"
-      # }
-    }
-  )
-
-  private_route_table_ids = data.aws_route_tables.private.ids
-
-
-  policy_attachments = {
-    for attachment in flatten([
-      for ng_name, obj in var.worker_policies : [
-        for pname in obj.policy_names : {
-          key         = "${ng_name}-${pname}"
-          node_group  = ng_name
-          policy_name = pname
-        }
-      ]
-    ]) :
-    attachment.key => {
-      node_group  = attachment.node_group
-      policy_name = attachment.policy_name
+  access_entries = {
+    cluster_assume_role = {
+      principal_arn = aws_iam_role.eks_cluster.arn
+      type          = "STANDARD"
     }
   }
-
-
 }
-

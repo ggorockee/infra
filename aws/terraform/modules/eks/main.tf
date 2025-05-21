@@ -2,33 +2,30 @@ module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "20.36.0"
 
-  cluster_name    = var.eks_cluster_name
-  cluster_version = var.eks_version
-  vpc_id          = var.vpc_id
-  subnet_ids      = var.private_subnet_ids
+  cluster_name    = var.cluster_name
+  cluster_version = var.cluster_version
 
-  cluster_endpoint_public_access  = var.cluster_endpoint_public_access
-  cluster_endpoint_private_access = var.cluster_endpoint_private_access
+  # VPC/서브넷
+  vpc_id     = var.vpc_id
+  subnet_ids = var.private_subnet_ids
 
-  cluster_addons = local.merged_addons
-
-  enable_irsa = var.enable_irsa
-
+  # 접근제어: aws-auth ConfigMap 비활성화 + AssumeRole
   authentication_mode = var.authentication_mode
-
-  access_entries = local.access_entries
-
-  cluster_enabled_log_types   = var.cluster_enabled_log_types
-  cluster_encryption_config   = var.cluster_encryption_config
-  create_cloudwatch_log_group = var.create_cloudwatch_log_group
+  access_entries      = local.access_entries
 
 
-  cluster_security_group_additional_rules = length(var.cluster_security_group_additional_rules) > 0 ? var.cluster_security_group_additional_rules : {}
+  # Endpoint 접근 제어
+  cluster_endpoint_private_access = local.cluster_endpoint_private_access
+  cluster_endpoint_public_access  = local.cluster_endpoint_public_access
 
-  node_security_group_additional_rules = length(var.node_security_group_additional_rules) > 0 ? var.node_security_group_additional_rules : {}
+  # IRSA/OIDC
+  enable_irsa = local.enable_irsa
 
-  tags = merge({
-    Owner = "arpegezz",
-  }, var.tags)
+  # CloudWatch Logs
+  create_cloudwatch_log_group = local.create_cloudwatch_log_group
+
+  # Self-managed Node Groups
+  self_managed_node_groups = var.self_managed_node_groups
+
 }
 
