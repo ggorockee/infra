@@ -82,3 +82,16 @@ variable "cluster_policies" {
     "AmazonEKSServicePolicy"
   ]
 }
+
+variable "create_kms_key" {
+  type = bool
+}
+
+variable "cluster_encryption_config" {
+  description = "EKS 클러스터 암호화 설정 (resources, provider_key_arn)"
+  type = list(object({
+    resources        = list(string)
+    provider_key_arn = string
+  }))
+  default = []
+}
