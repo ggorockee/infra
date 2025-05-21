@@ -31,11 +31,11 @@ variable "private_route_table_ids" {
   default     = []
 }
 
-variable "vpce_security_group_ids" {
-  description = "Interface Endpoint에 붙일 Security Group IDs"
-  type        = list(string)
-  default     = []
-}
+# variable "vpce_security_group_ids" {
+#   description = "Interface Endpoint에 붙일 Security Group IDs"
+#   type        = list(string)
+#   default     = []
+# }
 
 variable "self_managed_node_groups" {
   description = "Self-managed node group definitions (map of objects)"
