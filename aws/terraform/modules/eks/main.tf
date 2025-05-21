@@ -26,6 +26,9 @@ module "eks" {
 
   # Self-managed Node Groups
   self_managed_node_groups = var.self_managed_node_groups
+  
+  # KMS
   create_kms_key           = var.create_kms_key
+  cluster_encryption_config = var.cluster_encryption_config
 }
 
