@@ -4,7 +4,7 @@ module "ebs_csi_irsa_role" {
   }
   source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
 
-  version = each.value.terraform_version
+  version = "5.55.0"
 
   create_role = each.value.create_role
   role_name   = each.value.role_name

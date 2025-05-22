@@ -26,7 +26,6 @@ module "eks" {
 
   ebs_csi_irsa_roles = {
     default = {
-      terraform_version = "5.55.0"
       create_role       = true
       role_name         = "arpegezz-eks-cluster-ebs-csi-controller"
       oidc_fully_qualified_subjects = [

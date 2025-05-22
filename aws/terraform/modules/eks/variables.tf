@@ -99,7 +99,6 @@ variable "cluster_encryption_config" {
 variable "ebs_csi_irsa_roles" {
   description = "ebs csi driver 설정"
   type = map(object({
-    terraform_version             = string
     create_role                   = bool
     role_name                     = string
     oidc_fully_qualified_subjects = list(string)
