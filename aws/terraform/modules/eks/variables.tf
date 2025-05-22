@@ -96,16 +96,23 @@ variable "cluster_encryption_config" {
   default = []
 }
 
-variable "ebs_csi_irsa_role" {
+variable "ebs_csi_irsa_roles" {
   description = "ebs csi driver 설정"
-  type = object({
+  type = map(object({
     terraform_version             = string
     create_role                   = bool
     role_name                     = string
     oidc_fully_qualified_subjects = list(string)
     attach_ebs_csi_policy         = bool
-  })
-  default = {
+  }))
+  default = {}
+}
 
-  }
+variable "cluster_addons" {
+  description = "custer addons"
+  type = map(object({
+    most_recent              = optional(bool, false)
+    resolve_conflicts        = optional(string, "OVERWRITE")
+    service_account_role_arn = optional(string, "")
+  }))
 }
