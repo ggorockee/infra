@@ -32,6 +32,6 @@ resource "aws_security_group_rule" "allow_eks_api" {
   to_port                  = 443
   protocol                 = "tcp"
   security_group_id        = module.eks.cluster_security_group_id
-  source_security_group_id = aws_security_group.access.id
+  source_security_group_id = aws_security_group.access[each.key].id
   description              = "Allow EKS API access from ${each.key}"
 }
