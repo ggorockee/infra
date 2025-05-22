@@ -102,7 +102,6 @@ variable "ebs_csi_irsa_roles" {
     create_role                   = bool
     role_name                     = string
     oidc_fully_qualified_subjects = list(string)
-    attach_ebs_csi_policy         = bool
   }))
   default = {}
 }

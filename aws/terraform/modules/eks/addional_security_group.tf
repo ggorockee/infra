@@ -26,6 +26,7 @@ resource "aws_security_group" "access" {
 
 resource "aws_security_group_rule" "allow_eks_api" {
   for_each                 = aws_security_group.access
+  depends_on               = [aws_security_group.access]
   type                     = "ingress"
   from_port                = 443
   to_port                  = 443
