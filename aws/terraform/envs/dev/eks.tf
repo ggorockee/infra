@@ -26,8 +26,8 @@ module "eks" {
 
   ebs_csi_irsa_roles = {
     default = {
-      create_role       = true
-      role_name         = "arpegezz-eks-cluster-ebs-csi-controller"
+      create_role = true
+      role_name   = "arpegezz-eks-cluster-ebs-csi-controller"
       oidc_fully_qualified_subjects = [
         "system:serviceaccount:kube-system:ebs-csi-controller-sa"
       ]
