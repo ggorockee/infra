@@ -31,6 +31,6 @@ module "eks" {
   create_kms_key            = var.create_kms_key
   cluster_encryption_config = var.cluster_encryption_config
 
-
+  cluster_addons = local.cluster_addons
 }
 

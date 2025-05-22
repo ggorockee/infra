@@ -12,3 +12,8 @@ variable "owner" {
   type    = string
   default = "arpegezz"
 }
+
+variable "OPENVPN_IP" {
+  type    = string
+  default = "10.0.1.16"
+}

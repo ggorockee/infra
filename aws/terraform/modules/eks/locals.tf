@@ -18,4 +18,16 @@ locals {
       type          = "STANDARD"
     }
   }
+
+  base_addons = var.cluster_addons
+
+  csi_addon = length(var.ebs_csi_irsa_roles) > 0 ? {
+    "aws-ebs-csi-driver" = {
+      most_recent              = true
+      resolve_conflicts        = "PRESERVE"
+      service_account_role_arn = module.ebs_csi_irsa_role[keys(var.ebs_csi_irsa_roles)[0]].iam_role_arn
+    }
+  } : {}
+
+  cluster_addons = merge(local.base_addons, local.csi_addon)
 }
