@@ -44,4 +44,27 @@ module "eks" {
       resolve_conflicts = "OVERWRITE"
     }
   }
+
+  additional_security_groups = {
+    ACCESS = {
+      name   = "EKS-API-ACCESS"
+      vpc_id = data.terraform_remote_state.network.outputs.vpc_id
+      tags = {
+        Name = "EKS-API-ACCESS"
+      }
+      ingress = {
+        description = "Allow EKS API"
+        from_port   = 443
+        to_port     = 443
+        protocol    = "tcp"
+        cidr_blocks = ["${var.OPENVPN_IP}/32"]
+      }
+      egress = {
+        from_port   = 0
+        to_port     = 0
+        protocol    = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+      }
+    }
+  }
 }

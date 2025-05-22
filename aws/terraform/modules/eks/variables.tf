@@ -116,3 +116,24 @@ variable "cluster_addons" {
     service_account_role_arn = optional(string, "")
   }))
 }
+
+variable "additional_security_groups" {
+  type = map(object({
+    name   = string
+    vpc_id = string
+    tags   = optional(map(string), {})
+    ingress = object({
+      description = string
+      from_port   = number
+      to_port     = number
+      protocol    = string
+      cidr_blocks = list(string)
+    })
+    egress = object({
+      from_port   = number
+      to_port     = number
+      protocol    = string
+      cidr_blocks = list(string)
+    })
+  }))
+}
