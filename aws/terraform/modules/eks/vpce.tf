@@ -6,6 +6,7 @@
 // ─────────────────────────────────────────────────────────────
 
 resource "aws_security_group" "vpce" {
+  count       = var.using_nat ? 0 : 1
   name        = "${var.cluster_name}-vpce-sg"
   description = "for EKS/VPC endpoints"
   vpc_id      = data.aws_vpc.eks.id
