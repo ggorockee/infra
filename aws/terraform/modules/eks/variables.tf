@@ -26,7 +26,7 @@ variable "subnet_ids" {
 }
 
 variable "eks_managed_node_groups" {
-  type = map(object(any))
+  type = map(any)
 }
 
 # variable "private_route_table_ids" {
