@@ -39,7 +39,7 @@
    service_name       = "com.amazonaws.${local.region}.eks"
    vpc_endpoint_type  = "Interface"
    subnet_ids         = var.subnet_ids
-   security_group_ids = [aws_security_group.vpce.id]
+   security_group_ids = [aws_security_group.vpce[0].id]
    depends_on = [aws_security_group.vpce]
  }
 
@@ -49,7 +49,7 @@
    service_name       = "com.amazonaws.${local.region}.ecr.api"
    vpc_endpoint_type  = "Interface"
    subnet_ids         = var.subnet_ids
-   security_group_ids = [aws_security_group.vpce.id]
+   security_group_ids = [aws_security_group.vpce[0].id]
    depends_on = [aws_vpc_endpoint.eks_api]
  }
 
@@ -59,7 +59,7 @@
    service_name       = "com.amazonaws.${local.region}.ecr.dkr"
    vpc_endpoint_type  = "Interface"
    subnet_ids         = var.subnet_ids
-   security_group_ids = [aws_security_group.vpce.id]
+   security_group_ids = [aws_security_group.vpce[0].id]
    depends_on = [aws_vpc_endpoint.ecr_api]
  }
 
@@ -69,7 +69,7 @@
    service_name       = "com.amazonaws.${local.region}.sts"
    vpc_endpoint_type  = "Interface"
    subnet_ids         = var.subnet_ids
-   security_group_ids = [aws_security_group.vpce.id]
+   security_group_ids = [aws_security_group.vpce[0].id]
    depends_on = [aws_vpc_endpoint.ecr_dkr]
  }
 
