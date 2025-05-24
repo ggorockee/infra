@@ -51,6 +51,9 @@
    subnet_ids         = var.subnet_ids
    security_group_ids = [aws_security_group.vpce[0].id]
    depends_on = [aws_vpc_endpoint.eks_api]
+   tags = {
+     Name = "ECR_API"
+   }
  }
 
  resource "aws_vpc_endpoint" "ecr_dkr" {
@@ -61,6 +64,9 @@
    subnet_ids         = var.subnet_ids
    security_group_ids = [aws_security_group.vpce[0].id]
    depends_on = [aws_vpc_endpoint.ecr_api]
+   tags = {
+     Name = "ECR_DKR"
+   }
  }
 
  resource "aws_vpc_endpoint" "sts" {
@@ -71,6 +77,9 @@
    subnet_ids         = var.subnet_ids
    security_group_ids = [aws_security_group.vpce[0].id]
    depends_on = [aws_vpc_endpoint.ecr_dkr]
+   tags = {
+     Name = "STS"
+   }
  }
 
  resource "aws_vpc_endpoint" "s3" {
@@ -80,4 +89,7 @@
    vpc_endpoint_type = "Gateway"
    route_table_ids   = local.private_route_table_ids
    depends_on = [aws_vpc_endpoint.sts]
+   tags = {
+     Name = "S3"
+   }
  }
