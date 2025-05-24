@@ -1,4 +1,10 @@
 locals {
+  # region
+  region = data.aws_region.current.name
+
+  # route table
+  private_route_table_ids = data.aws_route_tables.private.ids
+
   # tag
   tags = merge({
     Managed_by = "Terraform"

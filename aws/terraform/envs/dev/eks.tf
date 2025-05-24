@@ -1,7 +1,7 @@
 module "eks" {
   source = "../../modules/eks"
 
-  cluster_name    = "arpegezz-eks-cluster"
+  cluster_name    = "ggorockee-eks-cluster"
   cluster_version = "1.31"
 
   cluster_endpoint_public_access  = false
@@ -16,11 +16,11 @@ module "eks" {
   }
 
   eks_managed_node_groups = {
-    ARPEGEZZ_NODEGROUP = {
+    GGOROCKEE_NODEGROUP = {
       # Starting on 1.30, AL2023 is the default AMI type for EKS managed node groups
       ami_type        = "AL2_x86_64"
       instance_types  = ["t3.micro"]
-      name            = "ARPEGEZZ_NODEGROUP"
+      name            = "GGOROCKEE_NODEGROUP"
       use_name_prefix = false
       disk_size       = 20
       min_size        = 1
@@ -28,6 +28,8 @@ module "eks" {
       desired_size    = 1
     }
   }
+
+  using_nat = false
 
 }
 

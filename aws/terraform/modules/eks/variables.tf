@@ -74,10 +74,10 @@ variable "cluster_endpoint_public_access" {
 #   type = string
 # }
 
-# variable "using_nat" {
-#   type    = bool
-#   default = true
-# }
+ variable "using_nat" {
+   type    = bool
+   default = true
+ }
 
 # variable "cluster_policies" {
 #   type = list(string)
