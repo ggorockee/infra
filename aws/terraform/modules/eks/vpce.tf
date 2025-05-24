@@ -59,6 +59,20 @@
    }
  }
 
+ resource "aws_vpc_endpoint" "ec2" {
+   count              = var.using_nat ? 0 : 1
+   vpc_id             = var.vpc_id
+   service_name       = "com.amazonaws.${local.region}.ec2"
+   vpc_endpoint_type  = "Interface"
+   subnet_ids         = var.subnet_ids
+   security_group_ids = [aws_security_group.vpce[0].id]
+   private_dns_enabled = true
+   depends_on = [aws_vpc_endpoint.ecr_api]
+   tags = {
+     Name = "EC2"
+   }
+ }
+
  resource "aws_vpc_endpoint" "ecr_dkr" {
    count              = var.using_nat ? 0 : 1
    vpc_id             = var.vpc_id
@@ -66,7 +80,7 @@
    vpc_endpoint_type  = "Interface"
    subnet_ids         = var.subnet_ids
    security_group_ids = [aws_security_group.vpce[0].id]
-   depends_on = [aws_vpc_endpoint.ecr_api]
+   depends_on = [aws_vpc_endpoint.ec2]
    tags = {
      Name = "ECR_DKR"
    }
