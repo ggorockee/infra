@@ -41,6 +41,9 @@
    subnet_ids         = var.subnet_ids
    security_group_ids = [aws_security_group.vpce[0].id]
    depends_on = [aws_security_group.vpce]
+   tags = {
+     Name = "EKS_API"
+   }
  }
 
  resource "aws_vpc_endpoint" "ecr_api" {
