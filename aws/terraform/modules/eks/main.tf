@@ -12,10 +12,6 @@ module "eks" {
   tags = local.tags
 
   eks_managed_node_groups = length(var.eks_managed_node_groups) > 0 ? var.eks_managed_node_groups : {}
-
-  depends_on = var.using_nat ? [] : [
-    aws_security_group.vpce,
-  ]
 }
 
 
