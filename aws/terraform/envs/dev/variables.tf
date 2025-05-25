@@ -15,7 +15,7 @@ variable "owner" {
 
 variable "OPENVPN_IP" {
   type    = string
-  default = "10.0.1.16"
+  default = "10.0.1.93"
 }
 
 variable "create_vpce" {

@@ -15,10 +15,36 @@ module "eks" {
   enable_irsa                  = true
   cluster_addons               = {}
   additional_security_groups   = {}
-  tags = {
-    Environment = "dev"
-    Terraform   = "true"
-  }
+  #    bastion = {
+  #      name        = "eks-bastion-sg"
+  #      description = "Allow SSH to EKS worker nodes"
+  #      ingress = [
+  #        {
+  #          description = "SSH from office"
+  #          from_port   = 22
+  #          to_port     = 22
+  #          protocol    = "tcp"
+  #          cidr_blocks = ["203.0.113.0/24"]
+  #        }
+  #      ]
+  #      egress = [
+  #        {
+  #          description = "All outbound"
+  #          from_port   = 0
+  #          to_port     = 0
+  #          protocol    = "-1"
+  #          cidr_blocks = ["0.0.0.0/0"]
+  #        }
+  #      ]
+  #      tags = {
+  #        Environment = "dev"
+  #      }
+  #    }
+  #    tags = {
+  #      Environment = "dev"
+  #      Terraform   = "true"
+  #    }
+  #  }
 }
 
 #eks_managed_node_groups = {
