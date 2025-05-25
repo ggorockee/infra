@@ -35,6 +35,11 @@ locals {
       most_recent       = true
       resolve_conflicts = "OVERWRITE"
     }
+
+    "metrics-server" = {
+      most_recent       = true
+      resolve_conflicts = "OVERWRITE"
+    }
   }
 
   cluster_addons              = merge(local.cluster_addons_, var.cluster_addons)
