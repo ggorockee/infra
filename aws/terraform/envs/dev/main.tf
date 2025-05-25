@@ -15,11 +15,11 @@ data "terraform_remote_state" "network" {
 
 
 ####### VPC Endpoint #######
-module "vpc-endpoint" {
-  source     = "../../modules/vpc-endpoint"
-  vpc_id     = data.terraform_remote_state.network.outputs.vpc_id
-  subnet_ids = data.terraform_remote_state.network.outputs.private_subnet_ids
-}
+#module "vpc-endpoint" {
+#  source     = "../../modules/vpc-endpoint"
+#  vpc_id     = data.terraform_remote_state.network.outputs.vpc_id
+#  subnet_ids = data.terraform_remote_state.network.outputs.private_subnet_ids
+#}
 
 data "aws_iam_role" "SSM" {
   name = "CloudWatchSSMRole"

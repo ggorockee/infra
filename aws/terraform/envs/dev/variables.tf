@@ -20,5 +20,5 @@ variable "OPENVPN_IP" {
 
 variable "create_vpce" {
   type    = bool
-  default = true
+  default = false
 }
