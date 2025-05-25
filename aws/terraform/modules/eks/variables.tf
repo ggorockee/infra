@@ -164,16 +164,7 @@ variable "additional_security_groups" {
   default = {}
 }
 
-variable "cluster_role_name" {
-  description = "Name for the EKS cluster IAM role"
-  type        = string
-  default     = null
-}
 
-variable "manage_cluster_iam_resources" {
-  type    = bool
-  default = true
-}
 
 variable "enable_irsa" {
   type    = bool
@@ -182,4 +173,18 @@ variable "enable_irsa" {
 
 variable "cluster_addons" {
   type = map(any)
+}
+
+variable "node_group" {
+  type = object({
+    node_group_name = string
+    min_size        = number
+    max_size        = number
+    desired_size    = number
+    instance_types  = list(string)
+    capacity_type   = string
+    labels          = map(string)
+    taints          = map(string)
+    tags            = map(string)
+  })
 }

@@ -17,11 +17,8 @@ locals {
   subnet_ids              = var.subnet_ids
   eks_managed_node_groups = var.eks_managed_node_groups
 
-  additional_security_groups   = var.additional_security_groups
-  cluster_role_name            = upper(var.cluster_role_name)
-  node_group_role_name         = upper("node-${local.cluster_role_name}")
-  manage_cluster_iam_resources = var.manage_cluster_iam_resources
-  enable_irsa                  = var.enable_irsa
+  additional_security_groups = var.additional_security_groups
+  enable_irsa                = var.enable_irsa
 
   cluster_addons_ = {
     "vpc-cni" = {
@@ -42,6 +39,27 @@ locals {
 
   cluster_addons = merge(local.cluster_addons_, var.cluster_addons)
 
+  node_group = {
+    name           = var.node_group.node_group_name
+    min_size       = var.node_group.min_size
+    max_size       = var.node_group.max_size
+    desired_size   = var.node_group.desired_size
+    instance_types = var.node_group.instance_types # ["t3.large"]
+    capacity_type  = var.node_group.capacity_type  # SPOT
+
+    labels = merge({
+      Environment = "test"
+      GithubRepo  = "terraform-aws-eks"
+      GithubOrg   = "terraform-aws-modules"
+    }, var.node_group.labels)
+
+    taints = merge({}, var.node_group.taints)
+    tags = merge(
+      {
+        Environment = "dev"
+        Terraform   = "true"
+    }, var.tags)
+  }
 
 
 
