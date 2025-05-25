@@ -76,3 +76,21 @@ module "eip_vpn" {
     "Name"  = "OPENVPN"
   }
 }
+
+module "nat_instance" {
+  source        = "../../modules/ec2-spot"
+  vpc_id        = data.terraform_remote_state.network.outputs.vpc_id
+  use_spot      = true
+  instance_type = "t3.micro"
+  root_block_device = {
+    volume_size           = 20
+    volume_type           = "gp3"
+    delete_on_termination = true
+  }
+  instance_market_options = {
+    market_type                    = "spot"
+    instance_interruption_behavior = "stop"
+    spot_instance_type             = "persistent"
+  }
+  owner = "arpegezz"
+}
