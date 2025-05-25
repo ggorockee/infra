@@ -18,6 +18,7 @@ resource "aws_security_group" "nat" {
 
 resource "aws_security_group_rule" "allow_all_ingress" {
   type              = "ingress" # ingress / egress
+  description       = "VPC"
   security_group_id = aws_security_group.nat.id
   protocol          = "-1" # All traffic
   from_port         = 0
