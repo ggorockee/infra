@@ -1,18 +1,49 @@
 module "eks" {
   source       = "terraform-aws-modules/eks/aws"
   version      = "20.36.0"
-  cluster_name = var.cluster_name
+  cluster_name = local.cluster_name
 
-  cluster_endpoint_public_access  = var.cluster_endpoint_public_access
-  cluster_endpoint_private_access = var.cluster_endpoint_private_access
+  cluster_endpoint_public_access  = local.cluster_endpoint_public_access
+  cluster_endpoint_private_access = local.cluster_endpoint_private_access
 
-  vpc_id     = var.vpc_id
-  subnet_ids = var.subnet_ids
+  vpc_id     = local.vpc_id
+  subnet_ids = local.subnet_ids
 
   tags = local.tags
 
-  eks_managed_node_groups = length(var.eks_managed_node_groups) > 0 ? var.eks_managed_node_groups : {}
+  manage_cluster_iam_resources = local.manage_cluster_iam_resources # false
+  cluster_iam_role_name        = local.cluster_role_name
+  cluster_iam_role_arn         = aws_iam_role.eks_cluster.arn
+
+  enable_irsa = local.enable_irsa # false
+
+  cluster_addons = local.cluster_addons
+
+  #  eks_managed_node_groups = length(var.eks_managed_node_groups) > 0 ? var.eks_managed_node_groups : {}
 }
+
+##   additional_security_groups = {
+##     ACCESS = {
+##       name   = "EKS-API-ACCESS"
+##       vpc_id = data.terraform_remote_state.network.outputs.vpc_id
+##       tags = {
+##         Name = "EKS-API-ACCESS"
+##       }
+##       ingress = {
+##         description = "Allow EKS API"
+##         from_port   = 443
+##         to_port     = 443
+##         protocol    = "tcp"
+##         cidr_blocks = ["${var.OPENVPN_IP}/32"]
+##       }
+##       egress = {
+##         from_port   = 0
+##         to_port     = 0
+##         protocol    = "-1"
+##         cidr_blocks = ["0.0.0.0/0"]
+##       }
+##     }
+##   }
 
 
 // 프라이빗 서브넷 태그

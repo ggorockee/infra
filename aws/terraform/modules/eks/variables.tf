@@ -26,7 +26,29 @@ variable "subnet_ids" {
 }
 
 variable "eks_managed_node_groups" {
-  type = map(any)
+  type = map(object({
+    ami_type        = string
+    instance_types  = list(string)
+    name            = string
+    use_name_prefix = bool
+    disk_size       = number
+    min_size        = number
+    max_size        = number
+    desired_size    = number
+  }))
+  default = {}
+  #  default = {
+  #    default = {
+  #      ami_type        = "AL2_x86_64"
+  #      instance_types  = ["t3.micro"]
+  #      name            = "GGOROCKEE_NODEGROUP"
+  #      use_name_prefix = false
+  #      disk_size       = 20
+  #      min_size        = 1
+  #      max_size        = 2
+  #      desired_size    = 1
+  #    }
+  #  }
 }
 
 # variable "private_route_table_ids" {
@@ -74,10 +96,7 @@ variable "cluster_endpoint_public_access" {
 #   type = string
 # }
 
-variable "using_nat" {
-  type    = bool
-  default = true
-}
+
 
 # variable "cluster_policies" {
 #   type = list(string)
@@ -119,23 +138,48 @@ variable "using_nat" {
 #   }))
 # }
 
-# variable "additional_security_groups" {
-#   type = map(object({
-#     name   = string
-#     vpc_id = string
-#     tags   = optional(map(string), {})
-#     ingress = object({
-#       description = string
-#       from_port   = number
-#       to_port     = number
-#       protocol    = string
-#       cidr_blocks = list(string)
-#     })
-#     egress = object({
-#       from_port   = number
-#       to_port     = number
-#       protocol    = string
-#       cidr_blocks = list(string)
-#     })
-#   }))
-# }
+variable "additional_security_groups" {
+  description = "Map of extra security groups to create for EKS"
+  type = map(object({
+    name        = string
+    description = string
+    ingress = list(object({
+      description     = string
+      from_port       = number
+      to_port         = number
+      protocol        = string
+      cidr_blocks     = list(string)
+      security_groups = optional(list(string), [])
+    }))
+    egress = list(object({
+      description     = string
+      from_port       = number
+      to_port         = number
+      protocol        = string
+      cidr_blocks     = list(string)
+      security_groups = optional(list(string), [])
+    }))
+    tags = optional(map(string), {})
+  }))
+  default = {}
+}
+
+variable "cluster_role_name" {
+  description = "Name for the EKS cluster IAM role"
+  type        = string
+  default     = null
+}
+
+variable "manage_cluster_iam_resources" {
+  type    = bool
+  default = true
+}
+
+variable "enable_irsa" {
+  type    = bool
+  default = false
+}
+
+variable "cluster_addons" {
+  type = map(any)
+}

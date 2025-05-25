@@ -2,9 +2,6 @@ locals {
   # region
   region = data.aws_region.current.name
 
-  # route table
-  private_route_table_ids = data.aws_route_tables.private.ids
-
   # tag
   tags = merge({
     Managed_by = "Terraform"
@@ -13,6 +10,52 @@ locals {
   # API 엔드포인트 접근 제어
   cluster_endpoint_private_access = var.cluster_endpoint_private_access # true
   cluster_endpoint_public_access  = var.cluster_endpoint_public_access  # false
+
+  cluster_version         = var.cluster_version
+  cluster_name            = upper(var.cluster_name)
+  vpc_id                  = var.vpc_id
+  subnet_ids              = var.subnet_ids
+  eks_managed_node_groups = var.eks_managed_node_groups
+
+  additional_security_groups   = var.additional_security_groups
+  cluster_role_name            = upper(var.cluster_role_name)
+  node_group_role_name         = upper("node-${local.cluster_role_name}")
+  manage_cluster_iam_resources = var.manage_cluster_iam_resources
+  enable_irsa                  = var.enable_irsa
+
+  cluster_addons_ = {
+    "vpc-cni" = {
+      most_recent       = true
+      resolve_conflicts = "OVERWRITE"
+    }
+
+    "aws-ebs-csi-driver" = {
+      most_recent       = true
+      resolve_conflicts = "OVERWRITE"
+    }
+
+    "core-dns" = {
+      most_recent       = true
+      resolve_conflicts = "OVERWRITE"
+    }
+  }
+
+  cluster_addons = merge(local.cluster_addons_, var.cluster_addons)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   # aws-auth ConfigMap 자동 관리 해제 (AssumeRole 방식)
   # manage_aws_auth = var.manage_aws_auth # false
