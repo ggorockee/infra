@@ -6,7 +6,8 @@ module "eks_managed_node_group" {
   cluster_version = local.cluster_version
   version         = "20.36.0"
 
-  subnet_ids = local.subnet_ids
+  subnet_ids           = local.subnet_ids
+  cluster_service_cidr = module.eks.cluster_service_cidr
 
   // The following variables are necessary if you decide to use the module outside of the parent EKS module context.
   // Without it, the security groups of the nodes are empty and thus won't join the cluster.
