@@ -65,7 +65,8 @@ resource "aws_route" "priv_subnet_default" {
   route_table_id         = aws_route_table.private_nat.id
   depends_on             = [aws_route_table.private_nat]
   destination_cidr_block = "0.0.0.0/0"
-  instance_id            = aws_instance.nat.id
+  #  instance_id            = aws_instance.nat.id
+  network_interface_id = aws_instance.nat.primary_network_interface_id
 }
 
 # Associate each private subnet with the new route table
