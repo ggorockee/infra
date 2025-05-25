@@ -38,6 +38,9 @@ resource "aws_instance" "nat" {
 # Allocate a VPC Elastic IP for the NAT instance
 resource "aws_eip" "nat" {
   depends_on = [aws_instance.nat]
+  tags = {
+    Name = upper("nat-instance-${local.owner}")
+  }
 }
 
 
