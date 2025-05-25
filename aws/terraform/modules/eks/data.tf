@@ -1,31 +1,39 @@
-# VPC 정보 가져오기
 data "aws_vpc" "current" {
   id = var.vpc_id
 }
 
 data "aws_region" "current" {}
 
-
-# “내부 ELB(private)” 태그가 달린 서브넷만 골라오기
 data "aws_subnets" "private" {
   filter {
     name   = "vpc-id"
-    values = [data.aws_vpc.eks.id]
+    values = [data.aws_vpc.current.id]
   }
   filter {
-    name   = "tag:kubernetes.io/role/internal-elb"
-    values = ["1"]
+    name   = "tag:Name"
+    values = ["*private*"]
   }
 }
 
-data "aws_route_tables" "private" {
-  filter {
-    name   = "vpc-id"
-    values = [var.vpc_id]
+# ────────── 1. 사전: IAM 역할 정의 ──────────
+data "aws_iam_policy_document" "eks_cluster_assume" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["eks.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
   }
+}
 
-  filter {
-    name   = "tag:Name"
-    values = ["arpegezz-private-rt"]
+data "aws_iam_policy_document" "eks_node_assume" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
   }
 }
