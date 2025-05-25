@@ -10,11 +10,11 @@ module "eks" {
   vpc_id     = data.terraform_remote_state.network.outputs.vpc_id
   subnet_ids = data.terraform_remote_state.network.outputs.private_subnet_ids
 
-  cluster_role_name            = "eks-arpegezz-role"
-  manage_cluster_iam_resources = false
-  enable_irsa                  = true
-  cluster_addons               = {}
-  additional_security_groups   = {}
+
+
+  enable_irsa                = true
+  cluster_addons             = {}
+  additional_security_groups = {}
 
   node_group = {
     node_group_name = ""
