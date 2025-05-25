@@ -1,16 +1,17 @@
 # Launch a t3.micro NAT instance, optionally as a Spot Instance
-resource "aws_instance" "nat" {
-  ami                         = data.aws_ami.nat.id
+resource "aws_instance" "this" {
+  ami                         = local.ami_name
   instance_type               = local.instance_type
-  subnet_id                   = data.aws_subnets.public.ids[0]
-  associate_public_ip_address = true
+  subnet_id                   = local.subnet_id
+  associate_public_ip_address = local.associate_public_ip_address
   key_name                    = local.key_pair_name != "" ? local.key_pair_name : null
+  iam_instance_profile        = local.iam_instance_profile
 
   # Disable source/destination checks to allow NAT forwarding
-  source_dest_check = false
-  vpc_security_group_ids = [
-    aws_security_group.nat.id
-  ]
+  source_dest_check = local.source_dest_check
+  vpc_security_group_ids = length(local.security_group_config) > 0 ? [
+    aws_security_group.default[0].id
+  ] : []
 
   root_block_device {
     volume_size           = local.root_block_device.volume_size
@@ -34,49 +35,23 @@ resource "aws_instance" "nat" {
   }
 
   tags = {
-    Name = upper("NAT-${local.owner}")
+    Name = upper(local.instance_name)
   }
 }
 
 # Allocate a VPC Elastic IP for the NAT instance
-resource "aws_eip" "nat" {
-  depends_on = [aws_instance.nat]
+resource "aws_eip" "this" {
+  count      = local.using_eip ? 1 : 0
+  depends_on = [aws_instance.this]
   tags = {
-    Name = upper("nat-instance-${local.owner}")
+    Name = upper(local.instance_name)
   }
 }
 
 
 # Associate the Elastic IP with the NAT instance
-resource "aws_eip_association" "nat" {
-  instance_id   = aws_instance.nat.id
-  allocation_id = aws_eip.nat.id
-  depends_on    = [aws_eip.nat]
+resource "aws_eip_association" "eip" {
+  instance_id   = aws_instance.this.id
+  allocation_id = aws_eip.this.0.id
+  depends_on    = [aws_eip.this]
 }
-
-# Create a new route table for private subnets
-resource "aws_route_table" "private_nat" {
-  vpc_id     = var.vpc_id
-  depends_on = [aws_eip_association.nat]
-  tags = {
-    Name = upper("rtb-private-nat-${local.owner}")
-  }
-}
-
-# Add a default route through the NAT instance
-resource "aws_route" "priv_subnet_default" {
-  route_table_id         = aws_route_table.private_nat.id
-  depends_on             = [aws_route_table.private_nat]
-  destination_cidr_block = "0.0.0.0/0"
-  #  instance_id            = aws_instance.nat.id
-  network_interface_id = aws_instance.nat.primary_network_interface_id
-}
-
-# Associate each private subnet with the new route table
-resource "aws_route_table_association" "private_subnets" {
-  for_each       = toset(data.aws_subnets.private.ids)
-  depends_on     = [aws_route.priv_subnet_default]
-  subnet_id      = each.key
-  route_table_id = aws_route_table.private_nat.id
-}
-
