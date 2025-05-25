@@ -9,12 +9,7 @@ module "eks" {
   vpc_id     = local.vpc_id
   subnet_ids = local.subnet_ids
 
-  tags = local.tags
-
-  manage_cluster_iam_resources = local.manage_cluster_iam_resources # false
-  cluster_iam_role_name        = local.cluster_role_name
-  cluster_iam_role_arn         = aws_iam_role.eks_cluster.arn
-
+  tags        = local.tags
   enable_irsa = local.enable_irsa # false
 
   cluster_addons = local.cluster_addons
