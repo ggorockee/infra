@@ -8,6 +8,9 @@ resource "aws_instance" "nat" {
 
   # Disable source/destination checks to allow NAT forwarding
   source_dest_check = false
+  vpc_security_group_ids = [
+    aws_security_group.nat.id
+  ]
 
   root_block_device {
     volume_size           = local.root_block_device.volume_size
@@ -31,7 +34,7 @@ resource "aws_instance" "nat" {
   }
 
   tags = {
-    Name = "NAT-${local.owner}"
+    Name = upper("NAT-${local.owner}")
   }
 }
 

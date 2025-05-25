@@ -1,5 +1,9 @@
 locals {
-  region        = data.aws_region.current.name
+  region = data.aws_region.current.name
+  vpc = {
+    id   = data.aws_vpc.current.id
+    cidr = data.aws_vpc.current.cidr_block
+  }
   use_spot      = var.use_spot
   instance_type = var.instance_type
   key_pair_name = var.key_pair_name
