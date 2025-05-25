@@ -14,7 +14,9 @@ module "eks" {
 
   cluster_addons              = local.cluster_addons
   create_kms_key              = local.create_kms_key
+  cluster_encryption_config   = local.create_kms_key ? [] : []
   create_cloudwatch_log_group = local.create_cloudwatch_log_group
+
 }
 
 
