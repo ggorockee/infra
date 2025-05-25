@@ -17,3 +17,8 @@ variable "OPENVPN_IP" {
   type    = string
   default = "10.0.1.16"
 }
+
+variable "create_vpce" {
+  type    = bool
+  default = true
+}
