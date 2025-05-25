@@ -1,13 +1,13 @@
 data "aws_region" "current" {}
 
-data "aws_vpc" "eks" {
+data "aws_vpc" "current" {
   id = var.vpc_id
 }
 
 data "aws_subnets" "public" {
   filter {
     name   = "vpc-id"
-    values = [data.aws_vpc.eks.id]
+    values = [data.aws_vpc.current.id]
   }
   filter {
     name   = "tag:Name"
@@ -18,7 +18,7 @@ data "aws_subnets" "public" {
 data "aws_subnets" "private" {
   filter {
     name   = "vpc-id"
-    values = [data.aws_vpc.eks.id]
+    values = [data.aws_vpc.current.id]
   }
   filter {
     name   = "tag:Name"
