@@ -37,7 +37,9 @@ locals {
     }
   }
 
-  cluster_addons = merge(local.cluster_addons_, var.cluster_addons)
+  cluster_addons              = merge(local.cluster_addons_, var.cluster_addons)
+  create_kms_key              = var.create_kms_key
+  create_cloudwatch_log_group = var.create_cloudwatch_log_group
 
   node_group = {
     name           = var.node_group.node_group_name

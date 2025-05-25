@@ -12,9 +12,11 @@ module "eks" {
 
 
 
-  enable_irsa                = true
-  cluster_addons             = {}
-  additional_security_groups = {}
+  enable_irsa                 = true
+  cluster_addons              = {}
+  additional_security_groups  = {}
+  create_cloudwatch_log_group = false
+  create_kms_key              = false
 
   node_group = {
     node_group_name = ""

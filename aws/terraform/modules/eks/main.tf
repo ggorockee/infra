@@ -12,7 +12,9 @@ module "eks" {
   tags        = local.tags
   enable_irsa = local.enable_irsa # false
 
-  cluster_addons = local.cluster_addons
+  cluster_addons              = local.cluster_addons
+  create_kms_key              = local.create_kms_key
+  create_cloudwatch_log_group = local.create_cloudwatch_log_group
 }
 
 

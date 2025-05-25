@@ -188,3 +188,11 @@ variable "node_group" {
     tags            = map(string)
   })
 }
+
+variable "create_cloudwatch_log_group" {
+  type = bool
+}
+
+variable "create_kms_key" {
+  type = bool
+}
