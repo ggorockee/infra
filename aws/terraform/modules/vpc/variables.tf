@@ -50,6 +50,6 @@ variable "owner" {
 }
 
 variable "eks_cluster_name" {
-  type = string
+  type    = string
   default = ""
 }

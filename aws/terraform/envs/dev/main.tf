@@ -1,7 +1,7 @@
 # VPC Setting
 module "vpc" {
-  source = "../../modules/vpc"
-  owner  = "arpegezz"
+  source           = "../../modules/vpc"
+  owner            = "arpegezz"
   eks_cluster_name = var.eks_cluster_name
 }
 
