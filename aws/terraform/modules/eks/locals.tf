@@ -37,9 +37,9 @@ locals {
       addon_name        = "coredns"
       most_recent       = true
       resolve_conflicts = "OVERWRITE"
-      configuration_values = jsonencode({
-        replicaCount = 1
-      })
+      #      configuration_values = jsonencode({
+      #        replicaCount = 1
+      #      })
     }
 
     "metrics-server" = {
