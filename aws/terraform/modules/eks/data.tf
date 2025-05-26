@@ -14,15 +14,3 @@ data "aws_subnets" "private" {
     values = ["*private*"]
   }
 }
-
-# ────────── 1. 사전: IAM 역할 정의 ──────────
-data "aws_iam_policy_document" "eks_cluster_assume" {
-  statement {
-    effect = "Allow"
-    principals {
-      type        = "Service"
-      identifiers = ["eks.amazonaws.com"]
-    }
-    actions = ["sts:AssumeRole"]
-  }
-}
