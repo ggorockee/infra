@@ -4,7 +4,7 @@ module "eks" {
   cluster_name    = var.eks_cluster_name
   cluster_version = "1.31"
 
-  cluster_endpoint_public_access  = true
+  cluster_endpoint_public_access  = false
   cluster_endpoint_private_access = true
 
   vpc_id     = data.terraform_remote_state.network.outputs.vpc_id
@@ -22,9 +22,9 @@ module "eks" {
   node_group = {
     default = {
       use_name_prefix = false
-      min_size        = 2
+      min_size        = 3
       max_size        = 3
-      desired_size    = 2
+      desired_size    = 3
       instance_types  = ["t3.micro"]
       capacity_type   = "SPOT"
       labels          = {}
