@@ -50,26 +50,35 @@ locals {
   create_kms_key              = var.create_kms_key
   create_cloudwatch_log_group = var.create_cloudwatch_log_group
 
-  node_group = {
-    name           = var.node_group.node_group_name
-    min_size       = var.node_group.min_size
-    max_size       = var.node_group.max_size
-    desired_size   = var.node_group.desired_size
-    instance_types = var.node_group.instance_types # ["t3.large"]
-    capacity_type  = var.node_group.capacity_type  # SPOT
+  node_group_configs = {
+    for ng_key, ng in var.node_group : ng_key => {
+      name            = ng_key
+      min_size        = ng.min_size
+      max_size        = ng.max_size
+      desired_size    = ng.desired_size
+      instance_types  = ng.instance_types
+      capacity_type   = ng.capacity_type
+      use_name_prefix = ng.use_name_prefix
 
-    labels = merge({
-      Environment = "test"
-      GithubRepo  = "terraform-aws-eks"
-      GithubOrg   = "terraform-aws-modules"
-    }, var.node_group.labels)
+      labels = merge(
+        {
+          Environment = "test"
+          GithubRepo  = "terraform-aws-eks"
+          GithubOrg   = "terraform-aws-modules"
+        },
+        ng.labels
+      )
+      taints = ng.taints
 
-    taints = merge({}, var.node_group.taints)
-    tags = merge(
-      {
-        Environment = "dev"
-        Terraform   = "true"
-    }, var.tags)
+      tags = merge(
+        {
+          Environment = "dev"
+          Terraform   = "true"
+        },
+        var.tags, # 공통 태그
+        ng.tags   # 노드그룹별 추가 태그
+      )
+    }
   }
 
   create_iam_role = var.create_iam_role
@@ -81,46 +90,4 @@ locals {
 
   iam_role_use_name_prefix = var.iam_role_use_name_prefix
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  # aws-auth ConfigMap 자동 관리 해제 (AssumeRole 방식)
-  # manage_aws_auth = var.manage_aws_auth # false
-
-  # # IRSA/OIDC 사용
-  # enable_irsa = var.enable_irsa # true
-
-  # # CloudWatch Logs 비활성화
-  # create_cloudwatch_log_group = var.create_cloudwatch_log_group # false
-
-  # access_entries = {
-  #   cluster_assume_role = {
-  #     principal_arn = aws_iam_role.eks_cluster.arn
-  #     type          = "STANDARD"
-  #   }
-  # }
-
-  # base_addons = var.cluster_addons
-
-  # csi_addon = length(var.ebs_csi_irsa_roles) > 0 ? {
-  #   "aws-ebs-csi-driver" = {
-  #     most_recent              = true
-  #     resolve_conflicts        = "PRESERVE"
-  #     service_account_role_arn = module.ebs_csi_irsa_role[keys(var.ebs_csi_irsa_roles)[0]].iam_role_arn
-  #   }
-  # } : {}
-
-  # cluster_addons = merge(local.base_addons, local.csi_addon)
 }
