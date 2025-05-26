@@ -3,7 +3,7 @@ data "aws_ami" "eks_default" {
   owners      = ["amazon"]
 
   filter {
-    name   = "name"
-    values = ["bottlerocket-aws-k8s-${local.cluster_version}"]
+    name   = "image-id"
+    values = ["ami-002e58d3a14a203f0"]
   }
 }
