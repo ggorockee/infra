@@ -90,8 +90,7 @@ locals {
 
   eks_cluster_policies = [
     "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy", # 클러스터 생성·관리 권한
-    "arn:aws:iam::aws:policy/AmazonEKSServicePolicy", # 내부 컨트롤플레인 서비스 권한
-    "arn:aws:iam::aws:policy/AmazonEKS_AddonPolicy",  # Add-On 생성·조회 권한
+    "arn:aws:iam::aws:policy/AmazonEKSServicePolicy", # 내부 컨트롤플레인 
   ]
 
   iam_role_use_name_prefix = var.iam_role_use_name_prefix
