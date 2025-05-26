@@ -22,21 +22,25 @@ locals {
 
   cluster_addons_ = {
     "vpc-cni" = {
+      addon_name        = "vpc-cni"
       most_recent       = true
       resolve_conflicts = "OVERWRITE"
     }
 
     "aws-ebs-csi-driver" = {
+      addon_name        = "aws-ebs-csi-driver"
       most_recent       = true
       resolve_conflicts = "OVERWRITE"
     }
 
-    "core-dns" = {
+    "coredns" = {
+      addon_name        = "coredns"
       most_recent       = true
       resolve_conflicts = "OVERWRITE"
     }
 
     "metrics-server" = {
+      addon_name        = "metrics-server"
       most_recent       = true
       resolve_conflicts = "OVERWRITE"
     }
