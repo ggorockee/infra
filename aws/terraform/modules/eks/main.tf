@@ -23,9 +23,9 @@ module "eks" {
 
   eks_managed_node_groups = {
     default = {
-      min_size     = 2
-      max_size     = 2
-      desired_size = 2
+      min_size     = 1
+      max_size     = 1
+      desired_size = 1
 
       ami_id     = data.aws_ami.eks_default.image_id
       subnet_ids = local.subnet_ids
