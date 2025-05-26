@@ -1,7 +1,7 @@
 module "eks" {
   source = "../../modules/eks"
 
-  cluster_name    = "ggorockee-eks-cluster"
+  cluster_name    = var.eks_cluster_name
   cluster_version = "1.31"
 
   cluster_endpoint_public_access  = false

@@ -48,3 +48,8 @@ variable "owner" {
   type        = string
   default     = "arpegezz"
 }
+
+variable "eks_cluster_name" {
+  type = string
+  default = ""
+}

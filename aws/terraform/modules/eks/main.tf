@@ -18,19 +18,3 @@ module "eks" {
   create_cloudwatch_log_group = local.create_cloudwatch_log_group
 
 }
-
-
-// 프라이빗 서브넷 태그
-resource "aws_ec2_tag" "private_subnet_tag" {
-  for_each    = toset(var.subnet_ids)
-  resource_id = each.value
-  key         = "kubernetes.io/role/internal-elb"
-  value       = "1"
-}
-
-resource "aws_ec2_tag" "private_subnet_cluster_tag" {
-  for_each    = toset(var.subnet_ids)
-  resource_id = each.value
-  key         = "kubernetes.io/cluster/${var.cluster_name}"
-  value       = "owned"
-}
