@@ -22,9 +22,9 @@ module "eks" {
   node_group = {
     default = {
       use_name_prefix = false
-      min_size        = 3
+      min_size        = 2
       max_size        = 3
-      desired_size    = 3
+      desired_size    = 2
       instance_types  = ["t3.micro"]
       capacity_type   = "SPOT"
       labels          = {}
