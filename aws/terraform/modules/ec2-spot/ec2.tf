@@ -13,6 +13,13 @@ resource "aws_instance" "this" {
     aws_security_group.default[0].id
   ] : []
 
+  lifecycle {
+    ignore_changes = [
+      subnet_id,
+      associate_public_ip_address,
+    ]
+  }
+
   root_block_device {
     volume_size           = local.root_block_device.volume_size
     volume_type           = local.root_block_device.volume_type

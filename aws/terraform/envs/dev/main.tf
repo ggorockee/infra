@@ -105,7 +105,7 @@ module "vpn_instance" {
 
   instance_name               = "OPENVPN"
   ami_name                    = "ami-09a093fa2e3bfca5a"
-  subnet_id                   = data.terraform_remote_state.network.outputs.public_subnet_ids[0]
+  subnet_id                   = local.sorted_public_subnets[0]
   source_dest_check           = true
   associate_public_ip_address = false
   iam_instance_profile        = "CloudWatchSSMRole"
