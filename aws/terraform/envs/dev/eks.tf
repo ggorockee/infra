@@ -4,7 +4,7 @@ module "eks" {
   cluster_name    = var.eks_cluster_name
   cluster_version = "1.31"
 
-  cluster_endpoint_public_access  = false
+  cluster_endpoint_public_access  = true
   cluster_endpoint_private_access = true
 
   vpc_id     = data.terraform_remote_state.network.outputs.vpc_id
