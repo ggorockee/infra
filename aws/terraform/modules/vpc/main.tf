@@ -50,3 +50,9 @@ resource "aws_subnet" "private" {
   })
 }
 
+resource "aws_ec2_tag" "private_subnet_cluster_tag" {
+  for_each    = local.cluster_subnets
+  resource_id = each.value
+  key         = "kubernetes.io/cluster/${var.eks_cluster_name}"
+  value       = "owned"
+}
