@@ -20,15 +20,16 @@ module "eks" {
   iam_role_use_name_prefix    = false
 
   node_group = {
-    node_group_name = "default"
-    use_name_prefix = false
-    min_size        = 1
-    max_size        = 2
-    desired_size    = 1
-    instance_types  = ["t3.micro"]
-    capacity_type   = "SPOT"
-    labels          = {}
-    taints          = {}
-    tags            = {}
+    default = {
+      use_name_prefix = false
+      min_size        = 1
+      max_size        = 2
+      desired_size    = 1
+      instance_types  = ["t3.micro"]
+      capacity_type   = "SPOT"
+      labels          = {}
+      taints          = {}
+      tags            = {}
+    }
   }
 }

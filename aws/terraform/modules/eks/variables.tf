@@ -176,8 +176,7 @@ variable "cluster_addons" {
 }
 
 variable "node_group" {
-  type = object({
-    node_group_name = string
+  type = map(object({
     min_size        = number
     max_size        = number
     desired_size    = number
@@ -187,7 +186,7 @@ variable "node_group" {
     taints          = map(string)
     tags            = map(string)
     use_name_prefix = bool
-  })
+  }))
 }
 
 variable "create_cloudwatch_log_group" {
