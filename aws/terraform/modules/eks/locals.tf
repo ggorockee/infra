@@ -27,11 +27,11 @@ locals {
       resolve_conflicts = "OVERWRITE"
     }
 
-    "aws-ebs-csi-driver" = {
-      addon_name        = "aws-ebs-csi-driver"
-      most_recent       = true
-      resolve_conflicts = "OVERWRITE"
-    }
+    #    "aws-ebs-csi-driver" = {
+    #      addon_name        = "aws-ebs-csi-driver"
+    #      most_recent       = true
+    #      resolve_conflicts = "OVERWRITE"
+    #    }
 
     "coredns" = {
       addon_name        = "coredns"
