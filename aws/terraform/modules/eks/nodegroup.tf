@@ -2,6 +2,7 @@ module "eks_managed_node_group" {
   source = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
 
   name            = upper(local.node_group.name)
+  use_name_prefix = local.node_group.use_name_prefix
   cluster_name    = local.cluster_name
   cluster_version = local.cluster_version
   version         = "20.36.0"
@@ -12,6 +13,7 @@ module "eks_managed_node_group" {
   iam_role_arn             = aws_iam_role.eks_node_group_role.arn
   iam_role_name            = aws_iam_role.eks_node_group_role.name
   iam_role_use_name_prefix = local.iam_role_use_name_prefix
+
 
   // The following variables are necessary if you decide to use the module outside of the parent EKS module context.
   // Without it, the security groups of the nodes are empty and thus won't join the cluster.

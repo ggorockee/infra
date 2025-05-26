@@ -186,6 +186,7 @@ variable "node_group" {
     labels          = map(string)
     taints          = map(string)
     tags            = map(string)
+    use_name_prefix = bool
   })
 }
 

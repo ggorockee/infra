@@ -51,12 +51,13 @@ locals {
   create_cloudwatch_log_group = var.create_cloudwatch_log_group
 
   node_group = {
-    name           = var.node_group.node_group_name
-    min_size       = var.node_group.min_size
-    max_size       = var.node_group.max_size
-    desired_size   = var.node_group.desired_size
-    instance_types = var.node_group.instance_types # ["t3.large"]
-    capacity_type  = var.node_group.capacity_type  # SPOT
+    name            = var.node_group.node_group_name
+    min_size        = var.node_group.min_size
+    max_size        = var.node_group.max_size
+    desired_size    = var.node_group.desired_size
+    instance_types  = var.node_group.instance_types # ["t3.large"]
+    capacity_type   = var.node_group.capacity_type  # SPOT
+    use_name_prefix = var.node_group.use_name_prefix
 
     labels = merge({
       Environment = "test"
@@ -80,6 +81,7 @@ locals {
   ]
 
   iam_role_use_name_prefix = var.iam_role_use_name_prefix
+
 
 
 
