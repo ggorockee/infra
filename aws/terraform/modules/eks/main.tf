@@ -12,7 +12,10 @@ module "eks" {
     coredns                = { most_recent = true }
     eks-pod-identity-agent = { most_recent = true }
     kube-proxy             = { most_recent = true }
-    vpc-cni                = { most_recent = true }
+    vpc-cni = {
+      most_recent              = true
+      service_account_role_arn = module.vpc_cni_irsa.iam_role_arn
+    }
   }
 
   vpc_id     = local.vpc_id
