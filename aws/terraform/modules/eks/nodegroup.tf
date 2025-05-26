@@ -6,8 +6,12 @@ module "eks_managed_node_group" {
   cluster_version = local.cluster_version
   version         = "20.36.0"
 
-  subnet_ids           = local.subnet_ids
-  cluster_service_cidr = module.eks.cluster_service_cidr
+  subnet_ids               = local.subnet_ids
+  cluster_service_cidr     = module.eks.cluster_service_cidr
+  create_iam_role          = local.create_iam_role
+  iam_role_arn             = aws_iam_role.eks_node_group_role.arn
+  iam_role_name            = aws_iam_role.eks_node_group_role.name
+  iam_role_use_name_prefix = local.iam_role_use_name_prefix
 
   // The following variables are necessary if you decide to use the module outside of the parent EKS module context.
   // Without it, the security groups of the nodes are empty and thus won't join the cluster.

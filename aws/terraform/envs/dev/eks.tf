@@ -11,12 +11,13 @@ module "eks" {
   subnet_ids = data.terraform_remote_state.network.outputs.private_subnet_ids
 
 
-
   enable_irsa                 = true
   cluster_addons              = {}
   additional_security_groups  = {}
   create_cloudwatch_log_group = false
   create_kms_key              = false
+  create_iam_role             = false
+  iam_role_use_name_prefix    = false
 
   node_group = {
     node_group_name = "default"

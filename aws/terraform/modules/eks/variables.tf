@@ -196,3 +196,12 @@ variable "create_cloudwatch_log_group" {
 variable "create_kms_key" {
   type = bool
 }
+
+
+variable "create_iam_role" {
+  type = bool
+}
+
+variable "iam_role_use_name_prefix" {
+  type = bool
+}

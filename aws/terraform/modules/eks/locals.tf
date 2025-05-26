@@ -72,6 +72,16 @@ locals {
     }, var.tags)
   }
 
+  create_iam_role = var.create_iam_role
+  node_group_policies = [
+    "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
+    "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
+    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
+  ]
+
+  iam_role_use_name_prefix = var.iam_role_use_name_prefix
+
+
 
 
 
