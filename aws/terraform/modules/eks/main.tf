@@ -1,25 +1,58 @@
 module "eks" {
-  source          = "terraform-aws-modules/eks/aws"
-  version         = "20.36.0"
-  cluster_name    = local.cluster_name
-  cluster_version = local.cluster_version
+  source  = "terraform-aws-modules/eks/aws"
+  version = "20.36.0"
 
-  cluster_endpoint_public_access  = local.cluster_endpoint_public_access
-  cluster_endpoint_private_access = local.cluster_endpoint_private_access
+  cluster_name                    = "ggorockee-eks-cluster"
+  cluster_version                 = "1.32"
+  cluster_endpoint_public_access  = false
+  cluster_endpoint_private_access = true
+
+  # EKS Addons
+  cluster_addons = {
+    coredns                = { most_recent = true }
+    eks-pod-identity-agent = { most_recent = true }
+    kube-proxy             = { most_recent = true }
+    vpc-cni = {
+      most_recent              = true
+      service_account_role_arn = module.vpc_cni_irsa.iam_role_arn
+    }
+  }
 
   vpc_id     = local.vpc_id
   subnet_ids = local.subnet_ids
 
-  tags        = local.tags
-  enable_irsa = local.enable_irsa # false
+  create_kms_key              = false
+  cluster_encryption_config   = []
+  create_cloudwatch_log_group = false
 
-  create_iam_role = local.create_iam_role
-  iam_role_name   = aws_iam_role.eks_cluster_role.name
-  iam_role_arn    = aws_iam_role.eks_cluster_role.arn
+  eks_managed_node_groups = {
+    default = {
+      min_size     = 1
+      max_size     = 1
+      desired_size = 1
 
-  cluster_addons              = local.cluster_addons
-  create_kms_key              = local.create_kms_key
-  cluster_encryption_config   = local.create_kms_key ? [] : []
-  create_cloudwatch_log_group = local.create_cloudwatch_log_group
+      ami_id     = data.aws_ami.eks_default.image_id
+      subnet_ids = local.subnet_ids
+      disk_size  = 20
 
+      ebs_optimized           = true
+      disable_api_termination = false
+      enable_monitoring       = true
+
+      create_iam_role          = true
+      iam_role_name            = "ggorock-test-eks-managed-node-group"
+      iam_role_use_name_prefix = false
+      iam_role_description     = "EKS test managed node group"
+      iam_role_tags = {
+        Purpose = "Protector of the kubelet"
+      }
+
+      iam_role_additional_policies = {
+        AmazonEC2ContainerRegistryReadOnly = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+        additional                         = aws_iam_policy.node_additional.arn
+      }
+    }
+  }
+
+  tags = local.tags
 }

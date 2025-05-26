@@ -1,16 +1,9 @@
-data "aws_vpc" "current" {
-  id = var.vpc_id
-}
+data "aws_ami" "eks_default" {
+  most_recent = true
+  owners      = ["amazon"]
 
-data "aws_region" "current" {}
-
-data "aws_subnets" "private" {
   filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.current.id]
-  }
-  filter {
-    name   = "tag:Name"
-    values = ["*private*"]
+    name   = "image-id"
+    values = ["ami-002e58d3a14a203f0"]
   }
 }
