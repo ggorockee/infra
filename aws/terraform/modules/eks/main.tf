@@ -24,7 +24,7 @@ module "eks" {
       max_size     = 2
       desired_size = 2
 
-      ami_id     = data.eks_default.image_id
+      ami_id     = data.aws_ami.eks_default.image_id
       subnet_ids = local.subnet_ids
       disk_size  = 20
 
