@@ -27,11 +27,12 @@ module "eks" {
 
   eks_managed_node_groups = {
     default = {
+      ami_type   = "AL2_x86_64"
       min_size     = 1
       max_size     = 1
       desired_size = 1
+      instance_types = ["t3.micro"]
 
-      ami_id     = data.aws_ami.eks_default.image_id
       subnet_ids = local.subnet_ids
       disk_size  = 20
 

@@ -17,3 +17,8 @@ variable "cluster_name" {
 variable "cluster_version" {
   type = string
 }
+
+variable "additional_default_policy" {
+  type = list(string)
+  default = []
+}
