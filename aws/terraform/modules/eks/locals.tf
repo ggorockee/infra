@@ -76,24 +76,27 @@ locals {
   }
 
   node_group_configs = {
-    for ng_key, ng in var.node_group_configs : ng_key => merge(local.default_node_group_configs, {
-      name                     = ng_key
-      use_name_prefix          = ng.use_name_prefix
-      create_iam_role          = ng.create_iam_role
-      iam_role_use_name_prefix = ng.iam_role_use_name_prefix
-      min_size                 = ng.min_size
-      max_size                 = ng.max_size
-      desired_size             = ng.desired_size
-      disk_size                = ng.disk_size
-      instance_types           = ng.instance_types
-      capacity_type            = ng.capacity_type
-      labels                   = ng.labels
-      taints                   = ng.taints
-      tags                     = ng.tags
-      ami_type                 = ng.ami_type
-      disable_api_termination  = ng.disable_api_termination
-      ebs_optimized            = ng.ebs_optimized
-      enable_monitoring        = ng.enable_monitoring
-    })
+    for ng_key, ng in var.node_group_configs : ng_key => {
+      # mandatory fields
+      name           = ng_key
+      min_size       = ng.min_size
+      max_size       = ng.max_size
+      desired_size   = ng.desired_size
+      disk_size      = ng.disk_size
+      instance_types = ng.instance_types
+      capacity_type  = ng.capacity_type
+
+      # optional fields
+      use_name_prefix          = coalesce(ng.use_name_prefix, local.default_node_group_configs.use_name_prefix)
+      create_iam_role          = coalesce(ng.create_iam_role, local.default_node_group_configs.create_iam_role)
+      iam_role_use_name_prefix = coalesce(ng.iam_role_use_name_prefix, local.default_node_group_configs.iam_role_use_name_prefix)
+      labels                   = coalesce(ng.labels, local.default_node_group_configs.labels)
+      taints                   = coalesce(ng.taints, local.default_node_group_configs.taints)
+      tags                     = coalesce(ng.tags, local.default_node_group_configs.tags)
+      ami_type                 = coalesce(ng.ami_type, local.default_node_group_configs.ami_type)
+      disable_api_termination  = coalesce(ng.disable_api_termination, local.default_node_group_configs.disable_api_termination)
+      ebs_optimized            = coalesce(ng.ebs_optimized, local.default_node_group_configs.ebs_optimized)
+      enable_monitoring        = coalesce(ng.enable_monitoring, local.default_node_group_configs.enable_monitoring)
+    }
   }
 }
