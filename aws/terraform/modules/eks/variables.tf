@@ -19,6 +19,6 @@ variable "cluster_version" {
 }
 
 variable "additional_default_policy" {
-  type = list(string)
+  type    = list(string)
   default = []
 }

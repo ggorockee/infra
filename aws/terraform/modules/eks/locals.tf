@@ -20,9 +20,9 @@ locals {
   default_policies = distinct(local.combined_policies)
   attachments = flatten([
     for ng_key, ng in module.eks.eks_managed_node_groups : [
-      for policy in local.default_policies: {
-        ng_key = ng_key
-        policy = policy
+      for policy in local.default_policies : {
+        ng_key    = ng_key
+        policy    = policy
         role_name = ng.iam_role_name
       }
     ]

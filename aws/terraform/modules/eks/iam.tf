@@ -20,8 +20,8 @@ resource "aws_iam_policy" "node_additional" {
 
 resource "aws_iam_role_policy_attachment" "default_node_policies" {
   for_each = toset(local.attachment_map)
-  
 
-  role = each.value.role_name
+
+  role       = each.value.role_name
   policy_arn = "arn:aws:iam::aws:policy/${each.value.policy}"
 }
