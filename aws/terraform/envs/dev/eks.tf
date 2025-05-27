@@ -29,15 +29,15 @@ module "eks" {
   #   }
   # }
 
-  cluster_addons = {
-    eks-pod-identity-agent = {
-      disable = true
-    }
+  cluster_addons = {}
+  #   eks-pod-identity-agent = {
+  #     disable = true
+  #   }
 
-    vpc-cni = {
-      disable = true
-    }
-  }
+  #   vpc-cni = {
+  #     disable = true
+  #   }
+  # }
 
   node_group_configs = {
     ggorockee-default-node-group = {

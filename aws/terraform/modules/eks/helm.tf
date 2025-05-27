@@ -3,7 +3,7 @@ resource "helm_release" "aws_vpc_cni" {
   namespace  = "kube-system"
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-vpc-cni"
-  version    = "1.17.3"
+  version    = "1.19.5"
 
   set {
     name  = "env.ENABLE_PREFIX_DELEGATION"
