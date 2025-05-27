@@ -1,0 +1,20 @@
+resource "helm_release" "aws_vpc_cni" {
+  name       = "aws-vpc-cni"
+  namespace  = "kube-system"
+  repository = "https://aws.github.io/eks-charts"
+  chart      = "aws-vpc-cni"
+  version    = "1.17.3"
+
+  set {
+    name  = "env.ENABLE_PREFIX_DELEGATION"
+    value = "true"
+  }
+  set {
+    name  = "env.WARM_PREFIX_TARGET"
+    value = "1"
+  }
+  set {
+    name  = "env.MAX_PODS"
+    value = "32" # 2x(16-1) + 2
+  }
+}
