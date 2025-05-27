@@ -19,7 +19,7 @@ resource "aws_iam_policy" "node_additional" {
 }
 
 resource "aws_iam_role_policy_attachment" "default_node_policies" {
-  for_each = toset(local.attachment_map)
+  for_each = local.attachment_map
 
 
   role       = each.value.role_name
