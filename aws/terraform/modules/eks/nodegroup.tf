@@ -49,7 +49,7 @@ resource "aws_iam_role" "eks_node_group_role" {
 resource "aws_iam_role_policy_attachment" "node_group" {
   for_each   = toset(local.nodegroup_policies)
   role       = aws_iam_role.eks_node_group_role.name
-  policy_arn = each.value
+  policy_arn = "arn:aws:iam::aws:policy/${each.value}"
 }
 
 resource "aws_eks_access_entry" "managed_node_roles" {
