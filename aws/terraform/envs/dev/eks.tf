@@ -8,4 +8,5 @@ module "eks" {
   }
   cluster_name    = "ggorockee-eks-cluster"
   cluster_version = "1.32"
+
 }
