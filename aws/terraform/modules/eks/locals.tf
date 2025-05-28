@@ -105,12 +105,13 @@ locals {
 
   vpc_cni_helm_install = var.vpc_cni_helm_install
 
-  nat_cidrs          = ["3.34.211.206/32"]
+  nat_cidrs          = var.cluster_endpoint_public_access ? ["3.34.211.206/32"] : []
   extra_public_cidrs = var.extra_public_cidrs
-  cluster_endpoint_public_access_cidrs = distinct(
+  public_access_cidrs = distinct(
     concat(
       local.extra_public_cidrs,
       local.nat_cidrs,
     )
   )
+  cluster_endpoint_public_access_cidrs = length(local.public_access_cidrs) > 0 ? local.public_access_cidrs : null
 }

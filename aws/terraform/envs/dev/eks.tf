@@ -10,10 +10,7 @@ module "eks" {
   cluster_version = "1.32"
 
 
-  cluster_endpoint_public_access = true
-  extra_public_cidrs = [
-    "0.0.0.0/0"
-  ]
+  cluster_endpoint_public_access  = false
   cluster_endpoint_private_access = true
   create_kms_key                  = false
   create_cloudwatch_log_group     = false
@@ -23,7 +20,7 @@ module "eks" {
   additional_access_entries = {}
 
   cluster_addons       = {}
-  vpc_cni_helm_install = true
+  vpc_cni_helm_install = false
 
   node_group_configs = {
     ggorockee-default-node-group = {
