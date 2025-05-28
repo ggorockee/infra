@@ -43,7 +43,9 @@ module "eks" {
       instance_types                  = ["t3.small"]
       capacity_type                   = "SPOT"
       launch_template_use_name_prefix = false
-      # labels                          = {}
+      labels = {
+        ENV = "DEV"
+      }
       # taints                          = {}
       # tags                            = {}
 
