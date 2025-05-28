@@ -14,20 +14,21 @@ module "eks_managed_node_group" {
   cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
   vpc_security_group_ids            = [module.eks.node_security_group_id]
 
-  create_iam_role          = each.value.create_iam_role
-  iam_role_use_name_prefix = each.value.iam_role_use_name_prefix
-  name                     = upper(each.value.name)
-  use_name_prefix          = each.value.use_name_prefix
-  min_size                 = each.value.min_size
-  max_size                 = each.value.max_size
-  desired_size             = each.value.desired_size
-  instance_types           = each.value.instance_types
-  capacity_type            = each.value.capacity_type
-  labels                   = each.value.labels
-  taints                   = each.value.taints
-  tags                     = each.value.tags
-  disk_size                = each.value.disk_size
-  ami_type                 = each.value.ami_type
+  create_iam_role                 = each.value.create_iam_role
+  iam_role_use_name_prefix        = each.value.iam_role_use_name_prefix
+  name                            = upper(each.value.name)
+  use_name_prefix                 = each.value.use_name_prefix
+  min_size                        = each.value.min_size
+  max_size                        = each.value.max_size
+  desired_size                    = each.value.desired_size
+  instance_types                  = each.value.instance_types
+  capacity_type                   = each.value.capacity_type
+  labels                          = each.value.labels
+  taints                          = each.value.taints
+  tags                            = each.value.tags
+  disk_size                       = each.value.disk_size
+  ami_type                        = each.value.ami_type
+  launch_template_use_name_prefix = each.value.launch_template_use_name_prefix
 }
 
 data "aws_iam_policy_document" "eks_node_assume" {
