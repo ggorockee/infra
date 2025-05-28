@@ -75,3 +75,7 @@ variable "extra_public_cidrs" {
   type    = list(string)
   default = []
 }
+
+variable "auto_scaling_configs" {
+  type = map(any)
+}

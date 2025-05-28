@@ -29,21 +29,7 @@ locals {
     var.additional_access_entries,
   )
 
-  base_cluster_addons = {
-    coredns = {
-      most_recent = true
-      configuration_values = jsonencode({
-        replicaCount = 1
-      })
-    }
-
-    kube-proxy = { most_recent = true }
-  }
-
-  cluster_addons = merge(
-    local.base_cluster_addons,
-    var.cluster_addons
-  )
+  cluster_addons = var.cluster_addons
 
   tags = merge({}, var.tags)
 
