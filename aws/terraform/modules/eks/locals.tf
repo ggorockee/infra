@@ -96,6 +96,7 @@ locals {
       disable_api_termination         = coalesce(ng.disable_api_termination, local.default_node_group_configs.disable_api_termination)
       ebs_optimized                   = coalesce(ng.ebs_optimized, local.default_node_group_configs.ebs_optimized)
       enable_monitoring               = coalesce(ng.enable_monitoring, local.default_node_group_configs.enable_monitoring)
+      launch_template_name            = coalesce(ng.launch_template_name, format("%s-lt", upper(ng_key)))
       launch_template_use_name_prefix = coalesce(ng.launch_template_use_name_prefix, local.default_node_group_configs.launch_template_use_name_prefix)
     }
   }

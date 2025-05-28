@@ -54,6 +54,7 @@ variable "node_group_configs" {
     disable_api_termination         = optional(bool, false)
     ebs_optimized                   = optional(bool, true)
     enable_monitoring               = optional(bool, true)
+    launch_template_name            = optional(string, null)
     launch_template_use_name_prefix = optional(bool, null)
   }))
 }

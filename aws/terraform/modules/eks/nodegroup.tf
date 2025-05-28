@@ -29,6 +29,7 @@ module "eks_managed_node_group" {
   disk_size                       = each.value.disk_size
   ami_type                        = each.value.ami_type
   launch_template_use_name_prefix = each.value.launch_template_use_name_prefix
+  launch_template_name            = each.value.launch_template_name
 }
 
 data "aws_iam_policy_document" "eks_node_assume" {
