@@ -26,8 +26,8 @@ locals {
   # }
 
   base_cluster_addons = {
-    coredns                = { most_recent = true }
-    kube-proxy             = { most_recent = true }
+    coredns    = { most_recent = true }
+    kube-proxy = { most_recent = true }
   }
 
   cluster_addons = merge(
@@ -61,16 +61,17 @@ locals {
   nodegroup_policies = distinct(local.combined_policies)
 
   default_node_group_configs = {
-    create_iam_role          = false
-    iam_role_use_name_prefix = true
-    use_name_prefix          = true
-    labels                   = {}
-    taints                   = {}
-    tags                     = {}
-    ami_type                 = "AL2_x86_64"
-    disable_api_termination  = false
-    ebs_optimized            = true
-    enable_monitoring        = false
+    create_iam_role                 = false
+    iam_role_use_name_prefix        = true
+    use_name_prefix                 = true
+    labels                          = {}
+    taints                          = {}
+    tags                            = {}
+    ami_type                        = "AL2_x86_64"
+    disable_api_termination         = false
+    ebs_optimized                   = true
+    enable_monitoring               = false
+    launch_template_use_name_prefix = true
   }
 
   node_group_configs = {
@@ -85,16 +86,18 @@ locals {
       capacity_type  = ng.capacity_type
 
       # optional fields
-      use_name_prefix          = coalesce(ng.use_name_prefix, local.default_node_group_configs.use_name_prefix)
-      create_iam_role          = coalesce(ng.create_iam_role, local.default_node_group_configs.create_iam_role)
-      iam_role_use_name_prefix = coalesce(ng.iam_role_use_name_prefix, local.default_node_group_configs.iam_role_use_name_prefix)
-      labels                   = coalesce(ng.labels, local.default_node_group_configs.labels)
-      taints                   = coalesce(ng.taints, local.default_node_group_configs.taints)
-      tags                     = coalesce(ng.tags, local.default_node_group_configs.tags)
-      ami_type                 = coalesce(ng.ami_type, local.default_node_group_configs.ami_type)
-      disable_api_termination  = coalesce(ng.disable_api_termination, local.default_node_group_configs.disable_api_termination)
-      ebs_optimized            = coalesce(ng.ebs_optimized, local.default_node_group_configs.ebs_optimized)
-      enable_monitoring        = coalesce(ng.enable_monitoring, local.default_node_group_configs.enable_monitoring)
+      use_name_prefix                 = coalesce(ng.use_name_prefix, local.default_node_group_configs.use_name_prefix)
+      create_iam_role                 = coalesce(ng.create_iam_role, local.default_node_group_configs.create_iam_role)
+      iam_role_use_name_prefix        = coalesce(ng.iam_role_use_name_prefix, local.default_node_group_configs.iam_role_use_name_prefix)
+      labels                          = coalesce(ng.labels, local.default_node_group_configs.labels)
+      taints                          = coalesce(ng.taints, local.default_node_group_configs.taints)
+      tags                            = coalesce(ng.tags, local.default_node_group_configs.tags)
+      ami_type                        = coalesce(ng.ami_type, local.default_node_group_configs.ami_type)
+      disable_api_termination         = coalesce(ng.disable_api_termination, local.default_node_group_configs.disable_api_termination)
+      ebs_optimized                   = coalesce(ng.ebs_optimized, local.default_node_group_configs.ebs_optimized)
+      enable_monitoring               = coalesce(ng.enable_monitoring, local.default_node_group_configs.enable_monitoring)
+      launch_template_name            = coalesce(ng.launch_template_name, format("%s-lt", upper(ng_key)))
+      launch_template_use_name_prefix = coalesce(ng.launch_template_use_name_prefix, local.default_node_group_configs.launch_template_use_name_prefix)
     }
   }
 }

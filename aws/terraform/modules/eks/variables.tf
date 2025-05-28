@@ -38,22 +38,24 @@ variable "cluster_addons" {
 
 variable "node_group_configs" {
   type = map(object({
-    min_size                 = number
-    max_size                 = number
-    desired_size             = number
-    disk_size                = number
-    instance_types           = list(string)
-    capacity_type            = string
-    use_name_prefix          = optional(bool, null)
-    create_iam_role          = optional(bool, null)
-    iam_role_use_name_prefix = optional(bool, null)
-    labels                   = optional(map(string), null)
-    taints                   = optional(map(string), null)
-    tags                     = optional(map(string), null)
-    ami_type                 = optional(string, null)
-    disable_api_termination  = optional(bool, false)
-    ebs_optimized            = optional(bool, true)
-    enable_monitoring        = optional(bool, true)
+    min_size                        = number
+    max_size                        = number
+    desired_size                    = number
+    disk_size                       = number
+    instance_types                  = list(string)
+    capacity_type                   = string
+    use_name_prefix                 = optional(bool, null)
+    create_iam_role                 = optional(bool, null)
+    iam_role_use_name_prefix        = optional(bool, null)
+    labels                          = optional(map(string), null)
+    taints                          = optional(map(string), null)
+    tags                            = optional(map(string), null)
+    ami_type                        = optional(string, null)
+    disable_api_termination         = optional(bool, false)
+    ebs_optimized                   = optional(bool, true)
+    enable_monitoring               = optional(bool, true)
+    launch_template_name            = optional(string, null)
+    launch_template_use_name_prefix = optional(bool, null)
   }))
 }
 
