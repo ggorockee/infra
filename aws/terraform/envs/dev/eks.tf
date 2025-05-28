@@ -6,7 +6,7 @@ module "eks" {
   tags = {
     ManagedBy = "Terraform"
   }
-  cluster_name    = "ggorockee-eks-cluster"
+  cluster_name    = var.eks_cluster_name
   cluster_version = "1.32"
 
 
