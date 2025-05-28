@@ -6,6 +6,7 @@ module "eks" {
   cluster_version                 = local.cluster_version
   cluster_endpoint_public_access  = local.cluster_endpoint_public_access
   cluster_endpoint_private_access = local.cluster_endpoint_private_access
+  cluster_endpoint_public_access_cidrs = local.cluster_endpoint_public_access_cidrs
 
   authentication_mode = local.authentication_mode
 
