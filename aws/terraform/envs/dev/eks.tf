@@ -42,10 +42,11 @@ module "eks" {
       disk_size                       = 10
       instance_types                  = ["t3.small"]
       capacity_type                   = "SPOT"
-      labels                          = {}
-      taints                          = {}
-      tags                            = {}
       launch_template_use_name_prefix = false
+      # labels                          = {}
+      # taints                          = {}
+      # tags                            = {}
+
     }
   }
 

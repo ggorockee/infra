@@ -52,9 +52,9 @@ locals {
     create_iam_role                 = false
     iam_role_use_name_prefix        = true
     use_name_prefix                 = true
-    labels                          = {}
-    taints                          = {}
-    tags                            = {}
+    labels                          = null
+    taints                          = null
+    tags                            = null
     ami_type                        = "AL2_x86_64"
     disable_api_termination         = false
     ebs_optimized                   = true
