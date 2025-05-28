@@ -17,7 +17,7 @@ module "eks" {
 
   authentication_mode = "API"
 
-  access_entries = {}
+  additional_access_entries = {}
   #   cluster_admin = {
   #     principal_arn = "arn:aws:iam::329599650491:user/ggorockee_saa_03"
   #     policy_associations = {
