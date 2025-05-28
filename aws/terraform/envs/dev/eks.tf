@@ -29,7 +29,8 @@ module "eks" {
   #   }
   # }
 
-  cluster_addons = {}
+  cluster_addons       = {}
+  vpc_cni_helm_install = true
 
   node_group_configs = {}
   #   ggorockee-default-node-group = {

@@ -102,4 +102,6 @@ locals {
       launch_template_use_name_prefix = coalesce(ng.launch_template_use_name_prefix, local.default_node_group_configs.launch_template_use_name_prefix)
     }
   }
+
+  vpc_cni_helm_install = var.vpc_cni_helm_install
 }
