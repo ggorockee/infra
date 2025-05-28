@@ -28,20 +28,15 @@ locals {
     local.admin_access_entries,
     var.additional_access_entries,
   )
-  # {
-  # cluster_admin = {
-  #   principal_arn = "arn:aws:iam::329599650491:user/ggorockee_saa_03"
-  #   policy_associations = {
-  #     admin_policy = {
-  #       policy_arn   = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-  #       access_scope = { type = "cluster" }
-  #     }
-  #   }
-  # }
-  # }
 
   base_cluster_addons = {
-    coredns    = { most_recent = true }
+    coredns = {
+      most_recent = true
+      configuration_values = jsonencode({
+        replicaCount = 1
+      })
+    }
+
     kube-proxy = { most_recent = true }
   }
 
@@ -51,14 +46,6 @@ locals {
   )
 
   tags = merge({}, var.tags)
-
-
-
-
-
-
-
-
 
   # ============= node group ===============
   default_node_group_policies = [
