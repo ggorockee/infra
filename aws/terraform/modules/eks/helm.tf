@@ -1,4 +1,5 @@
 resource "helm_release" "aws_vpc_cni" {
+  count      = local.vpc_cni_helm_install ? 1 : 0
   name       = "aws-vpc-cni"
   namespace  = "kube-system"
   repository = "https://aws.github.io/eks-charts"

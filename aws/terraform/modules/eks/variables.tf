@@ -65,3 +65,8 @@ variable "additional_node_group_policies" {
 variable "additional_access_entries" {
   type = map(any)
 }
+
+variable "vpc_cni_helm_install" {
+  type    = bool
+  default = false
+}

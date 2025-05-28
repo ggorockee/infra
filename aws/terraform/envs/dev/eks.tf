@@ -18,33 +18,24 @@ module "eks" {
   authentication_mode = "API"
 
   additional_access_entries = {}
-  #   cluster_admin = {
-  #     principal_arn = "arn:aws:iam::329599650491:user/ggorockee_saa_03"
-  #     policy_associations = {
-  #       admin_policy = {
-  #         policy_arn   = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-  #         access_scope = { type = "cluster" }
-  #       }
-  #     }
-  #   }
-  # }
 
-  cluster_addons = {}
+  cluster_addons       = {}
+  vpc_cni_helm_install = true
 
-  node_group_configs = {}
-  #   ggorockee-default-node-group = {
-  #     use_name_prefix                 = false
-  #     iam_role_use_name_prefix        = false
-  #     min_size                        = 1
-  #     max_size                        = 1
-  #     desired_size                    = 1
-  #     disk_size                       = 10
-  #     instance_types                  = ["t3.micro"]
-  #     capacity_type                   = "SPOT"
-  #     labels                          = {}
-  #     taints                          = {}
-  #     tags                            = {}
-  #     launch_template_use_name_prefix = false
-  #   }
-  # }
+  node_group_configs = {
+    ggorockee-default-node-group = {
+      use_name_prefix                 = false
+      iam_role_use_name_prefix        = false
+      min_size                        = 1
+      max_size                        = 1
+      desired_size                    = 1
+      disk_size                       = 10
+      instance_types                  = ["t3.micro"]
+      capacity_type                   = "SPOT"
+      labels                          = {}
+      taints                          = {}
+      tags                            = {}
+      launch_template_use_name_prefix = false
+    }
+  }
 }
