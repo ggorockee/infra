@@ -1,5 +1,6 @@
 resource "helm_release" "aws_vpc_cni" {
   count      = local.vpc_cni_helm_install ? 1 : 0
+  depends_on = [module.eks_managed_node_group]
   name       = "aws-vpc-cni"
   namespace  = "kube-system"
   repository = "https://aws.github.io/eks-charts"
