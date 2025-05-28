@@ -52,7 +52,7 @@ locals {
     create_iam_role                 = false
     iam_role_use_name_prefix        = true
     use_name_prefix                 = true
-    labels                          = {}
+    labels                          = null
     taints                          = {}
     tags                            = null
     ami_type                        = "AL2_x86_64"
@@ -77,7 +77,7 @@ locals {
       use_name_prefix                 = coalesce(ng.use_name_prefix, local.default_node_group_configs.use_name_prefix)
       create_iam_role                 = coalesce(ng.create_iam_role, local.default_node_group_configs.create_iam_role)
       iam_role_use_name_prefix        = coalesce(ng.iam_role_use_name_prefix, local.default_node_group_configs.iam_role_use_name_prefix)
-      labels                          = coalesce(ng.labels, local.default_node_group_configs.labels)
+      labels                          = ng.labels == null ? { "haha" = "genjang" } : null
       taints                          = coalesce(ng.taints, local.default_node_group_configs.taints)
       tags                            = ng.tags
       ami_type                        = coalesce(ng.ami_type, local.default_node_group_configs.ami_type)
