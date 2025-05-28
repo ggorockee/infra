@@ -77,9 +77,9 @@ locals {
       use_name_prefix                 = coalesce(ng.use_name_prefix, local.default_node_group_configs.use_name_prefix)
       create_iam_role                 = coalesce(ng.create_iam_role, local.default_node_group_configs.create_iam_role)
       iam_role_use_name_prefix        = coalesce(ng.iam_role_use_name_prefix, local.default_node_group_configs.iam_role_use_name_prefix)
-      labels                          = coalesce(ng.labels, local.default_node_group_configs.labels)
-      taints                          = coalesce(ng.taints, local.default_node_group_configs.taints)
-      tags                            = coalesce(ng.tags, local.default_node_group_configs.tags)
+      labels                          = ng.labels
+      taints                          = ng.taints
+      tags                            = ng.tags
       ami_type                        = coalesce(ng.ami_type, local.default_node_group_configs.ami_type)
       disable_api_termination         = coalesce(ng.disable_api_termination, local.default_node_group_configs.disable_api_termination)
       ebs_optimized                   = coalesce(ng.ebs_optimized, local.default_node_group_configs.ebs_optimized)
