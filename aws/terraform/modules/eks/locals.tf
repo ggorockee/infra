@@ -12,17 +12,32 @@ locals {
   vpc_id     = var.vpc_id
   subnet_ids = var.subnet_ids
 
-  access_entries = {}
+  admin_access_entries = {
+    cluster_admin = {
+      principal_arn = "arn:aws:iam::329599650491:user/eks-admin"
+      policy_associations = {
+        admin_policy = {
+          policy_arn   = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = { type = "cluster" }
+        }
+      }
+    }
+  }
+
+  access_entries = merge(
+    local.admin_access_entries,
+    var.additional_access_entries,
+  )
   # {
-  #   cluster_admin = {
-  #     principal_arn = "arn:aws:iam::329599650491:user/ggorockee_saa_03"
-  #     policy_associations = {
-  #       admin_policy = {
-  #         policy_arn   = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-  #         access_scope = { type = "cluster" }
-  #       }
+  # cluster_admin = {
+  #   principal_arn = "arn:aws:iam::329599650491:user/ggorockee_saa_03"
+  #   policy_associations = {
+  #     admin_policy = {
+  #       policy_arn   = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  #       access_scope = { type = "cluster" }
   #     }
   #   }
+  # }
   # }
 
   base_cluster_addons = {

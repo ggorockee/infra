@@ -29,9 +29,7 @@ variable "create_cloudwatch_log_group" {
 variable "authentication_mode" {
   type = string
 }
-variable "access_entries" {
-  type = map(any)
-}
+
 variable "cluster_addons" {
   type = map(any)
 }
@@ -62,4 +60,8 @@ variable "node_group_configs" {
 variable "additional_node_group_policies" {
   type    = list(string)
   default = []
+}
+
+variable "additional_access_entries" {
+  type = map(any)
 }
