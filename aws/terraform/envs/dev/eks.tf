@@ -6,7 +6,7 @@ module "eks" {
   tags = {
     ManagedBy = "Terraform"
   }
-  cluster_name    = "ggorockee-eks-cluster"
+  cluster_name    = var.eks_cluster_name
   cluster_version = "1.32"
 
 
@@ -42,10 +42,13 @@ module "eks" {
       disk_size                       = 10
       instance_types                  = ["t3.small"]
       capacity_type                   = "SPOT"
-      labels                          = {}
-      taints                          = {}
-      tags                            = {}
       launch_template_use_name_prefix = false
+      labels = {
+        ENV = "DEV"
+      }
+      # taints                          = {}
+      # tags                            = {}
+
     }
   }
 
