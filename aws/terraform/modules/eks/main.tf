@@ -2,10 +2,10 @@ module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "20.36.0"
 
-  cluster_name                    = local.cluster_name
-  cluster_version                 = local.cluster_version
-  cluster_endpoint_public_access  = local.cluster_endpoint_public_access
-  cluster_endpoint_private_access = local.cluster_endpoint_private_access
+  cluster_name                         = local.cluster_name
+  cluster_version                      = local.cluster_version
+  cluster_endpoint_public_access       = local.cluster_endpoint_public_access
+  cluster_endpoint_private_access      = local.cluster_endpoint_private_access
   cluster_endpoint_public_access_cidrs = local.cluster_endpoint_public_access_cidrs
 
   authentication_mode = local.authentication_mode

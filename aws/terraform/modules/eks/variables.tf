@@ -72,6 +72,6 @@ variable "vpc_cni_helm_install" {
 }
 
 variable "extra_public_cidrs" {
-  type = list(string)
+  type    = list(string)
   default = []
 }
