@@ -48,6 +48,11 @@ resource "aws_subnet" "private" {
     Name                              = "${var.username}-private-subnet-${count.index + 1}"
     "kubernetes.io/role/internal-elb" = 1
   })
+  lifecycle {
+    ignore_changes = [
+      tags["kubernetes.io/cluster/${module.eks.cluster_name}"],
+    ]
+  }
 }
 
 resource "aws_ec2_tag" "private_subnet_cluster_tag" {
