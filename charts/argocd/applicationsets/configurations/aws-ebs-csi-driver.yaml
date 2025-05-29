@@ -1,5 +1,5 @@
 env: dev
 fileName: aws-ebs-csi-driver
 chartName: aws-ebs-csi-driver
-cahrtVesion: 2.44.0
+chartVesion: 2.44.0
 namespace: kube-system
