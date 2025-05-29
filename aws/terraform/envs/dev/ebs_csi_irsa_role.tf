@@ -7,8 +7,8 @@ data "aws_iam_openid_connect_provider" "eks_oidc" {
 }
 
 resource "aws_iam_role" "ebs_csi_irsa" {
-  name = "${local.eks_cluster_name}-ebs-csi-irsa"
-  depends_on = [ module.eks ]
+  name       = "${local.eks_cluster_name}-ebs-csi-irsa"
+  depends_on = [module.eks]
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
