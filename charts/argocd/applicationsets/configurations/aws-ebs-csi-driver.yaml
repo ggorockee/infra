@@ -1,0 +1,4 @@
+env: dev
+fileName: aws-ebs-csi-driver
+chartName: aws-ebs-csi-driver
+cahrtVesion: v1.13.0
