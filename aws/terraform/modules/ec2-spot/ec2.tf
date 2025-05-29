@@ -58,6 +58,7 @@ resource "aws_eip" "this" {
 
 # Associate the Elastic IP with the NAT instance
 resource "aws_eip_association" "eip" {
+  count = local.using_eip ? 1 : 0
   instance_id   = aws_instance.this.id
   allocation_id = aws_eip.this.0.id
   depends_on    = [aws_eip.this]
