@@ -1,0 +1,4 @@
+controller:
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::329599650491:role/ggorockee-eks-cluster-ebs-csi-irsa" 
