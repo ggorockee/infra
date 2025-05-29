@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: aws-ebs-csi-driver
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        # 내 Git 리포지토리 & 사용할 브랜치
+        repoURL:  https://github.com/ggorockee/infra
+        revision: dev
+        # dev/<fileName>/values.yaml 을 모두 찾아냅니다
+        files:
+          - path: charts/argocd/valuefiles/aws-ebs-csi-driver/dev/*/values.yaml
+
+  template:
+    metadata:
+      # dirname(.path) 로 values.yaml 바로 위 폴더명을 꺼내서 고유한 앱 이름으로 사용
+      name: aws-ebs-csi-driver-{{ base (dirname .path) }}
+    spec:
+      project: default
+
+      source:
+        # 공식 Helm 차트 저장소
+        repoURL:        https://kubernetes-sigs.github.io/aws-ebs-csi-driver
+        chart:          aws-ebs-csi-driver
+        targetRevision: v1.13.0
+
+        helm:
+          # 매칭된 values.yaml 파일 내용 전체를 가져와서 Helm values 로 주입
+          values: |
+            {{ .git.files[0].content | base64Decode }}
+
+      destination:
+        server:    https://kubernetes.default.svc
+        namespace: kube-system
+
+      syncPolicy:
+        automated:
+          prune:    true
+          selfHeal: true
