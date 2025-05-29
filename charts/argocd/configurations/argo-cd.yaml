@@ -1,7 +1,5 @@
 env: dev
-valuesDirectory: argo-cd
 branch: dev
-repoUrl: https://argoproj.github.io/argo-helm
-chartName: argo-cd
+repoURL: https://argoproj.github.io/argo-helm
 chartVersion: 8.0.10
 namespace: argocd
