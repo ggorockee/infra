@@ -9,7 +9,7 @@ module "eks" {
   cluster_name    = var.eks_cluster_name
   cluster_version = "1.32"
 
-
+  enable_irsa                     = true
   cluster_endpoint_public_access  = false
   cluster_endpoint_private_access = true
   create_kms_key                  = false
@@ -36,9 +36,9 @@ module "eks" {
     ggorockee-default-node-group = {
       use_name_prefix                 = false
       iam_role_use_name_prefix        = false
-      min_size                        = 1
-      max_size                        = 1
-      desired_size                    = 1
+      min_size                        = 2
+      max_size                        = 2
+      desired_size                    = 2
       disk_size                       = 10
       instance_types                  = ["t3.small"]
       capacity_type                   = "SPOT"

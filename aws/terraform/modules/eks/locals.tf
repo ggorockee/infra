@@ -100,4 +100,5 @@ locals {
     )
   )
   cluster_endpoint_public_access_cidrs = length(local.public_access_cidrs) > 0 ? local.public_access_cidrs : null
+  enable_irsa                          = var.enable_irsa
 }

@@ -79,3 +79,7 @@ variable "extra_public_cidrs" {
 variable "auto_scaling_configs" {
   type = map(any)
 }
+
+variable "enable_irsa" {
+  type = bool
+}
