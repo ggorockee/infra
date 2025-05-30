@@ -9,7 +9,7 @@ module "eks" {
   cluster_name    = var.eks_cluster_name
   cluster_version = "1.32"
 
-  enable_irsa = true
+  enable_irsa                     = true
   cluster_endpoint_public_access  = false
   cluster_endpoint_private_access = true
   create_kms_key                  = false

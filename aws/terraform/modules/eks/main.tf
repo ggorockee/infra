@@ -15,7 +15,7 @@ module "eks" {
 
   # EKS Addons
   cluster_addons = local.cluster_addons
-  enable_irsa = local.enable_irsa
+  enable_irsa    = local.enable_irsa
 
   vpc_id     = local.vpc_id
   subnet_ids = local.subnet_ids
