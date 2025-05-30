@@ -4,4 +4,5 @@ serviceAccount:
     eks.amazonaws.com/role-arn: arn:aws:iam::329599650491:role/eks-external-secrets-role
 
 extraEnv:
-  - AWS_REGION: ap-northeast-2
+  - name: AWS_REGION
+    value: ap-northeast-2
