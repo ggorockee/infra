@@ -26,7 +26,7 @@ resource "aws_security_group_rule" "allow_all_ingress" {
   cidr_blocks       = [local.vpc.cidr]
 }
 
-resource "aws_security_group_rule" "allow_rometheus" {
+resource "aws_security_group_rule" "allow_prometheus" {
   type              = "ingress" # ingress / egress
   description       = "Allow Prometheus"
   security_group_id = aws_security_group.nat.id
