@@ -74,6 +74,13 @@ module "vpn_instance" {
         to_port     = "1194"
         cidr_blocks = ["0.0.0.0/0"]
       }
+      Monitoring = {
+        description = "Allow Prometheus"
+        protocol    = "tcp"
+        from_port   = "9100"
+        to_port     = "9100"
+        cidr_blocks = [data.aws_vpc.this.cidr_block]
+      }
       #      MONITORING = {
       #        description = "Monitoring"
       #        protocol    = "-1"
