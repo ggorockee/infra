@@ -34,6 +34,14 @@ module "bastion" {
         to_port     = 0
         cidr_blocks = ["10.0.1.154/32"]
       }
+
+      Monitoring = {
+        description = "Allow Prometheus"
+        protocol    = "tcp"
+        from_port   = "9100"
+        to_port     = "9100"
+        cidr_blocks = [data.aws_vpc.this.cidr_block]
+      }
     }
   }
 }

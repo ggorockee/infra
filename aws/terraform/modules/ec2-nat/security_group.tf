@@ -25,3 +25,13 @@ resource "aws_security_group_rule" "allow_all_ingress" {
   to_port           = 0
   cidr_blocks       = [local.vpc.cidr]
 }
+
+resource "aws_security_group_rule" "allow_rometheus" {
+  type              = "ingress" # ingress / egress
+  description       = "Allow Prometheus"
+  security_group_id = aws_security_group.nat.id
+  protocol          = "tcp" # All traffic
+  from_port         = 9100
+  to_port           = 9100
+  cidr_blocks       = [local.vpc.cidr]
+}
