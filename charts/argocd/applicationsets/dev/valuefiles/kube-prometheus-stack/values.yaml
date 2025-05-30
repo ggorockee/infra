@@ -4351,7 +4351,9 @@ prometheus:
     ## The scrape configuration example below will find master nodes, provided they have the name .*mst.*, relabel the
     ## port to 2379 and allow etcd scraping provided it is running on all Kubernetes master nodes
     ##
-    additionalScrapeConfigs: {}
+    additionalScrapeConfigs:
+      name: external-scrape-config
+      key: additional-scrape-configs.yaml
       # name: ec2-sd-config
       # key: additional-scrape-configs.yaml
     # - job_name: kube-etcd
