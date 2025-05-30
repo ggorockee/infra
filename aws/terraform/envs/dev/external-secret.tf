@@ -1,5 +1,5 @@
 data "aws_iam_openid_connect_provider" "eks" {
-  url = module.eks.cluster_oidc_issuer_url
+  url = module.eks.eks_cluster_oidc_issuer_url
 }
 
 # data "aws_iam_policy_document" "es_assume" {
