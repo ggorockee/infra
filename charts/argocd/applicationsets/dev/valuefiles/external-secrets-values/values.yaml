@@ -1,0 +1,26 @@
+fullnameOverride: ""
+nameOverride: ""
+
+clusterSecretStore:
+  create: true
+  name: "aws-ssm-store"
+  annotations: {}
+  aws:
+    service: ""
+    region: ""
+    serviceAccountRef:
+      name: external-secrets-sa
+      namespace: external-secrets
+
+
+externalSecrets:
+- name: external-scrape-config
+  annotations: {}
+  namespace: monitoring
+  refreshInterval: 1h
+  target:
+    creationPolicy: Owner
+  data:
+    - secretKey: additional-scrape-configs.yaml
+      remoteRef:
+        key: additional-scrape-configs.yaml
