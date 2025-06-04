@@ -1,3 +1,0 @@
-template-file-path: aws/cloudFormation/ec2-schedule-automation/ec2-scheduler-stack.yaml
-parameters: {}
-tags: {}
