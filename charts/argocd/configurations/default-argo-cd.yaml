@@ -1,5 +1,1 @@
-# env: dev
-# chartName: argo-cd
-# repoURL: https://argoproj.github.io/argo-helm
-# chartVersion: 8.0.10
-# namespace: argocd
+
