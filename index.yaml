@@ -3,7 +3,17 @@ entries:
   external-secrets-values:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-06-04T15:26:06.356669204Z"
+    created: "2025-06-05T06:40:29.444331345Z"
+    description: A Helm chart for Kubernetes
+    digest: eb42a9f10d3e6ac16b39a53e5557d32abe527c48006d8c4b21f3f693f7b953cb
+    name: external-secrets-values
+    type: application
+    urls:
+    - external-secrets-values-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2025-06-05T06:40:29.444050827Z"
     description: A Helm chart for Kubernetes
     digest: 5011a85445124c20e131fc0c4276c507db3fde61d49c976bcd4a7bbd26360259
     name: external-secrets-values
@@ -11,4 +21,4 @@ entries:
     urls:
     - external-secrets-values-1.0.0.tgz
     version: 1.0.0
-generated: "2025-06-04T15:26:06.356209728Z"
+generated: "2025-06-05T06:40:29.443059532Z"
