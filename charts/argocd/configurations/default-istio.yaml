@@ -1,0 +1,6 @@
+env: dev
+chartName: base
+appName: istio-base
+repoURL: https://istio-release.storage.googleapis.com/charts
+chartVersion: 1.26.1
+namespace: istio-system
