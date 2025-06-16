@@ -15,3 +15,6 @@ _internal_defaults_do_not_set:
         port: 31443        # (TLS 쪽도 원하시면 비슷하게 설정)
         targetPort: 31443
         nodePort: 31933
+  env:
+    # Pilot(istiod)로부터 읽어올 Gateway/VS 네임스페이스를 콤마로 구분
+    PILOT_SCOPE_GATEWAY_CONFIG: "*"
