@@ -56,3 +56,6 @@ service:
   ports:
     restAPI: 9200
     transport: 9300
+    
+volumePermissions:
+  enabled: true
