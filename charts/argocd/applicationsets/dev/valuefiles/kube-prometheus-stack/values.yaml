@@ -1216,6 +1216,16 @@ alertmanager:
 ## Using default values from https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
 ##
 grafana:
+  persistence:
+    enabled: true               # PVC 사용 활성화
+    type: sts                   # StatefulSet 방식으로 PVC 생성 (helm 차트 기본값)
+    storageClassName: "openebs-hostpath"   # 사용할 StorageClass 이름
+    accessModes:
+      - ReadWriteOnce           # PVC 접근 모드
+    size: 20Gi                  # PVC 용량
+    finalizers:
+      - kubernetes.io/pvc-protection  # PVC 보호용 finalizer
+    annotations: {}             # (선택) PVC 에 붙일 어노테이션
   enabled: true
   namespaceOverride: ""
 
@@ -4319,14 +4329,14 @@ prometheus:
     storageSpec: {}
     ## Using PersistentVolumeClaim
     ##
-    #  volumeClaimTemplate:
-    #    spec:
-    #      storageClassName: gluster
-    #      accessModes: ["ReadWriteOnce"]
-    #      resources:
-    #        requests:
-    #          storage: 50Gi
-    #    selector: {}
+    volumeClaimTemplate:
+      spec:
+        storageClassName: openebs-hostpath
+        accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 50Gi
+        selector: {}
 
     ## Using tmpfs volume
     ##
