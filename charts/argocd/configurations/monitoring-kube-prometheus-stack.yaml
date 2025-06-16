@@ -3,5 +3,5 @@ chartName: kube-prometheus-stack
 appName: kube-prometheus-stack
 repoURL: https://prometheus-community.github.io/helm-charts
 revision: dev
-chartVersion: 72.6.4
+chartVersion: 74.2.1
 namespace: monitoring
