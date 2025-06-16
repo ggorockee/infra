@@ -1,8 +1,19 @@
 volumePermissions:
   enabled: true
 
-securityContext:
-  enabled: false
+#securityContext:
+#  enabled: false
+
+podSecurityContext:
+  enabled: true       # securityContext 자체는 켜 두되…
+  runAsUser: 0        # Pod 내 프로세스의 UID를 0(root)로
+  fsGroup: 0          # 마운트된 볼륨의 그룹도 root(0)로
+
+## ── 컨테이너 레벨로 root 실행 ──
+containerSecurityContext:
+  enabled: true       # containerSecurityContext 자체는 켜 두되…
+  runAsUser: 0        # 컨테이너 프로세스 UID를 0(root)로
+  runAsGroup: 0       # 컨테이너 프로세스 GID를 0(root)로
 
 config:
   discovery:
