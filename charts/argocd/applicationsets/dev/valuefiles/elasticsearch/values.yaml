@@ -31,8 +31,10 @@ metrics:
 master:
   replicaCount: 1
   persistence:
-    enabled: false
-    # size: 30Gi
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    size: 30Gi
 
 ## 데이터 전용 노드: 사용하지 않음 (모든 역할을 마스터 노드가 담당)
 data:
