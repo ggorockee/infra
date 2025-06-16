@@ -34,7 +34,7 @@ metrics:
 master:
   replicaCount: 1
   podSecurityContext:
-    enabled: true
+    enabled: false
     runAsUser: 1001
     fsGroup: 1001
   persistence:
@@ -43,6 +43,7 @@ master:
       - ReadWriteOnce
     size: 30Gi
   containerSecurityContext:
+    enabled: false
     runAsUser: 1001
     runAsGroup: 1001
     privileged: false
