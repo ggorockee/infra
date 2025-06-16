@@ -21,4 +21,4 @@ volumeClaimTemplate:
     requests:
       storage: 30Gi
 
-clusterHealthCheckParams: "wait_for_status=yellow&timeout=60s"
+clusterHealthCheckParams: "wait_for_status=yellow&timeout=300s"
