@@ -1,8 +1,8 @@
 clusterName: "elasticsearch"
 nodeGroup: "master"
 
-replicas: 1
-minimumMasterNodes: 1
+# replicas: 1
+# minimumMasterNodes: 1
 
 roles:
   - master
@@ -24,9 +24,9 @@ volumeClaimTemplate:
 
 readinessProbe:
   failureThreshold: 3
-  initialDelaySeconds: 120
+  initialDelaySeconds: 20
   periodSeconds: 10
   successThreshold: 3
   timeoutSeconds: 5
   
-clusterHealthCheckParams: "wait_for_status=yellow&timeout=50s"
+clusterHealthCheckParams: "wait_for_status=yellow&timeout=10s"
