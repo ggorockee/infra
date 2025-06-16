@@ -1,6 +1,9 @@
 volumePermissions:
   enabled: true
 
+securityContext:
+  enabled: false
+
 config:
   discovery:
     type: single-node        # 단일 노드 모드 활성화
