@@ -1,0 +1,9 @@
+daemonset:
+  enabled: true
+
+deployment:
+  enabled: true
+
+extraEnvs:
+  - name: "ELASTICSEARCH_HOSTS"
+    value: "elasticsearch-dev.logging.svc.cluster.local:9200"
