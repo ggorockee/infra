@@ -2,10 +2,12 @@ localpv-provisioner:
   rbac:
     create: true
 
-  # ✅ default StorageClass 설정
-  defaultStorageConfig:
-    enabled: true
+  hostpathClass:
     name: openebs-hostpath
+    # Available reclaim policies: Delete/Retain, defaults: Delete.
+    reclaimPolicy: Delete
+    # If true, sets the openebs-hostpath StorageClass as the default StorageClass
+    isDefaultClass: true
 
 engines:
   local:
