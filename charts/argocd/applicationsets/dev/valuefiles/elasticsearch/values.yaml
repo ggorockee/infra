@@ -3,10 +3,10 @@ minimumMasterNodes: 1
 
 resources:
   requests:
-    cpu: "100m"
+    cpu: "1Gi"
     memory: "512Mi"
   limits:
-    cpu: "200m"
+    cpu: "2Gi"
     memory: "1Gi"
 
 volumeClaimTemplate:
