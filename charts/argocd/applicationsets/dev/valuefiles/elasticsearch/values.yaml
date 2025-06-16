@@ -1,18 +1,18 @@
 clusterName: "elasticsearch"
 nodeGroup: "master"
 
-# replicas: 1
-# minimumMasterNodes: 1
+replicas: 1
+minimumMasterNodes: 1
 
 roles:
   - master
   - data
   - ingest
 
-esConfig:
-  elasticsearch.yml: |
-    network.host: 0.0.0.0
-    discovery.type: single-node
+# esConfig:
+#   elasticsearch.yml: |
+#     network.host: 0.0.0.0
+#     discovery.type: single-node
 
 # ─────────── 스토리지 (단일 노드라도 persistence ON) ───────────
 volumeClaimTemplate:
