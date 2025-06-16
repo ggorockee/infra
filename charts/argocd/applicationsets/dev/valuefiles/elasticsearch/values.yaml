@@ -30,6 +30,9 @@ metrics:
 ## 마스터-엘리저블 노드: 1개
 master:
   replicaCount: 1
+  podSecurityContext:
+    enabled: true
+    fsGroup: 1001
   persistence:
     enabled: true
     accessModes:
