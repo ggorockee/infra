@@ -1,24 +1,4 @@
-replicas: 1
-minimumMasterNodes: 1
-
-resources:
-  requests:
-    cpu: "500m"
-    memory: "1Gi"
-  limits:
-    cpu: "1000m"
-    memory: "2Gi"
-
-volumeClaimTemplate:
-  accessModes: ["ReadWriteOnce"]
-  resources:
-    requests:
-      storage: 30Gi
-
-readinessProbe:
-  failureThreshold: 10
-  initialDelaySeconds: 20
-  periodSeconds: 10
-  timeoutSeconds: 5
-
-clusterHealthCheckParams: "wait_for_status=red&timeout=10s"
+master:
+  replicaCount: 1
+  persistence:
+    size: 30Gi
