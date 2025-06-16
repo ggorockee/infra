@@ -1,4 +1,50 @@
+## 기본 글로벌 설정 (필요에 따라 imagePullSecrets 등 추가)
+global:
+  imageRegistry: ""
+  defaultStorageClass: ""
+
+## 클러스터 이름
+clusterName: elastic
+
+## 사용할 Elasticsearch 이미지 버전
+image:
+  repository: bitnami/elasticsearch
+  tag: 9.0.2-debian-12-r1
+  pullPolicy: IfNotPresent
+
+## 보안 및 부가 기능 모두 비활성화
+security:
+  enabled: false
+
+kibanaEnabled: false
+
+metrics:
+  enabled: false
+
+## 마스터-엘리저블 노드: 1개
 master:
   replicaCount: 1
   persistence:
+    enabled: true
     size: 30Gi
+
+## 데이터 전용 노드: 사용하지 않음 (모든 역할을 마스터 노드가 담당)
+data:
+  replicaCount: 0
+  persistence:
+    enabled: false
+
+## Coordination 노드: 사용하지 않음
+coordinating:
+  replicaCount: 0
+
+## Ingest 노드: 사용하지 않음
+ingest:
+  enabled: false
+
+## 서비스 타입 (ClusterIP)
+service:
+  type: ClusterIP
+  ports:
+    restAPI: 9200
+    transport: 9300
