@@ -35,16 +35,16 @@ master:
   replicaCount: 1
   podSecurityContext:
     enabled: true
-    runAsUser: 0
-    fsGroup: 0
+    runAsUser: 1001
+    fsGroup: 1001
   persistence:
     enabled: true
     accessModes:
       - ReadWriteOnce
     size: 30Gi
   containerSecurityContext:
-    runAsUser: 0
-    runAsGroup: 0
+    runAsUser: 1001
+    runAsGroup: 1001
     privileged: true
   #extraVolumes:
   #  - name: custom-config
