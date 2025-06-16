@@ -1,7 +1,7 @@
 env: dev
 chartName: elasticsearch
 appName: elasticsearch
-repoURL: https://charts.bitnami.com/bitnami
+repoURL: https://helm.elastic.co
 revision: dev
-chartVersion: 22.0.8
+chartVersion: 8.5.1
 namespace: logging
