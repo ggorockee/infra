@@ -23,4 +23,4 @@ volumeClaimTemplate:
 
 readinessProbe: {}
   # enabled: false
-# clusterHealthCheckParams: "wait_for_status=yellow&timeout=300s"
+clusterHealthCheckParams: "wait_for_status=red&timeout=10s"
