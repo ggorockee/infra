@@ -13,3 +13,11 @@ loki:
 
 alloy:
   enabled: false
+
+storageClass:
+  name: openebs-hostpath
+  isDefaultClass: true
+  allowVolumeExpansion: true
+  volumeBindingMode: WaitForFirstConsumer
+  reclaimPolicy: Delete
+  provisioner: openebs.io/local
