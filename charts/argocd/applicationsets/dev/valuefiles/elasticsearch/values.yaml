@@ -42,6 +42,17 @@ master:
       - ReadWriteOnce
     size: 30Gi
 
+  extraVolumes:
+    - name: custom-config
+      configMap:
+        name: my-elasticsearch-config
+
+  extraVolumeMounts:
+    - name: custom-config
+      subPath: elasticsearch.yml
+      mountPath: /opt/bitnami/elasticsearch/config/elasticsearch.yml
+      readOnly: true
+
 ## 데이터 전용 노드: 사용하지 않음 (모든 역할을 마스터 노드가 담당)
 data:
   replicaCount: 0
