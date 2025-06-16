@@ -8,6 +8,14 @@ grafana:
   persistence:
     type: pvc
     enabled: true
+
+    plugins:
+      - grafana-polystat-panel
+    sidecar:
+      dashboards:
+        enabled: true
+        label: grafana_dashboard
+    
     storageClassName: openebs-hostpath
     ## (Optional) Use this to bind the claim to an existing PersistentVolume (PV) by name.
     volumeName: ""
