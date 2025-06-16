@@ -35,23 +35,24 @@ master:
   replicaCount: 1
   podSecurityContext:
     enabled: true
-    fsGroup: 1001
+    runAsUser: 1000
+    fsGroup: 1000
   persistence:
     enabled: true
     accessModes:
       - ReadWriteOnce
     size: 30Gi
 
-  extraVolumes:
-    - name: custom-config
-      configMap:
-        name: my-elasticsearch-config
+  #extraVolumes:
+  #  - name: custom-config
+  #    configMap:
+  #      name: my-elasticsearch-config
 
-  extraVolumeMounts:
-    - name: custom-config
-      subPath: elasticsearch.yml
-      mountPath: /opt/bitnami/elasticsearch/config/elasticsearch.yml
-      readOnly: true
+  #extraVolumeMounts:
+  #  - name: custom-config
+  #    subPath: elasticsearch.yml
+  #    mountPath: /opt/bitnami/elasticsearch/config/elasticsearch.yml
+  #    readOnly: true
 
 ## 데이터 전용 노드: 사용하지 않음 (모든 역할을 마스터 노드가 담당)
 data:
