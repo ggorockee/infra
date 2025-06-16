@@ -45,7 +45,7 @@ master:
   containerSecurityContext:
     runAsUser: 1001
     runAsGroup: 1001
-    privileged: true
+    privileged: false
   #extraVolumes:
   #  - name: custom-config
   #    configMap:
