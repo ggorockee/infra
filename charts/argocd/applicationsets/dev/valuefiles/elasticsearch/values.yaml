@@ -1,3 +1,6 @@
+volumePermissions:
+  enabled: true
+
 config:
   discovery:
     type: single-node        # 단일 노드 모드 활성화
@@ -60,5 +63,4 @@ service:
     restAPI: 9200
     transport: 9300
     
-volumePermissions:
-  enabled: true
+
