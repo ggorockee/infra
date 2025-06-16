@@ -11,7 +11,14 @@ resources:
 
 volumeClaimTemplate:
   accessModes: ["ReadWriteOnce"]
-  storageClassName: openebs-hostpath
   resources:
     requests:
       storage: 30Gi
+
+readinessProbe:
+  failureThreshold: 10
+  initialDelaySeconds: 20
+  periodSeconds: 10
+  timeoutSeconds: 5
+
+clusterHealthCheckParams: "wait_for_status=yellow&timeout=5s"
