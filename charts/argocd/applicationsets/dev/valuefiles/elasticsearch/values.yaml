@@ -1,3 +1,9 @@
+config:
+  discovery:
+    type: single-node        # 단일 노드 모드 활성화
+  network:
+    host: 0.0.0.0            # 외부 접근 허용
+
 ## 기본 글로벌 설정 (필요에 따라 imagePullSecrets 등 추가)
 global:
   imageRegistry: ""
@@ -19,7 +25,7 @@ security:
 kibanaEnabled: false
 
 metrics:
-  enabled: false
+  enabled: true
 
 ## 마스터-엘리저블 노드: 1개
 master:
