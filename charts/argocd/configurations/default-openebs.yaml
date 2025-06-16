@@ -1,0 +1,7 @@
+env: dev
+chartName: openebs
+appName: openebs
+repoURL: https://openebs.github.io/openebs
+revision: dev
+chartVersion: 4.3.0
+namespace: openebs
