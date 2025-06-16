@@ -21,4 +21,4 @@ readinessProbe:
   periodSeconds: 10
   timeoutSeconds: 5
 
-clusterHealthCheckParams: "wait_for_status=yellow&timeout=5s"
+clusterHealthCheckParams: "wait_for_status=red&timeout=10s"
