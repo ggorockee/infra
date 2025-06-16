@@ -1,5 +1,6 @@
 daemonset:
   enabled: true
+  secretMounts: []
   metricbeatConfig:
     metricbeat.yml: |
       metricbeat.modules:
@@ -43,11 +44,13 @@ daemonset:
 
       output.elasticsearch:
         hosts: ["http://elasticsearch-dev.logging.svc.cluster.local:9200"]
+        ssl.enabled: false
         username: "elastic"
         password: "changeme"
         
 deployment:
   enabled: true
+  secretMounts: []
   metricbeatConfig:
     metricbeat.yml: |
       metricbeat.modules:
@@ -64,6 +67,7 @@ deployment:
 
       output.elasticsearch:
         hosts: ["http://elasticsearch-dev.logging.svc.cluster.local:9200"]
+        ssl.enabled: false
         username: "elastic"
         password: "changeme"
 
