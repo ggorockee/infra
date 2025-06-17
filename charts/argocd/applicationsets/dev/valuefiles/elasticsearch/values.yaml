@@ -4,7 +4,7 @@ nodeGroup: "master"
 replicas: 1
 # minimumMasterNodes: 1
 
-roles: []
+# roles:
   # - master
   # - data
   # - ingest
