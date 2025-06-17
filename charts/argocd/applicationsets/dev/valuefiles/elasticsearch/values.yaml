@@ -55,3 +55,4 @@ readinessProbe:
   timeoutSeconds: 10
 
 clusterHealthCheckParams: "wait_for_status=yellow&timeout=60s"
+clusterInitialMasterNodes: []
