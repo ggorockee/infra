@@ -5,10 +5,10 @@ replicas: 1
 # minimumMasterNodes: 1
 
 roles:
-  - master
-  - data
-  - ingest
-  - remote_cluster_client
+  master: "true"
+  ingest: "true"
+  data: "true"
+  remote_cluster_client: "true"
 # transform, data_frozen, master, remote_cluster_client, data, ml, data_content, data_hot, data_warm, data_cold, ingest
 
 esConfig:
