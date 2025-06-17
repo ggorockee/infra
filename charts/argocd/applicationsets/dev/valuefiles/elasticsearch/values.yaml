@@ -13,7 +13,6 @@ roles:
 esConfig:
   elasticsearch.yml: |
     network.host: 0.0.0.0
-   # discovery.type: single-node
     indices.memory.index_buffer_size: 10%
     indices.fielddata.cache.size: 5%
     xpack.security.enabled: false
