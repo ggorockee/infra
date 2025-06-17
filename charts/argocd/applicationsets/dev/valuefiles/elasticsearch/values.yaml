@@ -4,6 +4,10 @@ networkPolicy:
   http:
     enabled: true
 
+networkPolicy:
+  transport:
+    enabled: true
+
 clusterName: "elasticsearch"
 nodeGroup: "master"
 
