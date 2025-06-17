@@ -1,12 +1,12 @@
 daemonset:
   enabled: true
   secretMounts: []
-  extraVolumes:
-    - name: data
-      emptyDir: {}
-  extraVolumeMounts:
-    - name: data
-      mountPath: /usr/share/metricbeat/data
+  # extraVolumes:
+  #   - name: data
+  #     emptyDir: {}
+  # extraVolumeMounts:
+  #   - name: data
+  #     mountPath: /usr/share/metricbeat/data
   metricbeatConfig:
     metricbeat.yml: |
       metricbeat.modules:
@@ -57,12 +57,12 @@ daemonset:
 deployment:
   enabled: true
   secretMounts: []
-  extraVolumes:
-    - name: data
-      emptyDir: {}
-  extraVolumeMounts:
-    - name: data
-      mountPath: /usr/share/metricbeat/data
+  # extraVolumes:
+  #   - name: data
+  #     emptyDir: {}
+  # extraVolumeMounts:
+  #   - name: data
+  #     mountPath: /usr/share/metricbeat/data
   metricbeatConfig:
     metricbeat.yml: |
       metricbeat.modules:
