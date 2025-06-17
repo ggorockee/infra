@@ -1,3 +1,5 @@
+protocol: http
+
 clusterName: "elasticsearch"
 nodeGroup: "master"
 
