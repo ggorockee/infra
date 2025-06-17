@@ -9,10 +9,10 @@ roles:
   - data
   - ingest
 
-# esConfig:
-#   elasticsearch.yml: |
-#     network.host: 0.0.0.0
-#     discovery.type: single-node
+esConfig:
+  elasticsearch.yml: |
+    network.host: 0.0.0.0
+    discovery.type: single-node
 
 # ─────────── 스토리지 (단일 노드라도 persistence ON) ───────────
 volumeClaimTemplate:
