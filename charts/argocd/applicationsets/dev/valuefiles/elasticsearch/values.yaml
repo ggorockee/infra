@@ -1,5 +1,9 @@
 protocol: http
 
+networkPolicy:
+  http:
+    enabled: true
+
 clusterName: "elasticsearch"
 nodeGroup: "master"
 
