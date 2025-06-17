@@ -16,6 +16,10 @@ data:
     requests:
       cpu: 1000m
       memory: 2Gi
+  persistence:
+    enabled: true
+    size: 30Gi
+    storageClass: openebs-hostpath
       
 coordinating:
   replicaCount: 1
