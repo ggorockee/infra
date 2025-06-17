@@ -3,5 +3,5 @@ chartName: elasticsearch
 appName: elasticsearch
 repoURL: https://helm.elastic.co
 revision: dev
-chartVersion: 7.17.9
+chartVersion: 7.17.3
 namespace: logging
