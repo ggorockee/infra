@@ -73,7 +73,7 @@ deployment:
 
 extraEnvs:
   - name: "ELASTICSEARCH_HOST"
-    value: "elasticsearch-master.logging.svc.cluster.local:9200"
+    value: "elasticsearch-dev-master.logging.svc.cluster.local:9200"
   - name: "KUBE_STATE_METRICS_HOST"
     value: "metricbeat-dev-kube-state-metrics.logging.svc.cluster.local:8080"
 
