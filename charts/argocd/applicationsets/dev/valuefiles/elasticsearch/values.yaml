@@ -11,7 +11,7 @@ networkPolicy:
 clusterName: "elasticsearch"
 nodeGroup: "master"
 
-replicas: 1
+replicas: 2
 minimumMasterNodes: 1
 
 roles:
