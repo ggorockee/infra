@@ -17,7 +17,10 @@ roles:
   - ingest
   - data
   - remote_cluster_client
-
+discoverySeedHosts:
+  - elasticsearch-master-headless:9300
+clusterInitialMasterNodes:
+  - elasticsearch-master-0
 # discoverySeedHosts: []               # 더 이상 다른 노드를 찾지 않도록 빈 배열
 # clusterInitialMasterNodes:
 #   - elasticsearch-master-0
