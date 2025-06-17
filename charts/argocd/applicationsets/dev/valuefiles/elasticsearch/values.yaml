@@ -11,7 +11,7 @@ networkPolicy:
 clusterName: "elasticsearch"
 nodeGroup: "master"
 
-replicas: 2
+replicas: 1
 minimumMasterNodes: 1
 
 roles:
@@ -21,8 +21,8 @@ roles:
   - remote_cluster_client
 
 # discoverySeedHosts: []               # 더 이상 다른 노드를 찾지 않도록 빈 배열
-#clusterInitialMasterNodes:
-#  - elasticsearch-master-0
+# clusterInitialMasterNodes:
+#   - elasticsearch-master-0
 
 esConfig:
   elasticsearch.yml: |
@@ -67,5 +67,5 @@ readinessProbe:
   successThreshold: 3
   timeoutSeconds: 10
 
-clusterHealthCheckParams: "wait_for_status=yellow&timeout=60s"
-clusterInitialMasterNodes: []
+clusterHealthCheckParams: "wait_for_status=yellow&timeout=200s"
+# clusterInitialMasterNodes: []
