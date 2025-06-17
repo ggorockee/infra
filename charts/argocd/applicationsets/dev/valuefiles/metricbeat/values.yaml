@@ -1,6 +1,12 @@
 daemonset:
   enabled: true
   secretMounts: []
+  volumeMounts:
+    - name: data
+      mountPath: /usr/share/metricbeat/data
+  volumes:
+    - name: data
+      emptyDir: {}
   metricbeatConfig:
     metricbeat.yml: |
       metricbeat.modules:
@@ -51,6 +57,12 @@ daemonset:
 deployment:
   enabled: true
   secretMounts: []
+  volumeMounts:
+    - name: data
+      mountPath: /usr/share/metricbeat/data
+  volumes:
+    - name: data
+      emptyDir: {}
   metricbeatConfig:
     metricbeat.yml: |
       metricbeat.modules:
