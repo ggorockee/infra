@@ -9,10 +9,13 @@ roles:
   - data
   - ingest
 
+
 esConfig:
   elasticsearch.yml: |
     network.host: 0.0.0.0
     discovery.type: single-node
+    indices.memory.index_buffer_size: 10%
+    indices.fielddata.cache.size: 5%
 
 # ─────────── 스토리지 (단일 노드라도 persistence ON) ───────────
 volumeClaimTemplate:
@@ -29,19 +32,23 @@ volumeClaimTemplate:
 #       - name: elasticsearch-master
 #         mountPath: /usr/share/elasticsearch/data
       
+
 resources:
   requests:
-    cpu: "1000m"
-    memory: "4Gi"
+    cpu: "500m"
+    memory: "2Gi"
   limits:
     cpu: "1000m"
-    memory: "4Gi"
+    memory: "2Gi"
+
+esJavaOpts: "-Xms1g -Xmx1g"
+
 
 readinessProbe:
   failureThreshold: 3
-  initialDelaySeconds: 20
+  initialDelaySeconds: 60  # 초기 로딩 여유를 더 줌
   periodSeconds: 10
   successThreshold: 3
-  timeoutSeconds: 5
-  
-clusterHealthCheckParams: "wait_for_status=yellow&timeout=10s"
+  timeoutSeconds: 10
+
+clusterHealthCheckParams: "wait_for_status=yellow&timeout=60s"
