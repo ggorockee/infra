@@ -1,72 +1,32 @@
-protocol: http
+security:
+  enabled: false
+  tls:
+    restEncryption: false
 
-networkPolicy:
-  http:
-    enabled: true
-  transport:
-    enabled: true
-
-clusterName: "elasticsearch"
-nodeGroup: "master"
-
-replicas: 1
-minimumMasterNodes: 1
-
-roles:
-  - master
-  - ingest
-  - data
-  - remote_cluster_client
-discoverySeedHosts:
-  - elasticsearch-master-headless:9300
-clusterInitialMasterNodes:
-  - elasticsearch-master-0
-# discoverySeedHosts: []               # 더 이상 다른 노드를 찾지 않도록 빈 배열
-# clusterInitialMasterNodes:
-#   - elasticsearch-master-0
-
-esConfig:
-  elasticsearch.yml: |
-    network.host: 0.0.0.0
-    indices.memory.index_buffer_size: 10%
-    indices.fielddata.cache.size: 5%
-    xpack.security.enabled: false
-    xpack.security.http.ssl.enabled: false
-    xpack.security.transport.ssl.enabled: false
-
-# ─────────── 스토리지 (단일 노드라도 persistence ON) ───────────
-volumeClaimTemplate:
-  accessModes: ["ReadWriteOnce"]
+master:
+  replicaCount: 1
   resources:
     requests:
-      storage: 30Gi
+      cpu: 1000m
+      memory: 2Gi
 
-# extraInitContainers:
-#   - name: fix-permissions
-#     image: busybox
-#     command: ['sh', '-c', 'chown -R 1000:1000 /usr/share/elasticsearch/data']
-#     volumeMounts:
-#       - name: elasticsearch-master
-#         mountPath: /usr/share/elasticsearch/data
+data:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
       
+coordinating:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
 
-resources:
-  requests:
-    cpu: "500m"
-    memory: "2Gi"
-  limits:
-    cpu: "1000m"
-    memory: "2Gi"
-
-esJavaOpts: "-Xms1g -Xmx1g"
-
-
-readinessProbe:
-  failureThreshold: 3
-  initialDelaySeconds: 60  # 초기 로딩 여유를 더 줌
-  periodSeconds: 10
-  successThreshold: 3
-  timeoutSeconds: 10
-
-clusterHealthCheckParams: "wait_for_status=yellow&timeout=200s"
-# clusterInitialMasterNodes: []
+ingest:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
