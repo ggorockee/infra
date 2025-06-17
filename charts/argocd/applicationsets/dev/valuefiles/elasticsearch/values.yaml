@@ -4,13 +4,7 @@ security:
     restEncryption: false
 
 master:
-  replicaCount: 1
-  # resources:
-  #   limits:
-  #     cpu: 1000m
-  #     memory: 2Gi
-
-data:
+  masterOnly: false
   replicaCount: 1
   # resources:
   #   limits:
@@ -20,6 +14,17 @@ data:
     enabled: true
     size: 30Gi
     storageClass: openebs-hostpath
+
+data:
+  replicaCount: 0
+  # resources:
+  #   limits:
+  #     cpu: 1000m
+  #     memory: 2Gi
+  # persistence:
+  #   enabled: false
+  #   size: 30Gi
+  #   storageClass: openebs-hostpath
       
 coordinating:
   replicaCount: 0
