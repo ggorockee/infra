@@ -21,13 +21,13 @@ volumeClaimTemplate:
     requests:
       storage: 30Gi
 
-extraInitContainers:
-  - name: fix-permissions
-    image: busybox
-    command: ['sh', '-c', 'chown -R 1000:1000 /usr/share/elasticsearch/data']
-    volumeMounts:
-      - name: elasticsearch-master
-        mountPath: /usr/share/elasticsearch/data
+# extraInitContainers:
+#   - name: fix-permissions
+#     image: busybox
+#     command: ['sh', '-c', 'chown -R 1000:1000 /usr/share/elasticsearch/data']
+#     volumeMounts:
+#       - name: elasticsearch-master
+#         mountPath: /usr/share/elasticsearch/data
       
 resources:
   requests:
