@@ -32,10 +32,10 @@ volumeClaimTemplate:
 resources:
   requests:
     cpu: "1000m"
-    memory: "2Gi"
+    memory: "4Gi"
   limits:
     cpu: "1000m"
-    memory: "2Gi"
+    memory: "4Gi"
 
 readinessProbe:
   failureThreshold: 3
