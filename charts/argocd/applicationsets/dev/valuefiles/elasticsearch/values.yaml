@@ -4,10 +4,10 @@ nodeGroup: "master"
 replicas: 1
 # minimumMasterNodes: 1
 
-roles:
-  - master
-  - data
-  - ingest
+roles: []
+  # - master
+  # - data
+  # - ingest
 
 
 esConfig:
