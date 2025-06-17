@@ -3,14 +3,14 @@ alertmanager:
   enabled: false
 
 grafana:
+  plugins:
+    - grafana-polystat-panel
+    - yesoreyeram-boomtable-panel
   enabled: true
 
   persistence:
     type: pvc
     enabled: true
-
-    plugins:
-      - grafana-polystat-panel
     sidecar:
       dashboards:
         enabled: true
