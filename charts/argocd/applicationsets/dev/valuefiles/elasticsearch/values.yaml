@@ -5,17 +5,17 @@ security:
 
 master:
   replicaCount: 1
-  resources:
-    limits:
-      cpu: 1000m
-      memory: 2Gi
+  # resources:
+  #   limits:
+  #     cpu: 1000m
+  #     memory: 2Gi
 
 data:
   replicaCount: 1
-  resources:
-    limits:
-      cpu: 1000m
-      memory: 2Gi
+  # resources:
+  #   limits:
+  #     cpu: 1000m
+  #     memory: 2Gi
   persistence:
     enabled: true
     size: 30Gi
@@ -23,14 +23,14 @@ data:
       
 coordinating:
   replicaCount: 1
-  resources:
-    limits:
-      cpu: 1000m
-      memory: 2Gi
+  # resources:
+  #   limits:
+  #     cpu: 1000m
+  #     memory: 2Gi
 
 ingest:
   replicaCount: 1
-  resources:
-    limits:
-      cpu: 1000m
-      memory: 2Gi
+  # resources:
+  #   limits:
+  #     cpu: 1000m
+  #     memory: 2Gi
