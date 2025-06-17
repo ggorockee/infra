@@ -3,6 +3,11 @@ alertmanager:
   enabled: false
 
 grafana:
+  securityContext:
+    readOnlyRootFilesystem: false
+  grafana.ini:
+    plugins:
+      allow_loading_unsigned_plugins: yesoreyeram-boomtable-panel
   plugins:
     - grafana-polystat-panel
     - yesoreyeram-boomtable-panel
