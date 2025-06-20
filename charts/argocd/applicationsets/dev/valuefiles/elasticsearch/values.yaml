@@ -22,7 +22,8 @@
 #       ]
 #     }
 #     EOF
-
+global:
+    kibanaEnabled: true
     # # 로컬 Elasticsearch REST API에 파이프라인 등록
     # curl --fail --silent --show-error \
     #   -XPUT "http://localhost:9200/_ingest/pipeline/pod_phase_pipeline" \
