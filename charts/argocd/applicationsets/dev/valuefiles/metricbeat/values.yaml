@@ -53,6 +53,7 @@ daemonset:
         ssl.enabled: false
         username: "elastic"
         password: "changeme"
+        pipeline: pod_phase_pipeline
         
 deployment:
   enabled: true
