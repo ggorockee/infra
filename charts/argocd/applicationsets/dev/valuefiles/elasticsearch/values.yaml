@@ -36,25 +36,25 @@ security:
     restEncryption: false
 
 master:
-  initContainers:
-    - name: create-pod-phase-pipeline
-      image: curlimages/curl:7.85.0
-      command:
-        - sh
-        - -c
-        - |
-          # ES가 9200 포트를 열 때까지 대기
-          until curl --silent --fail http://localhost:9200; do sleep 5; done
-          # 파이프라인 등록
-          curl -XPUT "http://localhost:9200/_ingest/pipeline/pod_phase_pipeline" \
-               -H 'Content-Type: application/json' \
-               --data-binary '{
-                 "description":"Convert phase to code",
-                 "processors":[{"script":{"lang":"painless","source":"
-                   def phase = ctx[\"kubernetes.pod.status.phase\"];
-                   ctx.pod_phase_code = phase==\"Running\"?1:phase==\"Pending\"?2:phase==\"Succeeded\"?3:phase==\"Failed\"?4:0;
-                 "}}]
-               }'
+  # initContainers:
+  #   - name: create-pod-phase-pipeline
+  #     image: curlimages/curl:7.85.0
+  #     command:
+  #       - sh
+  #       - -c
+  #       - |
+  #         # ES가 9200 포트를 열 때까지 대기
+  #         until curl --silent --fail http://localhost:9200; do sleep 5; done
+  #         # 파이프라인 등록
+  #         curl -XPUT "http://localhost:9200/_ingest/pipeline/pod_phase_pipeline" \
+  #              -H 'Content-Type: application/json' \
+  #              --data-binary '{
+  #                "description":"Convert phase to code",
+  #                "processors":[{"script":{"lang":"painless","source":"
+  #                  def phase = ctx[\"kubernetes.pod.status.phase\"];
+  #                  ctx.pod_phase_code = phase==\"Running\"?1:phase==\"Pending\"?2:phase==\"Succeeded\"?3:phase==\"Failed\"?4:0;
+  #                "}}]
+  #              }'
   masterOnly: false
   replicaCount: 1
   # resources:
