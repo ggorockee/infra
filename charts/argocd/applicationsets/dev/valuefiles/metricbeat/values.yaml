@@ -18,8 +18,8 @@ daemonset:
           - system
           - volume
         period: 10s
-        host: "${NODE_NAME}"
-        hosts: ["https://${NODE_NAME}:10250"]
+        # host: "${NODE_NAME}"
+        hosts: ["https://localhost:10250"]
         bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
         ssl.verification_mode: "none"
         processors:
