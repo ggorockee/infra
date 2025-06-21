@@ -1,6 +1,8 @@
 daemonset:
   enabled: true
   secretMounts: []
+  hostNetwork: true
+  # dnsPolicy: ClusterFirstWithHostNet
   # extraVolumes:
   #   - name: data
   #     emptyDir: {}
