@@ -85,6 +85,7 @@ deployment:
         ssl.enabled: false
         username: "elastic"
         password: "changeme"
+        pipeline: pod_phase_pipeline
 
 extraEnvs:
   - name: "ELASTICSEARCH_HOST"
