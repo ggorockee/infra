@@ -15,3 +15,5 @@ web:
     env:
       - name: PROTOCOL
         value: "http"
+      - name: BACKEND_HOST
+        value: "k8s.ggorockee.com:30080"
