@@ -3,4 +3,9 @@ metrics-server:
 
 kong:
   enabled: false
-
+  
+web:
+  containers:
+    env:
+      - name: PROTOCOL
+        value: "http"
