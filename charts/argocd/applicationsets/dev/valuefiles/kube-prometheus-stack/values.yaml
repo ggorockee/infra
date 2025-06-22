@@ -74,7 +74,7 @@ prometheus:
 
   prometheusSpec:
     remoteWrite:
-      - url: https://prometheus-prod-49-prod-ap-northeast-0.grafana.net/api/prom
+      - url: https://prometheus-prod-49-prod-ap-northeast-0.grafana.net/api/prom/push
         basicAuth:
           username: 
             name: grafana-cloud-secret
