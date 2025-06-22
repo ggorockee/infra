@@ -73,6 +73,13 @@ prometheus:
     type: ClusterIP
 
   prometheusSpec:
+    remoteWrite:
+      - url: https://prometheus-prod-49-prod-ap-northeast-0.grafana.net/api/prom
+        basicAuth:
+          username: 2515781
+          password:
+            name: grafana-cloud-secret
+            key: password
     persistentVolumeClaimRetentionPolicy: {}
     serviceMonitorSelectorNilUsesHelmValues: false
     retention: 10d
