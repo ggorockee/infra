@@ -11,10 +11,11 @@ api:
       - --insecure-port=8000
   
 web:
-  web:
-    service:
-      port: 80
-      targetPort: 8000
+  containers:
+    ports:
+      - name: web
+        containerPort: 80
+        targetPort: 8000
 
   containers:
     env:
