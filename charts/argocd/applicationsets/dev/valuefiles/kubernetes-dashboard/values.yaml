@@ -11,6 +11,9 @@ api:
       - --insecure-port=8000
   
 web:
+  web:
+    service:
+      port: 80
   containers:
     env:
       - name: PROTOCOL
