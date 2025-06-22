@@ -76,7 +76,9 @@ prometheus:
     remoteWrite:
       - url: https://prometheus-prod-49-prod-ap-northeast-0.grafana.net/api/prom
         basicAuth:
-          username: "2515781"
+          username: 
+            name: grafana-cloud-secret
+            key: username
           password:
             name: grafana-cloud-secret
             key: password
