@@ -3,3 +3,8 @@ metrics-server:
 
 kong:
   enabled: false
+
+api:
+  containers:
+    args:
+      - --enable-insecure-login
