@@ -12,12 +12,10 @@ api:
   
 web:
   containers:
-    ports:
-      - name: web
-        containerPort: 80
-        targetPort: 8000
-
-  containers:
+  #   ports:
+  #       - name: web
+  #         containerPort: 80
+  #         targetPort: 8000
     env:
       - name: PROTOCOL
         value: "http"
