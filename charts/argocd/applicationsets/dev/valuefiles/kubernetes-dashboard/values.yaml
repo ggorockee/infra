@@ -3,6 +3,12 @@ metrics-server:
 
 kong:
   enabled: false
+
+api:
+  containers:
+    args:
+      - --insecure-bind-address=0.0.0.0
+      - --insecure-port=8000
   
 web:
   containers:
