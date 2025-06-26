@@ -84,11 +84,12 @@ prometheus:
             key: password
     persistentVolumeClaimRetentionPolicy: {}
     serviceMonitorSelectorNilUsesHelmValues: false
-    serviceMonitorNamespaceSelector:
-      any: true
-    # podMonitorNamespaceSelector도 동일하게 설정하여 PodMonitor도 모든 네임스페이스에서 스캔하도록 합니다.
-    podMonitorNamespaceSelector:
-      any: true
+    podMonitorSelectorNilUsesHelmValues: false
+    # serviceMonitorNamespaceSelector:
+    #   any: true
+    # # podMonitorNamespaceSelector도 동일하게 설정하여 PodMonitor도 모든 네임스페이스에서 스캔하도록 합니다.
+    # podMonitorNamespaceSelector:
+    #   any: true
     retention: 10d
     resources: {}
     storageSpec:
