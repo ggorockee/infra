@@ -1,7 +1,7 @@
 env: dev
-chartName: backend
-appName: airbnb-backend
+chartName: airbnb-umbrella
+appName: airbnb-umbrella
 repoURL: https://ggorockee.github.io/infra/
 revision: dev
-chartVersion: 0.1.1
+chartVersion: 1.0.0
 namespace: airbnb-dev
