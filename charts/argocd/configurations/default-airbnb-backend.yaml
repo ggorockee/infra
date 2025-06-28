@@ -3,5 +3,5 @@ chartName: backend
 appName: airbnb-backend
 repoURL: https://ggorockee.github.io/infra/
 revision: dev
-chartVersion: 0.1.0
+chartVersion: 0.1.1
 namespace: airbnb-dev
