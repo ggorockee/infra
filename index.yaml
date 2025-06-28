@@ -1,9 +1,27 @@
 apiVersion: v1
 entries:
+  airbnb-umbrella:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-06-29T07:40:43.825088+09:00"
+    dependencies:
+    - name: backend
+      repository: file://./charts/backend
+      version: 1.0.0
+    - name: frontend
+      repository: file://./charts/frontend
+      version: 1.0.0
+    description: A Helm chart for deploying the entire Django+React application
+    digest: 589912da2a58caaa1c9279d08e1c0f5589b97fe753d1561c62138c8b29765eaf
+    name: airbnb-umbrella
+    type: application
+    urls:
+    - airbnb-umbrella-1.0.0.tgz
+    version: 1.0.0
   backend:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-06-28T22:35:44.455282+09:00"
+    created: "2025-06-29T07:40:43.827883+09:00"
     description: A Helm chart for Kubernetes
     digest: c8c78d51f8a25ff7e2636b129b24c4244b6b184e9e42b66fe407976a705131f2
     name: backend
@@ -13,7 +31,7 @@ entries:
     version: 0.1.1
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-06-28T22:35:44.454925+09:00"
+    created: "2025-06-29T07:40:43.827227+09:00"
     description: A Helm chart for Kubernetes
     digest: e101a7f188de59457a251146be0d1bb522965a65a7cc3c3a98d3f2d2546027b5
     name: backend
@@ -24,7 +42,7 @@ entries:
   external-secrets-values:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-06-28T22:35:44.456337+09:00"
+    created: "2025-06-29T07:40:43.828989+09:00"
     description: A Helm chart for Kubernetes
     digest: eb42a9f10d3e6ac16b39a53e5557d32abe527c48006d8c4b21f3f693f7b953cb
     name: external-secrets-values
@@ -34,7 +52,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-06-28T22:35:44.455937+09:00"
+    created: "2025-06-29T07:40:43.828423+09:00"
     description: A Helm chart for Kubernetes
     digest: 5011a85445124c20e131fc0c4276c507db3fde61d49c976bcd4a7bbd26360259
     name: external-secrets-values
@@ -42,4 +60,4 @@ entries:
     urls:
     - external-secrets-values-1.0.0.tgz
     version: 1.0.0
-generated: "2025-06-28T22:35:44.453877+09:00"
+generated: "2025-06-29T07:40:43.823277+09:00"
