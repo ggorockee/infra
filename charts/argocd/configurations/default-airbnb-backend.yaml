@@ -1,0 +1,7 @@
+env: dev
+chartName: ggorockee
+appName: airbnb-backend
+repoURL: https://ggorockee.github.io/infra/
+revision: dev
+chartVersion: 0.1.0
+namespace: airbnb-dev
