@@ -8,3 +8,11 @@ frontend:
   image:
     repository: nginx
     tag: "1.29.0"
+
+postgresql:
+  global:
+    postgresql:
+      auth:
+        username: ggorockee
+        database: airbnb-dev
+        existingSecret: airbnb-db-credentials
