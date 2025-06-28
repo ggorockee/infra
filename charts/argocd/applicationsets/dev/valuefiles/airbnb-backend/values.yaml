@@ -4,7 +4,7 @@ backend:
 
   image:
     repository: ggorockee/py-airbnb-backend
-    tag: "20250628-506a098"
+    tag: "20250628-0acd264"
 
   existingSecret: "django-secrets"
 
