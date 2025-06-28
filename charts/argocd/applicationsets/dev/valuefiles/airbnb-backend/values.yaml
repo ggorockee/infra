@@ -1,0 +1,10 @@
+# 하위 차트의 이름과 동일한 키를 사용하여 값을 오버라이드합니다.
+backend:
+  replicaCount: 1
+
+  image:
+    repository: ggorockee/py-airbnb-backend
+    tag: "20250628-506a098"
+
+  existingSecret: "django-secrets"
+
