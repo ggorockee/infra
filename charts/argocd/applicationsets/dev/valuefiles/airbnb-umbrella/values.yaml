@@ -1,0 +1,9 @@
+backend:
+  image:
+    repository: ggorockee/py-airbnb-backend
+    tag: "20250628-0acd264"
+
+frontend:
+  image:
+    repository: nginx
+    tag: "1.29.0"
