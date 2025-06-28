@@ -3,7 +3,24 @@ entries:
   airbnb-umbrella:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-06-29T07:51:41.372149+09:00"
+    created: "2025-06-29T07:53:39.741148+09:00"
+    dependencies:
+    - name: backend
+      repository: file://./charts/backend
+      version: 1.0.2
+    - name: frontend
+      repository: file://./charts/frontend
+      version: 1.0.0
+    description: A Helm chart for deploying the entire Django+React application
+    digest: e4e2b41208e3887e96af4cbd65652513d7ecb5232bd68157714f70527613a1ab
+    name: airbnb-umbrella
+    type: application
+    urls:
+    - airbnb-umbrella-1.0.2.tgz
+    version: 1.0.2
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-06-29T07:53:39.74023+09:00"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -20,7 +37,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-06-29T07:51:41.371372+09:00"
+    created: "2025-06-29T07:53:39.739425+09:00"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -38,7 +55,7 @@ entries:
   backend:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-06-29T07:51:41.372855+09:00"
+    created: "2025-06-29T07:53:39.741924+09:00"
     description: A Helm chart for Kubernetes
     digest: c8c78d51f8a25ff7e2636b129b24c4244b6b184e9e42b66fe407976a705131f2
     name: backend
@@ -48,7 +65,7 @@ entries:
     version: 0.1.1
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-06-29T07:51:41.372503+09:00"
+    created: "2025-06-29T07:53:39.741551+09:00"
     description: A Helm chart for Kubernetes
     digest: e101a7f188de59457a251146be0d1bb522965a65a7cc3c3a98d3f2d2546027b5
     name: backend
@@ -59,7 +76,7 @@ entries:
   external-secrets-values:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-06-29T07:51:41.373359+09:00"
+    created: "2025-06-29T07:53:39.742453+09:00"
     description: A Helm chart for Kubernetes
     digest: eb42a9f10d3e6ac16b39a53e5557d32abe527c48006d8c4b21f3f693f7b953cb
     name: external-secrets-values
@@ -69,7 +86,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-06-29T07:51:41.373109+09:00"
+    created: "2025-06-29T07:53:39.742189+09:00"
     description: A Helm chart for Kubernetes
     digest: 5011a85445124c20e131fc0c4276c507db3fde61d49c976bcd4a7bbd26360259
     name: external-secrets-values
@@ -77,4 +94,4 @@ entries:
     urls:
     - external-secrets-values-1.0.0.tgz
     version: 1.0.0
-generated: "2025-06-29T07:51:41.369741+09:00"
+generated: "2025-06-29T07:53:39.737903+09:00"
