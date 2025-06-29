@@ -62,7 +62,7 @@ backend:
 frontend:
   image:
     repository: ggorockee/react-airbnb-frontend
-    tag: "20250629-367a6f7"
+    tag: "20250629-fdcd77c"
   livenessProbe:
     enabled: true
     path: /healthz/ready # 1번 단계에서 추가한 헬스 체크 경로
