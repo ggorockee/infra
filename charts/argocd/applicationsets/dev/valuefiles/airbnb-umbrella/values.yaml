@@ -3,6 +3,8 @@ backend:
     repository: ggorockee/py-airbnb-backend
     tag: "20250629-d790665"
   existingSecret: django-secrets
+  service:
+    port: 8000
 
   ingress:
     enabled: true
