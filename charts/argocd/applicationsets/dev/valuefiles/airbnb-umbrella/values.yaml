@@ -1,7 +1,7 @@
 backend:
   image:
     repository: ggorockee/py-airbnb-backend
-    tag: "20250629-d790665"
+    tag: "20250629-1ab0a97"
   existingSecret: django-secrets
   service:
     port: 8000
