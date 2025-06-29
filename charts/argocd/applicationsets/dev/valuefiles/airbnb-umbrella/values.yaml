@@ -6,11 +6,20 @@ backend:
 
   livenessProbe:
     enabled: true
-    path: /healthz # 1번 단계에서 추가한 헬스 체크 경로
+    path: /healthz/ready # 1번 단계에서 추가한 헬스 체크 경로
     initialDelaySeconds: 30 # 파드가 시작되고 30초 후부터 검사 시작
     periodSeconds: 15     # 15초마다 검사
     timeoutSeconds: 5       # 응답 대기 시간 5초
     failureThreshold: 3     # 3번 연속 실패하면 재시작
+
+  readinessProbe:
+    enabled: true
+    path: /healthz/ready # livenessProbe와 동일한 경로 사용 가능
+    initialDelaySeconds: 10 # liveness보다 먼저, 더 짧게 검사 시작
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 2     # 2번 연속 실패 시 트래픽 차단
+  
   service:
     port: 8000
 
