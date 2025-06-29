@@ -3,7 +3,27 @@ entries:
   airbnb-umbrella:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-06-29T19:33:47.869295+09:00"
+    created: "2025-06-29T19:56:10.660798+09:00"
+    dependencies:
+    - name: backend
+      repository: file://./charts/backend
+      version: 1.0.8
+    - name: frontend
+      repository: file://./charts/frontend
+      version: 2.0.1
+    - name: postgresql
+      repository: file://./charts/postgresql
+      version: 2.31.3
+    description: A Helm chart for deploying the entire Django+React application
+    digest: e35b9f95f388b18d0c64ab3aab7626147bb89428f08bf4230412a00867946189
+    name: airbnb-umbrella
+    type: application
+    urls:
+    - airbnb-umbrella-2.0.0.tgz
+    version: 2.0.0
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-06-29T19:56:10.625262+09:00"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -23,7 +43,7 @@ entries:
     version: 1.0.9
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-06-29T19:33:47.852006+09:00"
+    created: "2025-06-29T19:56:10.609733+09:00"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -43,7 +63,7 @@ entries:
     version: 1.0.8
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-06-29T19:33:47.838024+09:00"
+    created: "2025-06-29T19:56:10.59829+09:00"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -63,7 +83,7 @@ entries:
     version: 1.0.7
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-06-29T19:33:47.82765+09:00"
+    created: "2025-06-29T19:56:10.587893+09:00"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -83,7 +103,7 @@ entries:
     version: 1.0.6
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-06-29T19:33:47.816408+09:00"
+    created: "2025-06-29T19:56:10.579911+09:00"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -104,7 +124,7 @@ entries:
   backend:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-06-29T19:33:47.871011+09:00"
+    created: "2025-06-29T19:56:10.661788+09:00"
     description: A Helm chart for Kubernetes
     digest: c8c78d51f8a25ff7e2636b129b24c4244b6b184e9e42b66fe407976a705131f2
     name: backend
@@ -114,7 +134,7 @@ entries:
     version: 0.1.1
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-06-29T19:33:47.870078+09:00"
+    created: "2025-06-29T19:56:10.661318+09:00"
     description: A Helm chart for Kubernetes
     digest: e101a7f188de59457a251146be0d1bb522965a65a7cc3c3a98d3f2d2546027b5
     name: backend
@@ -125,7 +145,7 @@ entries:
   external-secrets-values:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-06-29T19:33:47.87205+09:00"
+    created: "2025-06-29T19:56:10.662563+09:00"
     description: A Helm chart for Kubernetes
     digest: eb42a9f10d3e6ac16b39a53e5557d32abe527c48006d8c4b21f3f693f7b953cb
     name: external-secrets-values
@@ -135,7 +155,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-06-29T19:33:47.871567+09:00"
+    created: "2025-06-29T19:56:10.66216+09:00"
     description: A Helm chart for Kubernetes
     digest: 5011a85445124c20e131fc0c4276c507db3fde61d49c976bcd4a7bbd26360259
     name: external-secrets-values
@@ -143,4 +163,4 @@ entries:
     urls:
     - external-secrets-values-1.0.0.tgz
     version: 1.0.0
-generated: "2025-06-29T19:33:47.807624+09:00"
+generated: "2025-06-29T19:56:10.572083+09:00"
