@@ -3,6 +3,14 @@ backend:
     repository: ggorockee/py-airbnb-backend
     tag: "20250629-1ab0a97"
   existingSecret: django-secrets
+
+  livenessProbe:
+    enabled: true
+    path: /healthz # 1번 단계에서 추가한 헬스 체크 경로
+    initialDelaySeconds: 30 # 파드가 시작되고 30초 후부터 검사 시작
+    periodSeconds: 15     # 15초마다 검사
+    timeoutSeconds: 5       # 응답 대기 시간 5초
+    failureThreshold: 3     # 3번 연속 실패하면 재시작
   service:
     port: 8000
 
