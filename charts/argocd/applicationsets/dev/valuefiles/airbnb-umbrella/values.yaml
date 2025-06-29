@@ -18,7 +18,7 @@ backend:
   gateway:
     # Gateway가 트래픽을 받을 포트 설정
     port:
-      number: 80
+      number: 30080
       name: http
       protocol: HTTP
 
