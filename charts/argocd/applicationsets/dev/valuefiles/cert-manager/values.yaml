@@ -33,7 +33,7 @@ clusterIssuer:
 
   # DNS01-Webhook 설정
   dnsNames:
-    - "*.ggorockee.com"
+    # - "*.ggorockee.com"
     - "ggorockee.com"
   webhook:
     groupName: "acme.fred78290.fr"
