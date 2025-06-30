@@ -3,7 +3,7 @@ entries:
   airbnb-umbrella:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-06-30T14:49:13.973389955Z"
+    created: "2025-06-30T15:18:25.279606332Z"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -23,7 +23,7 @@ entries:
     version: 2.0.0
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-06-30T14:49:13.888942684Z"
+    created: "2025-06-30T15:18:25.235283079Z"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -43,7 +43,7 @@ entries:
     version: 1.0.9
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-06-30T14:49:13.855155471Z"
+    created: "2025-06-30T15:18:25.2173488Z"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -63,7 +63,7 @@ entries:
     version: 1.0.8
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-06-30T14:49:13.837864406Z"
+    created: "2025-06-30T15:18:25.201949549Z"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -83,7 +83,7 @@ entries:
     version: 1.0.7
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-06-30T14:49:13.823116511Z"
+    created: "2025-06-30T15:18:25.193157144Z"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -103,7 +103,7 @@ entries:
     version: 1.0.6
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-06-30T14:49:13.790912827Z"
+    created: "2025-06-30T15:18:25.18052828Z"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -124,7 +124,7 @@ entries:
   backend:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-06-30T14:49:13.975609882Z"
+    created: "2025-06-30T15:18:25.28057182Z"
     description: A Helm chart for Kubernetes
     digest: c8c78d51f8a25ff7e2636b129b24c4244b6b184e9e42b66fe407976a705131f2
     name: backend
@@ -134,7 +134,7 @@ entries:
     version: 0.1.1
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-06-30T14:49:13.974654215Z"
+    created: "2025-06-30T15:18:25.28004693Z"
     description: A Helm chart for Kubernetes
     digest: e101a7f188de59457a251146be0d1bb522965a65a7cc3c3a98d3f2d2546027b5
     name: backend
@@ -152,7 +152,7 @@ entries:
         url: https://cert-manager.io/public-keys/cert-manager-keyring-2021-09-20-1020CF3C033D4F35BAE1C19E1226061C665DF13E.gpg
     apiVersion: v2
     appVersion: v1.18.1
-    created: "2025-06-30T14:49:13.990277943Z"
+    created: "2025-06-30T15:18:25.286601165Z"
     description: A Helm chart for cert-manager
     digest: ac410df090621ac25f9f03e11e8bbe33ae3cb0da8235a01aded94fe4764f3ce9
     home: https://cert-manager.io
@@ -176,7 +176,7 @@ entries:
   external-secrets-values:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-06-30T14:49:13.992366588Z"
+    created: "2025-06-30T15:18:25.287238027Z"
     description: A Helm chart for Kubernetes
     digest: eb42a9f10d3e6ac16b39a53e5557d32abe527c48006d8c4b21f3f693f7b953cb
     name: external-secrets-values
@@ -186,7 +186,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-06-30T14:49:13.991397648Z"
+    created: "2025-06-30T15:18:25.286850893Z"
     description: A Helm chart for Kubernetes
     digest: 5011a85445124c20e131fc0c4276c507db3fde61d49c976bcd4a7bbd26360259
     name: external-secrets-values
@@ -194,10 +194,30 @@ entries:
     urls:
     - external-secrets-values-1.0.0.tgz
     version: 1.0.0
+  godaddy-webhook:
+  - apiVersion: v2
+    appVersion: 1.29.0
+    created: "2025-06-30T15:18:25.287690982Z"
+    description: A Helm chart to install godaddy cert manager webhook
+    digest: 8350b8436055ee86a1bdc90c7cbeb2e17b4398445ca0c79cf55f431a19655bb7
+    home: https://github.com/Fred78290/cert-manager-webhook-godaddy/
+    icon: https://raw.githubusercontent.com/Fred78290/cert-manager-webhook-godaddy/master/images/cert-manager-godaddy.png
+    keywords:
+    - cert-manager
+    - godaddy
+    maintainers:
+    - name: Fred78290
+      url: https://github.com/Fred78290/
+    name: godaddy-webhook
+    sources:
+    - https://github.com/Fred78290/cert-manager-webhook-godaddy/
+    urls:
+    - godaddy-webhook-1.29.0.tgz
+    version: 1.29.0
   letsenc-certificate:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-06-30T14:49:13.992653532Z"
+    created: "2025-06-30T15:18:25.287914787Z"
     description: A Helm chart that deploys only cert-manager Certificate resources
       for Let's Encrypt
     digest: b28df1e8f1af987a43076272d8fcb386e0892076ee260eba4e716a0f61377380
@@ -206,4 +226,4 @@ entries:
     urls:
     - letsenc-certificate-0.1.0.tgz
     version: 0.1.0
-generated: "2025-06-30T14:49:13.776541362Z"
+generated: "2025-06-30T15:18:25.153529988Z"
