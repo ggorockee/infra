@@ -1,7 +1,7 @@
 env: dev
 chartName: cert-manager
 appName: cert-manager
-repoURL: https://ggorockee.github.io/infra/
+repoURL: https://charts.jetstack.io
 revision: dev
 chartVersion: v1.18.1
 namespace: cert-manager
