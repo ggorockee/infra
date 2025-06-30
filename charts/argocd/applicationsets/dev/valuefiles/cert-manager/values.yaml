@@ -38,6 +38,8 @@ clusterIssuer:
   webhook:
     groupName: "acme.fred78290.fr"
     solverName: "godaddy"
+    config:
+      production: true
 
 certmanager:
   enabled: true
