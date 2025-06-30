@@ -21,7 +21,7 @@ clusterIssuer:
 
 certManager:
   namespace: cert-manager-dev
-  serviceAccountName: cert-manager-dev
+  serviceAccountName: godaddy-webhook-dev
 
 imagePullSecrets: []
 nameOverride: ""
