@@ -3,5 +3,5 @@ chartName: cert-manager
 appName: cert-manager
 repoURL: https://ggorockee.github.io/infra/
 revision: dev
-chartVersion: v1.18.2
+chartVersion: v1.18.3
 namespace: cert-manager
