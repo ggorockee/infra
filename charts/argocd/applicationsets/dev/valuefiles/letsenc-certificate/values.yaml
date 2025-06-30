@@ -1,0 +1,11 @@
+certmanager:
+  certi:
+    - name: istio-gateway-cert
+      namespace: istio-system
+      extraLabels: {}
+      annotations: {}
+      secretName: istio-gateway-certs
+      clusterIssuer:
+        name: letsencrypt-godaddy
+      dnsNames: 
+        - "ggorockee.com"
