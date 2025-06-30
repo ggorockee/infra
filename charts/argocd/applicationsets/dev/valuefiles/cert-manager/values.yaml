@@ -2,7 +2,7 @@ installCRDs: true
 
 webhook:
   securePort: 9443
-  port: 9443
+  # port: 9443
 extraSecrets: []
 # - name: my-custom-secret
 #   stringData:
