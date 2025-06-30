@@ -33,6 +33,12 @@ clusterIssuer:
     solverName: "godaddy"
 
 godaddy-webhook:
+  groupName: acme.fred78290.fr
+
+  certManager:
+    namespace: cert-manager
+    serviceAccountName: cert-manager-dev
+  
   extraSecrets: []
   # - name: my-custom-secret
   #   stringData:
