@@ -39,6 +39,19 @@ clusterIssuer:
     groupName: "acme.fred78290.fr"
     solverName: "godaddy"
 
+certmanager:
+  enabled: true
+  certi:
+    - name: istio-gateway-cert
+      extraLabels: {}
+      annotations: {}
+      namespace: istio-system
+      secretName: istio-gateway-certs
+      dnsNames: 
+        - "*.ggorockee.com"
+        - "ggorockee.com"
+
+
 godaddy-webhook:
   groupName: acme.fred78290.fr
 
