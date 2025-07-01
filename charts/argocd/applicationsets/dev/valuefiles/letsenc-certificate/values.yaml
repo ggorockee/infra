@@ -14,7 +14,7 @@ certmanager:
       namespace: argocd
       extraLabels: {}
       annotations: {}
-      secretName: argocd-gateway-cert
+      secretName: argocd-gateway-certs
       clusterIssuer:
         name: letsencrypt-cloudflare
       dnsNames: 
