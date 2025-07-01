@@ -1,15 +1,14 @@
 certmanager:
   certi:
-    - name: istio-gateway-cert
-      namespace: istio-system
-      extraLabels: {}
-      annotations: {}
-      secretName: istio-gateway-certs
-      clusterIssuer:
-        name: letsencrypt-cloudflare
-      dnsNames: 
-        - "*.ggorockee.org"
-        - "ggorockee.org"
+    # - name: istio-gateway-cert
+    #   namespace: istio-system
+    #   extraLabels: {}
+    #   annotations: {}
+    #   secretName: istio-gateway-certs
+    #   clusterIssuer:
+    #     name: letsencrypt-cloudflare
+    #   dnsNames: 
+    #     - "ggorockee.org"
     - name: argocd-gateway-cert
       namespace: argocd
       extraLabels: {}
