@@ -8,4 +8,5 @@ certmanager:
       clusterIssuer:
         name: letsencrypt-godaddy
       dnsNames: 
+        - "ggorockee.com"
         - "*.ggorockee.com"
