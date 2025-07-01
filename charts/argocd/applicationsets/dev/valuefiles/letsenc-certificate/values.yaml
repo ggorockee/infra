@@ -26,4 +26,5 @@ clusterIssuer:
   solvers:
     dnsNames:
       - "ggorockee.org"
+      - "argocd.ggorockee.org"
       - "*.ggorockee.org"
