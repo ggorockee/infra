@@ -10,6 +10,15 @@ certmanager:
       dnsNames: 
         - "*.ggorockee.org"
         - "ggorockee.org"
+    - name: argocd-gateway-cert
+      namespace: argocd
+      extraLabels: {}
+      annotations: {}
+      secretName: argocd-gateway-cert
+      clusterIssuer:
+        name: letsencrypt-cloudflare
+      dnsNames: 
+        - "argocd.ggorockee.org"
 
 clusterIssuer:
   name: letsencrypt-cloudflare
