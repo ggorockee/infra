@@ -15,7 +15,7 @@ _internal_defaults_do_not_set:
         port: 80        # ← 외부(LoadBalancer) 포트
         targetPort: 30080  # ← Pod(Envoy) 내부 포트 (Gateway가 듣는 포트)
       - name: https
-        port: 31443        # (TLS 쪽도 원하시면 비슷하게 설정)
+        port: 443        # (TLS 쪽도 원하시면 비슷하게 설정)
         targetPort: 31443
         nodePort: 31933
   env:
