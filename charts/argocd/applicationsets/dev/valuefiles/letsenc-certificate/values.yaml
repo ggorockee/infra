@@ -6,7 +6,16 @@ certmanager:
       annotations: {}
       secretName: istio-gateway-certs
       clusterIssuer:
-        name: letsencrypt-godaddy
+        name: letsencrypt-cloudflare
       dnsNames: 
-        - "ggorockee.com"
-        - "*.ggorockee.com"
+        - "*.ggorockee.org"
+        - "ggorockee.org"
+
+clusterIssuer:
+  name: letsencrypt-cloudflare
+  email: ggorockee@gmail.com
+  privateKeySecretName: letsencrypt-cloudflare-account-key
+  solvers:
+    dnsNames:
+      - "ggorockee.org"
+      - "*.ggorockee.org"
