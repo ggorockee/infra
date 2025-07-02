@@ -100,3 +100,7 @@ prometheus:
           resources:
             requests:
               storage: 50Gi
+
+
+kubelet:
+  enabled: false
