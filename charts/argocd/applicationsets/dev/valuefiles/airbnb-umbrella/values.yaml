@@ -29,16 +29,15 @@ backend:
     gateway:
       name: ""
   extraConfig: {}
-    # - name: your-name
-    #   data: {}
+  # - name: your-name
+  #   data: {}
   extraSecrets: {}
-    # - name:
-    #   data: {}
-    
+  # - name:
+  #   data: {}
 frontend:
   image:
     repository: ggorockee/react-airbnb-frontend
-    tag: "20250629-0c8721c"
+    tag: "20250702-51b8bfe"
   annotations:
     reloader.stakater.com/auto: "true"
   livenessProbe:
@@ -74,9 +73,8 @@ frontend:
       data:
         REACT_APP_DEBUG: "false"
   extraSecrets: {}
-    # - name:
-    #   data: {}
-    
+  # - name:
+  #   data: {}
 postgresql:
   global:
     postgresql:
