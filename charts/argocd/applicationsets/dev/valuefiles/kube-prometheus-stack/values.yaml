@@ -103,4 +103,4 @@ prometheus:
 
 
 kubelet:
-  enabled: false
+  enabled: true
