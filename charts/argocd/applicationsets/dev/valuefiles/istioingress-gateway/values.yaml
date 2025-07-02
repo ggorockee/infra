@@ -7,10 +7,10 @@ _internal_defaults_do_not_set:
       - name: status-port
         port: 15021
         targetPort: 15021
-      - name: http2
-        port: 30080        # ← 외부(LoadBalancer) 포트
-        targetPort: 30080  # ← Pod(Envoy) 내부 포트 (Gateway가 듣는 포트)
-        nodePort: 30080    # ← NodePort 범위(30000-32767) 내에서 고정하고 싶다면
+      # - name: http2
+      #   port: 30080        # ← 외부(LoadBalancer) 포트
+      #   targetPort: 30080  # ← Pod(Envoy) 내부 포트 (Gateway가 듣는 포트)
+      #   nodePort: 30080    # ← NodePort 범위(30000-32767) 내에서 고정하고 싶다면
       - name: http
         port: 80        # ← 외부(LoadBalancer) 포트
         targetPort: 30080  # ← Pod(Envoy) 내부 포트 (Gateway가 듣는 포트)
