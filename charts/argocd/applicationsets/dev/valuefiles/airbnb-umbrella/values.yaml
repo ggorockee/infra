@@ -72,7 +72,7 @@ frontend:
   extraConfig:
     - name: process-env
       data:
-        REACT_APP_DEBUG: "false"
+        REACT_APP_DEBUG: "true"
   extraSecrets: {}
     # - name:
     #   data: {}
