@@ -66,7 +66,13 @@ frontend:
     #  - secretName: chart-example-tls
     #    hosts:
     #      - chart-example.local
-
+  extraConfig:
+    - name: process_env
+      data:
+        REACT_APP_DEBUG: "true"
+  extraSecrets: {}
+    # - name:
+    #   data: {}
     
 postgresql:
   global:
