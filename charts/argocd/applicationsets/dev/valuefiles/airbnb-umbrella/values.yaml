@@ -67,7 +67,7 @@ frontend:
     #    hosts:
     #      - chart-example.local
   extraConfig:
-    - name: process_env
+    - name: process-env
       data:
         REACT_APP_DEBUG: "true"
   extraSecrets: {}
