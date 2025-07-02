@@ -2,7 +2,6 @@ backend:
   image:
     repository: ggorockee/py-airbnb-backend
     tag: "20250629-f8a5cb5"
-  existingSecret: django-secrets
   livenessProbe:
     enabled: true
     path: /healthz/ready # 1번 단계에서 추가한 헬스 체크 경로
@@ -24,41 +23,17 @@ backend:
     className: "istio"
     annotations: {}
     hosts:
-      - airbnb-beta-api.ggorockee.com
-    tls: []
-    #  - secretName: chart-example-tls
-    #    hosts:
-    #      - chart-example.local
-  gateway:
-    # Gateway가 트래픽을 받을 포트 설정
-    port:
-      number: 30080
-      name: http
-      protocol: HTTP
-    # Ingress Gateway Pod를 선택하기 위한 셀렉터
-    # 기본값은 Istio 설치 시 기본적으로 사용되는 레이블입니다.
-    selector:
-      istio: ingressgateway
-    tls:
-      httpsRedirect: false
-  # Istio VirtualService 리소스에 대한 상세 설정
-  virtualservice: {}
-  # # CORS 정책 설정
-  # corsPolicy:
-  #   allowOrigins:
-  #     - regex: "https?://.*"
-  #   allowMethods:
-  #     - "GET"
-  #     - "POST"
-  #     - "PUT"
-  #     - "DELETE"
-  #     - "OPTIONS"
-  #     - "PATCH"
-  #   allowHeaders:
-  #     - "*"
-  #   exposeHeaders:
-  #     - "*"
-  #   allowCredentials: true
+      - airbnb-beta-api.ggorockee.org
+    gateway:
+      name: ""
+  extraConfig: {}
+    # - name: your-name
+    #   data: {}
+  extraSecrets: {}
+    # - name:
+    #   data: {}
+
+    
 frontend:
   image:
     repository: ggorockee/react-airbnb-frontend
@@ -84,41 +59,15 @@ frontend:
     className: "istio"
     annotations: {}
     hosts:
-      - airbnb-beta.ggorockee.com
+      - airbnb-beta.ggorockee.org
+    gateway:
+      name: ""
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
     #      - chart-example.local
-  gateway:
-    # Gateway가 트래픽을 받을 포트 설정
-    port:
-      number: 30080
-      name: http
-      protocol: HTTP
-    # Ingress Gateway Pod를 선택하기 위한 셀렉터
-    # 기본값은 Istio 설치 시 기본적으로 사용되는 레이블입니다.
-    selector:
-      istio: ingressgateway
-    tls:
-      httpsRedirect: false
-      # Istio VirtualService 리소스에 대한 상세 설정
-      # virtualservice: {}
-    # CORS 정책 설정
-    # corsPolicy:
-    #   allowOrigins:
-    #     - regex: "https?://.*"
-    #   allowMethods:
-    #     - "GET"
-    #     - "POST"
-    #     - "PUT"
-    #     - "DELETE"
-    #     - "OPTIONS"
-    #     - "PATCH"
-    #   allowHeaders:
-    #     - "*"
-    #   exposeHeaders:
-    #     - "*"
-    #   allowCredentials: true
+
+    
 postgresql:
   global:
     postgresql:
