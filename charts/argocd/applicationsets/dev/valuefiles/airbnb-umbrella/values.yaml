@@ -2,6 +2,8 @@ backend:
   image:
     repository: ggorockee/py-airbnb-backend
     tag: "20250629-f8a5cb5"
+  annotations:
+    reloader.stakater.com/auto: "true"
   livenessProbe:
     enabled: true
     path: /healthz/ready # 1번 단계에서 추가한 헬스 체크 경로
@@ -32,12 +34,13 @@ backend:
   extraSecrets: {}
     # - name:
     #   data: {}
-
     
 frontend:
   image:
     repository: ggorockee/react-airbnb-frontend
     tag: "20250629-0c8721c"
+  annotations:
+    reloader.stakater.com/auto: "true"
   livenessProbe:
     enabled: true
     path: /healthz/ready # 1번 단계에서 추가한 헬스 체크 경로
@@ -81,3 +84,6 @@ postgresql:
         username: ggorockee
         database: airbnb-dev
         existingSecret: airbnb-db-credentials
+  primary:
+    annoations:
+      reloader.stakater.com/auto: "true"
