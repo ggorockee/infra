@@ -1,7 +1,7 @@
 backend:
   image:
     repository: ggorockee/py-airbnb-backend
-    tag: "20250629-f8a5cb5"
+    tag: "20250703-f1433a7"
   annotations:
     reloader.stakater.com/auto: "true"
   livenessProbe:
