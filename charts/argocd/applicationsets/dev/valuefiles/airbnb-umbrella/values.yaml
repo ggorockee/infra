@@ -28,9 +28,10 @@ backend:
       - airbnb-beta-api.ggorockee.org
     gateway:
       name: ""
-  extraConfig: {}
-  # - name: your-name
-  #   data: {}
+  extraConfig:
+    - name: django-config
+      data:
+        DEBUG: "off"
   extraSecrets: {}
   # - name:
   #   data: {}
