@@ -11,6 +11,9 @@ backend:
     periodSeconds: 15 # 15초마다 검사
     timeoutSeconds: 5 # 응답 대기 시간 5초
     failureThreshold: 3 # 3번 연속 실패하면 재시작
+    httpHeaders:
+      - name: Host
+        value: airbnb-umbrella-backend.airbnb-dev.svc.cluster.local
   readinessProbe:
     enabled: true
     path: /healthz/ready # livenessProbe와 동일한 경로 사용 가능
@@ -18,6 +21,9 @@ backend:
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 2 # 2번 연속 실패 시 트래픽 차단
+    httpHeaders:
+      - name: Host
+        value: airbnb-umbrella-backend.airbnb-dev.svc.cluster.local
   service:
     port: 8000
   ingress:
