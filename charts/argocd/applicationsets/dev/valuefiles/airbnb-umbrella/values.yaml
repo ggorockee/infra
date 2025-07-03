@@ -32,7 +32,7 @@ backend:
     - name: django-config
       data:
         DEBUG: "off"
-        DJANGO_ALLOWED_HOSTS: ".ggorockee.org,.ggorockee.com"
+        DJANGO_ALLOWED_HOSTS: ".ggorockee.org,.ggorockee.com,airbnb-umbrella-backend.airbnb-dev.svc.cluster.local,airbnb-umbrella-backend.airbnb.svc.cluster.local"
   extraSecrets: {}
   # - name:
   #   data: {}
