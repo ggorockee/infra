@@ -1,0 +1,44 @@
+name: 'Terraform Plan v3'
+on:
+  pull_request:
+    branches: [ dev ]
+    paths:
+      - 'aws/terraform/**'
+permissions:
+  id-token: write
+  contents: read
+  
+env:
+  AWS_REGION: ap-northeast-2
+  AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./aws/terraform/envs/dev
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.0
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Format
+        run: terraform fmt -check
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -no-color -input=false

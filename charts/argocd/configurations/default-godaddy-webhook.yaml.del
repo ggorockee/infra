@@ -1,0 +1,7 @@
+env: dev
+revision: dev
+chartName: godaddy-webhook
+appName: godaddy-webhook
+repoURL: https://ggorockee.github.io/infra/
+chartVersion: 1.29.0
+namespace: cert-manager

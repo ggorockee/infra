@@ -1,0 +1,44 @@
+name: 'Terraform Apply v3'
+on:
+  push:
+    branches: [ dev ]
+    paths:
+      - 'aws/terraform/**'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-2
+  AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./aws/terraform/envs/dev
+    steps:
+      - uses: actions/checkout@v4
+        name: CheckOut
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.0
+
+      # 캐시 삭제 및 초기화 추가
+      - name: Clean Terraform Cache
+        run: rm -rf .terraform  # 캐시 강제 삭제
+
+      - name: Terraform Init
+        run: terraform init -reconfigure  # 백엔드 강제 재설정
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -input=false

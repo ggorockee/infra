@@ -1,0 +1,6 @@
+env: dev
+chartName: aws-ebs-csi-driver
+appName: aws-ebs-csi-driver
+repoURL: https://kubernetes-sigs.github.io/aws-ebs-csi-driver
+chartVersion: 2.44.0
+namespace: kube-system
