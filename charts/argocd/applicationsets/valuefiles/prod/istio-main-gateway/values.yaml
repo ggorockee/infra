@@ -12,7 +12,7 @@ gateway:
 
   # 서버 규칙 목록
   servers:
-    - name: http
+    - name: http-org
       port: 30080
       protocol: HTTP
       hosts:
@@ -22,7 +22,7 @@ gateway:
         enabled: true
         mode: REDIRECT
 
-    - name: https
+    - name: https-org
       port: 31443
       protocol: HTTPS
       hosts:
@@ -33,7 +33,7 @@ gateway:
         mode: SIMPLE
         credentialName: istio-gateway-certs
 
-    - name: http
+    - name: http-com
       port: 30080
       protocol: HTTP
       hosts:
@@ -43,7 +43,7 @@ gateway:
         enabled: true
         mode: REDIRECT
 
-    - name: https
+    - name: https-com
       port: 31443
       protocol: HTTPS
       hosts:
