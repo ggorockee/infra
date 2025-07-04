@@ -1,7 +1,0 @@
-env: dev
-chartName: metricbeat
-appName: metricbeat
-repoURL: https://helm.elastic.co
-revision: dev
-chartVersion: 8.5.1
-namespace: logging

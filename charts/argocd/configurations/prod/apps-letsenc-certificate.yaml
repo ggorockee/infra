@@ -1,5 +1,5 @@
-env: dev
-revision: dev
+env: prod
+revision: main
 chartName: letsenc-certificate
 appName: letsenc-certificate
 repoURL: https://ggorockee.github.io/infra/

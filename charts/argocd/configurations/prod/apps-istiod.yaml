@@ -1,7 +1,7 @@
-env: dev
+env: prod
+revision: main
 chartName: istiod
 appName: istiod
 repoURL: https://istio-release.storage.googleapis.com/charts
-revision: dev
 chartVersion: 1.26.1
 namespace: istio-system
