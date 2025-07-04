@@ -300,7 +300,7 @@ config:
       HTTP_Port {{ .Values.metricsPort }}
       Health_Check On
 
-      # 내부 스토리지 버퍼링 설정 (로그 전송 실패 시 데이터 손실 방지)
+      
       Storage.Path /var/log/flb-storage/
       Storage.Sync Normal
       Storage.Checksum On
@@ -323,35 +323,31 @@ config:
 
   ## https://docs.fluentbit.io/manual/pipeline/filters
   filters: |
-    # Kubernetes 메타데이터를 로그에 추가
     [FILTER]
       Name kubernetes
-      Match kube.* # 'kube.' 태그가 붙은 로그에 적용
-      Merge_Log On # 컨테이너 로그의 JSON 필드를 로그 레벨로 병합
-      Keep_Log Off # 원본 로그 필드 제거
-      K8S-Logging.Parser On # 컨테이너 런타임이 추가한 JSON 형식 로그 파싱
-      K8S-Logging.Exclude On # Fluent Bit 자체 로그는 제외
+      Match kube.*
+      Merge_Log On
+      Keep_Log Off
+      K8S-Logging.Parser On
+      K8S-Logging.Exclude On
 
   ## https://docs.fluentbit.io/manual/pipeline/outputs
   outputs: |
-    # Grafana Cloud Loki로 로그 전송
     [OUTPUT]
       Name loki
-      Match kube.* # 'kube.' 태그가 붙은 로그만 Loki로 전송 (Django 앱 로그 포함)
+      Match kube.*
       Host logs-prod-030.grafana.net
       Port 443
       TLS On
       TLS_Verify On
       URI /loki/api/v1/push
-      # Secret으로부터 Access Policy ID (username)와 Access Token (password)을 가져옴
       Loki_User ${LOKI_USERNAME}
       Loki_Password ${LOKI_PASSWORD}
-      # Loki에 보낼 기본 레이블과 Kubernetes 메타데이터를 사용하여 동적으로 추가할 레이블 키를 정의
       Labels {job="kubernetes-logs", app="fluent-bit"}
       Label_Keys kubernetes_pod_name,kubernetes_namespace_name,kubernetes_container_name
-      Auto_Labels On # Kubernetes 레이블을 Loki 레이블로 자동 변환
-      Line_Format json # 로그 라인 형식을 JSON으로 설정 (Grafana에서 파싱 용이)
-      Retry_Limit Off # Loki로 전송 실패 시 무한 재시도 (로그 손실 최소화)
+      Auto_Labels On
+      Line_Format json
+      Retry_Limit Off
 
   ## https://docs.fluentbit.io/manual/administration/configuring-fluent-bit/classic-mode/upstream-servers
   ## This configuration is deprecated, please use `extraFiles` instead.
