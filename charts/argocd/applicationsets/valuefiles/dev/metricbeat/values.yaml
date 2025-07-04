@@ -1,0 +1,97 @@
+daemonset:
+  enabled: true
+  secretMounts: []
+  hostNetwork: true
+  # dnsPolicy: ClusterFirstWithHostNet
+  # extraVolumes:
+  #   - name: data
+  #     emptyDir: {}
+  # extraVolumeMounts:
+  #   - name: data
+  #     mountPath: /usr/share/metricbeat/data
+  metricbeatConfig:
+    metricbeat.yml: |
+      metricbeat.modules:
+      - module: kubernetes
+        metricsets:
+          - container
+          - node
+          - pod
+          - system
+          - volume
+        period: 10s
+        # host: "${NODE_NAME}"
+        hosts: ["https://localhost:10250"]
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        ssl.verification_mode: "none"
+        processors:
+        - add_kubernetes_metadata: ~
+
+      - module: system
+        period: 10s
+        metricsets:
+          - cpu
+          - load
+          - memory
+          - network
+          - process
+          - process_summary
+        processes: ['.*']
+        process.include_top_n:
+          by_cpu: 5
+          by_memory: 5
+
+      - module: system
+        period: 1m
+        metricsets:
+          - filesystem
+          - fsstat
+        processors:
+        - drop_event.when.regexp:
+            system.filesystem.mount_point: '^/(sys|cgroup|proc|dev|etc|host|lib)($|/)'
+
+      output.elasticsearch:
+        hosts: ["http://${ELASTICSEARCH_HOST}"]
+        ssl.enabled: false
+        username: "elastic"
+        password: "changeme"
+        pipeline: pod_phase_pipeline
+        
+deployment:
+  enabled: true
+  secretMounts: []
+  # extraVolumes:
+  #   - name: data
+  #     emptyDir: {}
+  # extraVolumeMounts:
+  #   - name: data
+  #     mountPath: /usr/share/metricbeat/data
+  metricbeatConfig:
+    metricbeat.yml: |
+      metricbeat.modules:
+      - module: kubernetes
+        enabled: true
+        metricsets:
+          - state_node
+          - state_deployment
+          - state_replicaset
+          - state_pod
+          - state_container
+        period: 10s
+        hosts: ["http://${KUBE_STATE_METRICS_HOST}"]
+
+      output.elasticsearch:
+        hosts: ["http://${ELASTICSEARCH_HOST}"]
+        ssl.enabled: false
+        username: "elastic"
+        password: "changeme"
+        pipeline: pod_phase_pipeline
+
+extraEnvs:
+  - name: "ELASTICSEARCH_HOST"
+    value: "elasticsearch-dev.logging.svc.cluster.local:9200"
+  - name: "KUBE_STATE_METRICS_HOST"
+    value: "metricbeat-dev-kube-state-metrics.logging.svc.cluster.local:8080"
+
+kube_state_metrics:
+  enabled: true

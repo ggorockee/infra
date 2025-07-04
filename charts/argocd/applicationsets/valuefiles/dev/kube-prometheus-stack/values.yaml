@@ -1,0 +1,106 @@
+
+alertmanager:
+  enabled: false
+
+grafana:
+  grafana.ini:
+    plugins:
+      allow_loading_unsigned_plugins: yesoreyeram-boomtable-panel
+  plugins:
+    - grafana-polystat-panel
+    - yesoreyeram-boomtable-panel
+  enabled: true
+
+  persistence:
+    type: pvc
+    enabled: true
+    sidecar:
+      dashboards:
+        enabled: true
+        label: grafana_dashboard
+    
+    storageClassName: openebs-hostpath
+    ## (Optional) Use this to bind the claim to an existing PersistentVolume (PV) by name.
+    volumeName: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+    # annotations: {}
+    finalizers:
+      - kubernetes.io/pvc-protection
+
+
+prometheus:
+  enabled: true
+
+  service:
+    enabled: true
+    annotations: {}
+    labels: {}
+    clusterIP: ""
+    ipDualStack:
+      enabled: false
+      ipFamilies: ["IPv6", "IPv4"]
+      ipFamilyPolicy: "PreferDualStack"
+    port: 9090
+    targetPort: 9090
+    reloaderWebPort: 8080
+    externalIPs: []
+    nodePort: 30090
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    externalTrafficPolicy: Cluster
+    type: ClusterIP
+
+    additionalPorts: []
+    # additionalPorts:
+    # - name: oauth-proxy
+    #   port: 8081
+    #   targetPort: 8081
+    # - name: oauth-metrics
+    #   port: 8082
+    #   targetPort: 8082
+
+
+  servicePerReplica:
+    enabled: false
+    annotations: {}
+    port: 9090
+    targetPort: 9090
+    nodePort: 30091
+    loadBalancerSourceRanges: []
+    externalTrafficPolicy: Cluster
+    type: ClusterIP
+
+  prometheusSpec:
+    remoteWrite:
+      - url: https://prometheus-prod-49-prod-ap-northeast-0.grafana.net/api/prom/push
+        basicAuth:
+          username: 
+            name: grafana-cloud-secret
+            key: username
+          password:
+            name: grafana-cloud-secret
+            key: password
+    persistentVolumeClaimRetentionPolicy: {}
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    # serviceMonitorNamespaceSelector:
+    #   any: true
+    # # podMonitorNamespaceSelector도 동일하게 설정하여 PodMonitor도 모든 네임스페이스에서 스캔하도록 합니다.
+    # podMonitorNamespaceSelector:
+    #   any: true
+    retention: 10d
+    resources: {}
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: openebs-hostpath
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 50Gi
+
+
+kubelet:
+  enabled: true
