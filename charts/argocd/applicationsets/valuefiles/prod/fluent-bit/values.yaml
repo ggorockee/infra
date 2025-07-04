@@ -339,7 +339,6 @@ config:
       Host logs-prod-030.grafana.net
       Port 443
       TLS On
-      TLS_Verify On
       URI /loki/api/v1/push
       Loki_User ${LOKI_USERNAME}
       Loki_Password ${LOKI_PASSWORD}
