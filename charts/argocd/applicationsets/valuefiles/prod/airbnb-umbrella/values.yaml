@@ -32,7 +32,7 @@ backend:
     hosts:
       - airbnb-api.ggorockee.org
     gateway:
-      name: ""
+      name: "istio-system.istio-main-gateway"
   extraConfig:
     - name: django-config
       data:
