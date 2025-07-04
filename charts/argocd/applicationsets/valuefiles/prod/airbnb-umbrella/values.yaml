@@ -1,7 +1,12 @@
 backend:
   image:
     repository: ggorockee/py-airbnb-backend
-    tag: "20250704-add33d8"
+    tag: "20250704-f41a707"
+  extraLabels:
+    # 여기에 원하는 추가 레이블을 '키: 값' 형태로 정의
+    app: airbnb
+    service: airbnb-backend
+    component: webapp
   annotations:
     reloader.stakater.com/auto: "true"
   livenessProbe:
@@ -34,12 +39,14 @@ backend:
         DEBUG: "off"
         DJANGO_ALLOWED_HOSTS: ".ggorockee.org,.ggorockee.com,airbnb-umbrella-backend.airbnb-dev.svc.cluster.local,airbnb-umbrella-backend.airbnb.svc.cluster.local"
   extraSecrets: {}
-  # - name:
-  #   data: {}
 frontend:
   image:
     repository: ggorockee/react-airbnb-frontend
     tag: "20250704-e5a7c11"
+  extraLabels:
+    app: airbnb
+    service: airbnb-frontend
+    component: webapp
   annotations:
     reloader.stakater.com/auto: "true"
   livenessProbe:
