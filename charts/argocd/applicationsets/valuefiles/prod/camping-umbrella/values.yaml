@@ -25,6 +25,7 @@ backend:
     failureThreshold: 2 # 2번 연속 실패 시 트래픽 차단
   service:
     port: 8000
+
   ingress:
     enabled: true
     className: "istio"
@@ -32,7 +33,32 @@ backend:
     hosts:
       - camping-api.ggorockee.com
     gateway:
-      name: "istio-system/istio-main-gateway"
+      name: "istio-system/ggorockee-com-gateway"
+    httpRoutes:
+      # 규칙 1: camping.ggorockee.com -> ggorockee.com 리다이렉션
+      # - name: camping-redirect
+      #   match:
+      #     - authority:
+      #         exact: camping.ggorockee.com
+      #   redirect:
+      #     authority: "ggorockee.com"
+      #     redirectCode: 301
+
+      - name: main-app-route
+        match:
+          - authority:
+              exact: "camping-api.ggorockee.com"
+            uri:
+              prefix: /
+        route:
+          defaultRoute:
+            weight: 100
+          extraRoute:
+            {}
+            # - host: extraService.ns.svc.cluster.local
+            #   port: 8080
+            #   weight: 100
+
   extraConfig:
     - name: django-config
       data:
@@ -65,6 +91,7 @@ frontend:
     failureThreshold: 2 # 2번 연속 실패 시 트래픽 차단
   service:
     port: 80
+
   ingress:
     enabled: true
     className: "istio"
@@ -72,11 +99,30 @@ frontend:
     hosts:
       - camping.ggorockee.com
     gateway:
-      name: "istio-system/istio-main-gateway"
-    tls: []
-    #  - secretName: chart-example-tls
-    #    hosts:
-    #      - chart-example.local
+      name: "istio-system/ggorockee-com-gateway"
+    httpRoutes:
+      # 규칙 1: camping.ggorockee.com -> ggorockee.com 리다이렉션
+      - name: camping-redirect
+        match:
+          - authority:
+              exact: camping.ggorockee.com
+        redirect:
+          authority: "ggorockee.com"
+          redirectCode: 301
+      - name: main-app-route
+        match:
+          - authority:
+              exact: "ggorockee.com"
+            uri:
+              prefix: /
+        route:
+          defaultRoute:
+            weight: 100
+          extraRoute:
+            {}
+            # - host: extraService.ns.svc.cluster.local
+            #   port: 8080
+            #   weight: 100
   extraConfig:
     - name: process-env
       data:
