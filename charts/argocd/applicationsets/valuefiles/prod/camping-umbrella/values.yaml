@@ -32,7 +32,7 @@ backend:
     hosts:
       - camping-api.ggorockee.com
     gateway:
-      name: "istio-system.istio-main-gateway"
+      name: "istio-system/istio-main-gateway"
   extraConfig:
     - name: django-config
       data:
