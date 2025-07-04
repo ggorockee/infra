@@ -98,6 +98,7 @@ frontend:
     annotations: {}
     hosts:
       - camping.ggorockee.com
+      - ggorockee.com
     gateway:
       name: "istio-system/ggorockee-com-gateway"
     httpRoutes:
