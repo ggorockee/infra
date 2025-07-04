@@ -1,4 +1,5 @@
 backend:
+  enabled: false
   image:
     repository: ggorockee/py-webapp-backend
     tag: "20250704-f41a707"
@@ -66,6 +67,7 @@ backend:
         DJANGO_ALLOWED_HOSTS: ".ggorockee.com,camping-umbrella-backend.camping.svc.cluster.local"
   extraSecrets: {}
 frontend:
+  enabled: true
   image:
     repository: ggorockee/webapp-frontend-vue
     tag: "20250704-764a84c"
@@ -98,6 +100,7 @@ frontend:
     annotations: {}
     hosts:
       - camping.ggorockee.com
+      - ggorockee.com
     gateway:
       name: "istio-system/ggorockee-com-gateway"
     httpRoutes:
@@ -131,6 +134,7 @@ frontend:
   # - name:
   #   data: {}
 postgresql:
+  enabled: true
   global:
     postgresql:
       auth:
