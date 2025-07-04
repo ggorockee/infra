@@ -1,0 +1,55 @@
+gateway:
+  selector:
+    istio: ingressgateway
+
+  extraLabels:
+    role: main-gateway
+
+  annotations:
+    {}
+    # "argocd.argoproj.io/sync-wave": "-2"
+    # "description": "Main gateway for all bookinfo services"
+
+  # 서버 규칙 목록
+  servers:
+    - name: http
+      port: 30080
+      protocol: HTTP
+      hosts:
+        - "*.ggorockee.org"
+        - "ggorockee.org"
+      tls:
+        enabled: true
+        mode: REDIRECT
+
+    - name: https
+      port: 31443
+      protocol: HTTPS
+      hosts:
+        - "*.ggorockee.org"
+        - "ggorockee.org"
+      tls:
+        enabled: true
+        mode: SIMPLE
+        credentialName: istio-gateway-certs
+
+    - name: http
+      port: 30080
+      protocol: HTTP
+      hosts:
+        - "*.ggorockee.com"
+        - "ggorockee.com"
+      tls:
+        enabled: true
+        mode: REDIRECT
+
+    - name: https
+      port: 31443
+      protocol: HTTPS
+      hosts:
+        - "*.ggorockee.com"
+        - "ggorockee.com"
+      tls:
+        enabled: true
+        mode: SIMPLE
+        credentialName: ggorockee-com-cert
