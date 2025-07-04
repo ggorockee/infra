@@ -3,5 +3,5 @@ chartName: airbnb-umbrella
 appName: airbnb-umbrella
 repoURL: https://ggorockee.github.io/infra/
 revision: main
-chartVersion: 3.1.4
+chartVersion: 3.1.5
 namespace: airbnb
