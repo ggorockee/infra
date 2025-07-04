@@ -316,7 +316,7 @@ config:
       Tag kube.* # 수집된 로그에 'kube.' 태그를 부여
       # Mem_Buf_Limit 5MB # 각 입력 플러그인의 메모리 버퍼 제한
       Skip_Long_Lines On # 긴 라인 건너뛰기
-      Storage.type filesystem # 이 Input 플러그인에 파일 시스템 기반 스토리지를 사용하도록 설정
+      # Storage.type filesystem # 이 Input 플러그인에 파일 시스템 기반 스토리지를 사용하도록 설정
 
     [INPUT]
       Name systemd
