@@ -311,13 +311,10 @@ config:
   inputs: |
     [INPUT]
       Name tail
-      Path /var/log/containers/*.log # 모든 컨테이너 로그를 이 경로에서 수집
-      multiline.parser docker, cri # 컨테이너 런타임에 맞는 파서 사용
-      Tag kube.* # 수집된 로그에 'kube.' 태그를 부여
-      # Mem_Buf_Limit 5MB # 각 입력 플러그인의 메모리 버퍼 제한
-      Skip_Long_Lines On # 긴 라인 건너뛰기
-      # Storage.type filesystem # 이 Input 플러그인에 파일 시스템 기반 스토리지를 사용하도록 설정
-
+      Path /var/log/containers/*.log
+      multiline.parser docker, cri
+      Tag kube.*
+      Skip_Long_Lines On
     [INPUT]
       Name systemd
       Tag host.*
@@ -354,7 +351,7 @@ config:
       Label_Keys kubernetes_pod_name,kubernetes_namespace_name,kubernetes_container_name
       Auto_Labels On # Kubernetes 레이블을 Loki 레이블로 자동 변환
       Line_Format json # 로그 라인 형식을 JSON으로 설정 (Grafana에서 파싱 용이)
-      Retry_Limit False # Loki로 전송 실패 시 무한 재시도 (로그 손실 최소화)
+      Retry_Limit Off # Loki로 전송 실패 시 무한 재시도 (로그 손실 최소화)
 
   ## https://docs.fluentbit.io/manual/administration/configuring-fluent-bit/classic-mode/upstream-servers
   ## This configuration is deprecated, please use `extraFiles` instead.
