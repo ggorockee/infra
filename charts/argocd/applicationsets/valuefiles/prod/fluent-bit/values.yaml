@@ -290,77 +290,71 @@ luaScripts: {}
 config:
   service: |
     [SERVICE]
-        Daemon Off
-        Flush {{ .Values.flush }}
-        Log_Level {{ .Values.logLevel }}
-        Parsers_File /fluent-bit/etc/parsers.conf
-        Parsers_File /fluent-bit/etc/conf/custom_parsers.conf
-        HTTP_Server On
-        HTTP_Listen 0.0.0.0
-        HTTP_Port {{ .Values.metricsPort }}
-        Health_Check On
+      Daemon Off
+      Flush {{ .Values.flush }}
+      Log_Level {{ .Values.logLevel }}
+      Parsers_File /fluent-bit/etc/parsers.conf
+      Parsers_File /fluent-bit/etc/conf/custom_parsers.conf
+      HTTP_Server On
+      HTTP_Listen 0.0.0.0
+      HTTP_Port {{ .Values.metricsPort }}
+      Health_Check On
+
+      # 내부 스토리지 버퍼링 설정 (로그 전송 실패 시 데이터 손실 방지)
+      Storage.Path /var/log/flb-storage/
+      Storage.Sync Normal
+      Storage.Checksum On
+      Storage.Max_Chunks_Up 128
+      Storage.Max_Chunks_Down 128
 
   ## https://docs.fluentbit.io/manual/pipeline/inputs
   inputs: |
     [INPUT]
-        Name tail
-        Path /var/log/containers/*.log
-        multiline.parser docker, cri
-        Tag kube.*
-        Mem_Buf_Limit 5MB
-        Skip_Long_Lines On
+      Name tail
+      Path /var/log/containers/*.log # 모든 컨테이너 로그를 이 경로에서 수집
+      multiline.parser docker, cri # 컨테이너 런타임에 맞는 파서 사용
+      Tag kube.* # 수집된 로그에 'kube.' 태그를 부여
+      Mem_Buf_Limit 5MB # 각 입력 플러그인의 메모리 버퍼 제한
+      Skip_Long_Lines On # 긴 라인 건너뛰기
+      Storage.type filesystem # 이 Input 플러그인에 파일 시스템 기반 스토리지를 사용하도록 설정
 
     [INPUT]
-        Name systemd
-        Tag host.*
-        Systemd_Filter _SYSTEMD_UNIT=kubelet.service
-        Read_From_Tail On
+      Name systemd
+      Tag host.*
+      Systemd_Filter _SYSTEMD_UNIT=kubelet.service
+      Read_From_Tail On
 
   ## https://docs.fluentbit.io/manual/pipeline/filters
   filters: |
+    # Kubernetes 메타데이터를 로그에 추가
     [FILTER]
-        Name kubernetes
-        Match kube.*
-        Merge_Log On
-        Keep_Log Off
-        K8S-Logging.Parser On
-        K8S-Logging.Exclude On
+      Name kubernetes
+      Match kube.* # 'kube.' 태그가 붙은 로그에 적용
+      Merge_Log On # 컨테이너 로그의 JSON 필드를 로그 레벨로 병합
+      Keep_Log Off # 원본 로그 필드 제거
+      K8S-Logging.Parser On # 컨테이너 런타임이 추가한 JSON 형식 로그 파싱
+      K8S-Logging.Exclude On # Fluent Bit 자체 로그는 제외
 
   ## https://docs.fluentbit.io/manual/pipeline/outputs
   outputs: |
-    [OUTPUT]
-        Name es
-        Match kube.*
-        Host elasticsearch-master
-        Logstash_Format On
-        Retry_Limit False
-
-    [OUTPUT]
-        Name es
-        Match host.*
-        Host elasticsearch-master
-        Logstash_Format On
-        Logstash_Prefix node
-        Retry_Limit False
-
+    # Grafana Cloud Loki로 로그 전송
     [OUTPUT]
       Name loki
-      Match kube.*,django-app.*
+      Match kube.* # 'kube.' 태그가 붙은 로그만 Loki로 전송 (Django 앱 로그 포함)
       Host logs-prod-030.grafana.net
       Port 443
       TLS On
       TLS_Verify On
       URI /loki/api/v1/push
-      # Secret으로 부터 사용자 이름(Grafana Cloud Stack ID)과 비밀번호(API Key)를 가져옵니다.
+      # Secret으로부터 Access Policy ID (username)와 Access Token (password)을 가져옴
       Loki_User ${LOKI_USERNAME}
       Loki_Password ${LOKI_PASSWORD}
-      # Loki에 보낼 기본 레이블과 동적으로 추가할 레이블 키를 정의합니다.
+      # Loki에 보낼 기본 레이블과 Kubernetes 메타데이터를 사용하여 동적으로 추가할 레이블 키를 정의
       Labels {job="kubernetes-logs", app="fluent-bit"}
       Label_Keys kubernetes_pod_name,kubernetes_namespace_name,kubernetes_container_name
       Auto_Labels On # Kubernetes 레이블을 Loki 레이블로 자동 변환
       Line_Format json # 로그 라인 형식을 JSON으로 설정 (Grafana에서 파싱 용이)
-      # BatchSize 1048576 # 1MB (기본값)
-      # DropSingleKey false # 단일 키 로그 엔트리도 전송
+      Retry_Limit False # Loki로 전송 실패 시 무한 재시도 (로그 손실 최소화)
 
   ## https://docs.fluentbit.io/manual/administration/configuring-fluent-bit/classic-mode/upstream-servers
   ## This configuration is deprecated, please use `extraFiles` instead.
@@ -369,11 +363,11 @@ config:
   ## https://docs.fluentbit.io/manual/pipeline/parsers
   customParsers: |
     [PARSER]
-        Name docker_no_time
-        Format json
-        Time_Keep Off
-        Time_Key time
-        Time_Format %Y-%m-%dT%H:%M:%S.%L
+      Name docker_no_time
+      Format json
+      Time_Keep Off
+      Time_Key time
+      Time_Format %Y-%m-%dT%H:%M:%S.%L
 
   # This allows adding more files with arbitrary filenames to /fluent-bit/etc/conf by providing key/value pairs.
   # The key becomes the filename, the value becomes the file content.
@@ -408,11 +402,9 @@ daemonSetVolumes:
     hostPath:
       path: /etc/machine-id
       type: File
-    # Django 앱이 특정 파일에 로그를 기록하는 경우, 아래 주석을 해제하고 경로를 수정하세요.
-    # - name: django-app-logs
-    #   hostPath:
-    #     path: /path/to/your/django/app/logs # Django 앱이 로그를 쓰는 실제 노드 경로
-    #     type: DirectoryOrCreate # 디렉토리가 없으면 생성
+  # Fluent Bit 내부 스토리지용 볼륨
+  - name: fluentbit-storage
+    emptyDir: {} # Pod의 임시 저장소로 사용
 
 daemonSetVolumeMounts:
   - name: varlog
@@ -423,10 +415,9 @@ daemonSetVolumeMounts:
   - name: etcmachineid
     mountPath: /etc/machine-id
     readOnly: true
-  # Django 앱이 특정 파일에 로그를 기록하는 경우, 아래 주석을 해제하고 경로를 수정하세요.
-  # - name: django-app-logs
-  #   mountPath: /var/log/django-app # Fluent Bit Pod 내부에서 마운트할 경로
-  #   readOnly: true
+  # Fluent Bit 내부 스토리지 볼륨 마운트
+  - name: fluentbit-storage
+    mountPath: /var/log/flb-storage
 
 command:
   - /fluent-bit/bin/fluent-bit
