@@ -33,7 +33,7 @@ backend:
     hosts:
       - camping-api.ggorockee.com
     gateway:
-      name: "istio-system/com-gateway"
+      name: "istio-system/ggorockee-com-gateway"
     httpRoutes:
       # 규칙 1: camping.ggorockee.com -> ggorockee.com 리다이렉션
       # - name: camping-redirect
@@ -99,7 +99,7 @@ frontend:
     hosts:
       - camping.ggorockee.com
     gateway:
-      name: "istio-system/com-gateway"
+      name: "istio-system/ggorockee-com-gateway"
     httpRoutes:
       # 규칙 1: camping.ggorockee.com -> ggorockee.com 리다이렉션
       - name: camping-redirect

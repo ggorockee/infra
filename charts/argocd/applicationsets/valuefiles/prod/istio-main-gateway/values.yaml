@@ -1,4 +1,5 @@
 gateway:
+  name: ggorockee-com-gateway
   selector:
     istio: ingressgateway
 
@@ -12,27 +13,6 @@ gateway:
 
   # 서버 규칙 목록
   servers:
-    - name: http-org
-      port: 30080
-      protocol: HTTP
-      hosts:
-        - "*.ggorockee.org"
-        - "ggorockee.org"
-      tls:
-        enabled: true
-        mode: REDIRECT
-
-    - name: https-org
-      port: 31443
-      protocol: HTTPS
-      hosts:
-        - "*.ggorockee.org"
-        - "ggorockee.org"
-      tls:
-        enabled: true
-        mode: SIMPLE
-        credentialName: istio-gateway-certs
-
     - name: http-com
       port: 30080
       protocol: HTTP

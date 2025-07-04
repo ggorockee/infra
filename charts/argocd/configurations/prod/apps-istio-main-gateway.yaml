@@ -3,5 +3,5 @@ revision: main
 chartName: istio-main-gateway
 appName: istio-main-gateway
 repoURL: https://ggorockee.github.io/infra/
-chartVersion: 1.0.1
+chartVersion: 1.0.2
 namespace: istio-system
