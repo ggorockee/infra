@@ -343,7 +343,7 @@ config:
       http_user ${LOKI_USERNAME}
       http_passwd ${LOKI_PASSWORD}
       labels {job="kubernetes-logs",app="fluent-bit"}
-      label_keys kubernetes_pod_name,kubernetes_namespace_name,kubernetes_container_name
+      label_keys $kubernetes_pod_name,$kubernetes_namespace_name,$kubernetes_container_name
       auto_kubernetes_labels On
       line_format json
       retry_limit Off
