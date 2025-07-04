@@ -3,7 +3,7 @@ rbac:
   nodeAccess: true
   eventsAccess: true
 
-hostNetwork: false
+# hostNetwork: false
 dnsPolicy: ClusterFirst
 
 dnsConfig: {}
@@ -268,7 +268,7 @@ extraPorts: []
 
 extraVolumes: []
 
-extraVolumeMounts: []
+# extraVolumeMounts: []
 
 updateStrategy: {}
 #   type: RollingUpdate
