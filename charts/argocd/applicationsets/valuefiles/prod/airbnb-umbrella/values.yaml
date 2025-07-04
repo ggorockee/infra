@@ -72,7 +72,7 @@ frontend:
     hosts:
       - airbnb.ggorockee.org
     gateway:
-      name: ""
+      name: "istio-system/istio-main-gateway"
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
