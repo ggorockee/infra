@@ -1,0 +1,23 @@
+metrics-server:
+  enabled: true
+
+kong:
+  enabled: false
+
+api:
+  containers:
+    args:
+      - --insecure-bind-address=0.0.0.0
+      - --insecure-port=8000
+  
+web:
+  containers:
+  #   ports:
+  #       - name: web
+  #         containerPort: 80
+  #         targetPort: 8000
+    env:
+      - name: PROTOCOL
+        value: "http"
+      - name: BACKEND_HOST
+        value: "k8s.ggorockee.com:30080"

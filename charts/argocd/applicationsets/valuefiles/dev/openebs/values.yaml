@@ -1,0 +1,26 @@
+localpv-provisioner:
+  rbac:
+    create: true
+
+  hostpathClass:
+    name: openebs-hostpath
+    # Available reclaim policies: Delete/Retain, defaults: Delete.
+    reclaimPolicy: Delete
+    # If true, sets the openebs-hostpath StorageClass as the default StorageClass
+    isDefaultClass: true
+
+engines:
+  local:
+    lvm:
+      enabled: true
+    zfs:
+      enabled: false
+  replicated:
+    mayastor:
+      enabled: false
+      
+loki:
+  enabled: false
+
+alloy:
+  enabled: false
