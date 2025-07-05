@@ -1,5 +1,5 @@
 backend:
-  enabled: false
+  enabled: true
   image:
     repository: ggorockee/py-webapp-backend
     tag: "20250705-ba6812c"
