@@ -2,7 +2,7 @@ backend:
   enabled: false
   image:
     repository: ggorockee/py-webapp-backend
-    tag: "20250704-f41a707"
+    tag: "20250705-ba6812c"
   extraLabels:
     # 여기에 원하는 추가 레이블을 '키: 값' 형태로 정의
     app: camping
@@ -26,7 +26,6 @@ backend:
     failureThreshold: 2 # 2번 연속 실패 시 트래픽 차단
   service:
     port: 8000
-
   ingress:
     enabled: true
     className: "istio"
@@ -44,7 +43,6 @@ backend:
       #   redirect:
       #     authority: "ggorockee.com"
       #     redirectCode: 301
-
       - name: main-app-route
         match:
           - authority:
@@ -54,12 +52,10 @@ backend:
         route:
           defaultRoute:
             weight: 100
-          extraRoute:
-            {}
-            # - host: extraService.ns.svc.cluster.local
-            #   port: 8080
-            #   weight: 100
-
+          extraRoute: {}
+          # - host: extraService.ns.svc.cluster.local
+          #   port: 8080
+          #   weight: 100
   extraConfig:
     - name: django-config
       data:
@@ -93,7 +89,6 @@ frontend:
     failureThreshold: 2 # 2번 연속 실패 시 트래픽 차단
   service:
     port: 80
-
   ingress:
     enabled: true
     className: "istio"
@@ -121,11 +116,10 @@ frontend:
         route:
           defaultRoute:
             weight: 100
-          extraRoute:
-            {}
-            # - host: extraService.ns.svc.cluster.local
-            #   port: 8080
-            #   weight: 100
+          extraRoute: {}
+          # - host: extraService.ns.svc.cluster.local
+          #   port: 8080
+          #   weight: 100
   extraConfig:
     - name: process-env
       data:
