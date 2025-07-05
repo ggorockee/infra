@@ -97,3 +97,4 @@ aws/terraform/.idea
 airbnb-umbrella
 letsenc-certificate
 webapp
+istio-main-gateway
