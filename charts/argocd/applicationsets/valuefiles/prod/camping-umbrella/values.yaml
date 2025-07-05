@@ -2,7 +2,7 @@ backend:
   enabled: true
   image:
     repository: ggorockee/py-webapp-backend
-    tag: "20250705-1099605"
+    tag: "20250705-1bb3147"
   extraLabels:
     # 여기에 원하는 추가 레이블을 '키: 값' 형태로 정의
     app: camping
