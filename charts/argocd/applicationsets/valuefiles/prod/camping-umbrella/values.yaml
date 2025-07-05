@@ -68,7 +68,7 @@ frontend:
   enabled: true
   image:
     repository: ggorockee/webapp-frontend-vue
-    tag: "20250704-764a84c"
+    tag: "20250705-e342203"
   extraLabels:
     app: camping
     service: camping-fe
