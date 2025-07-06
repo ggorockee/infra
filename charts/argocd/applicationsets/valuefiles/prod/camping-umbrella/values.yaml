@@ -68,7 +68,7 @@ frontend:
   enabled: true
   image:
     repository: ggorockee/webapp-frontend-vue
-    tag: "20250705-704f423"
+    tag: "20250706-375474b"
   extraLabels:
     app: camping
     service: camping-fe
@@ -124,11 +124,10 @@ frontend:
           # - host: extraService.ns.svc.cluster.local
           #   port: 8080
           #   weight: 100
-  extraConfig:
-    {}
-    # - name: nginx-access-logging
-    #   data:
-    #     access.conf: |
+  extraConfig: {}
+  # - name: nginx-access-logging
+  #   data:
+  #     access.conf: |
 
   extraSecrets: {}
   # - name:
