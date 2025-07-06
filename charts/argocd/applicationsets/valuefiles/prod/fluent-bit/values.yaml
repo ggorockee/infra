@@ -336,12 +336,10 @@ config:
     [OUTPUT]
       Name loki
       Match kube.*
-      Host logs-prod-030.grafana.net
-      Port 443
-      TLS On
+      Host loki.logging.svc.cluster.local
+      Port 3100
+      TLS Off
       URI /loki/api/v1/push
-      http_user ${LOKI_USERNAME}
-      http_passwd ${LOKI_PASSWORD}
       labels job="kubernetes-logs",app="fluent-bit" 
       label_keys $kubernetes_pod_name,$kubernetes_namespace_name,$kubernetes_container_name
       auto_kubernetes_labels On
