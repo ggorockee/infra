@@ -1,0 +1,15 @@
+write:
+  replicas: 3
+  persistence:
+    size: 16Gi
+    storageClassName: "openebs-hostpath"
+
+backend:
+  replicas: 3
+  persistence:
+    size: 16Gi
+    storageClassName: "openebs-hostpath"
+
+tableManager:
+  retention_deletes_enabled: true
+  retention_period: 30d # 30일이 지난 로그 삭제

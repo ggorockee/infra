@@ -1,4 +1,3 @@
-
 alertmanager:
   enabled: false
 
@@ -18,7 +17,7 @@ grafana:
       dashboards:
         enabled: true
         label: grafana_dashboard
-    
+
     storageClassName: openebs-hostpath
     ## (Optional) Use this to bind the claim to an existing PersistentVolume (PV) by name.
     volumeName: ""
@@ -28,7 +27,6 @@ grafana:
     # annotations: {}
     finalizers:
       - kubernetes.io/pvc-protection
-
 
 prometheus:
   enabled: true
@@ -61,7 +59,6 @@ prometheus:
     #   port: 8082
     #   targetPort: 8082
 
-
   servicePerReplica:
     enabled: false
     annotations: {}
@@ -76,7 +73,7 @@ prometheus:
     remoteWrite:
       - url: https://prometheus-prod-49-prod-ap-northeast-0.grafana.net/api/prom/push
         basicAuth:
-          username: 
+          username:
             name: grafana-cloud-secret
             key: username
           password:
@@ -90,7 +87,7 @@ prometheus:
     # # podMonitorNamespaceSelector도 동일하게 설정하여 PodMonitor도 모든 네임스페이스에서 스캔하도록 합니다.
     # podMonitorNamespaceSelector:
     #   any: true
-    retention: 10d
+    retention: 30d
     resources: {}
     storageSpec:
       volumeClaimTemplate:
@@ -100,7 +97,6 @@ prometheus:
           resources:
             requests:
               storage: 50Gi
-
 
 kubelet:
   enabled: true
