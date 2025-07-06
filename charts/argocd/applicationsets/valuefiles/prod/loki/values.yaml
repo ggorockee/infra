@@ -1,18 +1,66 @@
+# =================================================================
+#  Loki SingleBinary 모드용 values.yaml
+# =================================================================
+
+# 1. 배포 모드 및 스토리지 타입 지정
+deploymentMode: SingleBinary
+
 loki:
   storage:
     type: filesystem
 
-deploymentMode: SingleBinary
-
+# 2. SingleBinary 컴포넌트 설정
 singleBinary:
   replicas: 1
-  autoscaling:
-    enabled: false
   persistence:
     enabled: true
-    size: 100Gi
-    storageClassName: "openebs-hostpath" # 실제 사용할 값으로 변경
+    size: 100Gi # 원하는 총 용량
+    storageClassName: "openebs-hostpath"
 
+# 3. 데이터 보존 기간 설정
 tableManager:
   retention_deletes_enabled: true
   retention_period: 30d
+
+# 4. 불필요한 다른 모드 컴포넌트 비활성화
+# SimpleScalable 모드 컴포넌트
+write:
+  replicas: 0
+read:
+  replicas: 0
+backend:
+  replicas: 0
+
+# Distributed(Microservices) 모드 컴포넌트
+ingester:
+  replicas: 0
+distributor:
+  replicas: 0
+querier:
+  replicas: 0
+queryFrontend:
+  replicas: 0
+queryScheduler:
+  replicas: 0
+indexGateway:
+  replicas: 0
+compactor:
+  replicas: 0
+# (기타 bloom, patternIngester 등도 모두 replicas: 0)
+
+# 5. 불필요한 부가 기능 비활성화
+gateway:
+  enabled: false
+
+minio:
+  enabled: false
+
+# 캐싱 비활성화
+resultsCache:
+  enabled: false
+chunksCache:
+  enabled: false
+
+# 테스트용 canary 비활성화
+lokiCanary:
+  enabled: false
