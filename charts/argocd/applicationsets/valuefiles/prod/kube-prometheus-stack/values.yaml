@@ -9,6 +9,8 @@ grafana:
     - grafana-polystat-panel
     - yesoreyeram-boomtable-panel
   enabled: true
+  initChownData:
+    enabled: false
 
   persistence:
     type: pvc
