@@ -1,0 +1,38 @@
+extraConfigmap:
+  enabled: false
+  config:
+    - name: blabla
+      namespace: blabla
+      extraLabels:
+        {}
+        # project: my-project
+        # team: backend
+      annotations:
+        {}
+        # description: "This configmap has extra labels and annotations"
+        # owner: "John Doe"
+      data:
+        {}
+        # anme: Z2dvcm9ja2VlITE=
+        # data.yml: |
+        #   abc.com
+        #   abc.com
+        #   abc.com
+
+extraSecret:
+  enabled: false
+  secrets:
+    - name: blabla
+      namespace: blabla
+      extraLabels:
+        {}
+        # project: my-project
+        # team: backend
+      annotations:
+        {}
+        # description: "This configmap has extra labels and annotations"
+        # owner: "John Doe"
+      data:
+        {}
+        # password: Z2dvcm9ja2VlITE=
+        # anme: Z2dvcm9ja2VlITE=
