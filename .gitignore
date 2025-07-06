@@ -100,3 +100,4 @@ istio-main-gateway
 
 letsenc-certificate
 webapp
+extra-configamp-secret
