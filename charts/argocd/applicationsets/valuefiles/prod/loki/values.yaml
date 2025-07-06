@@ -1,3 +1,7 @@
+loki:
+  storage:
+    type: filesystem
+
 write:
   replicas: 3
   persistence:
