@@ -1,0 +1,7 @@
+env: prod
+revision: main
+chartName: loki
+appName: loki
+repoURL: https://grafana.github.io/helm-charts
+chartVersion: 6.30.1
+namespace: logging
