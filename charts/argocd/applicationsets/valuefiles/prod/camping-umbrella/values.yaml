@@ -92,7 +92,9 @@ frontend:
   service:
     port: 80
   accesslog:
-    enable: true
+    enabled: true
+    geo:
+      enabled: true
   ingress:
     enabled: true
     className: "istio"
