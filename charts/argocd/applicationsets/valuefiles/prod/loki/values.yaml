@@ -64,3 +64,6 @@ chunksCache:
 # 테스트용 canary 비활성화
 lokiCanary:
   enabled: false
+
+test:
+  enabled: false
