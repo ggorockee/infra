@@ -9,6 +9,16 @@ loki:
   storage:
     type: filesystem
 
+  schemaConfig:
+    configs:
+      - from: "2024-04-01" # 이 설정이 적용될 시작 날짜
+        store: tsdb # 최신 고성능 인덱스 저장 방식
+        object_store: filesystem # 인덱스도 PVC(파일시스템)에 저장
+        schema: v13 # 최신 스키마 버전
+        index:
+          prefix: index_ # 인덱스 파일의 접두사
+          period: 24h # 인덱스 파일 생성 주기
+
 # 2. SingleBinary 컴포넌트 설정
 singleBinary:
   replicas: 1
