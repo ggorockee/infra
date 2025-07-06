@@ -91,6 +91,8 @@ frontend:
     failureThreshold: 2 # 2번 연속 실패 시 트래픽 차단
   service:
     port: 80
+  accesslog:
+    enable: true
   ingress:
     enabled: true
     className: "istio"
@@ -123,9 +125,11 @@ frontend:
           #   port: 8080
           #   weight: 100
   extraConfig:
-    - name: process-env
-      data:
-        REACT_APP_DEBUG: "false"
+    {}
+    # - name: nginx-access-logging
+    #   data:
+    #     access.conf: |
+
   extraSecrets: {}
   # - name:
   #   data: {}
