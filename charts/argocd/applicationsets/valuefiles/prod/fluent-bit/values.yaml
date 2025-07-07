@@ -345,7 +345,6 @@ config:
       auto_kubernetes_labels On
       line_format json
       retry_limit Off
-      structured_metadata Off
 
   ## https://docs.fluentbit.io/manual/administration/configuring-fluent-bit/classic-mode/upstream-servers
   ## This configuration is deprecated, please use `extraFiles` instead.
