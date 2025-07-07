@@ -6,19 +6,12 @@
 deploymentMode: SingleBinary
 
 loki:
-  config:
-    distributor:
-      ring:
-        # replicaCount 를 1로 낮춰서 단일 인스턴스만 써도 무방하게
-        replication_factor: 1
-
-    ingester:
-      lifecycler:
-        ring:
-          replication_factor: 1
   auth_enabled: false
   storage:
     type: filesystem
+
+  commonConfig:
+    replication_factor: 1
 
   limits_config:
     # Fluent Bit가 보내는 structured metadata 전송을 금지합니다
