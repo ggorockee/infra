@@ -1,5 +1,5 @@
 extraConfigmap:
-  enabled: false
+  enabled: true
   config:
     - name: nginx-access-logging
       namespace: camping
