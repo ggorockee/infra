@@ -2,7 +2,7 @@ backend:
   enabled: true
   image:
     repository: ggorockee/py-webapp-backend
-    tag: "20250708-ad554b3"
+    tag: "20250708-a1780ab"
   extraLabels:
     # 여기에 원하는 추가 레이블을 '키: 값' 형태로 정의
     app: camping
@@ -68,7 +68,7 @@ frontend:
   enabled: true
   image:
     repository: ggorockee/webapp-frontend-vue
-    tag: "20250708-769389f"
+    tag: "20250708-a1780ab"
   extraLabels:
     app: camping
     service: camping-fe
