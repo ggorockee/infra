@@ -68,7 +68,7 @@ frontend:
   enabled: true
   image:
     repository: ggorockee/webapp-frontend-vue
-    tag: "20250708-957b7a6"
+    tag: "20250708-769389f"
   extraLabels:
     app: camping
     service: camping-fe
@@ -130,9 +130,9 @@ frontend:
   #     access.conf: |
 
   extraSecrets:
-  - name: camping-umbrella-front-cloudflare
-  # - name:
-  #   data: {}
+    - name: camping-umbrella-front-cloudflare
+      # - name:
+      #   data: {}
 postgresql:
   enabled: true
   global:
