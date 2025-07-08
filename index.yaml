@@ -3,7 +3,7 @@ entries:
   airbnb-umbrella:
   - apiVersion: v2
     appVersion: 3.1.6
-    created: "2025-07-08T16:14:57.2236651+09:00"
+    created: "2025-07-08T16:38:15.4143948+09:00"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -23,7 +23,7 @@ entries:
     version: 3.1.6
   - apiVersion: v2
     appVersion: 3.1.5
-    created: "2025-07-08T16:14:57.2155568+09:00"
+    created: "2025-07-08T16:38:15.4065581+09:00"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -43,7 +43,7 @@ entries:
     version: 3.1.5
   - apiVersion: v2
     appVersion: 3.1.4
-    created: "2025-07-08T16:14:57.2055549+09:00"
+    created: "2025-07-08T16:38:15.3959759+09:00"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -64,7 +64,7 @@ entries:
   backend:
   - apiVersion: v2
     appVersion: 3.12.0
-    created: "2025-07-08T16:14:57.2236651+09:00"
+    created: "2025-07-08T16:38:15.4178358+09:00"
     description: A Helm chart for Kubernetes
     digest: e33f459519441c24db6a3bc0b1f52473bcf34fdd9cfe41c93db5fd184dd98e22
     name: backend
@@ -74,7 +74,7 @@ entries:
     version: 3.2.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-07-08T16:14:57.2236651+09:00"
+    created: "2025-07-08T16:38:15.4167811+09:00"
     description: A Helm chart for Kubernetes
     digest: c8c78d51f8a25ff7e2636b129b24c4244b6b184e9e42b66fe407976a705131f2
     name: backend
@@ -84,7 +84,7 @@ entries:
     version: 0.1.1
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-07-08T16:14:57.2236651+09:00"
+    created: "2025-07-08T16:38:15.4159444+09:00"
     description: A Helm chart for Kubernetes
     digest: e101a7f188de59457a251146be0d1bb522965a65a7cc3c3a98d3f2d2546027b5
     name: backend
@@ -102,7 +102,7 @@ entries:
         url: https://cert-manager.io/public-keys/cert-manager-keyring-2021-09-20-1020CF3C033D4F35BAE1C19E1226061C665DF13E.gpg
     apiVersion: v2
     appVersion: v1.18.1
-    created: "2025-07-08T16:14:57.2357962+09:00"
+    created: "2025-07-08T16:38:15.4252198+09:00"
     description: A Helm chart for cert-manager
     digest: ac410df090621ac25f9f03e11e8bbe33ae3cb0da8235a01aded94fe4764f3ce9
     home: https://cert-manager.io
@@ -126,7 +126,7 @@ entries:
   external-secrets-values:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-07-08T16:14:57.2378025+09:00"
+    created: "2025-07-08T16:38:15.4262929+09:00"
     description: A Helm chart for Kubernetes
     digest: eb42a9f10d3e6ac16b39a53e5557d32abe527c48006d8c4b21f3f693f7b953cb
     name: external-secrets-values
@@ -136,7 +136,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-07-08T16:14:57.2378025+09:00"
+    created: "2025-07-08T16:38:15.4257635+09:00"
     description: A Helm chart for Kubernetes
     digest: 5011a85445124c20e131fc0c4276c507db3fde61d49c976bcd4a7bbd26360259
     name: external-secrets-values
@@ -147,7 +147,7 @@ entries:
   extra-configamp-secret:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-07-08T16:14:57.2398111+09:00"
+    created: "2025-07-08T16:38:15.4273399+09:00"
     description: A Helm chart for Kubernetes
     digest: 557ebbb8bde22b5b37cfe16ef771d682c370171161fdaecc78cae98cc0229c4f
     name: extra-configamp-secret
@@ -157,7 +157,7 @@ entries:
     version: 1.0.5
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-07-08T16:14:57.2378025+09:00"
+    created: "2025-07-08T16:38:15.4268195+09:00"
     description: A Helm chart for Kubernetes
     digest: 1d681aab36f9a723371550393885267907236b1e48209517645c3f5e5b1a34d7
     name: extra-configamp-secret
@@ -168,7 +168,7 @@ entries:
   godaddy-webhook:
   - apiVersion: v2
     appVersion: 1.29.0
-    created: "2025-07-08T16:14:57.2398111+09:00"
+    created: "2025-07-08T16:38:15.4283795+09:00"
     description: A Helm chart to install godaddy cert manager webhook
     digest: fb3f96f346162c48365998e31e06ba14fae80ef49919f6fb3807c919d78b4bc8
     home: https://github.com/Fred78290/cert-manager-webhook-godaddy/
@@ -188,7 +188,7 @@ entries:
   istio-main-gateway:
   - apiVersion: v2
     appVersion: 1.0.2
-    created: "2025-07-08T16:14:57.2418189+09:00"
+    created: "2025-07-08T16:38:15.430946+09:00"
     description: A Helm chart for Kubernetes
     digest: 275cdd50cbb8cfcfda7f07f17cf6f26bac8920432df6fe57ee8bf7bda2bb0692
     name: istio-main-gateway
@@ -198,7 +198,7 @@ entries:
     version: 1.0.2
   - apiVersion: v2
     appVersion: 1.0.1
-    created: "2025-07-08T16:14:57.2418189+09:00"
+    created: "2025-07-08T16:38:15.429418+09:00"
     description: A Helm chart for Kubernetes
     digest: 5cd8326bec84911ce8070d37562c4f3b40d90205ee6c3ac7033b985cded81a55
     name: istio-main-gateway
@@ -208,7 +208,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-07-08T16:14:57.2398111+09:00"
+    created: "2025-07-08T16:38:15.4288987+09:00"
     description: A Helm chart for Kubernetes
     digest: 76f8562989b6adab8aa8f1e78592706896ddb0a116a0aa3b7bb135f48758fce0
     name: istio-main-gateway
@@ -219,7 +219,7 @@ entries:
   letsenc-certificate:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-07-08T16:14:57.2438269+09:00"
+    created: "2025-07-08T16:38:15.4340836+09:00"
     description: A Helm chart that deploys only cert-manager Certificate resources
       for Let's Encrypt
     digest: 0eb4f70a6486f028fff57791d22de3336727f8ed280d0239d2f3105eb15a1518
@@ -230,7 +230,7 @@ entries:
     version: 0.1.2
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-07-08T16:14:57.2418189+09:00"
+    created: "2025-07-08T16:38:15.4329453+09:00"
     description: A Helm chart that deploys only cert-manager Certificate resources
       for Let's Encrypt
     digest: b1de61d256295700382890b5ad984b617c998cde408712e3aff43433f519f74b
@@ -241,7 +241,7 @@ entries:
     version: 0.1.1
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-07-08T16:14:57.2418189+09:00"
+    created: "2025-07-08T16:38:15.4319439+09:00"
     description: A Helm chart that deploys only cert-manager Certificate resources
       for Let's Encrypt
     digest: b28df1e8f1af987a43076272d8fcb386e0892076ee260eba4e716a0f61377380
@@ -253,7 +253,30 @@ entries:
   webapp:
   - apiVersion: v2
     appVersion: 3.2.2
-    created: "2025-07-08T16:14:57.4513456+09:00"
+    created: "2025-07-08T16:38:15.6163555+09:00"
+    dependencies:
+    - condition: backend.enabled
+      name: backend
+      repository: file://./charts/backend
+      version: 3.2.1
+    - condition: frontend.enabled
+      name: frontend
+      repository: file://./charts/frontend
+      version: 3.3.15
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: file://./charts/postgresql
+      version: 2.31.3
+    description: A Helm chart for deploying the entire Django+React application
+    digest: 4c754da6fd5ae9dd3db8c55924fce85be3ffb2c9042303229fd15d6f2e193596
+    name: webapp
+    type: application
+    urls:
+    - webapp-3.3.15.tgz
+    version: 3.3.15
+  - apiVersion: v2
+    appVersion: 3.2.2
+    created: "2025-07-08T16:38:15.599193+09:00"
     dependencies:
     - condition: backend.enabled
       name: backend
@@ -276,7 +299,7 @@ entries:
     version: 3.3.11
   - apiVersion: v2
     appVersion: 3.2.2
-    created: "2025-07-08T16:14:57.4390809+09:00"
+    created: "2025-07-08T16:38:15.5881746+09:00"
     dependencies:
     - condition: backend.enabled
       name: backend
@@ -299,7 +322,7 @@ entries:
     version: 3.3.10
   - apiVersion: v2
     appVersion: 3.2.2
-    created: "2025-07-08T16:14:57.4159227+09:00"
+    created: "2025-07-08T16:38:15.5786609+09:00"
     dependencies:
     - condition: backend.enabled
       name: backend
@@ -322,7 +345,7 @@ entries:
     version: 3.3.1
   - apiVersion: v2
     appVersion: 3.2.2
-    created: "2025-07-08T16:14:57.4038593+09:00"
+    created: "2025-07-08T16:38:15.5647268+09:00"
     dependencies:
     - condition: backend.enabled
       name: backend
@@ -345,7 +368,7 @@ entries:
     version: 3.3.0
   - apiVersion: v2
     appVersion: 3.2.2
-    created: "2025-07-08T16:14:57.3885566+09:00"
+    created: "2025-07-08T16:38:15.5512098+09:00"
     dependencies:
     - condition: backend.enabled
       name: backend
@@ -368,7 +391,7 @@ entries:
     version: 3.2.7
   - apiVersion: v2
     appVersion: 3.2.2
-    created: "2025-07-08T16:14:57.3767516+09:00"
+    created: "2025-07-08T16:38:15.5431847+09:00"
     dependencies:
     - condition: backend.enabled
       name: backend
@@ -391,7 +414,7 @@ entries:
     version: 3.2.6
   - apiVersion: v2
     appVersion: 3.2.2
-    created: "2025-07-08T16:14:57.3672322+09:00"
+    created: "2025-07-08T16:38:15.5202422+09:00"
     dependencies:
     - condition: backend.enabled
       name: backend
@@ -414,7 +437,7 @@ entries:
     version: 3.2.5
   - apiVersion: v2
     appVersion: 3.2.2
-    created: "2025-07-08T16:14:57.3533033+09:00"
+    created: "2025-07-08T16:38:15.5106241+09:00"
     dependencies:
     - condition: backend.enabled
       name: backend
@@ -437,7 +460,7 @@ entries:
     version: 3.2.4
   - apiVersion: v2
     appVersion: 3.2.2
-    created: "2025-07-08T16:14:57.3392999+09:00"
+    created: "2025-07-08T16:38:15.4990448+09:00"
     dependencies:
     - condition: backend.enabled
       name: backend
@@ -460,7 +483,7 @@ entries:
     version: 3.2.3
   - apiVersion: v2
     appVersion: 3.2.2
-    created: "2025-07-08T16:14:57.3262899+09:00"
+    created: "2025-07-08T16:38:15.489244+09:00"
     dependencies:
     - condition: backend.enabled
       name: backend
@@ -483,7 +506,7 @@ entries:
     version: 3.2.2
   - apiVersion: v2
     appVersion: 3.1.8
-    created: "2025-07-08T16:14:57.3136789+09:00"
+    created: "2025-07-08T16:38:15.4767867+09:00"
     dependencies:
     - condition: backend.enabled
       name: backend
@@ -506,7 +529,7 @@ entries:
     version: 3.2.1
   - apiVersion: v2
     appVersion: 3.1.8
-    created: "2025-07-08T16:14:57.3041121+09:00"
+    created: "2025-07-08T16:38:15.4692546+09:00"
     dependencies:
     - condition: backend.enabled
       name: backend
@@ -529,7 +552,7 @@ entries:
     version: 3.2.0
   - apiVersion: v2
     appVersion: 3.1.8
-    created: "2025-07-08T16:14:57.2882266+09:00"
+    created: "2025-07-08T16:38:15.4591567+09:00"
     dependencies:
     - condition: backend.enabled
       name: backend
@@ -552,7 +575,7 @@ entries:
     version: 3.1.8
   - apiVersion: v2
     appVersion: 3.1.7
-    created: "2025-07-08T16:14:57.2700468+09:00"
+    created: "2025-07-08T16:38:15.4505356+09:00"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -572,7 +595,7 @@ entries:
     version: 3.1.7
   - apiVersion: v2
     appVersion: 3.1.6
-    created: "2025-07-08T16:14:57.2555093+09:00"
+    created: "2025-07-08T16:38:15.4422106+09:00"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -590,4 +613,4 @@ entries:
     urls:
     - webapp-3.1.6.tgz
     version: 3.1.6
-generated: "2025-07-08T16:14:57.1981695+09:00"
+generated: "2025-07-08T16:38:15.3861954+09:00"
