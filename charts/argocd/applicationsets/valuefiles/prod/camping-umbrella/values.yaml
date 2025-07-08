@@ -63,7 +63,7 @@ backend:
         DJANGO_ALLOWED_HOSTS: ".ggorockee.com,camping-umbrella-backend.camping.svc.cluster.local"
         IN_DOCKER_BUILD: "off"
         ENABLE_ACCESS_LOG: "on"
-  extraSecrets: {}
+  extraSecrets: []
 frontend:
   enabled: true
   image:
@@ -124,12 +124,13 @@ frontend:
           # - host: extraService.ns.svc.cluster.local
           #   port: 8080
           #   weight: 100
-  extraConfig: {}
+  extraConfig: []
   # - name: nginx-access-logging
   #   data:
   #     access.conf: |
 
-  extraSecrets: {}
+  extraSecrets:
+  - name: camping-umbrella-front-cloudflare
   # - name:
   #   data: {}
 postgresql:
