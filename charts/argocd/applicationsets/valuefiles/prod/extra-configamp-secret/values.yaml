@@ -60,19 +60,6 @@ extraConfigmap:
 extraSecret:
   enabled: true
   secrets:
-    - name: camping-umbrella-front-cloudflare
-      namespace: camping
-      extraLabels:
-        {}
-        # project: my-project
-        # team: backend
-      annotations:
-        {}
-        # description: "This configmap has extra labels and annotations"
-        # owner: "John Doe"
-      encryptedData:
-        VITE_CLOUDFLARE_ACCOUNT_HASH: AgBR4+f44uTKXChshJwk9BnKtv1vf9Vy9K9HX3X2+CvN8vVwrnvLU7zwnstFHgX+dEa0h/yEidjPjyVIKT9MFEJ8eEjlBP89ETnnFTZo/wiCdJ/BeYRw8yiVhYUMdmklIHwyXo+o0U4yJ6/S6f9olq23714TSpYC2vEtu3Kwm66Dxuc2GiZsCYqDkj3goB4jSERIdjVdGRWKzpHMhASAr0UUytQ6VeYKO79iQK1K8ERb7Rqt50iGu5idrc16pjS4nH8rLGl3ROCYvbYrxUnU81I56yalsrUEC7E8MANHZpzbMrb/4t5/mF27oBw6vg1sgXE13EsD2qumcMjLK94IUBHWv80vk8ZEpEOXvzAmGhWWaImahzScJuy1s1eeY3PUogfqOc6FKjAIkNUypxv/LqCSlUMplkb0SN/IdjTzhdOUGNT1p0AWzmmPBrDTwcrbZIxG7gK8OXdolVpuaJJgxFxg6HerTslbZ6YpCevvNZsdDOZQivo25l1tssRuyvgVMp7L/5rD8tIZAGAOgJfLQWpt10s54HQwl3rL2F0wF3t5bxR3bfiQYbnkeZVPVQiOz8JqVDyyzz1W4O4ue0BAIwbfVTwKx5/cat2ISSvHGlRcTqDdIa7KYajekSzGvznKFrcUxVxDtF1vWnEaUrDFjoEMn3/HJSAypjHc1/hKa54oy1sbe8AM7sqB1N+HmXI98D7G/hK3hYfCk/wBo+eHqEPWaiDl2ew8
-
     - name: camping-db-credentials
       namespace: camping
       encryptedData:
