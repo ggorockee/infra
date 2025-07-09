@@ -215,19 +215,19 @@ terminationGracePeriodSeconds:
 
 priorityClassName: ""
 
-env:
-  - name: LOKI_USERNAME
-    valueFrom:
-      secretKeyRef:
-        name: grafana-cloud-loki-creds # 생성할 Secret 이름
-        key: username
-  - name: LOKI_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: grafana-cloud-loki-creds # 생성할 Secret 이름
-        key: password
-#  - name: FOO
-#    value: "bar"
+env: []
+  # - name: LOKI_USERNAME
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: grafana-cloud-loki-creds # 생성할 Secret 이름
+  #       key: username
+  # - name: LOKI_PASSWORD
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: grafana-cloud-loki-creds # 생성할 Secret 이름
+  #       key: password
+  #  - name: FOO
+  #    value: "bar"
 
 # The envWithTpl array below has the same usage as "env", but is using the tpl function to support templatable string.
 # This can be useful when you want to pass dynamic values to the Chart using the helm argument "--set <variable>=<value>"
