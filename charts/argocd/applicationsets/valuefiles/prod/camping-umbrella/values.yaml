@@ -63,7 +63,8 @@ backend:
         DJANGO_ALLOWED_HOSTS: ".ggorockee.com,camping-umbrella-backend.camping.svc.cluster.local"
         IN_DOCKER_BUILD: "off"
         ENABLE_ACCESS_LOG: "on"
-  extraSecrets: []
+  extraSecrets:
+    - name: camping-umbrella-backend-secret
 frontend:
   enabled: true
   image:
