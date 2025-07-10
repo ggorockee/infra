@@ -3,5 +3,5 @@ chartName: webapp
 appName: camping-umbrella
 repoURL: https://ggorockee.github.io/infra/
 revision: main
-chartVersion: 3.3.15
+chartVersion: 3.3.16
 namespace: camping
