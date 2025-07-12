@@ -12,6 +12,10 @@ _internal_defaults_do_not_set:
         port: 80 # ← 외부(LoadBalancer) 포트
         targetPort: 30080 # ← Pod(Envoy) 내부 포트 (Gateway가 듣는 포트)
         nodePort: 30080
+      - name: https
+        port: 443 # ← 외부(LoadBalancer) 포트
+        targetPort: 31443 # ← Pod(Envoy) 내부 포트 (Gateway가 듣는 포트)
+        nodePort: 31443
   env:
     # Pilot(istiod)로부터 읽어올 Gateway/VS 네임스페이스를 콤마로 구분
     PILOT_SCOPE_GATEWAY_CONFIG: "*"
