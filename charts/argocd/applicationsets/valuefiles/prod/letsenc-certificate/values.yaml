@@ -1,7 +1,7 @@
 certmanager:
   certi:
     - name: ggorockee-org-cert
-      namespace: kube-system
+      namespace: istio-system
       extraLabels: {}
       annotations: {}
       secretName: ggorockee-org-cert
@@ -11,7 +11,7 @@ certmanager:
         - "*.ggorockee.org"
         - "ggorockee.org"
     - name: ggorockee-com-cert
-      namespace: kube-system
+      namespace: istio-system
       extraLabels: {}
       annotations: {}
       secretName: ggorockee-com-cert
