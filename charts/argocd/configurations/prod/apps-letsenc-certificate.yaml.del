@@ -3,5 +3,5 @@ revision: main
 chartName: letsenc-certificate
 appName: letsenc-certificate
 repoURL: https://ggorockee.github.io/infra/
-chartVersion: 0.1.2
+chartVersion: 0.1.5
 namespace: cert-manager
