@@ -34,6 +34,12 @@ ingressRoutes:
       - name: camping-umbrella-frontend
         port: 80
 
+    # --- 리다이렉트 기능 활성화 ---
+    redirect:
+      enabled: true
+      # 리다이렉트 될 최종 목적지 주소
+      targetURL: "https://ggorockee.com"
+
   - name: camping-umbrella-backend
     enabled: true
     namespace: camping
