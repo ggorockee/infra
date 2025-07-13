@@ -1,3 +1,7 @@
+global:
+  httpToHttpsRedirect:
+    enabled: true # ← 이 값만 켜면 모든 HTTP 요청을 HTTPS로 리다이렉트
+
 # values.yaml
 ingressRoutes:
   # 첫 번째 라우팅 규칙: ArgoCD
