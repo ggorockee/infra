@@ -1,0 +1,36 @@
+# values.yaml
+ingressRoutes:
+  # 첫 번째 라우팅 규칙: ArgoCD
+  - name: argocd
+    enabled: true
+    namespace: argocd
+
+    # 라우팅 진입점 (보통 websecure는 443/HTTPS를 의미)
+    entryPoints:
+      - websecure
+
+    # 2. Host 설정하는 부분
+    host: "argocd.ggorockee.org"
+
+    # 1. secretName 설정하는 부분
+    tlsSecretName: "ggorockee-org-cert"
+
+    # 3. Services 설정하는 부분 (여기도 리스트 형태)
+    services:
+      - name: argocd-server
+        port: 80
+
+  # 두 번째 라우팅 규칙 예시: 다른 서비스
+  # - name: my-app
+  #   enabled: true
+  #   namespace: default
+
+  #   entryPoints:
+  #     - websecure
+
+  #   host: "app.ggorockee.com"
+  #   tlsSecretName: "ggorockee-com-cert"
+
+  #   services:
+  #     - name: my-app-service
+  #       port: 8080

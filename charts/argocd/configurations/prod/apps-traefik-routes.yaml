@@ -1,0 +1,7 @@
+env: prod
+revision: main
+chartName: traefik-routes
+appName: traefik-routes
+repoURL: https://ggorockee.github.io/infra/
+chartVersion: 1.0.0
+namespace: traefik
