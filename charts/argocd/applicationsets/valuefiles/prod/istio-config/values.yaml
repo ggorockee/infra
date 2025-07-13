@@ -1,0 +1,86 @@
+# Default values for istio-config chart.
+
+# -- List of Istio Gateways to be created.
+gateways:
+  - name: ggorockee-org-gateway
+    enabled: true
+    namespace: istio-system
+    selector:
+      istio: ingressgateway
+    hosts:
+      - "*.ggorockee.org"
+    httpPort: 30080
+    httpsPort: 31443
+    credentialName: ggorockee-org-cert
+  - name: ggorockee-com-gateway
+    enabled: true
+    namespace: istio-system
+    selector:
+      istio: ingressgateway
+    hosts:
+      - "*.ggorockee.com"
+    httpPort: 30080
+    httpsPort: 31443
+    credentialName: ggorockee-com-cert
+
+# -- List of Istio VirtualServices to be created.
+virtualservices:
+  - name: argocd-server
+    enabled: true
+    namespace: argocd
+    hosts:
+      - "argocd.ggorockee.org"
+    gateways:
+      - istio-system/ggorockee-org-gateway
+    routes:
+      - match:
+          - uri:
+              prefix: /
+        destination:
+          host: argocd-server.argocd.svc.cluster.local
+          port:
+            number: 80
+
+  - name: camping-frontend
+    enabled: true
+    namespace: camping
+    hosts:
+      - "camping.ggorockee.com"
+    gateways:
+      - istio-system/ggorockee-com-gateway
+    routes:
+      - match:
+          - uri:
+              prefix: /
+        destination:
+          host: camping-umbrella-frontend.camping.svc.cluster.local
+          port:
+            number: 80
+
+  - name: camping-backend
+    enabled: true
+    namespace: camping
+    hosts:
+      - "camping-api.ggorockee.com"
+    gateways:
+      - istio-system/ggorockee-com-gateway
+    routes:
+      - match:
+          - uri:
+              prefix: /
+        destination:
+          host: camping-umbrella-backend.camping.svc.cluster.local
+          port:
+            number: 8000
+
+# -- Configuration for redirect VirtualServices.
+redirects:
+  - name: camping-redirect
+    enabled: true
+    namespace: camping # The namespace where the gateway exists
+    # -- The host to be redirected from.
+    fromHost: "camping.ggorockee.com"
+    # -- The target authority (host) to redirect to.
+    redirectToAuthority: "ggorockee.com"
+    # -- The gateway to attach this redirect rule to.
+    gateway: "istio-system/ggorockee-com-gateway"
