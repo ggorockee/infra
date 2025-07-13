@@ -3,35 +3,35 @@ _internal_defaults_do_not_set:
   labels:
     istio: ingressgateway
   service:
-    type: NodePort
+    type: LoadBalancer
     ports:
       - name: status-port
         port: 15021
         targetPort: 15021
 
-      # [외부용] HTTP 접속 포트 (30080)
+      # [외부용] HTTP 접속 (30080 포트)
+      # 외부에서 http://...:30080 으로 접속 시
       - name: http-custom
-        port: 80 # 서비스 포트
-        nodePort: 30080 # VM(노드) 외부 접속 포트
-        targetPort: 8080 # 파드(Envoy) 수신 포트
+        port: 30080
+        targetPort: 8080 # 파드(Envoy)의 HTTP 포트
 
-      # [외부용] HTTPS 접속 포트 (31443)
+      # [외부용] HTTPS 접속 (31443 포트)
+      # 외부에서 https://...:31443 으로 접속 시
       - name: https-custom
-        port: 443 # 서비스 포트
-        nodePort: 31443 # VM(노드) 외부 접속 포트
-        targetPort: 8443 # 파드(Envoy) 수신 포트
+        port: 31443
+        targetPort: 8443 # 파드(Envoy)의 HTTPS 포트
 
-      # [내부용] HTTPS 표준 접속 포트 (443)
-      - name: https-standard
-        port: 443 # 서비스 포트
-        nodePort: 443 # VM(노드) 외부 접속 포트
-        targetPort: 8443 # 외부용과 같은 파드 포트로 전달
-
-      # [내부용] HTTPS 표준 접속 포트 (80)
+      # [내부용] HTTP 표준 접속 (80 포트)
+      # 내부에서 http://... 로 접속 시
       - name: http-standard
-        port: 80 # 서비스 포트
-        nodePort: 480 # VM(노드) 외부 접속 포트
-        targetPort: 8443 # 외부용과 같은 파드 포트로 전달
+        port: 80
+        targetPort: 8080 # 파드(Envoy)의 HTTP 포트
+
+      # [내부용] HTTPS 표준 접속 (443 포트)
+      # 내부에서 https://... 로 접속 시
+      - name: https-standard
+        port: 443
+        targetPort: 8443 # 파드(Envoy)의 HTTPS 포트
   env:
     # Pilot(istiod)로부터 읽어올 Gateway/VS 네임스페이스를 콤마로 구분
     PILOT_SCOPE_GATEWAY_CONFIG: "*"
