@@ -1,7 +1,7 @@
 certmanager:
   certi:
     - name: ggorockee-org-cert
-      namespace: istio-system
+      namespace: argocd
       extraLabels: {}
       annotations: {}
       secretName: ggorockee-org-cert
@@ -10,8 +10,31 @@ certmanager:
       dnsNames:
         - "*.ggorockee.org"
         - "ggorockee.org"
+
+    - name: ggorockee-org-cert
+      namespace: monitoring
+      extraLabels: {}
+      annotations: {}
+      secretName: ggorockee-org-cert
+      clusterIssuer:
+        name: letsencrypt-cloudflare
+      dnsNames:
+        - "*.ggorockee.org"
+        - "ggorockee.org"
+
+    - name: ggorockee-org-cert
+      namespace: logging
+      extraLabels: {}
+      annotations: {}
+      secretName: ggorockee-org-cert
+      clusterIssuer:
+        name: letsencrypt-cloudflare
+      dnsNames:
+        - "*.ggorockee.org"
+        - "ggorockee.org"
+
     - name: ggorockee-com-cert
-      namespace: istio-system
+      namespace: camping
       extraLabels: {}
       annotations: {}
       secretName: ggorockee-com-cert
