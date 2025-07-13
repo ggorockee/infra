@@ -12,7 +12,7 @@ certmanager:
         - "ggorockee.org"
 
     - name: ggorockee-org-cert
-      namespace: monitoring
+      namespace: cert-manager
       extraLabels: {}
       annotations: {}
       secretName: ggorockee-org-cert
@@ -22,16 +22,16 @@ certmanager:
         - "*.ggorockee.org"
         - "ggorockee.org"
 
-    - name: ggorockee-org-cert
-      namespace: logging
+    - name: ggorockee-com-cert
+      namespace: cert-manager
       extraLabels: {}
       annotations: {}
-      secretName: ggorockee-org-cert
+      secretName: ggorockee-com-cert
       clusterIssuer:
         name: letsencrypt-cloudflare
       dnsNames:
-        - "*.ggorockee.org"
-        - "ggorockee.org"
+        - "*.ggorockee.com"
+        - "ggorockee.com"
 
     - name: ggorockee-com-cert
       namespace: camping
