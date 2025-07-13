@@ -76,7 +76,7 @@ virtualservices:
 # -- Configuration for redirect VirtualServices.
 redirects:
   - name: camping-redirect
-    enabled: false
+    enabled: true
     namespace: camping # The namespace where the gateway exists
     # -- The host to be redirected from.
     fromHost: "camping.ggorockee.com"
