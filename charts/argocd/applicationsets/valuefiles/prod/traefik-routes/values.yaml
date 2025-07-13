@@ -20,17 +20,30 @@ ingressRoutes:
       - name: argocd-server
         port: 80
 
-  # 두 번째 라우팅 규칙 예시: 다른 서비스
-  # - name: my-app
-  #   enabled: true
-  #   namespace: default
+  - name: camping-umbrella-frontend
+    enabled: true
+    namespace: camping
 
-  #   entryPoints:
-  #     - websecure
+    entryPoints:
+      - websecure
 
-  #   host: "app.ggorockee.com"
-  #   tlsSecretName: "ggorockee-com-cert"
+    host: "camping.ggorockee.com"
+    tlsSecretName: "ggorockee-com-cert"
 
-  #   services:
-  #     - name: my-app-service
-  #       port: 8080
+    services:
+      - name: camping-umbrella-frontend
+        port: 80
+
+  - name: camping-umbrella-backend
+    enabled: true
+    namespace: camping
+
+    entryPoints:
+      - websecure
+
+    host: "camping-api.ggorockee.com"
+    tlsSecretName: "ggorockee-com-cert"
+
+    services:
+      - name: camping-umbrella-backend
+        port: 8000
