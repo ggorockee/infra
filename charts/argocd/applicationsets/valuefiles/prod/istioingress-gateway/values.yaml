@@ -8,14 +8,30 @@ _internal_defaults_do_not_set:
       - name: status-port
         port: 15021
         targetPort: 15021
-      - name: http
-        port: 80 # ← 외부(LoadBalancer) 포트
-        targetPort: 30080 # ← Pod(Envoy) 내부 포트 (Gateway가 듣는 포트)
-        nodePort: 30080
-      - name: https
-        port: 443 # ← 외부(LoadBalancer) 포트
-        targetPort: 31443 # ← Pod(Envoy) 내부 포트 (Gateway가 듣는 포트)
-        nodePort: 31443
+
+      # [외부용] HTTP 접속 포트 (30080)
+      - name: http-custom
+        port: 80 # 서비스 포트
+        nodePort: 30080 # VM(노드) 외부 접속 포트
+        targetPort: 8080 # 파드(Envoy) 수신 포트
+
+      # [외부용] HTTPS 접속 포트 (31443)
+      - name: https-custom
+        port: 443 # 서비스 포트
+        nodePort: 31443 # VM(노드) 외부 접속 포트
+        targetPort: 8443 # 파드(Envoy) 수신 포트
+
+      # [내부용] HTTPS 표준 접속 포트 (443)
+      - name: https-standard
+        port: 443 # 서비스 포트
+        nodePort: 443 # VM(노드) 외부 접속 포트
+        targetPort: 8443 # 외부용과 같은 파드 포트로 전달
+
+      # [내부용] HTTPS 표준 접속 포트 (80)
+      - name: http-standard
+        port: 80 # 서비스 포트
+        nodePort: 480 # VM(노드) 외부 접속 포트
+        targetPort: 8443 # 외부용과 같은 파드 포트로 전달
   env:
     # Pilot(istiod)로부터 읽어올 Gateway/VS 네임스페이스를 콤마로 구분
     PILOT_SCOPE_GATEWAY_CONFIG: "*"
