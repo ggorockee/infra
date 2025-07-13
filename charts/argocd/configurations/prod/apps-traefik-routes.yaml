@@ -3,5 +3,5 @@ revision: main
 chartName: traefik-routes
 appName: traefik-routes
 repoURL: https://ggorockee.github.io/infra/
-chartVersion: 1.0.2
+chartVersion: 1.0.3
 namespace: traefik
