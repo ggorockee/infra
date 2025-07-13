@@ -98,3 +98,7 @@ airbnb-umbrella
 letsenc-certificate
 webapp
 istio-main-gateway
+trafik-routes
+
+istio-config
+extra-configamp-secret
