@@ -1,7 +1,7 @@
 certmanager:
   certi:
     - name: ggorockee-org-cert
-      namespace: argocd
+      namespace: cert-manager
       extraLabels: {}
       annotations: {}
       secretName: ggorockee-org-cert
@@ -26,32 +26,6 @@ certmanager:
         targetNamespaces:
           - monitoring
           - argocd
-
-    - name: ggorockee-com-cert
-      namespace: cert-manager
-      extraLabels: {}
-      annotations: {}
-      secretName: ggorockee-com-cert
-      clusterIssuer:
-        name: letsencrypt-cloudflare
-      dnsNames:
-        - "*.ggorockee.com"
-        - "ggorockee.com"
-      replicator:
-        enabled: true
-        targetNamespaces:
-          - camping
-
-    - name: ggorockee-com-cert
-      namespace: camping
-      extraLabels: {}
-      annotations: {}
-      secretName: ggorockee-com-cert
-      clusterIssuer:
-        name: letsencrypt-cloudflare
-      dnsNames:
-        - "*.ggorockee.com"
-        - "ggorockee.com"
 
 clusterIssuer:
   name: letsencrypt-cloudflare
