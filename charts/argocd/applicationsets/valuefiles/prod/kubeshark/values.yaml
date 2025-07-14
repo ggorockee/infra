@@ -32,6 +32,9 @@ tap:
   persistentStoragePvcVolumeMode: Filesystem
   storageClass: openebs-hostpath
 
+  persistentStorageAccessModes:
+    - ReadWriteOnce
+
 
   # 2. 서비스 메시 기능 비활성화 (사용하지 않을 경우)
   serviceMesh: false
