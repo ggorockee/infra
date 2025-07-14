@@ -29,6 +29,8 @@ tap:
 
   # 2. 스토리지 크기를 50GiB로 설정
   storageLimit: "50Gi"
+  persistentStoragePvcVolumeMode: Filesystem
+
 
   # 2. 서비스 메시 기능 비활성화 (사용하지 않을 경우)
   serviceMesh: false
