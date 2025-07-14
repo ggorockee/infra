@@ -85,3 +85,19 @@ ingressRoutes:
     services:
       - name: kube-prometheus-stack-prometheus
         port: 9090
+
+  - name: kubeshark-front
+    enabled: true
+    namespace: kubeshark
+
+    entryPoints:
+      - websecure
+
+    host: "ks.ggorockee.org"
+    tlsSecretName: "ggorockee-org-cert"
+
+    services:
+      - name: kubeshark-front
+        port: 80
+
+
