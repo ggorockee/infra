@@ -21,6 +21,11 @@ certmanager:
       dnsNames:
         - "*.ggorockee.org"
         - "ggorockee.org"
+      replicator:
+        enabled: true
+        targetNamespaces:
+          - monitoring
+          - argocd
 
     - name: ggorockee-com-cert
       namespace: cert-manager
@@ -32,6 +37,10 @@ certmanager:
       dnsNames:
         - "*.ggorockee.com"
         - "ggorockee.com"
+      replicator:
+        enabled: true
+        targetNamespaces:
+          - camping
 
     - name: ggorockee-com-cert
       namespace: camping
