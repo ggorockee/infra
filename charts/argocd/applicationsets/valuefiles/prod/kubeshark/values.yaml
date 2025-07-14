@@ -43,6 +43,11 @@ tap:
   pcapdump:
     enabled: false
 
+  resourceGuard:
+    enabled: false
+  watchdog:
+    enabled: false
+
 # 4. 부가 기능 비활성화
 aiAssistantEnabled: false
 telemetry:
