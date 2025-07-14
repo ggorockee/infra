@@ -30,6 +30,7 @@ certmanager:
         targetNamespaces:
           - monitoring
           - argocd
+          - kubeshark
 
 clusterIssuer:
   name: letsencrypt-cloudflare
