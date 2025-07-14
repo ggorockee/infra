@@ -2,6 +2,6 @@ env: prod
 revision: main
 chartName: kubeshark
 appName: kubeshark
-repoURL: https://helm.kubeshark.co/
+repoURL: https://ggorockee.github.io/infra/
 chartVersion: 52.7.8
 namespace: kubeshark
