@@ -1,0 +1,43 @@
+# custom-values.yaml
+
+tap:
+  # 1. 리소스 사용량 대폭 감소
+  resources:
+    hub:
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+      requests:
+        cpu: 50m
+        memory: 50Mi
+    sniffer:
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+      requests:
+        cpu: 50m
+        memory: 50Mi
+    tracer:
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+      requests:
+        cpu: 50m
+        memory: 50Mi
+  
+  persistentStorage: true
+
+  # 2. 스토리지 크기를 50GiB로 설정
+  storageLimit: "50Gi"
+
+  # 2. 서비스 메시 기능 비활성화 (사용하지 않을 경우)
+  serviceMesh: false
+
+  # 3. PCAP 덤프 비활성화 (필요 시 maxSize만 줄여도 무방)
+  pcapdump:
+    enabled: false
+
+# 4. 부가 기능 비활성화
+aiAssistantEnabled: false
+telemetry:
+  enabled: false
