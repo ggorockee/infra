@@ -1,15 +1,19 @@
 certmanager:
   certi:
-    - name: ggorockee-org-cert
+    - name: ggorockee-com-cert
       namespace: cert-manager
       extraLabels: {}
       annotations: {}
-      secretName: ggorockee-org-cert
+      secretName: ggorockee-com-cert
       clusterIssuer:
         name: letsencrypt-cloudflare
       dnsNames:
-        - "*.ggorockee.org"
-        - "ggorockee.org"
+        - "*.ggorockee.com"
+        - "ggorockee.com"
+      replicator:
+        enabled: true
+        targetNamespaces:
+          - camping
 
     - name: ggorockee-org-cert
       namespace: cert-manager
