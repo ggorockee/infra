@@ -32,6 +32,21 @@ certmanager:
           - argocd
           - kubeshark
 
+    - name: savvyrev-com-cert
+      namespace: cert-manager
+      extraLabels: {}
+      annotations: {}
+      secretName: savvyrev-com-cert
+      clusterIssuer:
+        name: letsencrypt-cloudflare
+      dnsNames:
+        - "*.savvyrev.com"
+        - "savvyrev.com"
+      replicator:
+        enabled: true
+        targetNamespaces:
+          - savvyrev
+
 clusterIssuer:
   name: letsencrypt-cloudflare
   email: ggorockee@gmail.com
@@ -43,3 +58,5 @@ clusterIssuer:
       - "*.ggorockee.org"
       - "*.ggorockee.com"
       - "ggorockee.com"
+      - "savvyrev.com"
+      - "*.savvyrev.com"
