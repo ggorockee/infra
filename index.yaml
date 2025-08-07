@@ -3,7 +3,7 @@ entries:
   airbnb-umbrella:
   - apiVersion: v2
     appVersion: 3.1.6
-    created: "2025-08-08T01:39:23.525608+09:00"
+    created: "2025-08-08T01:54:41.622371+09:00"
     dependencies:
     - name: backend
       repository: file://./charts/backend
@@ -24,7 +24,7 @@ entries:
   backend:
   - apiVersion: v2
     appVersion: 3.12.0
-    created: "2025-08-08T01:39:23.526287+09:00"
+    created: "2025-08-08T01:54:41.623021+09:00"
     description: A Helm chart for Kubernetes
     digest: e33f459519441c24db6a3bc0b1f52473bcf34fdd9cfe41c93db5fd184dd98e22
     name: backend
@@ -42,7 +42,7 @@ entries:
         url: https://cert-manager.io/public-keys/cert-manager-keyring-2021-09-20-1020CF3C033D4F35BAE1C19E1226061C665DF13E.gpg
     apiVersion: v2
     appVersion: v1.18.1
-    created: "2025-08-08T01:39:23.532203+09:00"
+    created: "2025-08-08T01:54:41.629486+09:00"
     description: A Helm chart for cert-manager
     digest: ac410df090621ac25f9f03e11e8bbe33ae3cb0da8235a01aded94fe4764f3ce9
     home: https://cert-manager.io
@@ -66,7 +66,7 @@ entries:
   external-secrets-values:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-08-08T01:39:23.532505+09:00"
+    created: "2025-08-08T01:54:41.629742+09:00"
     description: A Helm chart for Kubernetes
     digest: eb42a9f10d3e6ac16b39a53e5557d32abe527c48006d8c4b21f3f693f7b953cb
     name: external-secrets-values
@@ -77,7 +77,7 @@ entries:
   extra-configamp-secret:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-08-08T01:39:23.532768+09:00"
+    created: "2025-08-08T01:54:41.62998+09:00"
     description: A Helm chart for Kubernetes
     digest: 4a6e4ff01ba184100b65563f1f489c48717e8273675095a9631efbab50e54be8
     name: extra-configamp-secret
@@ -88,7 +88,7 @@ entries:
   godaddy-webhook:
   - apiVersion: v2
     appVersion: 1.29.0
-    created: "2025-08-08T01:39:23.533307+09:00"
+    created: "2025-08-08T01:54:41.63042+09:00"
     description: A Helm chart to install godaddy cert manager webhook
     digest: fb3f96f346162c48365998e31e06ba14fae80ef49919f6fb3807c919d78b4bc8
     home: https://github.com/Fred78290/cert-manager-webhook-godaddy/
@@ -108,7 +108,7 @@ entries:
   letsenc-certificate:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2025-08-08T01:39:23.533677+09:00"
+    created: "2025-08-08T01:54:41.630682+09:00"
     description: A Helm chart that deploys only cert-manager Certificate resources
       for Let's Encrypt
     digest: 293058002b755f9f88ad8e4fbf7a7987339e381dfdcfe0899415b46c29b172c7
@@ -119,8 +119,23 @@ entries:
     version: 0.1.6
   savvyrev:
   - apiVersion: v2
+    appVersion: 1.0.3
+    created: "2025-08-08T01:54:41.633198+09:00"
+    dependencies:
+    - condition: backend.enabled
+      name: backend
+      repository: file://./charts/backend
+      version: 1.0.3
+    description: A Helm chart for Kubernetes
+    digest: 57f234a61d21969941861d8f8adbdf70dab5275008b587a8269d103b8b5842e4
+    name: savvyrev
+    type: application
+    urls:
+    - savvyrev-1.0.3.tgz
+    version: 1.0.3
+  - apiVersion: v2
     appVersion: 1.0.2
-    created: "2025-08-08T01:39:23.536637+09:00"
+    created: "2025-08-08T01:54:41.632588+09:00"
     dependencies:
     - condition: backend.enabled
       name: backend
@@ -135,7 +150,7 @@ entries:
     version: 1.0.2
   - apiVersion: v2
     appVersion: 1.0.1
-    created: "2025-08-08T01:39:23.535901+09:00"
+    created: "2025-08-08T01:54:41.631921+09:00"
     dependencies:
     - condition: backend.enabled
       name: backend
@@ -150,7 +165,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-08-08T01:39:23.535042+09:00"
+    created: "2025-08-08T01:54:41.631317+09:00"
     dependencies:
     - condition: backend.enabled
       name: backend
@@ -166,7 +181,7 @@ entries:
   traefik-routes:
   - apiVersion: v2
     appVersion: 1.0.6
-    created: "2025-08-08T01:39:23.537023+09:00"
+    created: "2025-08-08T01:54:41.635398+09:00"
     description: A Helm chart for creating Traefik IngressRoutes
     digest: 50a9224960586f4faf91aa59daeb72f3c99a5ad2b868c86725a3b2df5de690cf
     name: traefik-routes
@@ -177,7 +192,7 @@ entries:
   webapp:
   - apiVersion: v2
     appVersion: 3.2.2
-    created: "2025-08-08T01:39:23.543083+09:00"
+    created: "2025-08-08T01:54:41.642636+09:00"
     dependencies:
     - condition: backend.enabled
       name: backend
@@ -198,4 +213,4 @@ entries:
     urls:
     - webapp-3.3.21.tgz
     version: 3.3.21
-generated: "2025-08-08T01:39:23.518403+09:00"
+generated: "2025-08-08T01:54:41.614782+09:00"
