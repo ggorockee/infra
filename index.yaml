@@ -1,9 +1,141 @@
 apiVersion: v1
 entries:
-  savvyrev:
+  airbnb-umbrella:
+  - apiVersion: v2
+    appVersion: 3.1.6
+    created: "2025-08-08T00:27:29.643296+09:00"
+    dependencies:
+    - name: backend
+      repository: file://./charts/backend
+      version: 3.1.6
+    - name: frontend
+      repository: file://./charts/frontend
+      version: 3.1.6
+    - name: postgresql
+      repository: file://./charts/postgresql
+      version: 2.31.3
+    description: A Helm chart for deploying the entire Django+React application
+    digest: 8b5ed9b1aca44f7945e919964a5f67102c127ce5eb0dcf5a5608e3d18856ea82
+    name: airbnb-umbrella
+    type: application
+    urls:
+    - airbnb-umbrella-3.1.6.tgz
+    version: 3.1.6
+  backend:
+  - apiVersion: v2
+    appVersion: 3.12.0
+    created: "2025-08-08T00:27:29.645178+09:00"
+    description: A Helm chart for Kubernetes
+    digest: e33f459519441c24db6a3bc0b1f52473bcf34fdd9cfe41c93db5fd184dd98e22
+    name: backend
+    type: application
+    urls:
+    - backend-3.2.0.tgz
+    version: 3.2.0
+  cert-manager:
+  - annotations:
+      artifacthub.io/category: security
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/prerelease: "false"
+      artifacthub.io/signKey: |
+        fingerprint: 1020CF3C033D4F35BAE1C19E1226061C665DF13E
+        url: https://cert-manager.io/public-keys/cert-manager-keyring-2021-09-20-1020CF3C033D4F35BAE1C19E1226061C665DF13E.gpg
+    apiVersion: v2
+    appVersion: v1.18.1
+    created: "2025-08-08T00:27:29.655587+09:00"
+    description: A Helm chart for cert-manager
+    digest: ac410df090621ac25f9f03e11e8bbe33ae3cb0da8235a01aded94fe4764f3ce9
+    home: https://cert-manager.io
+    icon: https://raw.githubusercontent.com/cert-manager/community/4d35a69437d21b76322157e6284be4cd64e6d2b7/logo/logo-small.png
+    keywords:
+    - cert-manager
+    - kube-lego
+    - letsencrypt
+    - tls
+    kubeVersion: '>= 1.22.0-0'
+    maintainers:
+    - email: cert-manager-maintainers@googlegroups.com
+      name: cert-manager-maintainers
+      url: https://cert-manager.io
+    name: cert-manager
+    sources:
+    - https://github.com/cert-manager/cert-manager
+    urls:
+    - cert-manager-v1.18.1.tgz
+    version: v1.18.1
+  external-secrets-values:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2025-08-08T00:27:29.656469+09:00"
+    description: A Helm chart for Kubernetes
+    digest: eb42a9f10d3e6ac16b39a53e5557d32abe527c48006d8c4b21f3f693f7b953cb
+    name: external-secrets-values
+    type: application
+    urls:
+    - external-secrets-values-1.0.1.tgz
+    version: 1.0.1
+  extra-configamp-secret:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-08-07T17:42:30.3254136+09:00"
+    created: "2025-08-08T00:27:29.657336+09:00"
+    description: A Helm chart for Kubernetes
+    digest: 4a6e4ff01ba184100b65563f1f489c48717e8273675095a9631efbab50e54be8
+    name: extra-configamp-secret
+    type: application
+    urls:
+    - extra-configamp-secret-1.1.0.tgz
+    version: 1.1.0
+  godaddy-webhook:
+  - apiVersion: v2
+    appVersion: 1.29.0
+    created: "2025-08-08T00:27:29.658827+09:00"
+    description: A Helm chart to install godaddy cert manager webhook
+    digest: fb3f96f346162c48365998e31e06ba14fae80ef49919f6fb3807c919d78b4bc8
+    home: https://github.com/Fred78290/cert-manager-webhook-godaddy/
+    icon: https://raw.githubusercontent.com/Fred78290/cert-manager-webhook-godaddy/master/images/cert-manager-godaddy.png
+    keywords:
+    - cert-manager
+    - godaddy
+    maintainers:
+    - name: Fred78290
+      url: https://github.com/Fred78290/
+    name: godaddy-webhook
+    sources:
+    - https://github.com/Fred78290/cert-manager-webhook-godaddy/
+    urls:
+    - godaddy-webhook-1.29.0.tgz
+    version: 1.29.0
+  letsenc-certificate:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2025-08-08T00:27:29.659869+09:00"
+    description: A Helm chart that deploys only cert-manager Certificate resources
+      for Let's Encrypt
+    digest: 293058002b755f9f88ad8e4fbf7a7987339e381dfdcfe0899415b46c29b172c7
+    name: letsenc-certificate
+    type: application
+    urls:
+    - letsenc-certificate-0.1.6.tgz
+    version: 0.1.6
+  savvyrev:
+  - apiVersion: v2
+    appVersion: 1.0.1
+    created: "2025-08-08T00:27:29.662263+09:00"
+    dependencies:
+    - condition: backend.enabled
+      name: backend
+      repository: file://./charts/backend
+      version: 1.0.1
+    description: A Helm chart for Kubernetes
+    digest: 54cc12fb2f87af442d5a9dd994071e1f775f87ff65bdd5dc1b2584277046a00c
+    name: savvyrev
+    type: application
+    urls:
+    - savvyrev-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-08-08T00:27:29.66135+09:00"
     dependencies:
     - condition: backend.enabled
       name: backend
@@ -16,4 +148,39 @@ entries:
     urls:
     - savvyrev-1.0.0.tgz
     version: 1.0.0
-generated: "2025-08-07T17:42:30.3224137+09:00"
+  traefik-routes:
+  - apiVersion: v2
+    appVersion: 1.0.6
+    created: "2025-08-08T00:27:29.663331+09:00"
+    description: A Helm chart for creating Traefik IngressRoutes
+    digest: 50a9224960586f4faf91aa59daeb72f3c99a5ad2b868c86725a3b2df5de690cf
+    name: traefik-routes
+    type: application
+    urls:
+    - traefik-routes-1.0.6.tgz
+    version: 1.0.6
+  webapp:
+  - apiVersion: v2
+    appVersion: 3.2.2
+    created: "2025-08-08T00:27:29.672052+09:00"
+    dependencies:
+    - condition: backend.enabled
+      name: backend
+      repository: file://./charts/backend
+      version: 3.3.21
+    - condition: frontend.enabled
+      name: frontend
+      repository: file://./charts/frontend
+      version: 3.3.21
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: file://./charts/postgresql
+      version: 2.31.3
+    description: A Helm chart for deploying the entire Django+React application
+    digest: eb8da73358076700d1d744e395301e61f7799f67f0538681879126bbacffa5df
+    name: webapp
+    type: application
+    urls:
+    - webapp-3.3.21.tgz
+    version: 3.3.21
+generated: "2025-08-08T00:27:29.632771+09:00"

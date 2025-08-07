@@ -102,3 +102,5 @@ letsenc-certificate
 webapp
 extra-configamp-secret
 savvyrev
+trafik-routes
+istio-config
