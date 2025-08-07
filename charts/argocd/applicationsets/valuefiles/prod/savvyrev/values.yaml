@@ -76,14 +76,14 @@ backend:
   probes:
     liveness:
       enabled: true
-      path: "/healthz"
+      path: "/"
       initialDelaySeconds: 15
       periodSeconds: 20
       timeoutSeconds: 5
       failureThreshold: 3
     readiness:
       enabled: true
-      path: "/readyz"
+      path: "/"
       initialDelaySeconds: 5
       periodSeconds: 10
       timeoutSeconds: 5
