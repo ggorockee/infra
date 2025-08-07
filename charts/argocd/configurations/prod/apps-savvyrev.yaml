@@ -1,0 +1,7 @@
+env: prod
+chartName: savvyrev
+appName: savvyrev
+repoURL: https://ggorockee.github.io/infra/
+revision: main
+chartVersion: 3.3.21
+namespace: savvyrev
