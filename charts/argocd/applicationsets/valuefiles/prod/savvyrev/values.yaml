@@ -1,90 +1,87 @@
-# savvrev.yaml
-# Default values for savvyrev chart.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-# -- 배포될 Docker 이미지 정보
-image:
-  repository: ggorockee/savvyrev-api
-  pullPolicy: IfNotPresent
-  # tag는 CI 파이프라인에서 자동으로 덮어씁니다.
-  # 예: 7f4d3d8
-  tag: "20250807-35c8457"
-
-# -- Pod에 대한 주석 (Annotations) 설정. 예: AWS IAM Role 연동 등
-podAnnotations: {}
-  # iam.amazonaws.com/role: arn:aws:iam::123456789012:role/savvy-rev-role
-
-extraAnnotations: {}
-  # my-custom-annotation: "my-value"
-
-# -- Pod에 추가할 사용자 정의 라벨 (이 부분이 추가되었습니다)
-extraLabels: {}
-  # my-custom-label: "my-value"
-
-# -- 서비스 계정 설정 (필요시)
-serviceAccount:
-  create: false
-  annotations: {}
-  name: ""
-
-# -- 배포될 Pod의 수 (HPA가 꺼져있을 때만 사용됨)
-replicaCount: 1
-
-# -- Service 설정
-service:
-  type: ClusterIP
-  port: 80
-
-# -- 컨테이너 리소스 요청/제한 설정
-resources: {}
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
-# -- HorizontalPodAutoscaler (HPA) 설정
-autoscaling:
+  # -- 배포될 Docker 이미지 정보
+backend:
   enabled: true
-  minReplicas: 1
-  maxReplicas: 3
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+  image:
+    repository: ggorockee/savvyrev-api
+    pullPolicy: IfNotPresent
+    # tag는 CI 파이프라인에서 자동으로 덮어씁니다.
+    # 예: 7f4d3d8
+    tag: ""
 
-# -- ConfigMap 설정
-# Helm에 의해 생성되고, 컨테이너 환경변수로 주입됩니다.
-configMap:
-  enabled: true
-  # name을 지정하지 않으면 차트 이름 기반으로 자동 생성됩니다.
-  name: ""
-  data:
-    LOG_LEVEL: "info"
-    APP_ENV: "production"
+  # -- Pod에 대한 주석 (Annotations) 설정. 예: AWS IAM Role 연동 등
+  podAnnotations: {}
+    # iam.amazonaws.com/role: arn:aws:iam::123456789012:role/savvy-rev-role
 
-# -- Secret 설정
-# Secret을 직접 생성하지 않고, 이미 클러스터에 존재하는 Secret들을 참조하여 환경변수로 주입합니다.
-secret:
-  enabled: true
-  # 클러스터에 미리 생성되어 있어야 하는 Secret 이름들의 목록
-  names:
-  - "savvyrev-prod-secret"
-  - "savvyrev-prod-secret2"
+  extraAnnotations: {}
+    # my-custom-annotation: "my-value"
 
-# -- Health Check (Probes) 설정
-probes:
-  liveness:
+  # -- Pod에 추가할 사용자 정의 라벨 (이 부분이 추가되었습니다)
+  extraLabels: {}
+    # my-custom-label: "my-value"
+
+  # -- 서비스 계정 설정 (필요시)
+  serviceAccount:
+    create: false
+    annotations: {}
+    name: ""
+
+  # -- 배포될 Pod의 수 (HPA가 꺼져있을 때만 사용됨)
+  replicaCount: 1
+
+  # -- Service 설정
+  service:
+    type: ClusterIP
+    port: 80
+
+  # -- 컨테이너 리소스 요청/제한 설정
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  # -- HorizontalPodAutoscaler (HPA) 설정
+  autoscaling:
     enabled: true
-    path: "/healthz"
-    initialDelaySeconds: 15
-    periodSeconds: 20
-    timeoutSeconds: 5
-    failureThreshold: 3
-  readiness:
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  # -- ConfigMap 설정
+  # Helm에 의해 생성되고, 컨테이너 환경변수로 주입됩니다.
+  configMap:
     enabled: true
-    path: "/readyz"
-    initialDelaySeconds: 5
-    periodSeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 3
+    # name을 지정하지 않으면 차트 이름 기반으로 자동 생성됩니다.
+    name: ""
+    data:
+      LOG_LEVEL: "info"
+      APP_ENV: "production"
+
+  # -- Secret 설정
+  # Secret을 직접 생성하지 않고, 이미 클러스터에 존재하는 Secret들을 참조하여 환경변수로 주입합니다.
+  secret:
+    enabled: true
+    # 클러스터에 미리 생성되어 있어야 하는 Secret 이름들의 목록
+    names:
+      - "savvyrev-prod-secret"
+      - "savvyrev-prod-secret2"
+
+  # -- Health Check (Probes) 설정
+  probes:
+    liveness:
+      enabled: true
+      path: "/healthz"
+      initialDelaySeconds: 15
+      periodSeconds: 20
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readiness:
+      enabled: true
+      path: "/readyz"
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
