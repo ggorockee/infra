@@ -5,7 +5,7 @@
 
 # -- 배포될 Docker 이미지 정보
 image:
-  repository: ggorockee/savvyrev-fastapi
+  repository: ggorockee/savvyrev-api
   pullPolicy: IfNotPresent
   # tag는 CI 파이프라인에서 자동으로 덮어씁니다.
   # 예: 7f4d3d8
