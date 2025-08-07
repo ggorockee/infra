@@ -74,17 +74,30 @@ backend:
 
   # -- Health Check (Probes) 설정
   probes:
-    liveness:
-      enabled: true
-      path: "/"
-      initialDelaySeconds: 15
-      periodSeconds: 20
-      timeoutSeconds: 5
+    livenessProbe:
       failureThreshold: 3
-    readiness:
-      enabled: true
-      path: "/"
-      initialDelaySeconds: 5
+      httpGet:
+        httpHeaders:
+          - name: Host
+            value: savvyrev-backend.savvyrev.svc.cluster.local
+        path: /
+        port: http
+        scheme: HTTP
+      initialDelaySeconds: 30
+      periodSeconds: 15
+      successThreshold: 1
+      timeoutSeconds: 5
+
+    readinessProbe:
+      failureThreshold: 2
+      httpGet:
+        httpHeaders:
+          - name: Host
+            value: savvyrev-backend.savvyrev.svc.cluster.local
+        path: /
+        port: http
+        scheme: HTTP
+      initialDelaySeconds: 10
       periodSeconds: 10
+      successThreshold: 1
       timeoutSeconds: 5
-      failureThreshold: 3
