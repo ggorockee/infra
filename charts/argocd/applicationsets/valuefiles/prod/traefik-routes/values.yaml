@@ -100,4 +100,16 @@ ingressRoutes:
       - name: kubeshark-front
         port: 80
 
+  - name: savvyrev-backend
+    enabled: true
+    namespace: savvyrev
 
+    entryPoints:
+      - websecure
+
+    host: "savvyrev-api.ggorockee.org"
+    tlsSecretName: "savvyrev-com-cert"
+
+    services:
+      - name: savvyrev-backend
+        port: 80
