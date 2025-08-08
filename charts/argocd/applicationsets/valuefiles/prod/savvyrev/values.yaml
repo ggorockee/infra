@@ -6,7 +6,7 @@ backend:
     pullPolicy: IfNotPresent
     # tag는 CI 파이프라인에서 자동으로 덮어씁니다.
     # 예: 7f4d3d8
-    tag: "20250808-f1ea878"
+    tag: "20250808-a54853f"
 
   # -- Pod에 대한 주석 (Annotations) 설정. 예: AWS IAM Role 연동 등
   podAnnotations: {}
