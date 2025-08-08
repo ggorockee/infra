@@ -16,7 +16,9 @@ backend:
     # my-custom-annotation: "my-value"
 
   # -- Pod에 추가할 사용자 정의 라벨 (이 부분이 추가되었습니다)
-  extraLabels: {}
+  extraLabels:
+    job: "savvyrev"
+    role: "backend"
     # my-custom-label: "my-value"
 
   # -- 서비스 계정 설정 (필요시)
