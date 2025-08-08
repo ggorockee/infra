@@ -107,7 +107,7 @@ ingressRoutes:
     entryPoints:
       - websecure
 
-    host: "savvyrev-api.ggorockee.org"
+    host: "api.savvyrev.com"
     tlsSecretName: "savvyrev-com-cert"
 
     services:
