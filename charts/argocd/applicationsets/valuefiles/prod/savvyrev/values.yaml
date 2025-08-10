@@ -66,6 +66,7 @@ backend:
       APP_ENV: "production"
       ACCESS_TOKEN_EXPIRE_MINUTES: "60"
       REFRESH_TOKEN_EXPIRE_MINUTES: "10080"
+      ALGORITHM: "HS256"
 
   # -- Secret 설정
   # Secret을 직접 생성하지 않고, 이미 클러스터에 존재하는 Secret들을 참조하여 환경변수로 주입합니다.
