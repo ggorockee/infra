@@ -9,10 +9,12 @@ backend:
     tag: "20250809-bd8bd64"
 
   # -- Pod에 대한 주석 (Annotations) 설정. 예: AWS IAM Role 연동 등
-  podAnnotations: {}
+  podAnnotations:
+    {}
     # iam.amazonaws.com/role: arn:aws:iam::123456789012:role/savvy-rev-role
 
-  extraAnnotations: {}
+  extraAnnotations:
+    {}
     # my-custom-annotation: "my-value"
 
   # -- Pod에 추가할 사용자 정의 라벨 (이 부분이 추가되었습니다)
@@ -36,7 +38,8 @@ backend:
     port: 80
 
   # -- 컨테이너 리소스 요청/제한 설정
-  resources: {}
+  resources:
+    {}
     # limits:
     #   cpu: 100m
     #   memory: 128Mi
@@ -62,6 +65,7 @@ backend:
       LOG_LEVEL: "info"
       APP_ENV: "production"
       ACCESS_TOKEN_EXPIRE_MINUTES: "60"
+      REFRESH_TOKEN_EXPIRE_DAYS: "7"
 
   # -- Secret 설정
   # Secret을 직접 생성하지 않고, 이미 클러스터에 존재하는 Secret들을 참조하여 환경변수로 주입합니다.
@@ -69,12 +73,13 @@ backend:
     enabled: true
     # 클러스터에 미리 생성되어 있어야 하는 Secret 이름들의 목록
     names:
-    - "savvyrev-prod-secret"
-    - "savvyrev-db-credentials"
+      - "savvyrev-prod-secret"
+      - "savvyrev-db-credentials"
 
   # -- Health Check (Probes) 설정
   probes:
-    livenessProbe: {}
+    livenessProbe:
+      {}
       # failureThreshold: 3
       # httpGet:
       #   httpHeaders:
@@ -88,7 +93,8 @@ backend:
       # successThreshold: 1
       # timeoutSeconds: 5
 
-    readinessProbe: {}
+    readinessProbe:
+      {}
       # failureThreshold: 2
       # httpGet:
       #   httpHeaders:
