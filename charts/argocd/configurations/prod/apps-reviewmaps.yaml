@@ -3,5 +3,5 @@ chartName: reviewmaps
 appName: reviewmaps
 repoURL: https://ggorockee.github.io/infra/
 revision: main
-chartVersion: 1.0.1
+chartVersion: 1.0.2
 namespace: reviewmaps
