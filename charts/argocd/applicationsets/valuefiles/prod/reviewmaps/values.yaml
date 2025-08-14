@@ -1,4 +1,7 @@
-backend:
+#########################################################################
+
+#########################################################################
+server:
   enabled: true
   # Default values for backend.
   # This is a YAML-formatted file.
@@ -9,11 +12,11 @@ backend:
 
   # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
   image:
-    repository: nginx
+    repository: ggorockee/scrape-with-selenium
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: ""
+    tag: "20250814-28a9152"
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: []
@@ -115,18 +118,44 @@ backend:
     enabled: false
     # name을 지정하지 않으면 차트 이름 기반으로 자동 생성됩니다.
     name: ""
-    data:
-      LOG_LEVEL: "info"
-      APP_ENV: "production"
+    data: {}
+      # LOG_LEVEL: "info"
+      # APP_ENV: "production"
 
   secret:
     enabled: false
     # 클러스터에 미리 생성되어 있어야 하는 Secret 이름들의 목록
-    names:
-      - "savvyrev-prod-secret"
+    names: []
+    # - "savvyrev-prod-secret"
 
-frontend:
+  runner:
+    enabled: false
+    mode: "once"                             # once | daily | interval
+    # CronJob로 돌릴 때
+    cronjob:
+      enabled: true                          # CronJob 사용할지
+      schedule: "0 1 * * *"                  # 매일 01:00
+      timeZone: "Asia/Seoul"                 # 클러스터가 지원하면 적용됨
+      concurrencyPolicy: "Forbid"
+      startingDeadlineSeconds: 900
+      successfulJobsHistoryLimit: 2
+      failedJobsHistoryLimit: 3
+      backoffLimit: 2
+      ttlSecondsAfterFinished: 3600
+    # Deployment(내부 스케줄러)로 돌릴 때
+    deployment:
+      enabled: false                         # 내부 스케줄러(상주형) 사용할지
+      replicas: 1
+
+#########################################################################
+
+#########################################################################
+web:
   enabled: false
+
+#########################################################################
+
+#########################################################################
 
 database:
   enabled: true
