@@ -9,7 +9,7 @@ backend:
 
   # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
   image:
-    repository: nginx
+    repository: ggorockee/scrape-with-selenium
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
@@ -40,10 +40,12 @@ backend:
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   podLabels: {}
 
-  podSecurityContext: {}
+  podSecurityContext:
+    {}
     # fsGroup: 2000
 
-  securityContext: {}
+  securityContext:
+    {}
     # capabilities:
     #   drop:
     #   - ALL
@@ -61,7 +63,8 @@ backend:
 
   # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 
-  resources: {}
+  resources:
+    {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
     # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -74,12 +77,14 @@ backend:
     #   memory: 128Mi
 
   # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-  livenessProbe: {}
+  livenessProbe:
+    {}
     # httpGet:
     #   path: /
     #   port: http
 
-  readinessProbe: {}
+  readinessProbe:
+    {}
     # httpGet:
     #   path: /
     #   port: http
