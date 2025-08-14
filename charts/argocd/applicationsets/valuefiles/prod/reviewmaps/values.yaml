@@ -16,7 +16,7 @@ server:
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "20250814-04c9960"
+    tag: "20250814-35c0e25"
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: []
@@ -41,7 +41,9 @@ server:
   podAnnotations: {}
   # This is for setting Kubernetes Labels to a Pod.
   # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
-  podLabels: {}
+  podLabels:
+    job: scrape
+    service: scrape
 
   podSecurityContext: {}
     # fsGroup: 2000
