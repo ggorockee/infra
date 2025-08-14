@@ -47,6 +47,21 @@ certmanager:
         targetNamespaces:
           - savvyrev
 
+    - name: review-maps-com
+      namespace: cert-manager
+      extraLabels: {}
+      annotations: {}
+      secretName: review-maps-com
+      clusterIssuer:
+        name: letsencrypt-cloudflare
+      dnsNames:
+        - "*.review-maps.com"
+        - "review-maps.com"
+      replicator:
+        enabled: true
+        targetNamespaces:
+          - reviewmaps
+
 clusterIssuer:
   name: letsencrypt-cloudflare
   email: ggorockee@gmail.com
@@ -60,3 +75,5 @@ clusterIssuer:
       - "ggorockee.com"
       - "savvyrev.com"
       - "*.savvyrev.com"
+      - "*.review-maps.com"
+      - "review-maps.com"
