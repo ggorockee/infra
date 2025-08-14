@@ -128,7 +128,7 @@ server:
       BATCH_TIME: "01:00"                    # daily 모드일 때
       BATCH_INTERVAL_SECONDS: "300"          # interval 모드일 때
       TIMEZONE: "Asia/Seoul"
-      RUN_AT_START: "false"                  # 시작 직후 1회 실행 여부
+      RUN_AT_START: "true"                  # 시작 직후 1회 실행 여부
       TABLE_NAME: "campaign"
 
   secret:
