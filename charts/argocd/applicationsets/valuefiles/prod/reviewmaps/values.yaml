@@ -141,7 +141,7 @@ scrape:
 
   runner:
     enabled: true
-    mode: "once"                             # once | daily | interval
+    mode: "daily"                             # once | daily | interval
     # CronJob로 돌릴 때
     cronjob:
       enabled: true                          # CronJob 사용할지
