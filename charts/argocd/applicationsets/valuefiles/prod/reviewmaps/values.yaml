@@ -16,7 +16,7 @@ scrape:
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "20250815-5cb7113"
+    tag: "20250815-2ab8263"
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: []
@@ -128,7 +128,7 @@ scrape:
       BATCH_TIME: "01:00"                    # daily 모드일 때
       BATCH_INTERVAL_SECONDS: "300"          # interval 모드일 때
       TIMEZONE: "Asia/Seoul"
-      RUN_AT_START: "true"                  # 시작 직후 1회 실행 여부
+      RUN_AT_START: "false"                  # 시작 직후 1회 실행 여부
       TABLE_NAME: "campaign"
 
   secret:
@@ -141,7 +141,7 @@ scrape:
 
   runner:
     enabled: true
-    mode: "once"                             # once | daily | interval
+    mode: "daily"                             # once | daily | interval
     # CronJob로 돌릴 때
     cronjob:
       enabled: true                          # CronJob 사용할지
@@ -181,7 +181,7 @@ server:
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "20250815-5cb7113"
+    tag: "20250815-2ab8263"
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: []
@@ -309,8 +309,6 @@ server:
 #########################################################################
 
 #########################################################################
-    
-    
 web:
   enabled: false
 
