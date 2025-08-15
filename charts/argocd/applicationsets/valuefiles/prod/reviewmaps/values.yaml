@@ -173,7 +173,13 @@ server:
 
 #########################################################################
   image:
-    tag: 20250815-5cb7113
+    repository: ggorockee/reviewmaps-server
+    # This sets the pull policy for images.
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: "20250815-5cb7113"
+    
+    
 web:
   enabled: false
 
