@@ -130,6 +130,7 @@ scrape:
       TIMEZONE: "Asia/Seoul"
       RUN_AT_START: "false"                  # 시작 직후 1회 실행 여부
       TABLE_NAME: "campaign"
+      ENRICH_SCOPE: "region" # region | all
 
   secret:
     enabled: true
