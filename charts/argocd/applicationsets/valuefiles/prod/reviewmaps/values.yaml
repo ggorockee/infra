@@ -157,7 +157,7 @@ scrape:
       ttlSecondsAfterFinished: 3600
       parallel:
         enabled: true
-        maxParallelism: 5
+        maxParallelism: 3
         keywords:
           - "서울"
           - "부산"
