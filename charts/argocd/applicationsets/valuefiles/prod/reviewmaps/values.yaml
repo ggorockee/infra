@@ -131,6 +131,7 @@ scrape:
       RUN_AT_START: "false"                  # 시작 직후 1회 실행 여부
       TABLE_NAME: "campaign"
       ENRICH_SCOPE: "region" # region | all
+      WAIT_TIMEOUT: 30
 
   secret:
     enabled: true
@@ -159,7 +160,7 @@ scrape:
         keywords:
           - "세종"
           - "대구"
-          
+
     # Deployment(내부 스케줄러)로 돌릴 때
     deployment:
       enabled: false                         # 내부 스케줄러(상주형) 사용할지
