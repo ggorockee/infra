@@ -16,7 +16,7 @@ scrape:
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "20250829-df6fe40"
+    tag: "20250829-7a81b35"
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: []
@@ -154,6 +154,12 @@ scrape:
       failedJobsHistoryLimit: 3
       backoffLimit: 2
       ttlSecondsAfterFinished: 3600
+      parallel:
+        enabled: true
+        keywords:
+          - "세종"
+          - "대구"
+          
     # Deployment(내부 스케줄러)로 돌릴 때
     deployment:
       enabled: false                         # 내부 스케줄러(상주형) 사용할지
