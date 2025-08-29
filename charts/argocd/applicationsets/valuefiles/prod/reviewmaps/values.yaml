@@ -154,6 +154,12 @@ scrape:
       failedJobsHistoryLimit: 3
       backoffLimit: 2
       ttlSecondsAfterFinished: 3600
+      parallel:
+        enabled: true
+        keywords:
+          - "세종"
+          - "대구"
+          
     # Deployment(내부 스케줄러)로 돌릴 때
     deployment:
       enabled: false                         # 내부 스케줄러(상주형) 사용할지
