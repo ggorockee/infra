@@ -127,3 +127,17 @@ ingressRoutes:
     services:
       - name: reviewmaps-server
         port: 8000
+
+  - name: reviewmaps-database
+    enabled: true
+    namespace: reviewmaps
+
+    entryPoints:
+      - websecure
+
+    host: "db.review-maps.com"
+    tlsSecretName: "review-maps-com"
+
+    services:
+      - name: reviewmaps-database
+        port: 5432
