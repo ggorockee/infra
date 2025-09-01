@@ -154,7 +154,7 @@ scrape:
       successfulJobsHistoryLimit: 0
       failedJobsHistoryLimit: 1
       backoffLimit: 2
-      # ttlSecondsAfterFinished: 0
+      ttlSecondsAfterFinished: 0
       parallel:
         enabled: true
         maxParallelism: 3
