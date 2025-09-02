@@ -182,40 +182,40 @@ scrape:
     # CronJob로 돌릴 때
     scrapers:
       - name: mymilky
-      schedule: "0 1 * * *"                    # 매일 01:00
-      timeZone: "Asia/Seoul"                   # 클러스터가 지원하면 적용됨
-      concurrencyPolicy: "Forbid"
-      startingDeadlineSeconds: 900
-      successfulJobsHistoryLimit: 1
-      failedJobsHistoryLimit: 1
-      backoffLimit: 2
-      ttlSecondsAfterFinished: 0
+        schedule: "0 1 * * *"                    # 매일 01:00
+        timeZone: "Asia/Seoul"                   # 클러스터가 지원하면 적용됨
+        concurrencyPolicy: "Forbid"
+        startingDeadlineSeconds: 900
+        successfulJobsHistoryLimit: 1
+        failedJobsHistoryLimit: 1
+        backoffLimit: 2
+        ttlSecondsAfterFinished: 0
         # keywords: ["서울","부산","대구","인천","광주","대전","울산","세종","강원",
         #             "경기","경남","경북","전남","전북","충남","충북","제주"]
-      keywords: ["세종"]
-      parallel:
-          # 병렬 처리를 사용할지 여부
-        enabled: true
-        maxParallelism: 2
+        keywords: ["세종"]
+        parallel:
+            # 병렬 처리를 사용할지 여부
+          enabled: true
+          maxParallelism: 2
 
 
 
       - name: inflexer
-      schedule: "0 1 * * *"                    # 매일 01:00
-      timeZone: "Asia/Seoul"                   # 클러스터가 지원하면 적용됨
-      concurrencyPolicy: "Forbid"
-      startingDeadlineSeconds: 900
-      successfulJobsHistoryLimit: 1
-      failedJobsHistoryLimit: 1
-      backoffLimit: 2
-      ttlSecondsAfterFinished: 0
-        # keywords: ["서울","부산","대구","인천","광주","대전","울산","세종","강원",
-        #             "경기","경남","경북","전남","전북","충남","충북","제주"]
-      keywords: ["세종"]
-      parallel:
-          # 병렬 처리를 사용할지 여부
-        enabled: true
-        maxParallelism: 2
+        schedule: "0 1 * * *"                    # 매일 01:00
+        timeZone: "Asia/Seoul"                   # 클러스터가 지원하면 적용됨
+        concurrencyPolicy: "Forbid"
+        startingDeadlineSeconds: 900
+        successfulJobsHistoryLimit: 1
+        failedJobsHistoryLimit: 1
+        backoffLimit: 2
+        ttlSecondsAfterFinished: 0
+          # keywords: ["서울","부산","대구","인천","광주","대전","울산","세종","강원",
+          #             "경기","경남","경북","전남","전북","충남","충북","제주"]
+        keywords: ["세종"]
+        parallel:
+            # 병렬 처리를 사용할지 여부
+          enabled: true
+          maxParallelism: 2
 
     # Deployment(내부 스케줄러)로 돌릴 때
     deployment:
