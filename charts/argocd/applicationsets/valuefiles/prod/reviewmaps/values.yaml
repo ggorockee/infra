@@ -192,7 +192,7 @@ scrape:
         ttlSecondsAfterFinished: 0
         # keywords: ["서울","부산","대구","인천","광주","대전","울산","세종","강원",
         #             "경기","경남","경북","전남","전북","충남","충북","제주"]
-        keywords: ["서울"]
+        keywords: ["세종"]
         parallel:
           # 병렬 처리를 사용할지 여부
           enabled: true
