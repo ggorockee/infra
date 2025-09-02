@@ -183,7 +183,7 @@ scrape:
         timeZone: "Asia/Seoul"                   # 클러스터가 지원하면 적용됨
         concurrencyPolicy: "Forbid"
         startingDeadlineSeconds: 900
-        successfulJobsHistoryLimit: 1
+        successfulJobsHistoryLimit: 0
         failedJobsHistoryLimit: 1
         backoffLimit: 2
         ttlSecondsAfterFinished: 0
