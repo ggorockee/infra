@@ -362,8 +362,8 @@ server:
   # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
   livenessProbe:
     httpGet:
-      path: /livez
-      port: http   # 컨테이너 port name이 http일 때
+      path: /healthz
+      port: fastapi   # 컨테이너 port name이 http일 때
       scheme: HTTP
     initialDelaySeconds: 10
     periodSeconds: 10
@@ -373,7 +373,7 @@ server:
   readinessProbe:
     httpGet:
       path: /healthz
-      port: http
+      port: fastapi
       scheme: HTTP
     initialDelaySeconds: 5
     periodSeconds: 10
