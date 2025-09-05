@@ -2,3 +2,9 @@ args:
   - --kubelet-insecure-tls=true
   - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
   - --kubelet-request-timeout=10s
+
+containerPort: 4443 
+
+service:
+  type: ClusterIP
+  port: 443
