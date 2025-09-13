@@ -174,7 +174,7 @@ scrape:
         parallel:
             # 병렬 처리를 사용할지 여부
           enabled: true
-          maxParallelism: 3
+          maxParallelism: 1
 
 
 
@@ -271,7 +271,7 @@ scrape:
         parallel:
             # 병렬 처리를 사용할지 여부
           enabled: true
-          maxParallelism: 3
+          maxParallelism: 1
 
     # Deployment(내부 스케줄러)로 돌릴 때
     deployment:
