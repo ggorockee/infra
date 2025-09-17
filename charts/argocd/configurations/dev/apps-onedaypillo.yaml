@@ -5,3 +5,4 @@ repoURL: https://ggorockee.github.io/infra/
 revision: dev
 chartVersion: 1.0.0
 namespace: onedaypillo-dev
+project: dev
