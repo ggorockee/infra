@@ -116,6 +116,30 @@ entries:
     urls:
     - godaddy-webhook-1.29.0.tgz
     version: 1.29.0
+  healthplus:
+  - annotations:
+      category: Application
+      helm.sh/chart-type: application
+    apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-09-16T13:10:38.3511361+09:00"
+    description: HealthPlus 약물 관리 앱 Helm Chart - 개발/운영 환경을 위한 범용 배포 차트
+    digest: 0138f6e1682f3ed7802436f18e67480fc545d14d26d4dbfcd668c3e9a4a08a7c
+    home: https://github.com/woohaen88/healthplus
+    keywords:
+    - healthplus
+    - medication
+    - python
+    - fastapi
+    - kubernetes
+    maintainers:
+    - email: woohaen88@gmail.com
+      name: woohaen88
+    name: healthplus
+    type: application
+    urls:
+    - healthplus-0.1.0.tgz
+    version: 0.1.0
   letsenc-certificate:
   - apiVersion: v2
     appVersion: 1.16.0
