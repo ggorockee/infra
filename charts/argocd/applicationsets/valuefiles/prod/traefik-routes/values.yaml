@@ -100,20 +100,6 @@ ingressRoutes:
       - name: kubeshark-front
         port: 80
 
-  - name: savvyrev-backend
-    enabled: true
-    namespace: savvyrev
-
-    entryPoints:
-      - websecure
-
-    host: "api.savvyrev.com"
-    tlsSecretName: "savvyrev-com-cert"
-
-    services:
-      - name: savvyrev-backend
-        port: 80
-
   - name: reviewmaps-server
     enabled: true
     namespace: reviewmaps
@@ -126,4 +112,18 @@ ingressRoutes:
 
     services:
       - name: reviewmaps-server
+        port: 8000
+
+  - name: onedaypillo-fastapi-app
+    enabled: true
+    namespace: onedaypillo-dev
+
+    entryPoints:
+      - websecure
+
+    host: "api-dev.woohalabs.com/onedaypillo"
+    tlsSecretName: "woohalabs-com-cert"
+
+    services:
+      - name: onedaypillo-fastapi-app
         port: 8000
