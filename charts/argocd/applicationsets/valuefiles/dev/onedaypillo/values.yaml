@@ -102,4 +102,4 @@ configMap:
     PUSH_NOTIFICATION_ENABLED: "false"
 
 externalSecrets:
-  - onedaypillo-dev-cred
+  - name: onedaypillo-dev-cred
