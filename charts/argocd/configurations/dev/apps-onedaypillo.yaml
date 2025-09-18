@@ -1,0 +1,8 @@
+env: dev
+chartName: fastapi-app
+appName: onedaypillo
+repoURL: https://ggorockee.github.io/infra/
+revision: dev
+chartVersion: 1.0.1
+namespace: onedaypillo-dev
+project: dev

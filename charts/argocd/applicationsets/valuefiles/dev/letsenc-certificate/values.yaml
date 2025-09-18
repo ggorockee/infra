@@ -1,0 +1,25 @@
+certmanager:
+  certi:
+    - name: woohalabs-com-cert
+      namespace: cert-manager
+      extraLabels: {}
+      annotations: {}
+      secretName: woohalabs-com-cert
+      clusterIssuer:
+        name: letsencrypt-cloudflare
+      dnsNames:
+        - "*.woohalabs.com"
+      replicator:
+        enabled: true
+        targetNamespaces:
+          - onedaypillo-dev
+
+clusterIssuer:
+  name: letsencrypt-cloudflare
+  email: ggorockee@gmail.com
+  privateKeySecretName: letsencrypt-cloudflare-account-key
+  credentials: cloudflare-webhook-credentials
+  solvers:
+    dnsNames:
+      - "*.woohalabs.com"
+      
