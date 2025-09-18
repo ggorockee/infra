@@ -121,7 +121,8 @@ ingressRoutes:
     entryPoints:
       - websecure
 
-    host: "api-dev.woohalabs.com/onedaypillo"
+    host: "api-dev.woohalabs.com"
+    pathPrefix: "/onedaypillo"
     tlsSecretName: "woohalabs-com-cert"
 
     services:
