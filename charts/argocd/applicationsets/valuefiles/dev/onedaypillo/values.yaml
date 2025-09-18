@@ -38,8 +38,8 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
-  portName: http
+  port: 8000
+  portName: fastapi
 
 ingress:
   enabled: false
@@ -68,12 +68,12 @@ resources:
 hpa:
   enabled: false
   minReplicas: 1
-  maxReplicas: 10
+  maxReplicas: 3
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
 livenessProbe:
-  enabled: true
+  enabled: false
   httpGet:
     path: /healthz
     port: http
@@ -81,7 +81,7 @@ livenessProbe:
   periodSeconds: 20
 
 readinessProbe:
-  enabled: true
+  enabled: false
   httpGet:
     path: /healthz
     port: http
@@ -95,7 +95,11 @@ tolerations: []
 affinity: {}
 
 configMap:
-  enabled: false
-  data: {}
+  enabled: true
+  data:
+    LOG_LEVEL: "debug"
+    NOTIFICATION_ENABLED: "false"
+    PUSH_NOTIFICATION_ENABLED: "false"
 
-externalSecrets: []
+externalSecrets:
+  - onedaypillo-dev-cred
