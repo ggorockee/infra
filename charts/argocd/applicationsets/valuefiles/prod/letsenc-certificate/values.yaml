@@ -32,20 +32,20 @@ certmanager:
           - argocd
           - kubeshark
 
-    - name: savvyrev-com-cert
+    - name: woohalabs-com-cert
       namespace: cert-manager
       extraLabels: {}
       annotations: {}
-      secretName: savvyrev-com-cert
+      secretName: woohalabs-com-cert
       clusterIssuer:
         name: letsencrypt-cloudflare
       dnsNames:
-        - "*.savvyrev.com"
-        - "savvyrev.com"
+        - "*.woohalabs.com"
       replicator:
         enabled: true
         targetNamespaces:
-          - savvyrev
+          - onedaypillo-dev
+          - onedaypillo
 
     - name: review-maps-com
       namespace: cert-manager
