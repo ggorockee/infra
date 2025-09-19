@@ -8,7 +8,7 @@ image:
   repository: ggorockee/healthplus-development-server
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "sha-4043248d"
+  tag: "sha-8325a26f"
 
 imagePullSecrets: []
 nameOverride: ""
