@@ -8,7 +8,7 @@ image:
   repository: ggorockee/healthplus-development-server
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "19554bc"
+  tag: "sha-1bee08a2"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -100,6 +100,7 @@ configMap:
     LOG_LEVEL: "debug"
     NOTIFICATION_ENABLED: "false"
     PUSH_NOTIFICATION_ENABLED: "false"
+    ROOT_PATH: "/onedaypillo"
 
 externalSecrets:
-  - name: onedaypillo-dev-cred
+- name: onedaypillo-dev-cred
