@@ -18,3 +18,7 @@ database:
       limits:
         memory: "1Gi"
         cpu: "500m"
+
+service:
+  type: ClusterIP
+  port: 80
