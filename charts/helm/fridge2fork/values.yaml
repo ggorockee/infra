@@ -3,9 +3,9 @@ database:
   global:
     postgresql:
       auth:
-        username: refridge2fork
-        database: refridge2fork
-        existingSecret: refridge2fork-db-credentials
+        username: fridge2fork
+        database: fridge2fork
+        existingSecret: fridge2fork-db-credentials
 
   primary:
     persistence:
