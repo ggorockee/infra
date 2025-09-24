@@ -1,0 +1,20 @@
+database:
+  enabled: true
+  global:
+    postgresql:
+      auth:
+        username: refridge2fork
+        database: refridge2fork
+        existingSecret: refridge2fork-db-credentials
+
+  primary:
+    persistence:
+      size: 10Gi
+      volumeName: "data"
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"

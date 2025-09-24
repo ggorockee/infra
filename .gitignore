@@ -103,3 +103,4 @@ trafik-routes
 istio-config
 # extra-configamp-secret
 .env
+charts/helm/fridge2fork/GEMINI.md
