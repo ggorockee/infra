@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "fridge2fork.name" -}}
+{{- define "scrape.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "fridge2fork.fullname" -}}
+{{- define "scrape.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "fridge2fork.chart" -}}
+{{- define "scrape.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "fridge2fork.labels" -}}
-helm.sh/chart: {{ include "fridge2fork.chart" . }}
-{{ include "fridge2fork.selectorLabels" . }}
+{{- define "scrape.labels" -}}
+helm.sh/chart: {{ include "scrape.chart" . }}
+{{ include "scrape.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,18 +45,34 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "fridge2fork.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "fridge2fork.name" . }}
+{{- define "scrape.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "scrape.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "fridge2fork.serviceAccountName" -}}
+{{- define "scrape.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "fridge2fork.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "scrape.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Validate that required secret exists
+*/}}
+{{- define "scrape.validateSecret" -}}
+{{- if not .Values.envFrom -}}
+{{- fail "envFrom configuration is required for database connection" -}}
+{{- end -}}
+{{- $secretName := (index .Values.envFrom 0).secretRef.name -}}
+{{- if not $secretName -}}
+{{- fail "Secret name is required in envFrom configuration. Please set envFrom[0].secretRef.name" -}}
+{{- end -}}
+{{- if eq $secretName "" -}}
+{{- fail "Secret name cannot be empty. Please provide a valid secret name in envFrom[0].secretRef.name" -}}
+{{- end -}}
+{{- end -}}
