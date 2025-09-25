@@ -27,6 +27,9 @@ scrape:
       cpu: "200m"
   replicas: 1
 
+  # Deployment configuration
+  revisionHistoryLimit: 2
+
   # ServiceAccount configuration
   serviceAccount:
     create: true
