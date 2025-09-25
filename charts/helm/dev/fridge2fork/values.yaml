@@ -31,13 +31,15 @@ scrape:
   backoffLimit: 3  # 실패 시 재시도 횟수
 
   # ConfigMap 설정
-  config:
-    TARGET_RECIPE_COUNT: "250000"       # 25만개 목표
-    CONCURRENT_REQUESTS: "5"            # 동시 요청 5개
-    BATCH_SIZE: "20"                    # 배치 크기 20개
-    REQUEST_DELAY: "1.5"                # 요청 간 1.5초 지연
-    BATCH_DELAY: "2.0"                  # 배치 간 2초 지연
-    LOG_LEVEL: "INFO"                   # 로깅 레벨
+  configMap:
+    enabled: true
+    config:
+      TARGET_RECIPE_COUNT: "250000"       # 25만개 목표
+      CONCURRENT_REQUESTS: "2"            # 동시 요청 2개
+      BATCH_SIZE: "20"                    # 배치 크기 20개
+      REQUEST_DELAY: "1.5"                # 요청 간 1.5초 지연
+      BATCH_DELAY: "2.0"                  # 배치 간 2초 지연
+      LOG_LEVEL: "INFO"                   # 로깅 레벨
 
   # ServiceAccount configuration
   serviceAccount:

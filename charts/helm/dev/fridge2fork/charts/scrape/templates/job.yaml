@@ -54,6 +54,7 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           envFrom:
             {{- toYaml .Values.envFrom | nindent 12 }}
+          {{- if .Values.configMap.enabled }}
           env:
             - name: TARGET_RECIPE_COUNT
               valueFrom:
@@ -85,6 +86,7 @@ spec:
                 configMapKeyRef:
                   name: {{ include "scrape.fullname" . }}-config
                   key: LOG_LEVEL
+          {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

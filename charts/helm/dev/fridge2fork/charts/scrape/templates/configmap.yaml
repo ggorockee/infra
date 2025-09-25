@@ -1,3 +1,4 @@
+{{- if .Values.configMap.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -6,11 +7,12 @@ metadata:
     {{- include "scrape.labels" . | nindent 4 }}
 data:
   # 크롤링 설정 (25만개 수집용)
-  TARGET_RECIPE_COUNT: {{ .Values.config.TARGET_RECIPE_COUNT | quote }}
-  CONCURRENT_REQUESTS: {{ .Values.config.CONCURRENT_REQUESTS | quote }}
-  BATCH_SIZE: {{ .Values.config.BATCH_SIZE | quote }}
-  REQUEST_DELAY: {{ .Values.config.REQUEST_DELAY | quote }}
-  BATCH_DELAY: {{ .Values.config.BATCH_DELAY | quote }}
+  TARGET_RECIPE_COUNT: {{ .Values.configMap.config.TARGET_RECIPE_COUNT | quote }}
+  CONCURRENT_REQUESTS: {{ .Values.configMap.config.CONCURRENT_REQUESTS | quote }}
+  BATCH_SIZE: {{ .Values.configMap.config.BATCH_SIZE | quote }}
+  REQUEST_DELAY: {{ .Values.configMap.config.REQUEST_DELAY | quote }}
+  BATCH_DELAY: {{ .Values.configMap.config.BATCH_DELAY | quote }}
   
   # 로깅 설정
-  LOG_LEVEL: {{ .Values.config.LOG_LEVEL | quote }}
+  LOG_LEVEL: {{ .Values.configMap.config.LOG_LEVEL | quote }}
+{{- end }}
