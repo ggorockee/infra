@@ -29,6 +29,8 @@ scrape:
 
   # Deployment configuration
   revisionHistoryLimit: 2
+  restartPolicy: Never  # 작업 완료 후 재시작하지 않음
+  activeDeadlineSeconds: 3600  # 1시간 후 자동 종료 (선택사항)
 
   # ServiceAccount configuration
   serviceAccount:
