@@ -63,9 +63,11 @@ scrape:
     targetCPUUtilizationPercentage: 80
   
   # Environment variables from secrets
+  # REQUIRED: This secret must exist before deploying the chart
+  # The secret should contain database connection information
   envFrom:
     - secretRef:
-        name: fridge2fork-db-credentials
+        name: fridge2fork-db-credentials  # Must exist in the namespace
 
 # Database Configuration
 database:

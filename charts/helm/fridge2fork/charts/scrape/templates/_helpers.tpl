@@ -60,3 +60,19 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Validate that required secret exists
+*/}}
+{{- define "scrape.validateSecret" -}}
+{{- if not .Values.envFrom -}}
+{{- fail "envFrom configuration is required for database connection" -}}
+{{- end -}}
+{{- $secretName := .Values.envFrom.0.secretRef.name -}}
+{{- if not $secretName -}}
+{{- fail "Secret name is required in envFrom configuration. Please set envFrom[0].secretRef.name" -}}
+{{- end -}}
+{{- if eq $secretName "" -}}
+{{- fail "Secret name cannot be empty. Please provide a valid secret name in envFrom[0].secretRef.name" -}}
+{{- end -}}
+{{- end -}}
