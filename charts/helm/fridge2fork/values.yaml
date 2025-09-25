@@ -3,7 +3,7 @@ scrape:
   enabled: true
   image:
     repository: ggorockee/fridge2fork-scrape
-    tag: sha-8992dffe
+    tag: dev-sha-0a30f861
     pullPolicy: IfNotPresent
   
   service:
@@ -95,8 +95,8 @@ database:
   global:
     postgresql:
       auth:
-        username: refridge2fork
-        database: refridge2fork
+        username: fridge2fork
+        database: fridge2fork
         existingSecret: fridge2fork-db-credentials
 
   primary:
