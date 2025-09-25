@@ -32,89 +32,86 @@ spec:
       backoffLimit: {{ .Values.backoffLimit }}
       {{- end }}
       template:
-    metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      labels:
-        {{- include "scrape.selectorLabels" . | nindent 8 }}
-    spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      serviceAccountName: {{ include "scrape.serviceAccountName" . }}
-      {{- if .Values.restartPolicy }}
-      restartPolicy: {{ .Values.restartPolicy }}
-      {{- end }}
-      {{- if .Values.activeDeadlineSeconds }}
-      activeDeadlineSeconds: {{ .Values.activeDeadlineSeconds }}
-      {{- end }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      containers:
-        - name: {{ .Chart.Name }}
+        metadata:
+          {{- with .Values.podAnnotations }}
+          annotations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          labels:
+            {{- include "scrape.selectorLabels" . | nindent 12 }}
+        spec:
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          serviceAccountName: {{ include "scrape.serviceAccountName" . }}
+          {{- if .Values.restartPolicy }}
+          restartPolicy: {{ .Values.restartPolicy }}
+          {{- end }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - name: http
-              containerPort: {{ .Values.service.targetPort }}
-              protocol: TCP
-          {{- if .Values.healthCheck.enabled }}
-          livenessProbe:
-            {{- toYaml .Values.healthCheck.livenessProbe | nindent 12 }}
-          readinessProbe:
-            {{- toYaml .Values.healthCheck.readinessProbe | nindent 12 }}
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+          containers:
+            - name: {{ .Chart.Name }}
+              securityContext:
+                {{- toYaml .Values.securityContext | nindent 16 }}
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              ports:
+                - name: http
+                  containerPort: {{ .Values.service.targetPort }}
+                  protocol: TCP
+              {{- if .Values.healthCheck.enabled }}
+              livenessProbe:
+                {{- toYaml .Values.healthCheck.livenessProbe | nindent 16 }}
+              readinessProbe:
+                {{- toYaml .Values.healthCheck.readinessProbe | nindent 16 }}
+              {{- end }}
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}
+              envFrom:
+                {{- toYaml .Values.envFrom | nindent 16 }}
+              {{- if .Values.configMap.enabled }}
+              env:
+                - name: TARGET_RECIPE_COUNT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "scrape.fullname" . }}-config
+                      key: TARGET_RECIPE_COUNT
+                - name: CONCURRENT_REQUESTS
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "scrape.fullname" . }}-config
+                      key: CONCURRENT_REQUESTS
+                - name: BATCH_SIZE
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "scrape.fullname" . }}-config
+                      key: BATCH_SIZE
+                - name: REQUEST_DELAY
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "scrape.fullname" . }}-config
+                      key: REQUEST_DELAY
+                - name: BATCH_DELAY
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "scrape.fullname" . }}-config
+                      key: BATCH_DELAY
+                - name: LOG_LEVEL
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "scrape.fullname" . }}-config
+                      key: LOG_LEVEL
+              {{- end }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
           {{- end }}
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-          envFrom:
-            {{- toYaml .Values.envFrom | nindent 12 }}
-          {{- if .Values.configMap.enabled }}
-          env:
-            - name: TARGET_RECIPE_COUNT
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "scrape.fullname" . }}-config
-                  key: TARGET_RECIPE_COUNT
-            - name: CONCURRENT_REQUESTS
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "scrape.fullname" . }}-config
-                  key: CONCURRENT_REQUESTS
-            - name: BATCH_SIZE
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "scrape.fullname" . }}-config
-                  key: BATCH_SIZE
-            - name: REQUEST_DELAY
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "scrape.fullname" . }}-config
-                  key: REQUEST_DELAY
-            - name: BATCH_DELAY
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "scrape.fullname" . }}-config
-                  key: BATCH_DELAY
-            - name: LOG_LEVEL
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "scrape.fullname" . }}-config
-                  key: LOG_LEVEL
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
