@@ -41,13 +41,15 @@ scrape:
     enabled: true
     config:
       TARGET_RECIPE_COUNT: "250000"       # 25만개 목표
-      CONCURRENT_REQUESTS: "2"            # 동시 요청 2개
-      BATCH_SIZE: "20"                    # 배치 크기 20개
+      CONCURRENT_REQUESTS: "1"            # 동시 요청 수 최소화
+      BATCH_SIZE: "3"                     # 배치 크기 최소화
       REQUEST_DELAY: "1.5"                # 요청 간 1.5초 지연
-      BATCH_DELAY: "2.0"                  # 배치 간 2초 지연
+      BATCH_DELAY: "15.0"                 # 더 긴 메모리 정리 시간
       LOG_LEVEL: "INFO"                   # 로깅 레벨
       PROGRESS_INTERVAL: "10"             # 진행률 표시 간격
       MEMORY_CHECK_INTERVAL: "50"         # 메모리 체크 간격
+      CHUNK_SIZE: "50"                    # 메모리가 매우 제한적인 경우
+      CHUNK_DELAY: "15.0"                 # 더 긴 메모리 정리 시간
 
   # ServiceAccount configuration
   serviceAccount:
