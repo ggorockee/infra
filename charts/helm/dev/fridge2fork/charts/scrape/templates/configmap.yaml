@@ -19,4 +19,8 @@ data:
   # 모니터링 설정
   PROGRESS_INTERVAL: {{ .Values.configMap.config.PROGRESS_INTERVAL | quote }}
   MEMORY_CHECK_INTERVAL: {{ .Values.configMap.config.MEMORY_CHECK_INTERVAL | quote }}
+  
+  # 메모리 최적화 설정
+  CHUNK_SIZE: {{ .Values.configMap.config.CHUNK_SIZE | quote }}
+  CHUNK_DELAY: {{ .Values.configMap.config.CHUNK_DELAY | quote }}
 {{- end }}
