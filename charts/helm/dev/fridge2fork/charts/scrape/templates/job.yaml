@@ -54,6 +54,37 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           envFrom:
             {{- toYaml .Values.envFrom | nindent 12 }}
+          env:
+            - name: TARGET_RECIPE_COUNT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scrape.fullname" . }}-config
+                  key: TARGET_RECIPE_COUNT
+            - name: CONCURRENT_REQUESTS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scrape.fullname" . }}-config
+                  key: CONCURRENT_REQUESTS
+            - name: BATCH_SIZE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scrape.fullname" . }}-config
+                  key: BATCH_SIZE
+            - name: REQUEST_DELAY
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scrape.fullname" . }}-config
+                  key: REQUEST_DELAY
+            - name: BATCH_DELAY
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scrape.fullname" . }}-config
+                  key: BATCH_DELAY
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scrape.fullname" . }}-config
+                  key: LOG_LEVEL
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
