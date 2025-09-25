@@ -25,12 +25,10 @@ scrape:
     limits:
       memory: "512Mi"
       cpu: "200m"
-  replicas: 1
-
-  # Deployment configuration
-  revisionHistoryLimit: 2
+  # Job configuration
   restartPolicy: Never  # 작업 완료 후 재시작하지 않음
   activeDeadlineSeconds: 3600  # 1시간 후 자동 종료 (선택사항)
+  backoffLimit: 3  # 실패 시 재시도 횟수
 
   # ServiceAccount configuration
   serviceAccount:

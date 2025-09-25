@@ -1,18 +1,17 @@
 {{- include "scrape.validateSecret" . -}}
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: {{ include "scrape.fullname" . }}
   labels:
     {{- include "scrape.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicas }}
+  {{- if .Values.activeDeadlineSeconds }}
+  activeDeadlineSeconds: {{ .Values.activeDeadlineSeconds }}
   {{- end }}
-  revisionHistoryLimit: {{ .Values.revisionHistoryLimit | default 2 }}
-  selector:
-    matchLabels:
-      {{- include "scrape.selectorLabels" . | nindent 6 }}
+  {{- if .Values.backoffLimit }}
+  backoffLimit: {{ .Values.backoffLimit }}
+  {{- end }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
