@@ -60,35 +60,7 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
 
-# Environment variables
-env:
-  - name: DATABASE_URL
-    valueFrom:
-      secretKeyRef:
-        name: fridge2fork-db-credentials
-        key: database-url
-  - name: DB_HOST
-    valueFrom:
-      secretKeyRef:
-        name: fridge2fork-db-credentials
-        key: host
-  - name: DB_PORT
-    valueFrom:
-      secretKeyRef:
-        name: fridge2fork-db-credentials
-        key: port
-  - name: DB_NAME
-    valueFrom:
-      secretKeyRef:
-        name: fridge2fork-db-credentials
-        key: database
-  - name: DB_USER
-    valueFrom:
-      secretKeyRef:
-        name: fridge2fork-db-credentials
-        key: username
-  - name: DB_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: fridge2fork-db-credentials
-        key: password
+# Environment variables from secrets
+envFrom:
+  - secretRef:
+      name: fridge2fork-db-credentials
