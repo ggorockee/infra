@@ -25,6 +25,13 @@ scrape:
     limits:
       memory: "512Mi"
       cpu: "200m"
+  # CronJob configuration
+  schedule: "0 0 1 */3 *"  # 분기마다 실행 (매분기 1일 00:00)
+  concurrencyPolicy: "Forbid"  # 동시 실행 금지
+  successfulJobsHistoryLimit: 3  # 성공한 Job 히스토리 3개 유지
+  failedJobsHistoryLimit: 1  # 실패한 Job 히스토리 1개 유지
+  startingDeadlineSeconds: 300  # 5분 내 시작하지 않으면 스킵
+  
   # Job configuration
   restartPolicy: Never  # 작업 완료 후 재시작하지 않음
   activeDeadlineSeconds: 3600  # 1시간 후 자동 종료 (선택사항)

@@ -1,6 +1,6 @@
 {{- include "scrape.validateSecret" . -}}
 apiVersion: batch/v1
-kind: Job
+kind: CronJob
 metadata:
   name: {{ include "scrape.fullname" . }}
   labels:
@@ -10,13 +10,28 @@ metadata:
     helm.sh/hook-weight: "1"
     helm.sh/hook-delete-policy: before-hook-creation
 spec:
-  {{- if .Values.activeDeadlineSeconds }}
-  activeDeadlineSeconds: {{ .Values.activeDeadlineSeconds }}
+  schedule: {{ .Values.schedule | quote }}
+  {{- if .Values.concurrencyPolicy }}
+  concurrencyPolicy: {{ .Values.concurrencyPolicy }}
   {{- end }}
-  {{- if .Values.backoffLimit }}
-  backoffLimit: {{ .Values.backoffLimit }}
+  {{- if .Values.successfulJobsHistoryLimit }}
+  successfulJobsHistoryLimit: {{ .Values.successfulJobsHistoryLimit }}
   {{- end }}
-  template:
+  {{- if .Values.failedJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.failedJobsHistoryLimit }}
+  {{- end }}
+  {{- if .Values.startingDeadlineSeconds }}
+  startingDeadlineSeconds: {{ .Values.startingDeadlineSeconds }}
+  {{- end }}
+  jobTemplate:
+    spec:
+      {{- if .Values.activeDeadlineSeconds }}
+      activeDeadlineSeconds: {{ .Values.activeDeadlineSeconds }}
+      {{- end }}
+      {{- if .Values.backoffLimit }}
+      backoffLimit: {{ .Values.backoffLimit }}
+      {{- end }}
+      template:
     metadata:
       {{- with .Values.podAnnotations }}
       annotations:
