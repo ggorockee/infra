@@ -20,4 +20,4 @@ database:
         cpu: "500m"
 scrape:
   image:
-    tag: dev-sha-5dcaa638
+    tag: dev-sha-0a30f861
