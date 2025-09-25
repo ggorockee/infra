@@ -3,14 +3,14 @@ scrape:
   enabled: true
   image:
     repository: ggorockee/fridge2fork-scrape
-    tag: dev-sha-0a30f861
+    tag: dev-sha-1be74a8b
     pullPolicy: IfNotPresent
-  
+
   service:
     type: ClusterIP
     port: 8080
     targetPort: 8080
-  
+
   resources:
     requests:
       memory: "256Mi"
@@ -18,19 +18,18 @@ scrape:
     limits:
       memory: "512Mi"
       cpu: "200m"
-  
   replicas: 1
-  
+
   # ServiceAccount configuration
   serviceAccount:
     create: true
     annotations: {}
     name: ""
-  
+
   # Pod security context
   podSecurityContext:
     fsGroup: 2000
-  
+
   # Container security context
   securityContext:
     capabilities:
@@ -39,29 +38,24 @@ scrape:
     readOnlyRootFilesystem: true
     runAsNonRoot: true
     runAsUser: 1000
-  
+
   # Pod annotations
   podAnnotations: {}
-  
   # Image pull secrets
   imagePullSecrets: []
-  
   # Node selector
   nodeSelector: {}
-  
   # Tolerations
   tolerations: []
-  
   # Affinity
   affinity: {}
-  
   # Autoscaling
   autoscaling:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
     targetCPUUtilizationPercentage: 80
-  
+
   # Health check configuration (disabled by default)
   healthCheck:
     enabled: false
@@ -81,13 +75,13 @@ scrape:
       periodSeconds: 5
       timeoutSeconds: 3
       failureThreshold: 3
-  
+
   # Environment variables from secrets
   # REQUIRED: This secret must exist before deploying the chart
   # The secret should contain database connection information
   envFrom:
-    - secretRef:
-        name: fridge2fork-db-credentials  # Must exist in the namespace
+  - secretRef:
+      name: fridge2fork-db-credentials    # Must exist in the namespace
 
 # Database Configuration
 database:
