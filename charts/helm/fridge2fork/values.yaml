@@ -62,8 +62,9 @@ scrape:
     maxReplicas: 100
     targetCPUUtilizationPercentage: 80
   
-  # Health check configuration
+  # Health check configuration (disabled by default)
   healthCheck:
+    enabled: false
     livenessProbe:
       httpGet:
         path: /health
