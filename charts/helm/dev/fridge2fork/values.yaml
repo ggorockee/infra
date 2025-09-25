@@ -46,6 +46,8 @@ scrape:
       REQUEST_DELAY: "1.5"                # 요청 간 1.5초 지연
       BATCH_DELAY: "2.0"                  # 배치 간 2초 지연
       LOG_LEVEL: "INFO"                   # 로깅 레벨
+      PROGRESS_INTERVAL: "10"             # 진행률 표시 간격
+      MEMORY_CHECK_INTERVAL: "50"         # 메모리 체크 간격
 
   # ServiceAccount configuration
   serviceAccount:

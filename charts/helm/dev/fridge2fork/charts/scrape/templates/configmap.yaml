@@ -15,4 +15,8 @@ data:
   
   # 로깅 설정
   LOG_LEVEL: {{ .Values.configMap.config.LOG_LEVEL | quote }}
+  
+  # 모니터링 설정
+  PROGRESS_INTERVAL: {{ .Values.configMap.config.PROGRESS_INTERVAL | quote }}
+  MEMORY_CHECK_INTERVAL: {{ .Values.configMap.config.MEMORY_CHECK_INTERVAL | quote }}
 {{- end }}

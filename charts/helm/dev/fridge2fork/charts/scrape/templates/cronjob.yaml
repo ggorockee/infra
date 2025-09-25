@@ -102,6 +102,16 @@ spec:
                     configMapKeyRef:
                       name: {{ include "scrape.fullname" . }}-config
                       key: LOG_LEVEL
+                - name: PROGRESS_INTERVAL
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "scrape.fullname" . }}-config
+                      key: PROGRESS_INTERVAL
+                - name: MEMORY_CHECK_INTERVAL
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "scrape.fullname" . }}-config
+                      key: MEMORY_CHECK_INTERVAL
               {{- end }}
           {{- with .Values.nodeSelector }}
           nodeSelector:
