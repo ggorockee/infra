@@ -68,7 +68,7 @@ Validate that required secret exists
 {{- if not .Values.envFrom -}}
 {{- fail "envFrom configuration is required for database connection" -}}
 {{- end -}}
-{{- $secretName := .Values.envFrom.0.secretRef.name -}}
+{{- $secretName := (index .Values.envFrom 0).secretRef.name -}}
 {{- if not $secretName -}}
 {{- fail "Secret name is required in envFrom configuration. Please set envFrom[0].secretRef.name" -}}
 {{- end -}}
