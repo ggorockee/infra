@@ -18,3 +18,6 @@ database:
       limits:
         memory: "1Gi"
         cpu: "500m"
+scrape:
+  image:
+    tag: dev-sha-5dcaa638
