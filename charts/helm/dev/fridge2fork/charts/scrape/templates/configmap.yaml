@@ -1,0 +1,26 @@
+{{- if .Values.configMap.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "scrape.fullname" . }}-config
+  labels:
+    {{- include "scrape.labels" . | nindent 4 }}
+data:
+  # 크롤링 설정 (25만개 수집용)
+  TARGET_RECIPE_COUNT: {{ .Values.configMap.config.TARGET_RECIPE_COUNT | quote }}
+  CONCURRENT_REQUESTS: {{ .Values.configMap.config.CONCURRENT_REQUESTS | quote }}
+  BATCH_SIZE: {{ .Values.configMap.config.BATCH_SIZE | quote }}
+  REQUEST_DELAY: {{ .Values.configMap.config.REQUEST_DELAY | quote }}
+  BATCH_DELAY: {{ .Values.configMap.config.BATCH_DELAY | quote }}
+  
+  # 로깅 설정
+  LOG_LEVEL: {{ .Values.configMap.config.LOG_LEVEL | quote }}
+  
+  # 모니터링 설정
+  PROGRESS_INTERVAL: {{ .Values.configMap.config.PROGRESS_INTERVAL | quote }}
+  MEMORY_CHECK_INTERVAL: {{ .Values.configMap.config.MEMORY_CHECK_INTERVAL | quote }}
+  
+  # 메모리 최적화 설정
+  CHUNK_SIZE: {{ .Values.configMap.config.CHUNK_SIZE | quote }}
+  CHUNK_DELAY: {{ .Values.configMap.config.CHUNK_DELAY | quote }}
+{{- end }}
