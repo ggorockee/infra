@@ -143,7 +143,22 @@ ingressRoutes:
     services:
       - name: fridge2fork-dev-admin
         port: 8000
-  
+
+  - name: fridge2fork-dev-admin-web
+    enabled: true
+    namespace: fridge2fork-dev
+
+    entryPoints:
+      - websecure
+
+    host: "admin-dev.woohalabs.com"
+    pathPrefix: "/fridge2fork"
+    tlsSecretName: "woohalabs-com-cert"
+
+    services:
+      - name: fridge2fork-dev-admin-web
+        port: 8000
+
   - name: fridge2fork-dev-app
     enabled: true
     namespace: fridge2fork-dev
@@ -157,4 +172,80 @@ ingressRoutes:
 
     services:
       - name: fridge2fork-dev-app
+        port: 8000
+
+  - name: fridge2fork-dev-web
+    enabled: true
+    namespace: fridge2fork-dev
+
+    entryPoints:
+      - websecure
+
+    host: "dev.woohalabs.com"
+    pathPrefix: "/fridge2fork"
+    tlsSecretName: "woohalabs-com-cert"
+
+    services:
+      - name: fridge2fork-dev-web
+        port: 8000
+
+  ## prod
+  - name: fridge2fork-prod-admin
+    enabled: true
+    namespace: fridge2fork
+
+    entryPoints:
+      - websecure
+
+    host: "admin-api.woohalabs.com"
+    pathPrefix: "/fridge2fork"
+    tlsSecretName: "woohalabs-com-cert"
+
+    services:
+      - name: fridge2fork-prod-admin
+        port: 8000
+
+  - name: fridge2fork-prod-admin-web
+    enabled: true
+    namespace: fridge2fork
+
+    entryPoints:
+      - websecure
+
+    host: "admin.woohalabs.com"
+    pathPrefix: "/fridge2fork"
+    tlsSecretName: "woohalabs-com-cert"
+
+    services:
+      - name: fridge2fork-prod-admin-web
+        port: 8000
+
+  - name: fridge2fork-prod-app
+    enabled: true
+    namespace: fridge2fork
+
+    entryPoints:
+      - websecure
+
+    host: "api.woohalabs.com"
+    pathPrefix: "/fridge2fork"
+    tlsSecretName: "woohalabs-com-cert"
+
+    services:
+      - name: fridge2fork-prod-app
+        port: 8000
+
+  - name: fridge2fork-prod-web
+    enabled: true
+    namespace: fridge2fork
+
+    entryPoints:
+      - websecure
+
+    host: "woohalabs.com"
+    pathPrefix: "/fridge2fork"
+    tlsSecretName: "woohalabs-com-cert"
+
+    services:
+      - name: fridge2fork-prod-web
         port: 8000
