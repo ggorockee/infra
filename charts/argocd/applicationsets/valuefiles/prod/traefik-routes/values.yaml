@@ -136,10 +136,25 @@ ingressRoutes:
     entryPoints:
       - websecure
 
-    host: "admin-dev.woohalabs.com"
+    host: "admin-api-dev.woohalabs.com"
     pathPrefix: "/fridge2fork"
     tlsSecretName: "woohalabs-com-cert"
 
     services:
       - name: fridge2fork-dev-admin
+        port: 8000
+  
+  - name: fridge2fork-dev-app
+    enabled: true
+    namespace: fridge2fork-dev
+
+    entryPoints:
+      - websecure
+
+    host: "api-dev.woohalabs.com"
+    pathPrefix: "/fridge2fork"
+    tlsSecretName: "woohalabs-com-cert"
+
+    services:
+      - name: fridge2fork-dev-app
         port: 8000
