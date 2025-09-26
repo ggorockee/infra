@@ -114,6 +114,91 @@ scrape:
   - secretRef:
       name: fridge2fork-db-credentials    # Must exist in the namespace
 
+# Admin Service Configuration
+admin:
+  enabled: true
+  replicaCount: 1
+  
+  image:
+    repository: ggorockee/fridge2fork-admin
+    tag: dev
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
+
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "200m"
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: ""
+    automount: true
+
+  configMap:
+    enabled: true
+    config:
+      ADMIN_PORT: "8080"
+      LOG_LEVEL: "INFO"
+      DEBUG_MODE: "false"
+
+  secret:
+    enabled: false
+    secretName: ""
+
+  podSecurityContext:
+    fsGroup: 2000
+
+  securityContext:
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1000
+
+  podAnnotations: {}
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  healthCheck:
+    enabled: false
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: http
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readinessProbe:
+      httpGet:
+        path: /ready
+        port: http
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+
+  envFrom: []
+
 # Database Configuration
 database:
   enabled: true
