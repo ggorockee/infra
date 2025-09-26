@@ -128,3 +128,18 @@ ingressRoutes:
     services:
       - name: onedaypillo-fastapi-app
         port: 8000
+
+  - name: fridge2form-admin-dev
+    enabled: true
+    namespace: fridge2fork-dev
+
+    entryPoints:
+      - websecure
+
+    host: "admin-dev.woohalabs.com"
+    pathPrefix: "/fridge2fork"
+    tlsSecretName: "woohalabs-com-cert"
+
+    services:
+      - name: fridge2fork-dev-database
+        port: 8000
