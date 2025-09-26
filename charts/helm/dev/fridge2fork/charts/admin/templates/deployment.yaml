@@ -38,8 +38,8 @@ spec:
             - name: http
               containerPort: {{ .Values.service.targetPort }}
               protocol: TCP
+          {{- if .Values.healthCheck.enabled }}
           livenessProbe:
-            {{- if .Values.healthCheck.enabled }}
             httpGet:
               path: {{ .Values.healthCheck.livenessProbe.httpGet.path }}
               port: {{ .Values.healthCheck.livenessProbe.httpGet.port }}
@@ -47,15 +47,7 @@ spec:
             periodSeconds: {{ .Values.healthCheck.livenessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.healthCheck.livenessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.healthCheck.livenessProbe.failureThreshold }}
-            {{- else }}
-            httpGet:
-              path: /
-              port: http
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            {{- end }}
           readinessProbe:
-            {{- if .Values.healthCheck.enabled }}
             httpGet:
               path: {{ .Values.healthCheck.readinessProbe.httpGet.path }}
               port: {{ .Values.healthCheck.readinessProbe.httpGet.port }}
@@ -63,13 +55,7 @@ spec:
             periodSeconds: {{ .Values.healthCheck.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.healthCheck.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.healthCheck.readinessProbe.failureThreshold }}
-            {{- else }}
-            httpGet:
-              path: /
-              port: http
-            initialDelaySeconds: 5
-            periodSeconds: 5
-            {{- end }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           envFrom:
