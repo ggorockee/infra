@@ -221,3 +221,6 @@ database:
       limits:
         memory: "1Gi"
         cpu: "500m"
+server:
+  image:
+    tag: sha-a8da2ebb
