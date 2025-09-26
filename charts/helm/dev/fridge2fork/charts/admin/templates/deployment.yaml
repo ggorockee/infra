@@ -35,14 +35,14 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - name: http
+            - name: {{ .Values.service.portName | default "http" }}
               containerPort: {{ .Values.service.targetPort }}
               protocol: TCP
           {{- if .Values.healthCheck.enabled }}
           livenessProbe:
             httpGet:
               path: {{ .Values.healthCheck.livenessProbe.httpGet.path }}
-              port: {{ .Values.healthCheck.livenessProbe.httpGet.port }}
+              port: {{ .Values.service.portName | default "http" }}
             initialDelaySeconds: {{ .Values.healthCheck.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.healthCheck.livenessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.healthCheck.livenessProbe.timeoutSeconds }}
@@ -50,7 +50,7 @@ spec:
           readinessProbe:
             httpGet:
               path: {{ .Values.healthCheck.readinessProbe.httpGet.path }}
-              port: {{ .Values.healthCheck.readinessProbe.httpGet.port }}
+              port: {{ .Values.service.portName | default "http" }}
             initialDelaySeconds: {{ .Values.healthCheck.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.healthCheck.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.healthCheck.readinessProbe.timeoutSeconds }}

@@ -46,6 +46,8 @@ certmanager:
         targetNamespaces:
           - onedaypillo-dev
           - onedaypillo
+          - fridge2fork
+          - fridge2fork-dev
 
     - name: review-maps-com
       namespace: cert-manager
@@ -77,3 +79,5 @@ clusterIssuer:
       - "*.savvyrev.com"
       - "*.review-maps.com"
       - "review-maps.com"
+      - "*.fridge2fork.com"
+      - "fridge2fork.com"
