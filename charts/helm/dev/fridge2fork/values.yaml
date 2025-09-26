@@ -118,10 +118,10 @@ scrape:
 admin:
   enabled: true
   replicaCount: 1
-  
+
   image:
     repository: ggorockee/fridge2fork-admin
-    tag: dev
+    tag: dev-sha-c34cf166
     pullPolicy: IfNotPresent
 
   service:
