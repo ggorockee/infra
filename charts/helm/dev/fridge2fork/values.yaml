@@ -121,7 +121,7 @@ admin:
 
   image:
     repository: ggorockee/fridge2fork-admin
-    tag: dev-sha-c34cf166
+    tag: sha-fef698b1
     pullPolicy: IfNotPresent
 
   service:
