@@ -128,6 +128,7 @@ admin:
     type: ClusterIP
     port: 8000
     targetPort: 8000
+    portName: "fastapi"
 
   resources:
     requests:
