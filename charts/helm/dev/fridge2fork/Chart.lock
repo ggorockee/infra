@@ -1,9 +1,0 @@
-dependencies:
-- name: scrape
-  repository: file://./charts/scrape
-  version: 1.0.0
-- name: admin
-  repository: file://./charts/admin
-  version: 0.1.0
-digest: sha256:2dc94d4b034706f5e9082135116a5dff4824f9f10488e72961c39f6547978d0b
-generated: "2025-09-26T02:22:09.43527704Z"

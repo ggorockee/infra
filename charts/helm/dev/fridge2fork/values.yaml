@@ -151,8 +151,8 @@ admin:
       DEBUG_MODE: "false"
 
   secret:
-    enabled: false
-    secretName: ""
+    enabled: true
+    secretName: "fridge2fork-db-credentials"
 
   podSecurityContext:
     fsGroup: 2000

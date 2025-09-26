@@ -39,8 +39,8 @@ configMap:
 
 # Secret configuration
 secret:
-  enabled: false
-  secretName: ""
+  enabled: true
+  secretName: "fridge2fork-db-credentials"
 
 # Pod security context
 podSecurityContext:

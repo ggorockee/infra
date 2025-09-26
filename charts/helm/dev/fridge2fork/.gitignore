@@ -1,0 +1,17 @@
+# Helm dependency files
+charts/*.tgz
+Chart.lock
+
+# Temporary files
+*.tmp
+*.temp
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
