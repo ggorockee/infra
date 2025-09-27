@@ -126,6 +126,47 @@ scrape:
   - secretRef:
       name: fridge2fork-db-credentials    # Must exist in the namespace
 
+  # CSV Migration Job Configuration (별도의 Job으로 실행)
+  migration:
+    enabled: true  # CSV 마이그레이션 활성화 ⭐
+    restartPolicy: OnFailure
+    activeDeadlineSeconds: 21600  # 6시간 타임아웃 (33만개 레코드 처리 예상: 3-4시간 + 여유)
+    backoffLimit: 3  # 최대 재시도 횟수
+    ttlSecondsAfterFinished: 86400  # 1일 후 자동 삭제
+
+    # 마이그레이션 리소스 (크롤링보다 더 많은 메모리 필요)
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "200m"
+      limits:
+        memory: "2Gi"  # 대용량 CSV 처리를 위해 2Gi로 증가
+        cpu: "500m"
+
+    # 마이그레이션 설정
+    chunkSize: 500  # 청크 크기 증가 (처리 속도 향상)
+    maxRecords: null  # 전체 데이터 처리 (테스트시 1000 등으로 설정)
+
+    config:
+      LOG_LEVEL: "INFO"
+      CHUNK_SIZE: "500"  # 500개씩 배치 처리
+      CHUNK_DELAY: "5"   # 메모리 정리 시간 단축
+
+    # CSV 파일이 이미 Docker 이미지에 포함되어 있으므로 별도 볼륨 불필요
+    # 만약 외부 CSV를 사용해야 한다면 아래 주석 해제
+    volumes: []
+    volumeMounts: []
+
+    # 외부 CSV 사용시 예시:
+    # volumes:
+    #   - name: csv-data
+    #     configMap:
+    #       name: recipe-csv-data  # kubectl create configmap recipe-csv-data --from-file=datas/
+    # volumeMounts:
+    #   - name: csv-data
+    #     mountPath: /app/datas
+    #     readOnly: true
+
 # Admin Service Configuration
 admin:
   enabled: true
