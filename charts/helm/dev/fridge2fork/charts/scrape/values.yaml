@@ -21,6 +21,7 @@ resources:
 activeDeadlineSeconds: 7200  # 2시간 타임아웃
 backoffLimit: 3  # 최대 재시도 횟수
 restartPolicy: OnFailure
+ttlSecondsAfterFinished: 2592000  # 한 달 (30일 * 24시간 * 60분 * 60초)
 
 # ServiceAccount configuration
 serviceAccount:
