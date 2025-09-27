@@ -1,0 +1,117 @@
+{{- if .Values.alembic.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "scrape.fullname" . }}-alembic
+  labels:
+    {{- include "scrape.labels" . | nindent 4 }}
+    app.kubernetes.io/component: alembic
+  {{- if .Values.alembic.hook }}
+  annotations:
+    "helm.sh/hook": {{ .Values.alembic.hook }}
+    "helm.sh/hook-weight": "{{ .Values.alembic.hookWeight | default "-5" }}"
+    "helm.sh/hook-delete-policy": {{ .Values.alembic.hookDeletePolicy | default "before-hook-creation,hook-succeeded" }}
+  {{- end }}
+spec:
+  {{- if .Values.alembic.activeDeadlineSeconds }}
+  activeDeadlineSeconds: {{ .Values.alembic.activeDeadlineSeconds }}
+  {{- end }}
+  {{- if .Values.alembic.backoffLimit }}
+  backoffLimit: {{ .Values.alembic.backoffLimit }}
+  {{- end }}
+  {{- if .Values.alembic.ttlSecondsAfterFinished }}
+  ttlSecondsAfterFinished: {{ .Values.alembic.ttlSecondsAfterFinished }}
+  {{- end }}
+  template:
+    metadata:
+      labels:
+        {{- include "scrape.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: alembic
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "scrape.serviceAccountName" . }}
+      restartPolicy: {{ .Values.alembic.restartPolicy | default "Never" }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: alembic-migration
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "🔄 데이터베이스 연결 대기 중..."
+              timeout=60
+              until pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USER; do
+                echo "Waiting for database..."
+                sleep 2
+                timeout=$((timeout - 2))
+                if [ $timeout -le 0 ]; then
+                  echo "❌ 데이터베이스 연결 타임아웃"
+                  exit 1
+                fi
+              done
+              echo "✅ 데이터베이스 연결 성공"
+
+              echo "🔄 Alembic 마이그레이션 시작..."
+              cd /app && alembic upgrade head
+              echo "✅ Alembic 마이그레이션 완료"
+
+              echo "🔄 기본 데이터 삽입..."
+              python scripts/insert_basic_data.py
+              echo "✅ 기본 데이터 삽입 완료"
+          env:
+            - name: MODE
+              value: "migration"
+            - name: MIGRATION_MODE
+              value: "db-migration"
+            - name: PYTHONPATH
+              value: "/app"
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ (index .Values.envFrom 0).secretRef.name }}
+                  key: POSTGRES_SERVER
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ (index .Values.envFrom 0).secretRef.name }}
+                  key: POSTGRES_PORT
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ (index .Values.envFrom 0).secretRef.name }}
+                  key: POSTGRES_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ (index .Values.envFrom 0).secretRef.name }}
+                  key: POSTGRES_PASSWORD
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ (index .Values.envFrom 0).secretRef.name }}
+                  key: POSTGRES_DB
+          envFrom:
+            {{- toYaml .Values.envFrom | nindent 12 }}
+          resources:
+            {{- toYaml .Values.alembic.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

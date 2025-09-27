@@ -143,3 +143,25 @@ migration:
   # 볼륨 설정 (기본적으로 비어있음)
   volumes: []
   volumeMounts: []
+
+# Alembic Job Configuration
+alembic:
+  enabled: false  # 기본적으로 비활성화
+  restartPolicy: Never
+  activeDeadlineSeconds: 1800  # 30분 타임아웃
+  backoffLimit: 3  # 최대 재시도 횟수
+  ttlSecondsAfterFinished: 3600  # 1시간 후 자동 삭제
+  
+  # Helm hook 설정 (선택사항)
+  hook: ""  # pre-install, pre-upgrade, post-install, post-upgrade 등
+  hookWeight: "-5"  # hook 실행 순서
+  hookDeletePolicy: "before-hook-creation,hook-succeeded"  # hook 삭제 정책
+  
+  # Alembic 리소스
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "200m"
