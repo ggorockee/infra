@@ -17,7 +17,10 @@ resources:
     memory: "512Mi"
     cpu: "200m"
 
-replicas: 1
+# Job configuration
+activeDeadlineSeconds: 7200  # 2시간 타임아웃
+backoffLimit: 3  # 최대 재시도 횟수
+restartPolicy: OnFailure
 
 # ServiceAccount configuration
 serviceAccount:
@@ -86,3 +89,25 @@ healthCheck:
 envFrom:
   - secretRef:
       name: fridge2fork-db-credentials  # Must exist in the namespace
+
+# ConfigMap configuration
+configMap:
+  enabled: true
+  config:
+    # 크롤링 설정 (25만개 수집용)
+    TARGET_RECIPE_COUNT: "250000"
+    CONCURRENT_REQUESTS: "5"
+    BATCH_SIZE: "100"
+    REQUEST_DELAY: "1"
+    BATCH_DELAY: "5"
+    
+    # 로깅 설정
+    LOG_LEVEL: "INFO"
+    
+    # 모니터링 설정
+    PROGRESS_INTERVAL: "1000"
+    MEMORY_CHECK_INTERVAL: "10000"
+    
+    # 메모리 최적화 설정
+    CHUNK_SIZE: "1000"
+    CHUNK_DELAY: "30"
