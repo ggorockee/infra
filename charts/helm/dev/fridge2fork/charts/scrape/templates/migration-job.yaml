@@ -68,7 +68,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ (index .Values.envFrom 0).secretRef.name }}
-                  key: POSTGRES_HOST
+                  key: POSTGRES_SERVER
             - name: DB_PORT
               valueFrom:
                 secretKeyRef:
