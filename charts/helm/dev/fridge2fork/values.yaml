@@ -61,7 +61,8 @@ scrape:
       # 애플리케이션 설정
       APP_NAME: "fridge2fork"
       APP_VERSION: "1.0.0"
-      APP_ENV: "production"
+      APP_ENV: "development"
+      MODE: "migration"
 
   # ServiceAccount configuration
   serviceAccount:
