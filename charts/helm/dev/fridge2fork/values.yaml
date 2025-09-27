@@ -58,9 +58,6 @@ scrape:
       PYTHONPATH: "/app"
       PYTHONUNBUFFERED: "1"
 
-      # 로깅 설정
-      LOG_LEVEL: "INFO"
-
       # 애플리케이션 설정
       APP_NAME: "fridge2fork"
       APP_VERSION: "1.0.0"
