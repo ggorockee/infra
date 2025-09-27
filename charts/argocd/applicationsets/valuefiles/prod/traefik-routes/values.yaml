@@ -159,7 +159,7 @@ ingressRoutes:
       - name: fridge2fork-dev-admin-web
         port: 8000
 
-  - name: fridge2fork-dev-app
+  - name: fridge2fork-dev-server
     enabled: true
     namespace: fridge2fork-dev
 
@@ -171,7 +171,7 @@ ingressRoutes:
     tlsSecretName: "woohalabs-com-cert"
 
     services:
-      - name: fridge2fork-dev-app
+      - name: fridge2fork-dev-server
         port: 8000
 
   - name: fridge2fork-dev-web
@@ -220,7 +220,7 @@ ingressRoutes:
       - name: fridge2fork-prod-admin-web
         port: 8000
 
-  - name: fridge2fork-prod-app
+  - name: fridge2fork-prod-server
     enabled: true
     namespace: fridge2fork
 
@@ -232,7 +232,7 @@ ingressRoutes:
     tlsSecretName: "woohalabs-com-cert"
 
     services:
-      - name: fridge2fork-prod-app
+      - name: fridge2fork-prod-server
         port: 8000
 
   - name: fridge2fork-prod-web
