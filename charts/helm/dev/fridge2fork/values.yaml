@@ -48,11 +48,10 @@ scrape:
       LOG_LEVEL: "INFO"                   # 로깅 레벨
       PROGRESS_INTERVAL: "10"             # 진행률 표시 간격
       MEMORY_CHECK_INTERVAL: "50"         # 메모리 체크 간격
-      CHUNK_SIZE: "50"                    # 메모리가 매우 제한적인 경우
+      CHUNK_SIZE: "100"                   # 청크 크기
       CHUNK_DELAY: "15.0"                 # 더 긴 메모리 정리 시간
       # 마이그레이션 설정
       MIGRATION_MODE: "full"
-      CHUNK_SIZE: "100"
       MAX_RECORDS: "0"  # 0은 전체 처리
 
       # Python 설정
