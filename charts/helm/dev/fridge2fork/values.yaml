@@ -170,7 +170,7 @@ scrape:
 
   # Alembic Job Configuration (데이터베이스 스키마 마이그레이션)
   alembic:
-    enabled: false  # 기본적으로 비활성화
+    enabled: true  # alembic job 활성화
     restartPolicy: Never
     activeDeadlineSeconds: 1800  # 30분 타임아웃
     backoffLimit: 3  # 최대 재시도 횟수
