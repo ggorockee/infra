@@ -67,17 +67,17 @@ spec:
             - name: DB_HOST
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.envFrom[0].secretRef.name }}
+                  name: {{ (index .Values.envFrom 0).secretRef.name }}
                   key: POSTGRES_HOST
             - name: DB_PORT
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.envFrom[0].secretRef.name }}
+                  name: {{ (index .Values.envFrom 0).secretRef.name }}
                   key: POSTGRES_PORT
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.envFrom[0].secretRef.name }}
+                  name: {{ (index .Values.envFrom 0).secretRef.name }}
                   key: POSTGRES_USER
           envFrom:
             {{- toYaml .Values.envFrom | nindent 12 }}

@@ -112,3 +112,33 @@ configMap:
     # 메모리 최적화 설정
     CHUNK_SIZE: "1000"
     CHUNK_DELAY: "30"
+
+# Migration Job Configuration
+migration:
+  enabled: false  # 기본적으로 비활성화
+  restartPolicy: OnFailure
+  activeDeadlineSeconds: 21600  # 6시간 타임아웃
+  backoffLimit: 3  # 최대 재시도 횟수
+  ttlSecondsAfterFinished: 86400  # 1일 후 자동 삭제
+  
+  # 마이그레이션 리소스
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "200m"
+    limits:
+      memory: "2Gi"
+      cpu: "500m"
+  
+  # 마이그레이션 설정
+  chunkSize: 500
+  maxRecords: null
+  
+  config:
+    LOG_LEVEL: "INFO"
+    CHUNK_SIZE: "500"
+    CHUNK_DELAY: "5"
+  
+  # 볼륨 설정 (기본적으로 비어있음)
+  volumes: []
+  volumeMounts: []
