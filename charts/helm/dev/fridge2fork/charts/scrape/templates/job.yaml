@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "scrape.fullname" . }}
+  name: {{ include "scrape.fullname" . }}-v2
   labels:
     {{- include "scrape.labels" . | nindent 4 }}
 spec:
