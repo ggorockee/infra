@@ -223,4 +223,4 @@ database:
         cpu: "500m"
 server:
   image:
-    tag: sha-a8da2ebb
+    tag: sha-4fa6e779
