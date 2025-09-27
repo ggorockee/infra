@@ -1,0 +1,15 @@
+apiVersion: v2
+name: server
+description: Server subchart for Fridge2Fork application
+type: application
+version: 0.1.0
+appVersion: "1.0"
+keywords:
+  - server
+  - fridge2fork
+home: https://github.com/ggorockee/fridge2fork
+sources:
+  - https://github.com/ggorockee/fridge2fork
+maintainers:
+  - name: ggorockee
+    email: ggorockee@example.com
