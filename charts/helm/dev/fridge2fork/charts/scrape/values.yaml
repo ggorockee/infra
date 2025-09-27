@@ -24,6 +24,12 @@ restartPolicy: OnFailure
 ttlSecondsAfterFinished: 2592000  # 한 달 (30일 * 24시간 * 60분 * 60초)
 jobDisabled: true  # scrape job 비활성화
 
+# Job 재생성 설정
+jobRecreate:
+  enabled: true  # job 재생성 활성화
+  deletePolicy: "before-hook-creation"  # 기존 job 삭제 정책
+  forceDelete: true  # 강제 삭제
+
 # ServiceAccount configuration
 serviceAccount:
   create: true
