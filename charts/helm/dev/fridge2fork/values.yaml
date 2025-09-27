@@ -10,7 +10,7 @@ scrape:
   enabled: true
   image:
     repository: ggorockee/fridge2fork-dev-scrape
-    tag: sha-460b5da4
+    tag: sha-2612d489
     pullPolicy: IfNotPresent
 
   service:
@@ -175,12 +175,10 @@ scrape:
     activeDeadlineSeconds: 1800  # 30분 타임아웃
     backoffLimit: 3  # 최대 재시도 횟수
     ttlSecondsAfterFinished: 3600  # 1시간 후 자동 삭제
-    
     # Helm hook 설정 (선택사항)
     hook: ""  # pre-install, pre-upgrade, post-install, post-upgrade 등
     hookWeight: "-5"  # hook 실행 순서
     hookDeletePolicy: "before-hook-creation,hook-succeeded"  # hook 삭제 정책
-    
     # Alembic 리소스
     resources:
       requests:
