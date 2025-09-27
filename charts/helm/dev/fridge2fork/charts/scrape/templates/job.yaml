@@ -1,3 +1,4 @@
+{{- if and .Values.enabled (not .Values.jobDisabled) }}
 {{- include "scrape.validateSecret" . -}}
 apiVersion: batch/v1
 kind: Job
@@ -105,3 +106,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}

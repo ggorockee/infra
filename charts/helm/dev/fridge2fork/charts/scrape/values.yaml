@@ -22,6 +22,7 @@ activeDeadlineSeconds: 7200  # 2시간 타임아웃
 backoffLimit: 3  # 최대 재시도 횟수
 restartPolicy: OnFailure
 ttlSecondsAfterFinished: 2592000  # 한 달 (30일 * 24시간 * 60분 * 60초)
+jobDisabled: true  # scrape job 비활성화
 
 # ServiceAccount configuration
 serviceAccount:
@@ -115,7 +116,7 @@ configMap:
 
 # Migration Job Configuration
 migration:
-  enabled: false  # 기본적으로 비활성화
+  enabled: true  # migration job 활성화
   restartPolicy: OnFailure
   activeDeadlineSeconds: 21600  # 6시간 타임아웃
   backoffLimit: 3  # 최대 재시도 횟수
