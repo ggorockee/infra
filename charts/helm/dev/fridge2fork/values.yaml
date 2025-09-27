@@ -10,7 +10,7 @@ scrape:
   enabled: true
   image:
     repository: ggorockee/fridge2fork-dev-scrape
-    tag: sha-5f3d42b9
+    tag: sha-d6a94120
     pullPolicy: IfNotPresent
 
   service:
@@ -145,7 +145,7 @@ scrape:
 
     # 마이그레이션 설정
     chunkSize: 500  # 청크 크기 증가 (처리 속도 향상)
-    maxRecords: null  # 전체 데이터 처리 (테스트시 1000 등으로 설정)
+    maxRecords:       # 전체 데이터 처리 (테스트시 1000 등으로 설정)
 
     config:
       LOG_LEVEL: "INFO"
