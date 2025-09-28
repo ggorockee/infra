@@ -141,7 +141,7 @@ scrape:
         memory: "512Mi"
         cpu: "200m"
       limits:
-        memory: "2Gi"  # 대용량 CSV 처리를 위해 2Gi로 증가
+        memory: "1Gi"  # 대용량 CSV 처리를 위해 2Gi로 증가
         cpu: "500m"
 
     # 마이그레이션 설정
