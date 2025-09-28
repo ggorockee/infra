@@ -60,12 +60,39 @@ spec:
               echo "🔄 Alembic 마이그레이션 시작..."
               cd /app
 
+              # migrations 디렉토리 확인 및 생성
+              echo "📁 migrations 디렉토리 확인:"
+              if [ ! -d "migrations" ]; then
+                echo "🔧 migrations 디렉토리가 없습니다. 생성 중..."
+                mkdir -p migrations/versions
+                echo "✅ migrations 디렉토리 생성 완료"
+              else
+                echo "✅ migrations 디렉토리 존재"
+                ls -la migrations/
+              fi
+
               # 환경변수 설정 (중요!)
               export DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
 
               # 현재 상태 확인
               echo "📋 현재 마이그레이션 상태:"
               alembic current || echo "마이그레이션 히스토리 없음"
+
+              # app/models 디렉토리 내용 확인
+              echo "📁 app/models 디렉토리 내용:"
+              if [ -d "app/models" ]; then
+                ls -la app/models/
+                echo "📄 모델 파일 내용 확인:"
+                for file in app/models/*.py; do
+                  if [ -f "$file" ] && [ "$(basename "$file")" != "__init__.py" ]; then
+                    echo "=== $file ==="
+                    head -20 "$file"
+                    echo ""
+                  fi
+                done
+              else
+                echo "❌ app/models 디렉토리가 없습니다"
+              fi
 
               # 마이그레이션 파일이 없으면 자동 생성
               if [ ! "$(ls -A migrations/versions/ 2>/dev/null)" ]; then
@@ -78,6 +105,7 @@ spec:
                 # 모델 파일 확인
                 echo "📁 모델 파일 확인:"
                 ls -la models/ || echo "models 디렉토리가 없습니다"
+                ls -la app/models/ || echo "app/models 디렉토리가 없습니다"
                 ls -la *.py | grep -i model || echo "모델 파일을 찾을 수 없습니다"
                 
                 # alembic.ini 확인
@@ -87,20 +115,20 @@ spec:
                 # Python 환경 확인
                 echo "🐍 Python 환경 확인:"
                 python3 -c "
-                import sys
-                print(f'Python 버전: {sys.version}')
-                print('설치된 패키지:')
-                import pkg_resources
-                for pkg in ['alembic', 'sqlalchemy', 'asyncpg']:
-                    try:
-                        print(f'  {pkg}: {pkg_resources.get_distribution(pkg).version}')
-                    except:
-                        print(f'  {pkg}: 설치되지 않음')
-                "
+import sys
+print(f'Python 버전: {sys.version}')
+print('설치된 패키지:')
+import pkg_resources
+for pkg in ['alembic', 'sqlalchemy', 'asyncpg']:
+    try:
+        print(f'  {pkg}: {pkg_resources.get_distribution(pkg).version}')
+    except:
+        print(f'  {pkg}: 설치되지 않음')
+"
                 
                 # 마이그레이션 파일 생성 (강제)
                 echo "🔄 alembic revision --autogenerate 실행 중..."
-                alembic revision --autogenerate -m "Initial schema with recipes tables" --verbose
+                alembic revision --autogenerate -m "Initial schema with recipes tables"
                 
                 # 생성된 마이그레이션 파일 확인 및 내용 출력
                 echo "📋 생성된 마이그레이션 파일:"
