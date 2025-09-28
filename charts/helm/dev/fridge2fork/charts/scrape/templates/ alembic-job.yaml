@@ -74,15 +74,42 @@ spec:
               # 마이그레이션 파일이 없으면 자동 생성
               if [ ! "$(ls -A migrations/versions/ 2>/dev/null)" ]; then
                 echo "🔧 마이그레이션 파일이 없습니다. 자동 생성 중..."
+                
+                # 모델 파일 확인
+                echo "📁 모델 파일 확인:"
+                ls -la models/ || echo "models 디렉토리가 없습니다"
+                ls -la *.py | grep -i model || echo "모델 파일을 찾을 수 없습니다"
+                
+                # alembic.ini 확인
+                echo "📄 alembic.ini 확인:"
+                head -20 alembic.ini || echo "alembic.ini를 찾을 수 없습니다"
+                
+                # 마이그레이션 파일 생성
+                echo "🔄 alembic revision --autogenerate 실행 중..."
                 alembic revision --autogenerate -m "Initial schema with recipes tables"
+                
+                # 생성된 마이그레이션 파일 확인
+                echo "📋 생성된 마이그레이션 파일:"
+                ls -la migrations/versions/
+                
                 echo "✅ 마이그레이션 파일 생성 완료"
               else
-                echo "ℹ️ 기존 마이그레이션 파일 발견"
+                echo "ℹ️ 기존 마이그레이션 파일 발견:"
+                ls -la migrations/versions/
               fi
+
+              # 마이그레이션 실행 전 상태 확인
+              echo "📊 마이그레이션 실행 전 상태:"
+              alembic current
+              alembic history --verbose
 
               # 마이그레이션 실행
               echo "⚡ 마이그레이션 실행 중..."
               alembic upgrade head
+              
+              # 마이그레이션 실행 후 상태 확인
+              echo "📊 마이그레이션 실행 후 상태:"
+              alembic current
 
               # 테이블 생성 확인
               echo "🔍 생성된 테이블 확인:"
