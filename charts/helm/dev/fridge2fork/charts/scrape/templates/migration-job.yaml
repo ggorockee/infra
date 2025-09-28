@@ -119,16 +119,16 @@ spec:
                 # Python 환경 확인
                 echo "🐍 Python 환경 확인:"
                 python3 -c "
-import sys
-print(f'Python 버전: {sys.version}')
-print('설치된 패키지:')
-import pkg_resources
-for pkg in ['alembic', 'sqlalchemy', 'asyncpg']:
-    try:
-        print(f'  {pkg}: {pkg_resources.get_distribution(pkg).version}')
-    except:
-        print(f'  {pkg}: 설치되지 않음')
-"
+                import sys
+                print(f'Python 버전: {sys.version}')
+                print('설치된 패키지:')
+                import pkg_resources
+                for pkg in ['alembic', 'sqlalchemy', 'asyncpg']:
+                    try:
+                        print(f'  {pkg}: {pkg_resources.get_distribution(pkg).version}')
+                    except:
+                        print(f'  {pkg}: 설치되지 않음')
+                "
                 
                 # 마이그레이션 파일 생성 (강제)
                 echo "🔄 alembic revision --autogenerate 실행 중..."
@@ -183,7 +183,7 @@ for pkg in ['alembic', 'sqlalchemy', 'asyncpg']:
               import os, asyncio, asyncpg
               async def check():
                   conn = await asyncpg.connect(os.environ['DATABASE_URL'])
-                  result = await conn.fetch(\"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name != 'alembic_version'\")
+                  result = await conn.fetch('SELECT table_name FROM information_schema.tables WHERE table_schema = \'public\' AND table_name != \'alembic_version\'')
                   tables = [row['table_name'] for row in result]
                   print(f'생성된 테이블: {tables}')
                   expected = ['recipes', 'ingredients', 'recipe_ingredients']
