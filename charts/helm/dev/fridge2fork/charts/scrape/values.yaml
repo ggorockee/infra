@@ -189,7 +189,20 @@ migration:
       MEMORY_CHECK_INTERVAL: "1000"  # 메모리 체크 간격
       PROGRESS_INTERVAL: "100"       # 진행률 출력 간격
 
-  # 볼륨 설정 (외부 CSV 파일 사용시)
+  # CSV 데이터 볼륨 설정
+  csvVolume:
+    # 기본값: PVC 사용
+    # persistentVolumeClaim:
+    #   claimName: fridge2fork-csv-data
+    
+    # 또는 다른 볼륨 타입 사용 가능
+    # configMap:
+    #   name: recipe-csv-data
+    # emptyDir: {}
+    # hostPath:
+    #   path: /data/csv
+
+  # 볼륨 설정 (외부 CSV 파일 사용시) - 하위 호환성 유지
   volumes: []
   # 예시: 외부 CSV 파일 사용
   # volumes:

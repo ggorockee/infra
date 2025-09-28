@@ -23,10 +23,6 @@ spec:
   ttlSecondsAfterFinished: {{ .Values.migration.ttlSecondsAfterFinished }}
   {{- end }}
   template:
-    metadata:
-      labels:
-        {{- include "scrape.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: migration
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -34,267 +30,58 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "scrape.serviceAccountName" . }}
       restartPolicy: {{ .Values.migration.restartPolicy | default "OnFailure" }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      
+      # Init Container - DB 스키마 마이그레이션
       initContainers:
-        # Alembic 마이그레이션 실행 (최적화됨)
-        - name: alembic-migration
-          image: ggorockee/fridge2fork-dev-scrape:sha-1b57413b
-          command:
-            - /bin/sh
-            - -c
-            - |
-              echo "🔄 데이터베이스 연결 대기 중..."
-              timeout=60
-              until pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USER; do
-                echo "Waiting for database..."
-                sleep 2
-                timeout=$((timeout - 2))
-                if [ $timeout -le 0 ]; then
-                  echo "❌ 데이터베이스 연결 타임아웃"
-                  exit 1
-                fi
-              done
-              echo "✅ 데이터베이스 연결 성공"
+      - name: db-migration
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: ["/app/entrypoint.sh", "alembic"]
+        envFrom:
+        - secretRef:
+            name: {{ (index .Values.envFrom 0).secretRef.name }}
+        env:
+        - name: PYTHONPATH
+          value: /app
+        resources:
+          {{- toYaml .Values.migration.alembic.resources | nindent 10 }}
 
-              echo "🔄 Alembic 마이그레이션 시작..."
-              cd /app
-
-              # migrations 디렉토리 확인
-              echo "📁 migrations 디렉토리 확인:"
-              if [ -d "migrations" ]; then
-                echo "✅ migrations 디렉토리 존재"
-                ls -la migrations/
-                if [ -d "migrations/versions" ]; then
-                  echo "✅ migrations/versions 디렉토리 존재"
-                  ls -la migrations/versions/
-                else
-                  echo "⚠️ migrations/versions 디렉토리가 없습니다"
-                fi
-              else
-                echo "❌ migrations 디렉토리가 없습니다"
-              fi
-
-              # 환경변수 설정 (중요!)
-              export DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
-
-              # 현재 상태 확인
-              echo "📋 현재 마이그레이션 상태:"
-              alembic current || echo "마이그레이션 히스토리 없음"
-
-              # app/models 디렉토리 내용 확인
-              echo "📁 app/models 디렉토리 내용:"
-              if [ -d "app/models" ]; then
-                ls -la app/models/
-                echo "📄 모델 파일 내용 확인:"
-                for file in app/models/*.py; do
-                  if [ -f "$file" ] && [ "$(basename "$file")" != "__init__.py" ]; then
-                    echo "=== $file ==="
-                    head -20 "$file"
-                    echo ""
-                  fi
-                done
-              else
-                echo "❌ app/models 디렉토리가 없습니다"
-              fi
-
-              # 마이그레이션 파일이 없으면 자동 생성
-              if [ ! "$(ls -A migrations/versions/ 2>/dev/null)" ]; then
-                echo "🔧 마이그레이션 파일이 없습니다. 자동 생성 중..."
-                
-                # 전체 디렉토리 구조 확인
-                echo "📁 전체 디렉토리 구조:"
-                find . -name "*.py" -type f | head -20
-                
-                # 모델 파일 확인
-                echo "📁 모델 파일 확인:"
-                ls -la models/ || echo "models 디렉토리가 없습니다"
-                ls -la app/models/ || echo "app/models 디렉토리가 없습니다"
-                ls -la *.py | grep -i model || echo "모델 파일을 찾을 수 없습니다"
-                
-                # alembic.ini 확인
-                echo "📄 alembic.ini 확인:"
-                head -20 alembic.ini || echo "alembic.ini를 찾을 수 없습니다"
-                
-                # Python 환경 확인
-                echo "🐍 Python 환경 확인:"
-                python3 -c "
-                import sys
-                print(f'Python 버전: {sys.version}')
-                print('설치된 패키지:')
-                import pkg_resources
-                for pkg in ['alembic', 'sqlalchemy', 'asyncpg']:
-                    try:
-                        print(f'  {pkg}: {pkg_resources.get_distribution(pkg).version}')
-                    except:
-                        print(f'  {pkg}: 설치되지 않음')
-                "
-                
-                # 마이그레이션 파일 생성 (강제)
-                echo "🔄 alembic revision --autogenerate 실행 중..."
-                alembic revision --autogenerate -m "Initial schema with recipes tables"
-                
-                # 생성된 마이그레이션 파일 확인 및 내용 출력
-                echo "📋 생성된 마이그레이션 파일:"
-                ls -la migrations/versions/
-                
-                # 마이그레이션 파일 내용 확인
-                echo "📄 마이그레이션 파일 내용:"
-                for file in migrations/versions/*.py; do
-                  if [ -f "$file" ]; then
-                    echo "=== $file ==="
-                    cat "$file"
-                    echo ""
-                  fi
-                done
-                
-                echo "✅ 마이그레이션 파일 생성 완료"
-              else
-                echo "ℹ️ 기존 마이그레이션 파일 발견:"
-                ls -la migrations/versions/
-                
-                # 기존 마이그레이션 파일 내용도 확인
-                echo "📄 기존 마이그레이션 파일 내용:"
-                for file in migrations/versions/*.py; do
-                  if [ -f "$file" ]; then
-                    echo "=== $file ==="
-                    head -50 "$file"
-                    echo ""
-                  fi
-                done
-              fi
-
-              # 마이그레이션 실행 전 상태 확인
-              echo "📊 마이그레이션 실행 전 상태:"
-              alembic current
-              alembic history --verbose
-
-              # 마이그레이션 실행
-              echo "⚡ 마이그레이션 실행 중..."
-              alembic upgrade head
-              
-              # 마이그레이션 실행 후 상태 확인
-              echo "📊 마이그레이션 실행 후 상태:"
-              alembic current
-
-              # 테이블 생성 확인
-              echo "🔍 생성된 테이블 확인:"
-              python3 -c "
-              import os, asyncio, asyncpg
-              async def check():
-                  conn = await asyncpg.connect(os.environ['DATABASE_URL'])
-                  result = await conn.fetch('SELECT table_name FROM information_schema.tables WHERE table_schema = \'public\' AND table_name != \'alembic_version\'')
-                  tables = [row['table_name'] for row in result]
-                  print(f'생성된 테이블: {tables}')
-                  expected = ['recipes', 'ingredients', 'recipe_ingredients']
-                  missing = [t for t in expected if t not in tables]
-                  if missing:
-                      print(f'❌ 누락된 테이블: {missing}')
-                      exit(1)
-                  print('✅ 모든 테이블 생성 완료')
-                  await conn.close()
-              asyncio.run(check())
-              "
-
-              echo "✅ Alembic 마이그레이션 완료"
-          env:
-            - name: MODE
-              value: "migration"
-            - name: MIGRATION_MODE
-              value: "db-migration"
-            - name: PYTHONPATH
-              value: "/app"
-            - name: DB_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: {{ (index .Values.envFrom 0).secretRef.name }}
-                  key: POSTGRES_SERVER
-            - name: DB_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: {{ (index .Values.envFrom 0).secretRef.name }}
-                  key: POSTGRES_PORT
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ (index .Values.envFrom 0).secretRef.name }}
-                  key: POSTGRES_USER
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ (index .Values.envFrom 0).secretRef.name }}
-                  key: POSTGRES_PASSWORD
-            - name: DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ (index .Values.envFrom 0).secretRef.name }}
-                  key: POSTGRES_DB
-          envFrom:
-            {{- toYaml .Values.envFrom | nindent 12 }}
-          resources:
-            {{- toYaml .Values.migration.alembic.resources | nindent 12 }}
+      # Main Container - CSV 데이터 마이그레이션
       containers:
-        # CSV 데이터 마이그레이션
-        - name: csv-migration
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-              - ALL
-            runAsNonRoot: true
-            runAsUser: 1000
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command:
-            - /bin/sh
-            - -c
-            - |
-              echo "========================================"
-              echo "📚 CSV 마이그레이션 시작"
-              echo "========================================"
+      - name: csv-migration
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: ["/app/entrypoint.sh", "migrate"]
+        envFrom:
+        - secretRef:
+            name: {{ (index .Values.envFrom 0).secretRef.name }}
+        env:
+        - name: PYTHONPATH
+          value: /app
+        - name: CHUNK_SIZE
+          value: "{{ .Values.migration.chunkSize | default 500 }}"
+        {{- if .Values.migration.maxRecords }}
+        - name: MAX_RECORDS
+          value: "{{ .Values.migration.maxRecords }}"
+        {{- else }}
+        - name: MAX_RECORDS
+          value: "0"
+        {{- end }}
+        volumeMounts:
+        - name: csv-data
+          mountPath: /app/datas
+        resources:
+          {{- toYaml .Values.migration.resources | nindent 10 }}
 
-              # CSV 파일 확인
-              echo "🔍 CSV 파일 확인 중..."
-              ls -la /app/datas/*.csv || echo "⚠️ CSV 파일이 없습니다. 볼륨이 마운트되었는지 확인하세요."
-
-              # 마이그레이션 실행
-              python scripts/migrate_csv_data.py \
-                --chunk-size {{ .Values.migration.chunkSize | default 100 }} \
-                {{- if .Values.migration.maxRecords }}
-                --max-records {{ .Values.migration.maxRecords }}
-                {{- end }}
-
-              echo "✅ CSV 마이그레이션 완료"
-
-              # 검증 실행
-              echo "🔍 마이그레이션 검증 중..."
-              python scripts/verify_migration.py
-              echo "✅ 검증 완료"
-          env:
-            - name: MODE
-              value: "migration"
-            - name: PYTHONPATH
-              value: "/app"
-            - name: PYTHONUNBUFFERED
-              value: "1"
-            {{- if .Values.migration.config }}
-            {{- range $key, $value := .Values.migration.config }}
-            - name: {{ $key }}
-              value: {{ $value | quote }}
-            {{- end }}
-            {{- end }}
-          envFrom:
-            {{- toYaml .Values.envFrom | nindent 12 }}
-          resources:
-            {{- toYaml .Values.migration.resources | nindent 12 }}
-          {{- if .Values.migration.volumeMounts }}
-          volumeMounts:
-            {{- toYaml .Values.migration.volumeMounts | nindent 12 }}
-          {{- end }}
-      {{- if .Values.migration.volumes }}
       volumes:
-        {{- toYaml .Values.migration.volumes | nindent 8 }}
-      {{- end }}
+      - name: csv-data
+        {{- if .Values.migration.csvVolume }}
+        {{- toYaml .Values.migration.csvVolume | nindent 8 }}
+        {{- else }}
+        persistentVolumeClaim:
+          claimName: {{ include "scrape.fullname" . }}-csv-data
+        {{- end }}
+
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
