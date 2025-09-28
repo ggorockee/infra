@@ -60,15 +60,19 @@ spec:
               echo "🔄 Alembic 마이그레이션 시작..."
               cd /app
 
-              # migrations 디렉토리 확인 및 생성
+              # migrations 디렉토리 확인
               echo "📁 migrations 디렉토리 확인:"
-              if [ ! -d "migrations" ]; then
-                echo "🔧 migrations 디렉토리가 없습니다. 생성 중..."
-                mkdir -p migrations/versions
-                echo "✅ migrations 디렉토리 생성 완료"
-              else
+              if [ -d "migrations" ]; then
                 echo "✅ migrations 디렉토리 존재"
                 ls -la migrations/
+                if [ -d "migrations/versions" ]; then
+                  echo "✅ migrations/versions 디렉토리 존재"
+                  ls -la migrations/versions/
+                else
+                  echo "⚠️ migrations/versions 디렉토리가 없습니다"
+                fi
+              else
+                echo "❌ migrations 디렉토리가 없습니다"
               fi
 
               # 환경변수 설정 (중요!)
