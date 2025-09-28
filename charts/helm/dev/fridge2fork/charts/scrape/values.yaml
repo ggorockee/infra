@@ -123,32 +123,90 @@ configMap:
 # Migration Job Configuration
 migration:
   enabled: true  # migration job 활성화
+
+  # Job 재생성을 위한 설정
+  jobSuffix: ""  # 비어있으면 현재 시각으로 자동 생성 (예: 20240128-143022)
+
+  # Job 기본 설정
   restartPolicy: OnFailure
-  activeDeadlineSeconds: 21600  # 6시간 타임아웃
+  activeDeadlineSeconds: 21600  # 6시간 타임아웃 (대용량 CSV 처리 고려)
   backoffLimit: 3  # 최대 재시도 횟수
   ttlSecondsAfterFinished: 86400  # 1일 후 자동 삭제
-  
-  # 마이그레이션 리소스
-  resources:
-    requests:
-      memory: "512Mi"
-      cpu: "200m"
-    limits:
-      memory: "2Gi"
-      cpu: "500m"
-  
-  # 마이그레이션 설정
-  chunkSize: 500
-  maxRecords: null
-  
-  config:
-    LOG_LEVEL: "INFO"
-    CHUNK_SIZE: "500"
-    CHUNK_DELAY: "5"
-  
-  # 볼륨 설정 (기본적으로 비어있음)
+
+  # Helm Hook 설정 (선택사항)
+  helm:
+    hook:
+      enabled: true  # Hook 사용 여부
+      type: "pre-install,pre-upgrade"  # Hook 타입
+      weight: "-10"  # Hook 실행 순서 (-10이 먼저 실행)
+      deletePolicy: "before-hook-creation,hook-succeeded"  # Hook 삭제 정책
+
+  # 마이그레이션 실행 방식
+  useMainScript: true  # true: main.py 사용, false: scripts/migrate_csv_data.py 직접 사용
+  showStats: true  # 마이그레이션 완료 후 통계 출력 여부
+
+  # CSV 마이그레이션 설정
+  chunkSize: 500  # 배치 처리 크기 (메모리 사용량과 처리 속도 균형)
+  maxRecords: null  # 처리할 최대 레코드 수 (null이면 전체, 테스트시 1000 등)
+
+  # Alembic (데이터베이스 스키마) 설정
+  alembic:
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "200m"
+
+    # Alembic 관련 환경변수
+    config:
+      LOG_LEVEL: "INFO"
+      ALEMBIC_CONFIG: "alembic.ini"  # Alembic 설정 파일 경로
+
+  # CSV 마이그레이션 설정
+  csv:
+    resources:
+      requests:
+        memory: "512Mi"  # CSV 처리를 위한 메모리
+        cpu: "200m"
+      limits:
+        memory: "2Gi"    # 대용량 CSV 처리 고려
+        cpu: "500m"
+
+    # CSV 마이그레이션 관련 환경변수
+    config:
+      LOG_LEVEL: "INFO"
+      CHUNK_SIZE: "500"      # 배치 처리 크기
+      CHUNK_DELAY: "5"       # 배치 간 대기 시간 (초)
+      MAX_RECORDS: ""        # 빈 문자열이면 전체 처리
+
+      # Python 최적화 설정
+      PYTHONPATH: "/app"
+      PYTHONUNBUFFERED: "1"
+
+      # 메모리 최적화
+      MEMORY_CHECK_INTERVAL: "1000"  # 메모리 체크 간격
+      PROGRESS_INTERVAL: "100"       # 진행률 출력 간격
+
+  # 볼륨 설정 (외부 CSV 파일 사용시)
   volumes: []
+  # 예시: 외부 CSV 파일 사용
+  # volumes:
+  #   - name: csv-data
+  #     configMap:
+  #       name: recipe-csv-data
+  #   - name: temp-storage
+  #     emptyDir: {}
+
   volumeMounts: []
+  # 예시: 외부 CSV 파일 마운트
+  # volumeMounts:
+  #   - name: csv-data
+  #     mountPath: /app/datas
+  #     readOnly: true
+  #   - name: temp-storage
+  #     mountPath: /tmp
 
 # Alembic Job Configuration
 alembic:
