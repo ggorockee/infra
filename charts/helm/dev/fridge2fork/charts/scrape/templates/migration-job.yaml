@@ -47,8 +47,8 @@ spec:
           {{- toYaml .Values.migration.alembic.resources | nindent 10 }}
 
       # Main Container - CSV 데이터 마이그레이션 (선택적)
-      {{- if .Values.migration.enableCsvMigration }}
       containers:
+      {{- if .Values.migration.enableCsvMigration }}
       - name: csv-migration
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -73,6 +73,19 @@ spec:
           mountPath: /app/datas
         resources:
           {{- toYaml .Values.migration.resources | nindent 10 }}
+      {{- else }}
+      # 더미 컨테이너 (Kubernetes Job에서 containers 필수)
+      - name: migration-complete
+        image: busybox:1.35
+        command: ["sh", "-c"]
+        args: ["echo 'Migration completed successfully'; sleep 5"]
+        resources:
+          requests:
+            cpu: "10m"
+            memory: "16Mi"
+          limits:
+            cpu: "50m"
+            memory: "32Mi"
       {{- end }}
 
       {{- if .Values.migration.enableCsvMigration }}
