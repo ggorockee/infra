@@ -163,71 +163,14 @@ spec:
                   if missing:
                       print(f'❌ 누락된 테이블: {missing}')
                       print('🔧 마이그레이션이 제대로 실행되지 않았습니다.')
-                      print('💡 수동으로 테이블을 생성하거나 모델 파일을 확인해주세요.')
-                      # exit(1)  # 일단 실패하지 않도록 주석 처리
+                      print('💡 모델 파일이나 alembic 설정을 확인해주세요.')
+                      exit(1)  # 테이블이 생성되지 않으면 실패
                   else:
                       print('✅ 모든 테이블 생성 완료')
                   await conn.close()
               asyncio.run(check())
               "
 
-              # 만약 테이블이 생성되지 않았다면 수동으로 생성 시도
-              echo "🔧 테이블이 생성되지 않은 경우 수동 생성 시도:"
-              python3 -c "
-              import os, asyncio, asyncpg
-              async def create_tables_manually():
-                  conn = await asyncpg.connect(os.environ['DATABASE_URL'])
-                  
-                  # 기본 테이블 생성
-                  tables_sql = [
-                      '''
-                      CREATE TABLE IF NOT EXISTS recipes (
-                          id SERIAL PRIMARY KEY,
-                          title VARCHAR(255) NOT NULL,
-                          description TEXT,
-                          cooking_time INTEGER,
-                          difficulty VARCHAR(50),
-                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                      )
-                      ''',
-                      '''
-                      CREATE TABLE IF NOT EXISTS ingredients (
-                          id SERIAL PRIMARY KEY,
-                          name VARCHAR(255) NOT NULL UNIQUE,
-                          category VARCHAR(100),
-                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                      )
-                      ''',
-                      '''
-                      CREATE TABLE IF NOT EXISTS recipe_ingredients (
-                          id SERIAL PRIMARY KEY,
-                          recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
-                          ingredient_id INTEGER REFERENCES ingredients(id) ON DELETE CASCADE,
-                          amount VARCHAR(100),
-                          unit VARCHAR(50),
-                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                          UNIQUE(recipe_id, ingredient_id)
-                      )
-                      '''
-                  ]
-                  
-                  for sql in tables_sql:
-                      try:
-                          await conn.execute(sql)
-                          print(f'✅ 테이블 생성 성공')
-                      except Exception as e:
-                          print(f'⚠️ 테이블 생성 실패: {e}')
-                  
-                  # 최종 테이블 목록 확인
-                  result = await conn.fetch(\"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name\")
-                  tables = [row['table_name'] for row in result]
-                  print(f'📋 최종 테이블 목록: {tables}')
-                  
-                  await conn.close()
-              
-              asyncio.run(create_tables_manually())
-              "
 
               echo "✅ Alembic 마이그레이션 완료"
           env:
