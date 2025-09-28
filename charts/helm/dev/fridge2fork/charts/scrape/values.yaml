@@ -146,6 +146,7 @@ migration:
   showStats: true  # 마이그레이션 완료 후 통계 출력 여부
 
   # CSV 마이그레이션 설정
+  enableCsvMigration: false  # CSV 마이그레이션 활성화 (기본값: false)
   chunkSize: 500  # 배치 처리 크기 (메모리 사용량과 처리 속도 균형)
   maxRecords: null  # 처리할 최대 레코드 수 (null이면 전체, 테스트시 1000 등)
 
