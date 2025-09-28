@@ -1,0 +1,22 @@
+{{- if and .Values.migration.enabled .Values.migration.createCsvPvc }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "scrape.fullname" . }}-csv-data
+  labels:
+    {{- include "scrape.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migration
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- if .Values.migration.csvPvc }}
+  storageClassName: {{ .Values.migration.csvPvc.storageClassName | default "" }}
+  resources:
+    requests:
+      storage: {{ .Values.migration.csvPvc.size | default "1Gi" }}
+  {{- else }}
+  resources:
+    requests:
+      storage: 1Gi
+  {{- end }}
+{{- end }}

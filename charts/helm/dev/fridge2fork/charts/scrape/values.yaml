@@ -191,16 +191,22 @@ migration:
 
   # CSV 데이터 볼륨 설정
   csvVolume:
-    # 기본값: PVC 사용
-    # persistentVolumeClaim:
-    #   claimName: fridge2fork-csv-data
+    # 기본값: emptyDir (임시 스토리지)
+    # emptyDir: {}
     
     # 또는 다른 볼륨 타입 사용 가능
+    # persistentVolumeClaim:
+    #   claimName: fridge2fork-csv-data
     # configMap:
     #   name: recipe-csv-data
-    # emptyDir: {}
     # hostPath:
     #   path: /data/csv
+
+  # CSV 데이터 PVC 자동 생성 (선택사항)
+  createCsvPvc: false
+  csvPvc:
+    size: "1Gi"
+    storageClassName: ""  # 기본 스토리지 클래스 사용
 
   # 볼륨 설정 (외부 CSV 파일 사용시) - 하위 호환성 유지
   volumes: []

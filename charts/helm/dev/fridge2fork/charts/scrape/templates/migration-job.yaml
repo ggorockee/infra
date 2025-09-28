@@ -78,8 +78,7 @@ spec:
         {{- if .Values.migration.csvVolume }}
         {{- toYaml .Values.migration.csvVolume | nindent 8 }}
         {{- else }}
-        persistentVolumeClaim:
-          claimName: {{ include "scrape.fullname" . }}-csv-data
+        emptyDir: {}
         {{- end }}
 
       {{- with .Values.nodeSelector }}
