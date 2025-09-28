@@ -1,0 +1,68 @@
+{{- if .Values.migration.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "scrape.fullname" . }}-csv-migration
+  labels:
+    {{- include "scrape.labels" . | nindent 4 }}
+    app.kubernetes.io/component: csv-migration
+  annotations:
+    # Alembic 마이그레이션 Job이 완료된 후 실행
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "1"  # migration-job.yaml보다 나중에 실행
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  activeDeadlineSeconds: 21600  # 6시간 타임아웃
+  backoffLimit: 3  # 최대 재시도 횟수
+  ttlSecondsAfterFinished: 86400  # 1일 후 자동 삭제
+  template:
+    metadata:
+      labels:
+        {{- include "scrape.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: csv-migration
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "scrape.serviceAccountName" . }}
+      restartPolicy: OnFailure
+      
+      containers:
+      - name: csv-migration
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: ["/app/entrypoint.sh", "data"]
+        envFrom:
+        - secretRef:
+            name: {{ (index .Values.envFrom 0).secretRef.name }}
+        env:
+        - name: PYTHONPATH
+          value: /app
+        - name: CHUNK_SIZE
+          value: "{{ .Values.migration.csvChunkSize | default 1000 }}"
+        - name: MAX_RECORDS
+          value: "{{ .Values.migration.csvMaxRecords | default "0" }}"
+        - name: MIGRATION_MODE
+          value: "data-only"
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "1000m"
+            memory: "2Gi"
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

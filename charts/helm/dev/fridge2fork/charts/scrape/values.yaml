@@ -159,6 +159,10 @@ migration:
       ALEMBIC_CONFIG: "alembic.ini"  # Alembic 설정 파일 경로
 
 
+  # CSV 데이터 마이그레이션 설정
+  csvChunkSize: 1000  # CSV 배치 처리 크기
+  csvMaxRecords: "0"  # 처리할 최대 레코드 수 (0이면 전체)
+
   # 마이그레이션 관련 환경변수
   config:
     LOG_LEVEL: "INFO"
