@@ -46,39 +46,12 @@ spec:
         resources:
           {{- toYaml .Values.migration.alembic.resources | nindent 10 }}
 
-      # Main Container - CSV 데이터 마이그레이션 (선택적)
+      # 완료 컨테이너 (Kubernetes Job에서 containers 필수)
       containers:
-      {{- if .Values.migration.enableCsvMigration }}
-      - name: csv-migration
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        command: ["/app/entrypoint.sh", "migrate"]
-        envFrom:
-        - secretRef:
-            name: {{ (index .Values.envFrom 0).secretRef.name }}
-        env:
-        - name: PYTHONPATH
-          value: /app
-        - name: CHUNK_SIZE
-          value: "{{ .Values.migration.chunkSize | default 500 }}"
-        {{- if .Values.migration.maxRecords }}
-        - name: MAX_RECORDS
-          value: "{{ .Values.migration.maxRecords }}"
-        {{- else }}
-        - name: MAX_RECORDS
-          value: "0"
-        {{- end }}
-        volumeMounts:
-        - name: csv-data
-          mountPath: /app/datas
-        resources:
-          {{- toYaml .Values.migration.resources | nindent 10 }}
-      {{- else }}
-      # 더미 컨테이너 (Kubernetes Job에서 containers 필수)
       - name: migration-complete
         image: busybox:1.35
         command: ["sh", "-c"]
-        args: ["echo 'Migration completed successfully'; sleep 5"]
+        args: ["echo 'Alembic migration completed successfully'; sleep 5"]
         resources:
           requests:
             cpu: "10m"
@@ -86,17 +59,6 @@ spec:
           limits:
             cpu: "50m"
             memory: "32Mi"
-      {{- end }}
-
-      {{- if .Values.migration.enableCsvMigration }}
-      volumes:
-      - name: csv-data
-        {{- if .Values.migration.csvVolume }}
-        {{- toYaml .Values.migration.csvVolume | nindent 8 }}
-        {{- else }}
-        emptyDir: {}
-        {{- end }}
-      {{- end }}
 
       {{- with .Values.nodeSelector }}
       nodeSelector:
