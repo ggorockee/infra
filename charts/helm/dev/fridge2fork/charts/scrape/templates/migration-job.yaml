@@ -37,10 +37,9 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
-        # Alembic 마이그레이션 실행
+        # Alembic 마이그레이션 실행 (최적화됨)
         - name: alembic-migration
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: ggorockee/fridge2fork-dev-scrape:sha-1b57413b
           command:
             - /bin/sh
             - -c
@@ -59,15 +58,53 @@ spec:
               echo "✅ 데이터베이스 연결 성공"
 
               echo "🔄 Alembic 마이그레이션 시작..."
-              cd /app && alembic upgrade head
-              echo "✅ Alembic 마이그레이션 완료"
+              cd /app
 
-              echo "🔄 기본 데이터 삽입..."
-              python scripts/insert_basic_data.py
-              echo "✅ 기본 데이터 삽입 완료"
+              # 환경변수 설정 (중요!)
+              export DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+
+              # 현재 상태 확인
+              echo "📋 현재 마이그레이션 상태:"
+              alembic current || echo "마이그레이션 히스토리 없음"
+
+              # 마이그레이션 파일이 없으면 자동 생성
+              if [ ! "$(ls -A migrations/versions/ 2>/dev/null)" ]; then
+                echo "🔧 마이그레이션 파일이 없습니다. 자동 생성 중..."
+                alembic revision --autogenerate -m "Initial schema with recipes tables"
+                echo "✅ 마이그레이션 파일 생성 완료"
+              else
+                echo "ℹ️ 기존 마이그레이션 파일 발견"
+              fi
+
+              # 마이그레이션 실행
+              echo "⚡ 마이그레이션 실행 중..."
+              alembic upgrade head
+
+              # 테이블 생성 확인
+              echo "🔍 생성된 테이블 확인:"
+              python3 -c "
+              import os, asyncio, asyncpg
+              async def check():
+                  conn = await asyncpg.connect(os.environ['DATABASE_URL'])
+                  result = await conn.fetch(\"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name != 'alembic_version'\")
+                  tables = [row['table_name'] for row in result]
+                  print(f'생성된 테이블: {tables}')
+                  expected = ['recipes', 'ingredients', 'recipe_ingredients']
+                  missing = [t for t in expected if t not in tables]
+                  if missing:
+                      print(f'❌ 누락된 테이블: {missing}')
+                      exit(1)
+                  print('✅ 모든 테이블 생성 완료')
+                  await conn.close()
+              asyncio.run(check())
+              "
+
+              echo "✅ Alembic 마이그레이션 완료"
           env:
             - name: MODE
               value: "migration"
+            - name: MIGRATION_MODE
+              value: "db-migration"
             - name: PYTHONPATH
               value: "/app"
             - name: DB_HOST
@@ -85,15 +122,20 @@ spec:
                 secretKeyRef:
                   name: {{ (index .Values.envFrom 0).secretRef.name }}
                   key: POSTGRES_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ (index .Values.envFrom 0).secretRef.name }}
+                  key: POSTGRES_PASSWORD
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ (index .Values.envFrom 0).secretRef.name }}
+                  key: POSTGRES_DB
           envFrom:
             {{- toYaml .Values.envFrom | nindent 12 }}
           resources:
-            requests:
-              memory: "256Mi"
-              cpu: "100m"
-            limits:
-              memory: "512Mi"
-              cpu: "200m"
+            {{- toYaml .Values.migration.alembic.resources | nindent 12 }}
       containers:
         # CSV 데이터 마이그레이션
         - name: csv-migration
