@@ -10,130 +10,30 @@ spec:
   template:
     spec:
       restartPolicy: Never
-      initContainers:
-        - name: alembic-migration
-          image: ggorockee/fridge2fork-dev-scrape:sha-1b57413b
-          command:
-            - /bin/sh
-            - -c
-            - |
-              echo "🔄 데이터베이스 연결 대기 중..."
-              timeout=60
-              until pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USER; do
-                echo "Waiting for database..."
-                sleep 2
-                timeout=$((timeout - 2))
-                if [ $timeout -le 0 ]; then
-                  echo "❌ 데이터베이스 연결 타임아웃"
-                  exit 1
-                fi
-              done
-              echo "✅ 데이터베이스 연결 성공"
-
-              echo "🔄 Alembic 마이그레이션 시작..."
-              cd /app
-
-              # 환경변수 설정
-              export DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
-
-              # 마이그레이션 파일 자동 생성 (없는 경우)
-              if [ ! "$(ls -A migrations/versions/ 2>/dev/null)" ]; then
-                echo "🔧 마이그레이션 파일 자동 생성 중..."
-                alembic revision --autogenerate -m "Initial schema with recipes tables"
-              fi
-
-              # 마이그레이션 실행
-              alembic upgrade head
-
-              # 테이블 생성 확인
-              python -c "
-              import os, asyncio, asyncpg
-              async def check():
-                  conn = await asyncpg.connect(os.environ['DATABASE_URL'])
-                  result = await conn.fetch(\"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'\")
-                  tables = [row['table_name'] for row in result]
-                  expected = ['recipes', 'ingredients', 'recipe_ingredients']
-                  missing = [t for t in expected if t not in tables]
-                  if missing:
-                      print(f'❌ 누락된 테이블: {missing}')
-                      exit(1)
-                  print('✅ 모든 테이블 생성 완료')
-                  await conn.close()
-              asyncio.run(check())
-              "
-
-              echo "✅ Alembic 마이그레이션 완료"
-          env:
-            - name: DB_HOST
-              valueFrom:
-                secretKeyRef:
-                  key: POSTGRES_SERVER
-                  name: fridge2fork-db-credentials
-            - name: DB_PORT
-              valueFrom:
-                secretKeyRef:
-                  key: POSTGRES_PORT
-                  name: fridge2fork-db-credentials
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  key: POSTGRES_USER
-                  name: fridge2fork-db-credentials
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  key: POSTGRES_PASSWORD
-                  name: fridge2fork-db-credentials
-            - name: DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  key: POSTGRES_DB
-                  name: fridge2fork-db-credentials
       containers:
-        - name: migration-complete
-          image: ggorockee/fridge2fork-dev-scrape:sha-1b57413b
-          command:
-            - /bin/sh
-            - -c
-            - |
-              echo "✅ 마이그레이션 Job 완료"
-              echo "📋 최종 테이블 목록:"
-              cd /app
-              export DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
-              python -c "
-              import os, asyncio, asyncpg
-              async def list_tables():
-                  conn = await asyncpg.connect(os.environ['DATABASE_URL'])
-                  result = await conn.fetch(\"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name\")
-                  for row in result:
-                      print(f'  - {row[\"table_name\"]}')
-                  await conn.close()
-              asyncio.run(list_tables())
-              "
-          env:
-            - name: DB_HOST
-              valueFrom:
-                secretKeyRef:
-                  key: POSTGRES_SERVER
-                  name: fridge2fork-db-credentials
-            - name: DB_PORT
-              valueFrom:
-                secretKeyRef:
-                  key: POSTGRES_PORT
-                  name: fridge2fork-db-credentials
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  key: POSTGRES_USER
-                  name: fridge2fork-db-credentials
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  key: POSTGRES_PASSWORD
-                  name: fridge2fork-db-credentials
-            - name: DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  key: POSTGRES_DB
-                  name: fridge2fork-db-credentials
+      - name: fix-migration
+        image: ggorockee/fridge2fork-dev-scrape:sha-1b57413b
+        command:
+          - /bin/sh
+          - -c
+          - |
+            cd /app
+            export DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+
+            # 강제로 마이그레이션 파일 생성
+            alembic revision --autogenerate -m "Create recipes tables"
+            alembic upgrade head
+
+            # 결과 확인
+            python -c "
+            import os, asyncio, asyncpg
+            async def check():
+                conn = await asyncpg.connect(os.environ['DATABASE_URL'])
+                result = await conn.fetch('SELECT table_name FROM information_schema.tables WHERE table_schema = \\'public\\'')
+                print([row['table_name'] for row in result])
+                await conn.close()
+            asyncio.run(check())
+            "
+        envFrom:
+          {{- toYaml .Values.envFrom | nindent 10 }}
 {{- end }}
