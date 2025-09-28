@@ -1,4 +1,4 @@
-{{- if .Values.migration.enabled }}
+{{- if and .Values.migration.enabled .Values.migration.csvMigration.enabled }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -40,18 +40,13 @@ spec:
         - name: PYTHONPATH
           value: /app
         - name: CHUNK_SIZE
-          value: "{{ .Values.migration.csvChunkSize | default 1000 }}"
+          value: "{{ .Values.migration.csvMigration.chunkSize | default 1000 }}"
         - name: MAX_RECORDS
-          value: "{{ .Values.migration.csvMaxRecords | default "0" }}"
+          value: "{{ .Values.migration.csvMigration.maxRecords | default "0" }}"
         - name: MIGRATION_MODE
           value: "data-only"
         resources:
-          requests:
-            cpu: "500m"
-            memory: "1Gi"
-          limits:
-            cpu: "1000m"
-            memory: "2Gi"
+          {{- toYaml .Values.migration.csvMigration.resources | nindent 10 }}
 
       {{- with .Values.nodeSelector }}
       nodeSelector:
