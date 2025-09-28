@@ -74,15 +74,6 @@ spec:
               alembic upgrade head
               echo "✅ Alembic 마이그레이션 완료"
 
-              # 기본 데이터 삽입 (스크립트가 있을 경우)
-              if [ -f "/app/scripts/insert_basic_data.py" ]; then
-                echo "🔄 기본 데이터 삽입 중..."
-                python scripts/insert_basic_data.py
-                echo "✅ 기본 데이터 삽입 완료"
-              else
-                echo "ℹ️ 기본 데이터 삽입 스크립트가 없습니다. 건너뜀."
-              fi
-
               echo "✅ 데이터베이스 초기화 완료"
           env:
             - name: MODE
