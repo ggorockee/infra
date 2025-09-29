@@ -7,7 +7,7 @@ serviceAccount:
 
 # Scrape Service Configuration
 scrape:
-  enabled: true
+  enabled: false
   image:
     repository: ggorockee/fridge2fork-dev-scrape
     tag: sha-b13755d7
