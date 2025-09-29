@@ -28,6 +28,39 @@ spec:
       serviceAccountName: {{ include "admin.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.initContainer.enabled }}
+      initContainers:
+        - name: alembic-migration
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              echo "🚀 Starting Alembic migration..."
+              cd /app
+              alembic upgrade head
+              echo "✅ Migration completed successfully"
+          envFrom:
+            {{- if .Values.configMap.enabled }}
+            - configMapRef:
+                name: {{ include "admin.fullname" . }}-config
+            {{- end }}
+            {{- if .Values.secret.enabled }}
+            - secretRef:
+                name: {{ .Values.secret.secretName }}
+            {{- end }}
+            {{- with .Values.envFrom }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          env:
+            - name: BUILD_ENV
+              value: {{ .Values.buildEnv | default "prod" | quote }}
+          resources:
+            {{- toYaml .Values.initContainer.resources | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -56,6 +89,9 @@ spec:
             timeoutSeconds: {{ .Values.healthCheck.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.healthCheck.readinessProbe.failureThreshold }}
           {{- end }}
+          env:
+            - name: BUILD_ENV
+              value: {{ .Values.buildEnv | default "prod" | quote }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           envFrom:
