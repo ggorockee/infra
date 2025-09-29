@@ -339,7 +339,7 @@ server:
     targetMemoryUtilizationPercentage: 80
 
   healthCheck:
-    enabled: true
+    enabled: false
     livenessProbe:
       httpGet:
         path: /v1/system/health
