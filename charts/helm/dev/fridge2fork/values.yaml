@@ -280,7 +280,7 @@ server:
 
   image:
     repository: ggorockee/fridge2fork-dev-server
-    tag: sha-9af95076
+    tag: sha-f5c01cb0
     pullPolicy: IfNotPresent
 
   service:
