@@ -1,0 +1,223 @@
+# Main Application Configuration
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+  automount: true
+
+# Scrape Service Configuration
+scrape:
+  enabled: false
+  image:
+    repository: ggorockee/fridge2fork-scrape
+    tag: dev-sha-63a13942
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 8000
+    targetPort: 8000
+
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "200m"
+  # CronJob configuration
+  schedule: "0 0 1 */3 *"  # 분기마다 실행 (매분기 1일 00:00)
+  concurrencyPolicy: "Forbid"  # 동시 실행 금지
+  successfulJobsHistoryLimit: 3  # 성공한 Job 히스토리 3개 유지
+  failedJobsHistoryLimit: 1  # 실패한 Job 히스토리 1개 유지
+  startingDeadlineSeconds: 300  # 5분 내 시작하지 않으면 스킵
+  # Job configuration
+  restartPolicy: Never  # 작업 완료 후 재시작하지 않음
+  activeDeadlineSeconds: 2592000  # 30일 후 자동 종료 (한 달)
+  backoffLimit: 3  # 실패 시 재시도 횟수
+
+  # ConfigMap 설정
+  configMap:
+    enabled: true
+    config:
+      TARGET_RECIPE_COUNT: "250000"       # 25만개 목표
+      CONCURRENT_REQUESTS: "1"            # 동시 요청 수 최소화
+      BATCH_SIZE: "3"                     # 배치 크기 최소화
+      REQUEST_DELAY: "1.5"                # 요청 간 1.5초 지연
+      BATCH_DELAY: "15.0"                 # 더 긴 메모리 정리 시간
+      LOG_LEVEL: "INFO"                   # 로깅 레벨
+      PROGRESS_INTERVAL: "10"             # 진행률 표시 간격
+      MEMORY_CHECK_INTERVAL: "50"         # 메모리 체크 간격
+      CHUNK_SIZE: "50"                    # 메모리가 매우 제한적인 경우
+      CHUNK_DELAY: "15.0"                 # 더 긴 메모리 정리 시간
+
+  # ServiceAccount configuration
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: ""
+
+  # Pod security context
+  podSecurityContext:
+    fsGroup: 2000
+
+  # Container security context
+  securityContext:
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1000
+
+  # Pod annotations
+  podAnnotations: {}
+  # Image pull secrets
+  imagePullSecrets: []
+  # Node selector
+  nodeSelector: {}
+  # Tolerations
+  tolerations: []
+  # Affinity
+  affinity: {}
+  # Autoscaling
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+
+  # Health check configuration (disabled by default)
+  healthCheck:
+    enabled: false
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: http
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readinessProbe:
+      httpGet:
+        path: /ready
+        port: http
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+
+  # Environment variables from secrets
+  # REQUIRED: This secret must exist before deploying the chart
+  # The secret should contain database connection information
+  envFrom:
+  - secretRef:
+      name: fridge2fork-db-credentials    # Must exist in the namespace
+
+# Admin Service Configuration
+admin:
+  enabled: true
+  replicaCount: 1
+
+  image:
+    repository: ggorockee/fridge2fork-admin-dev
+    tag: sha-f2393700
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 8000
+    targetPort: 8000
+    portName: "fastapi"
+
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "200m"
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: ""
+    automount: true
+
+  configMap:
+    enabled: true
+    config:
+      ADMIN_PORT: "8000"
+      LOG_LEVEL: "INFO"
+      DEBUG_MODE: "false"
+
+  secret:
+    enabled: true
+    secretName: "fridge2fork-db-credentials"
+
+  podSecurityContext:
+    fsGroup: 2000
+
+  securityContext:
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1000
+
+  podAnnotations: {}
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  healthCheck:
+    enabled: false
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: http
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readinessProbe:
+      httpGet:
+        path: /ready
+        port: http
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+
+  envFrom: []
+
+# Database Configuration
+database:
+  enabled: true
+  global:
+    postgresql:
+      auth:
+        username: fridge2fork
+        database: fridge2fork
+        existingSecret: fridge2fork-db-credentials
+
+  primary:
+    persistence:
+      size: 10Gi
+      volumeName: "data"
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
