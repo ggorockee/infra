@@ -80,10 +80,10 @@ autoscaling:
 
 # Health check configuration
 healthCheck:
-  enabled: true
+  enabled: false
   livenessProbe:
     httpGet:
-      path: /fridge2fork/v1/system/health
+      path: /
       port: http
     initialDelaySeconds: 30
     periodSeconds: 10
@@ -91,7 +91,7 @@ healthCheck:
     failureThreshold: 3
   readinessProbe:
     httpGet:
-      path: /fridge2fork/v1/system/health
+      path: /
       port: http
     initialDelaySeconds: 5
     periodSeconds: 5
