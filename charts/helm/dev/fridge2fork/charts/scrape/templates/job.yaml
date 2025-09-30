@@ -80,24 +80,8 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
-            - "/bin/sh"
-            - "-c"
-            - |
-              echo "🚀 Starting CSV data migration (Alembic 건너뛰기)..."
-              cd /app
-
-              # Alembic 마이그레이션 건너뛰고 CSV 데이터만 처리
-              if [ -f "app/migration/csv_data_only.py" ]; then
-                python -m app.migration.csv_data_only
-              elif [ -f "app/migration/load_csv.py" ]; then
-                python -m app.migration.load_csv
-              else
-                echo "⚠️  CSV 전용 마이그레이션 스크립트를 찾을 수 없습니다"
-                echo "📋 SKIP_ALEMBIC=true 환경변수로 Alembic 건너뛰기"
-                python -m app.migration.csv_migration
-              fi
-
-              echo "✅ CSV data migration completed successfully"
+            - "/app/entrypoint.sh"
+            - "data"
           {{- if .Values.healthCheck.enabled }}
           livenessProbe:
             {{- toYaml .Values.healthCheck.livenessProbe | nindent 12 }}
