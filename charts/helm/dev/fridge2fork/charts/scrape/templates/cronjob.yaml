@@ -97,8 +97,14 @@ spec:
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
               imagePullPolicy: {{ .Values.image.pullPolicy }}
               command:
-                - "/app/entrypoint.sh"
-                - "data"
+                - "/bin/sh"
+                - "-c"
+                - |
+                  echo "[INFO] Starting CSV migration directly (bypassing entrypoint.sh wait)"
+                  echo "[INFO] Database connection already verified by initContainer"
+                  cd /app
+                  export MODE=migrate
+                  exec python main.py
               resources:
                 {{- toYaml .Values.resources | nindent 16 }}
               envFrom:
