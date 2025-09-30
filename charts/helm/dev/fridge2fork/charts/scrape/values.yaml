@@ -141,7 +141,18 @@ migration:
       weight: "-10"  # Hook 실행 순서 (-10이 먼저 실행)
       deletePolicy: "before-hook-creation,hook-succeeded"  # Hook 삭제 정책
 
-
+  # CSV 데이터 마이그레이션 설정
+  csvMigration:
+    enabled: false  # CSV 마이그레이션 Job 비활성화 (기본값, initContainer 사용)
+    chunkSize: 1000  # 배치 처리 크기
+    maxRecords: "0"  # 전체 처리 (0), 테스트시 1000 등
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
 
   # Alembic (데이터베이스 스키마) 설정
   alembic:
@@ -158,10 +169,10 @@ migration:
       LOG_LEVEL: "INFO"
       ALEMBIC_CONFIG: "alembic.ini"  # Alembic 설정 파일 경로
 
-
-
   # 마이그레이션 관련 환경변수
   config:
+    RUN_ONCE: "true"  # 한번만 실행 (true/false)
+    MAX_RECORDS: "0"  # 전체 처리 (0), 테스트시 1000 등
     LOG_LEVEL: "INFO"
     PYTHONPATH: "/app"
     PYTHONUNBUFFERED: "1"
@@ -174,12 +185,12 @@ alembic:
   activeDeadlineSeconds: 1800  # 30분 타임아웃
   backoffLimit: 3  # 최대 재시도 횟수
   ttlSecondsAfterFinished: 3600  # 1시간 후 자동 삭제
-  
+
   # Helm hook 설정 (선택사항)
   hook: ""  # pre-install, pre-upgrade, post-install, post-upgrade 등
   hookWeight: "-5"  # hook 실행 순서
   hookDeletePolicy: "before-hook-creation,hook-succeeded"  # hook 삭제 정책
-  
+
   # Alembic 리소스
   resources:
     requests:
@@ -188,3 +199,15 @@ alembic:
     limits:
       memory: "512Mi"
       cpu: "200m"
+
+# Init Container Configuration for Alembic Migration
+initContainer:
+  enabled: false  # 기본적으로 비활성화 (parent values.yaml에서 override)
+  alembic:
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "200m"

@@ -25,6 +25,10 @@ appVersion: "1.16.0"
 
 # Dependencies
 dependencies:
+  - name: database
+    version: "16.7.14"
+    repository: "file://./charts/database"
+    condition: database.enabled
   - name: scrape
     version: "1.0.0"
     repository: "file://./charts/scrape"
@@ -33,3 +37,7 @@ dependencies:
     version: "0.1.0"
     repository: "file://./charts/admin"
     condition: admin.enabled
+  - name: server
+    version: "0.1.0"
+    repository: "file://./charts/server"
+    condition: server.enabled

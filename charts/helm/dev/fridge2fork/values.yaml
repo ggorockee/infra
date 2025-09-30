@@ -185,6 +185,27 @@ scrape:
         memory: "512Mi"
         cpu: "200m"
 
+  # Init Container Configuration for Alembic Migration
+  initContainer:
+    enabled: true  # Alembic 스키마 마이그레이션 initContainer 활성화
+    alembic:
+      resources:
+        requests:
+          memory: "256Mi"
+          cpu: "100m"
+        limits:
+          memory: "512Mi"
+          cpu: "200m"
+
+  # Migration Configuration
+  migration:
+    config:
+      RUN_ONCE: "true"  # 한번만 실행 (true/false)
+      MAX_RECORDS: "0"  # 전체 처리 (0), 테스트시 1000 등
+      LOG_LEVEL: "INFO"
+      PYTHONPATH: "/app"
+      PYTHONUNBUFFERED: "1"
+
 
 # Admin Service Configuration
 admin:
