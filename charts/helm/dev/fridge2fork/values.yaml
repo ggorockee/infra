@@ -128,10 +128,9 @@ scrape:
   - secretRef:
       name: fridge2fork-db-credentials    # Must exist in the namespace
 
-  # Migration Jobs Configuration
+  # Migration Jobs Configuration (별도 Job들 - 모두 비활성화, job.yaml만 사용)
   migration:
-    # Alembic 스키마 마이그레이션 (DB 테이블 생성)
-    enabled: true  # 전체 마이그레이션 활성화 ⭐
+    enabled: false  # migration-job.yaml 비활성화
     restartPolicy: OnFailure
     activeDeadlineSeconds: 21600  # 6시간 타임아웃
     backoffLimit: 3  # 최대 재시도 횟수
@@ -149,7 +148,7 @@ scrape:
 
     # CSV 데이터 마이그레이션 설정
     csvMigration:
-      enabled: true  # CSV 마이그레이션 활성화
+      enabled: false  # csv-migration-job.yaml 비활성화
       chunkSize: 1000  # 배치 처리 크기
       maxRecords: "0"  # 전체 처리 (0), 테스트시 1000 등
       resources:
@@ -160,15 +159,17 @@ scrape:
           memory: "2Gi"
           cpu: "1000m"
 
-    # 마이그레이션 관련 환경변수
+    # 마이그레이션 관련 환경변수 (job.yaml에서 사용)
     config:
+      RUN_ONCE: "false"
+      MAX_RECORDS: "0"
       LOG_LEVEL: "INFO"
       PYTHONPATH: "/app"
       PYTHONUNBUFFERED: "1"
 
-  # Alembic Job Configuration (데이터베이스 스키마 마이그레이션)
+  # Alembic Job Configuration (alembic-job.yaml - 비활성화)
   alembic:
-    enabled: true  # alembic job 활성화
+    enabled: false  # alembic-job.yaml 비활성화
     restartPolicy: Never
     activeDeadlineSeconds: 1800  # 30분 타임아웃
     backoffLimit: 3  # 최대 재시도 횟수

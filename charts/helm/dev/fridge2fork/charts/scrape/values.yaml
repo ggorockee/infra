@@ -122,7 +122,7 @@ configMap:
 
 # Migration Job Configuration
 migration:
-  enabled: true  # migration job 활성화
+  enabled: false  # migration job 비활성화 (job.yaml 사용)
 
   # Job 재생성을 위한 설정
   jobSuffix: ""  # 비어있으면 현재 시각으로 자동 생성 (예: 20240128-143022)
