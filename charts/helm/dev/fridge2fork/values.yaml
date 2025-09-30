@@ -28,7 +28,7 @@ scrape:
       cpu: "200m"
   # CronJob configuration (CSV 마이그레이션 - 수동 실행용)
   cronJob:
-    schedule: "0 0 1 1 */5 *"  # 5년마다 1월 1일 00:00 (실질적으로 수동 실행용)
+    schedule: "0 0 1 1 *"  # 매년 1월 1일 00:00 (실질적으로 수동 실행용)
     concurrencyPolicy: "Forbid"  # 동시 실행 금지
     successfulJobsHistoryLimit: 3  # 성공한 Job 히스토리 3개 유지
     failedJobsHistoryLimit: 1  # 실패한 Job 히스토리 1개 유지

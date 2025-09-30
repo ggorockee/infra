@@ -100,7 +100,7 @@ All services require `fridge2fork-db-credentials` secret with:
    - Scrape: **비활성화됨** (scrape와 server의 Alembic revision 불일치로 인해)
 2. **CSV migrations (CronJob 방식)**:
    - **리소스 타입**: CronJob (수동 실행 + 정기 실행 지원)
-   - **스케줄**: `0 0 1 1 */5 *` (5년마다 1월 1일 - 실질적으로 수동 실행용)
+   - **스케줄**: `0 0 1 1 *` (매년 1월 1일 00:00 - 실질적으로 수동 실행용)
    - **수동 실행**: `kubectl create job --from=cronjob/fridge2fork-dev-scrape-csv-migration manual-$(date +%s)`
    - **실행 방식**: `/app/entrypoint.sh data` 명령어로 CSV 전용 마이그레이션
    - **데이터 경로**: `/app/datas/*.csv`
@@ -149,7 +149,7 @@ Each sub-chart follows a consistent structure:
 ### CronJob Template
 Scrape chart uses CronJob for CSV migration:
 - `cronjob.yaml`: CSV 마이그레이션 CronJob (수동 실행 + 정기 실행)
-  - 기본 스케줄: 5년마다 (실질적으로 수동 실행용)
+  - 기본 스케줄: 매년 1월 1일 (실질적으로 수동 실행용)
   - 명령어: `/app/entrypoint.sh data`
   - Alembic 비활성화 (SKIP_ALEMBIC=true)
   - Job 히스토리 자동 관리
