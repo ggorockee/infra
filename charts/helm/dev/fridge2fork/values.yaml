@@ -188,7 +188,7 @@ scrape:
 
   # Init Container Configuration for Alembic Migration
   initContainer:
-    enabled: true  # Alembic 스키마 마이그레이션 initContainer 활성화
+    enabled: false  # Alembic 스키마 마이그레이션 initContainer 비활성화 (revision 불일치)
     alembic:
       resources:
         requests:

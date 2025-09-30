@@ -83,9 +83,20 @@ spec:
             - "/bin/sh"
             - "-c"
             - |
-              echo "🚀 Starting CSV data migration..."
+              echo "🚀 Starting CSV data migration (Alembic 건너뛰기)..."
               cd /app
-              python -m app.migration.csv_migration
+
+              # Alembic 마이그레이션 건너뛰고 CSV 데이터만 처리
+              if [ -f "app/migration/csv_data_only.py" ]; then
+                python -m app.migration.csv_data_only
+              elif [ -f "app/migration/load_csv.py" ]; then
+                python -m app.migration.load_csv
+              else
+                echo "⚠️  CSV 전용 마이그레이션 스크립트를 찾을 수 없습니다"
+                echo "📋 SKIP_ALEMBIC=true 환경변수로 Alembic 건너뛰기"
+                python -m app.migration.csv_migration
+              fi
+
               echo "✅ CSV data migration completed successfully"
           {{- if .Values.healthCheck.enabled }}
           livenessProbe:
@@ -119,6 +130,10 @@ spec:
               value: "1"
             - name: MIGRATION_MODE
               value: "csv-only"
+            - name: SKIP_ALEMBIC
+              value: "true"
+            - name: CSV_ONLY
+              value: "true"
             - name: CSV_DATA_PATH
               value: "/app/datas/*.csv"
             {{- if .Values.migration.config }}
