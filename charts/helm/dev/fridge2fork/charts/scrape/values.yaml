@@ -17,18 +17,20 @@ resources:
     memory: "512Mi"
     cpu: "200m"
 
-# Job configuration
+# CronJob configuration (CSV 마이그레이션 - 수동 실행용)
+cronJob:
+  schedule: "0 0 1 1 */5 *"  # 5년마다 1월 1일 00:00 (실질적으로 수동 실행용)
+  concurrencyPolicy: "Forbid"  # 동시 실행 금지
+  successfulJobsHistoryLimit: 3  # 성공한 Job 히스토리 3개 유지
+  failedJobsHistoryLimit: 1  # 실패한 Job 히스토리 1개 유지
+  startingDeadlineSeconds: 300  # 5분 내 시작하지 않으면 스킵
+
+# Job configuration (CronJob에서 생성되는 Job 설정)
 activeDeadlineSeconds: 7200  # 2시간 타임아웃
 backoffLimit: 3  # 최대 재시도 횟수
 restartPolicy: OnFailure
-ttlSecondsAfterFinished: 2592000  # 한 달 (30일 * 24시간 * 60분 * 60초)
-jobDisabled: true  # scrape job 비활성화
-
-# Job 재생성 설정
-jobRecreate:
-  enabled: true  # job 재생성 활성화
-  deletePolicy: "before-hook-creation"  # 기존 job 삭제 정책
-  forceDelete: true  # 강제 삭제
+ttlSecondsAfterFinished: 86400  # 1일 후 자동 삭제
+jobDisabled: false  # CronJob 활성화
 
 # ServiceAccount configuration
 serviceAccount:

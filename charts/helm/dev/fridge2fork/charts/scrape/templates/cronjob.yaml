@@ -1,0 +1,117 @@
+{{- if and .Values.enabled (not .Values.jobDisabled) }}
+{{- include "scrape.validateSecret" . -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "scrape.fullname" . }}-csv-migration
+  labels:
+    {{- include "scrape.labels" . | nindent 4 }}
+    app.kubernetes.io/component: csv-migration
+spec:
+  # 실질적으로 수동 실행용 (5년마다 1월 1일 00:00)
+  schedule: {{ .Values.cronJob.schedule | default "0 0 1 1 */5 *" | quote }}
+  concurrencyPolicy: {{ .Values.cronJob.concurrencyPolicy | default "Forbid" }}
+  successfulJobsHistoryLimit: {{ .Values.cronJob.successfulJobsHistoryLimit | default 3 }}
+  failedJobsHistoryLimit: {{ .Values.cronJob.failedJobsHistoryLimit | default 1 }}
+  {{- if .Values.cronJob.startingDeadlineSeconds }}
+  startingDeadlineSeconds: {{ .Values.cronJob.startingDeadlineSeconds }}
+  {{- end }}
+  jobTemplate:
+    metadata:
+      labels:
+        {{- include "scrape.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: csv-migration
+    spec:
+      {{- if .Values.activeDeadlineSeconds }}
+      activeDeadlineSeconds: {{ .Values.activeDeadlineSeconds }}
+      {{- end }}
+      {{- if .Values.backoffLimit }}
+      backoffLimit: {{ .Values.backoffLimit }}
+      {{- end }}
+      {{- if .Values.ttlSecondsAfterFinished }}
+      ttlSecondsAfterFinished: {{ .Values.ttlSecondsAfterFinished }}
+      {{- end }}
+      template:
+        metadata:
+          {{- with .Values.podAnnotations }}
+          annotations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          labels:
+            {{- include "scrape.selectorLabels" . | nindent 12 }}
+            app.kubernetes.io/component: csv-migration
+        spec:
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          serviceAccountName: {{ include "scrape.serviceAccountName" . }}
+          {{- if .Values.restartPolicy }}
+          restartPolicy: {{ .Values.restartPolicy }}
+          {{- end }}
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+          containers:
+            - name: {{ .Chart.Name }}
+              securityContext:
+                {{- toYaml .Values.securityContext | nindent 16 }}
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command:
+                - "/app/entrypoint.sh"
+                - "data"
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}
+              envFrom:
+                {{- toYaml .Values.envFrom | nindent 16 }}
+              env:
+                - name: LOG_LEVEL
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "scrape.fullname" . }}-config
+                      key: LOG_LEVEL
+                - name: CHUNK_SIZE
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "scrape.fullname" . }}-config
+                      key: CHUNK_SIZE
+                - name: CHUNK_DELAY
+                  valueFrom:
+                    configMapKeyRef:
+                      name: {{ include "scrape.fullname" . }}-config
+                      key: CHUNK_DELAY
+                - name: PYTHONPATH
+                  value: "/app"
+                - name: PYTHONUNBUFFERED
+                  value: "1"
+                - name: MIGRATION_MODE
+                  value: "csv-only"
+                - name: SKIP_ALEMBIC
+                  value: "true"
+                - name: CSV_ONLY
+                  value: "true"
+                - name: CSV_DATA_PATH
+                  value: "/app/datas/*.csv"
+                {{- if .Values.migration.config }}
+                {{- if .Values.migration.config.RUN_ONCE }}
+                - name: RUN_ONCE
+                  value: {{ .Values.migration.config.RUN_ONCE | quote }}
+                {{- end }}
+                {{- if .Values.migration.config.MAX_RECORDS }}
+                - name: MAX_RECORDS
+                  value: {{ .Values.migration.config.MAX_RECORDS | quote }}
+                {{- end }}
+                {{- end }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+{{- end }}

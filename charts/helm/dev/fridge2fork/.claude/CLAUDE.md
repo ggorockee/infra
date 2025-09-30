@@ -62,22 +62,26 @@ helm get values fridge2fork -n default
 helm lint .
 ```
 
-### Migration Management
+### CSV Migration Management (CronJob)
 ```bash
-# Deploy migration jobs using helper script
-./backup/migration-scripts/deploy-migration.sh default . ./backup/migration-scripts/migration-values.yaml
+# CronJob은 자동으로 배포되지만 수동 실행이 필요합니다
+# 수동으로 CSV 마이그레이션 Job 생성 (CronJob에서)
+kubectl create job --from=cronjob/fridge2fork-dev-scrape-csv-migration manual-$(date +%s) -n fridge2fork-dev
 
-# Check migration job status
-kubectl get jobs -l app.kubernetes.io/component=migration -n default
+# CronJob 상태 확인
+kubectl get cronjob fridge2fork-dev-scrape-csv-migration -n fridge2fork-dev
 
-# View migration logs (Alembic)
-kubectl logs -f job/fridge2fork-migration-<timestamp> -c alembic-migration -n default
+# 생성된 Job 확인
+kubectl get jobs -l app.kubernetes.io/component=csv-migration -n fridge2fork-dev
 
-# View migration logs (CSV)
-kubectl logs -f job/fridge2fork-migration-<timestamp> -c csv-migration -n default
+# CSV 마이그레이션 로그 확인
+kubectl logs -f job/manual-<timestamp> -c scrape -n fridge2fork-dev
 
-# Clean up completed jobs
-kubectl delete jobs -l app.kubernetes.io/component=migration -n default
+# 완료된 Job 정리 (자동으로 1일 후 삭제됨)
+kubectl delete job manual-<timestamp> -n fridge2fork-dev
+
+# CronJob 스케줄 확인
+kubectl describe cronjob fridge2fork-dev-scrape-csv-migration -n fridge2fork-dev
 ```
 
 ## Architecture Details
@@ -93,13 +97,17 @@ All services require `fridge2fork-db-credentials` secret with:
 ### Migration Strategy
 1. **Alembic migrations**:
    - Server/Admin: Run in init containers before main application starts
-   - Scrape: Run in initContainer before CSV migration (`scrape.initContainer.enabled`)
-2. **CSV migrations**:
-   - **Primary method**: Main container of scrape Job (`/app/datas/*.csv` → DB)
-   - Run after Alembic schema initialization completes
-   - Controlled by `scrape.migration.config.RUN_ONCE=true` to prevent duplicate runs
-   - **Alternative**: Separate Job (`scrape.migration.csvMigration.enabled`) for independent execution
-3. **Job lifecycle**: Migrations use Kubernetes Jobs with configurable TTL and backoff limits
+   - Scrape: **비활성화됨** (scrape와 server의 Alembic revision 불일치로 인해)
+2. **CSV migrations (CronJob 방식)**:
+   - **리소스 타입**: CronJob (수동 실행 + 정기 실행 지원)
+   - **스케줄**: `0 0 1 1 */5 *` (5년마다 1월 1일 - 실질적으로 수동 실행용)
+   - **수동 실행**: `kubectl create job --from=cronjob/fridge2fork-dev-scrape-csv-migration manual-$(date +%s)`
+   - **실행 방식**: `/app/entrypoint.sh data` 명령어로 CSV 전용 마이그레이션
+   - **데이터 경로**: `/app/datas/*.csv`
+   - **환경변수**: `SKIP_ALEMBIC=true`, `CSV_ONLY=true`, `MIGRATION_MODE=csv-only`
+   - **히스토리 관리**: 성공 3개, 실패 1개 자동 보관
+   - **TTL**: 1일 후 자동 삭제
+3. **재실행 방법**: 몇 년에 한 번 CSV 업데이트 시 위 명령어로 간단히 수동 실행
 
 ### Service Configuration Pattern
 Each sub-chart follows a consistent structure:
@@ -138,12 +146,18 @@ Each sub-chart follows a consistent structure:
   - Configured via `scrape.migration.config.RUN_ONCE` to prevent duplicate executions
   - Configurable via `scrape.migration.config.MAX_RECORDS` for testing (0 = all records)
 
-### Job Templates
-Scrape chart includes multiple job types:
-- `job.yaml`: Regular scraping job (CronJob-ready)
-- `alembic-job.yaml`: Schema migration
-- `migration-job.yaml`: Combined migration job
-- `csv-migration-job.yaml`: Data import job
+### CronJob Template
+Scrape chart uses CronJob for CSV migration:
+- `cronjob.yaml`: CSV 마이그레이션 CronJob (수동 실행 + 정기 실행)
+  - 기본 스케줄: 5년마다 (실질적으로 수동 실행용)
+  - 명령어: `/app/entrypoint.sh data`
+  - Alembic 비활성화 (SKIP_ALEMBIC=true)
+  - Job 히스토리 자동 관리
+
+**비활성화된 Job 템플릿들**:
+- `alembic-job.yaml`: 비활성화 (revision 불일치)
+- `migration-job.yaml`: 비활성화 (CronJob 사용)
+- `csv-migration-job.yaml`: 비활성화 (CronJob 사용)
 
 ### Security Contexts
 All workloads use restrictive security contexts:
