@@ -74,7 +74,30 @@ spec:
                       # 실제 연결 테스트 (인증 확인)
                       if PGPASSWORD=${POSTGRES_PASSWORD} psql -h ${POSTGRES_SERVER} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "SELECT 1" >/dev/null 2>&1; then
                         echo "PostgreSQL connection test successful!"
-                        exit 0
+
+                        # 데이터베이스 스키마 존재 확인
+                        echo "Checking database schema..."
+                        TABLE_COUNT=$(PGPASSWORD=${POSTGRES_PASSWORD} psql -h ${POSTGRES_SERVER} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('recipes', 'ingredients', 'recipe_ingredients');" | tr -d ' ')
+
+                        if [ "$TABLE_COUNT" -eq "3" ]; then
+                          echo "All required tables exist (recipes, ingredients, recipe_ingredients)"
+
+                          # UNIQUE constraint 확인
+                          CONSTRAINT_COUNT=$(PGPASSWORD=${POSTGRES_PASSWORD} psql -h ${POSTGRES_SERVER} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -t -c "SELECT COUNT(*) FROM pg_indexes WHERE tablename='recipe_ingredients' AND indexname='uk_recipe_ingredient';" | tr -d ' ')
+
+                          if [ "$CONSTRAINT_COUNT" -eq "1" ]; then
+                            echo "UNIQUE constraint uk_recipe_ingredient exists"
+                            exit 0
+                          else
+                            echo "WARNING: UNIQUE constraint uk_recipe_ingredient is missing!"
+                            echo "CSV migration will fail. Run server Alembic migrations first."
+                            exit 1
+                          fi
+                        else
+                          echo "WARNING: Required tables are missing (found $TABLE_COUNT/3)"
+                          echo "Run server Alembic migrations to create schema."
+                          exit 1
+                        fi
                       else
                         echo "PostgreSQL is ready but authentication failed. Waiting..."
                       fi
