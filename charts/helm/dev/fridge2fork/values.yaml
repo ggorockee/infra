@@ -10,7 +10,7 @@ scrape:
   enabled: false
   image:
     repository: ggorockee/fridge2fork-dev-scrape
-    tag: sha-404d43ef
+    tag: sha-026d2dc8
     pullPolicy: IfNotPresent
 
   service:
