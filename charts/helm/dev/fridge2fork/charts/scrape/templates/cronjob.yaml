@@ -54,16 +54,39 @@ spec:
           initContainers:
             - name: wait-for-db
               image: postgres:16-alpine
+              envFrom:
+                {{- toYaml .Values.envFrom | nindent 16 }}
               command:
                 - sh
                 - -c
                 - |
                   echo "Waiting for PostgreSQL to be ready..."
-                  until pg_isready -h fridge2fork-dev-database.fridge2fork-dev.svc.cluster.local -p 5432 -U fridge2fork; do
-                    echo "PostgreSQL is not ready yet. Waiting 5 seconds..."
+                  echo "Checking connection to: ${POSTGRES_SERVER}:${POSTGRES_PORT}"
+
+                  # 최대 10분 대기 (scrape job의 activeDeadlineSeconds보다 짧게)
+                  MAX_ATTEMPTS=120
+                  ATTEMPT=0
+
+                  while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+                    if pg_isready -h ${POSTGRES_SERVER} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} >/dev/null 2>&1; then
+                      echo "PostgreSQL is accepting connections!"
+
+                      # 실제 연결 테스트 (인증 확인)
+                      if PGPASSWORD=${POSTGRES_PASSWORD} psql -h ${POSTGRES_SERVER} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "SELECT 1" >/dev/null 2>&1; then
+                        echo "PostgreSQL connection test successful!"
+                        exit 0
+                      else
+                        echo "PostgreSQL is ready but authentication failed. Waiting..."
+                      fi
+                    fi
+
+                    ATTEMPT=$((ATTEMPT + 1))
+                    echo "Attempt $ATTEMPT/$MAX_ATTEMPTS: PostgreSQL not ready yet. Waiting 5 seconds..."
                     sleep 5
                   done
-                  echo "PostgreSQL is ready!"
+
+                  echo "ERROR: PostgreSQL did not become ready within 10 minutes"
+                  exit 1
               securityContext:
                 runAsNonRoot: false
                 runAsUser: 0
