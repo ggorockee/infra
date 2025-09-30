@@ -51,6 +51,22 @@ spec:
           {{- end }}
           securityContext:
             {{- toYaml .Values.podSecurityContext | nindent 12 }}
+          initContainers:
+            - name: wait-for-db
+              image: postgres:16-alpine
+              command:
+                - sh
+                - -c
+                - |
+                  echo "Waiting for PostgreSQL to be ready..."
+                  until pg_isready -h fridge2fork-dev-database.fridge2fork-dev.svc.cluster.local -p 5432 -U fridge2fork; do
+                    echo "PostgreSQL is not ready yet. Waiting 5 seconds..."
+                    sleep 5
+                  done
+                  echo "PostgreSQL is ready!"
+              securityContext:
+                runAsNonRoot: false
+                runAsUser: 0
           containers:
             - name: {{ .Chart.Name }}
               securityContext:
