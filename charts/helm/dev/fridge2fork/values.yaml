@@ -200,7 +200,7 @@ scrape:
   # Migration Configuration
   migration:
     config:
-      RUN_ONCE: "true"  # 한번만 실행 (true/false)
+      RUN_ONCE: "false"  # 한번만 실행 (true/false)
       MAX_RECORDS: "0"  # 전체 처리 (0), 테스트시 1000 등
       LOG_LEVEL: "INFO"
       PYTHONPATH: "/app"
