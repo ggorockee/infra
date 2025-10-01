@@ -1,0 +1,8 @@
+# Claude Code context exclusions
+# These files/folders will be ignored when Claude Code analyzes the codebase
+
+# Backup folder (migration scripts and old configurations)
+fridge2fork/backup/
+
+# Local development files
+myrequest.txt
