@@ -12,7 +12,7 @@ server:
 
   image:
     repository: ggorockee/fridge2fork-dev-server
-    tag: sha-4a1b94da
+    tag: sha-1e30b235
     pullPolicy: IfNotPresent
 
   service:
