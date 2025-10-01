@@ -29,7 +29,11 @@ dependencies:
     version: "1.0.0"
     repository: "file://./charts/scrape"
     condition: scrape.enabled
-  - name: admin
+  - name: server
     version: "0.1.0"
-    repository: "file://./charts/admin"
-    condition: admin.enabled
+    repository: "file://./charts/server"
+    condition: server.enabled
+  - name: database
+    version: "16.7.14"
+    repository: "file://./charts/database"
+    condition: database.enabled

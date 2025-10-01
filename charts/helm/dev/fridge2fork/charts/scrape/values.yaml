@@ -1,13 +1,18 @@
 # Scrape Service Configuration
+enabled: false  # 기본적으로 비활성화, parent values에서 override
+
+replicaCount: 1
+
 image:
-  repository: ggorockee/fridge2fork-scrape
-  tag: sha-8992dffe
+  repository: ggorockee/fridge2fork-dev-server
+  tag: sha-b13755d7
   pullPolicy: IfNotPresent
 
 service:
   type: ClusterIP
   port: 8000
   targetPort: 8000
+  portName: "fastapi"
 
 resources:
   requests:
@@ -17,24 +22,12 @@ resources:
     memory: "512Mi"
     cpu: "200m"
 
-# Job configuration
-activeDeadlineSeconds: 7200  # 2시간 타임아웃
-backoffLimit: 3  # 최대 재시도 횟수
-restartPolicy: OnFailure
-ttlSecondsAfterFinished: 2592000  # 한 달 (30일 * 24시간 * 60분 * 60초)
-jobDisabled: true  # scrape job 비활성화
-
-# Job 재생성 설정
-jobRecreate:
-  enabled: true  # job 재생성 활성화
-  deletePolicy: "before-hook-creation"  # 기존 job 삭제 정책
-  forceDelete: true  # 강제 삭제
-
 # ServiceAccount configuration
 serviceAccount:
   create: true
   annotations: {}
   name: ""
+  automount: true
 
 # Pod security context
 podSecurityContext:
@@ -68,15 +61,16 @@ affinity: {}
 autoscaling:
   enabled: false
   minReplicas: 1
-  maxReplicas: 100
+  maxReplicas: 3
   targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
 
-# Health check configuration (disabled by default)
+# Health check configuration
 healthCheck:
-  enabled: false
+  enabled: true
   livenessProbe:
     httpGet:
-      path: /health
+      path: /fridge2fork/v1/system/health
       port: http
     initialDelaySeconds: 30
     periodSeconds: 10
@@ -84,107 +78,31 @@ healthCheck:
     failureThreshold: 3
   readinessProbe:
     httpGet:
-      path: /ready
+      path: /fridge2fork/v1/system/health
       port: http
-    initialDelaySeconds: 5
+    initialDelaySeconds: 10
     periodSeconds: 5
     timeoutSeconds: 3
     failureThreshold: 3
 
-# Environment variables from secrets
-# REQUIRED: This secret must exist before deploying the chart
-# The secret should contain database connection information
-envFrom:
-  - secretRef:
-      name: fridge2fork-db-credentials  # Must exist in the namespace
+# Secret configuration
+# This secret must exist before deploying
+secret:
+  enabled: false  # 기본적으로 비활성화, parent values에서 override
+  secretName: "fridge2fork-db-credentials"
 
 # ConfigMap configuration
 configMap:
-  enabled: true
-  config:
-    # 크롤링 설정 (25만개 수집용)
-    TARGET_RECIPE_COUNT: "250000"
-    CONCURRENT_REQUESTS: "5"
-    BATCH_SIZE: "100"
-    REQUEST_DELAY: "1"
-    BATCH_DELAY: "5"
-    
-    # 로깅 설정
-    LOG_LEVEL: "INFO"
-    
-    # 모니터링 설정
-    PROGRESS_INTERVAL: "1000"
-    MEMORY_CHECK_INTERVAL: "10000"
-    
-    # 메모리 최적화 설정
-    CHUNK_SIZE: "1000"
-    CHUNK_DELAY: "30"
+  enabled: false  # 기본적으로 비활성화, parent values에서 override
+  config: {}
 
-# Migration Job Configuration
-migration:
-  enabled: true  # migration job 활성화
-
-  # Job 재생성을 위한 설정
-  jobSuffix: ""  # 비어있으면 현재 시각으로 자동 생성 (예: 20240128-143022)
-
-  # Job 기본 설정
-  restartPolicy: OnFailure
-  activeDeadlineSeconds: 21600  # 6시간 타임아웃 (대용량 CSV 처리 고려)
-  backoffLimit: 3  # 최대 재시도 횟수
-  ttlSecondsAfterFinished: 86400  # 1일 후 자동 삭제
-
-  # Helm Hook 설정 (선택사항)
-  helm:
-    hook:
-      enabled: true  # Hook 사용 여부
-      type: "pre-install,pre-upgrade"  # Hook 타입
-      weight: "-10"  # Hook 실행 순서 (-10이 먼저 실행)
-      deletePolicy: "before-hook-creation,hook-succeeded"  # Hook 삭제 정책
-
-
-
-  # Alembic (데이터베이스 스키마) 설정
-  alembic:
-    resources:
-      requests:
-        memory: "256Mi"
-        cpu: "100m"
-      limits:
-        memory: "512Mi"
-        cpu: "200m"
-
-    # Alembic 관련 환경변수
-    config:
-      LOG_LEVEL: "INFO"
-      ALEMBIC_CONFIG: "alembic.ini"  # Alembic 설정 파일 경로
-
-
-
-  # 마이그레이션 관련 환경변수
-  config:
-    LOG_LEVEL: "INFO"
-    PYTHONPATH: "/app"
-    PYTHONUNBUFFERED: "1"
-
-
-# Alembic Job Configuration
-alembic:
-  enabled: false  # 기본적으로 비활성화
-  restartPolicy: Never
-  activeDeadlineSeconds: 1800  # 30분 타임아웃
-  backoffLimit: 3  # 최대 재시도 횟수
-  ttlSecondsAfterFinished: 3600  # 1시간 후 자동 삭제
-  
-  # Helm hook 설정 (선택사항)
-  hook: ""  # pre-install, pre-upgrade, post-install, post-upgrade 등
-  hookWeight: "-5"  # hook 실행 순서
-  hookDeletePolicy: "before-hook-creation,hook-succeeded"  # hook 삭제 정책
-  
-  # Alembic 리소스
+# Init container for Alembic migration
+initContainer:
+  enabled: true  # Alembic migration을 위한 init container
   resources:
     requests:
+      memory: "128Mi"
+      cpu: "50m"
+    limits:
       memory: "256Mi"
       cpu: "100m"
-    limits:
-      memory: "512Mi"
-      cpu: "200m"

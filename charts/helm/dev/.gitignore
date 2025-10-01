@@ -1,0 +1,6 @@
+# Claude Code local configuration
+.claude/
+myrequest.txt
+
+# Exclude backup folder from fridge2fork chart
+fridge2fork/backup/

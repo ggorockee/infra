@@ -5,195 +5,14 @@ serviceAccount:
   name: ""
   automount: true
 
-# Scrape Service Configuration
+# Scrape Service Configuration (Disabled - not used for scraping)
 scrape:
   enabled: false
-  image:
-    repository: ggorockee/fridge2fork-dev-scrape
-    tag: sha-b13755d7
-    pullPolicy: IfNotPresent
-
-  service:
-    type: ClusterIP
-    port: 8000
-    targetPort: 8000
-
-  resources:
-    requests:
-      memory: "256Mi"
-      cpu: "100m"
-    limits:
-      memory: "512Mi"
-      cpu: "200m"
-  # CronJob configuration
-  schedule: "0 0 1 */3 *"  # 분기마다 실행 (매분기 1일 00:00)
-  concurrencyPolicy: "Forbid"  # 동시 실행 금지
-  successfulJobsHistoryLimit: 3  # 성공한 Job 히스토리 3개 유지
-  failedJobsHistoryLimit: 1  # 실패한 Job 히스토리 1개 유지
-  startingDeadlineSeconds: 300  # 5분 내 시작하지 않으면 스킵
-  # Job configuration
-  restartPolicy: Never  # 작업 완료 후 재시작하지 않음
-  activeDeadlineSeconds: 2592000  # 30일 후 자동 종료 (한 달)
-  backoffLimit: 3  # 실패 시 재시도 횟수
-
-  # ConfigMap 설정
-  configMap:
-    enabled: true
-    config:
-      TARGET_RECIPE_COUNT: "250000"       # 25만개 목표
-      CONCURRENT_REQUESTS: "1"            # 동시 요청 수 최소화
-      BATCH_SIZE: "3"                     # 배치 크기 최소화
-      REQUEST_DELAY: "1.5"                # 요청 간 1.5초 지연
-      BATCH_DELAY: "15.0"                 # 더 긴 메모리 정리 시간
-      LOG_LEVEL: "INFO"                   # 로깅 레벨
-      PROGRESS_INTERVAL: "10"             # 진행률 표시 간격
-      MEMORY_CHECK_INTERVAL: "50"         # 메모리 체크 간격
-      CHUNK_SIZE: "100"                   # 청크 크기
-      CHUNK_DELAY: "15.0"                 # 더 긴 메모리 정리 시간
-      # 마이그레이션 설정
-      MIGRATION_MODE: "full"
-      MAX_RECORDS: "0"  # 0은 전체 처리
-
-      # Python 설정
-      PYTHONPATH: "/app"
-      PYTHONUNBUFFERED: "1"
-
-      # 애플리케이션 설정
-      APP_NAME: "fridge2fork"
-      APP_VERSION: "1.0.0"
-      APP_ENV: "development"
-      MODE: "migration"
-
-  # ServiceAccount configuration
-  serviceAccount:
-    create: true
-    annotations: {}
-    name: ""
-
-  # Pod security context
-  podSecurityContext:
-    fsGroup: 2000
-
-  # Container security context
-  securityContext:
-    capabilities:
-      drop:
-      - ALL
-    readOnlyRootFilesystem: true
-    runAsNonRoot: true
-    runAsUser: 1000
-
-  # Pod annotations
-  podAnnotations: {}
-  # Image pull secrets
-  imagePullSecrets: []
-  # Node selector
-  nodeSelector: {}
-  # Tolerations
-  tolerations: []
-  # Affinity
-  affinity: {}
-  # Autoscaling
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 100
-    targetCPUUtilizationPercentage: 80
-
-  # Health check configuration (disabled by default)
-  healthCheck:
-    enabled: false
-    livenessProbe:
-      httpGet:
-        path: /health
-        port: http
-      initialDelaySeconds: 30
-      periodSeconds: 10
-      timeoutSeconds: 5
-      failureThreshold: 3
-    readinessProbe:
-      httpGet:
-        path: /ready
-        port: http
-      initialDelaySeconds: 5
-      periodSeconds: 5
-      timeoutSeconds: 3
-      failureThreshold: 3
-
-  # Environment variables from secrets
-  # REQUIRED: This secret must exist before deploying the chart
-  # The secret should contain database connection information
-  envFrom:
-  - secretRef:
-      name: fridge2fork-db-credentials    # Must exist in the namespace
-
-  # Migration Jobs Configuration
-  migration:
-    # Alembic 스키마 마이그레이션 (DB 테이블 생성)
-    enabled: true  # 전체 마이그레이션 활성화 ⭐
-    restartPolicy: OnFailure
-    activeDeadlineSeconds: 21600  # 6시간 타임아웃
-    backoffLimit: 3  # 최대 재시도 횟수
-    ttlSecondsAfterFinished: 86400  # 1일 후 자동 삭제
-
-    # Alembic 마이그레이션 설정
-    alembic:
-      resources:
-        requests:
-          memory: "256Mi"
-          cpu: "100m"
-        limits:
-          memory: "512Mi"
-          cpu: "200m"
-
-    # CSV 데이터 마이그레이션 설정
-    csvMigration:
-      enabled: true  # CSV 마이그레이션 활성화
-      chunkSize: 1000  # 배치 처리 크기
-      maxRecords: "0"  # 전체 처리 (0), 테스트시 1000 등
-      resources:
-        requests:
-          memory: "1Gi"
-          cpu: "500m"
-        limits:
-          memory: "2Gi"
-          cpu: "1000m"
-
-    # 마이그레이션 관련 환경변수
-    config:
-      LOG_LEVEL: "INFO"
-      PYTHONPATH: "/app"
-      PYTHONUNBUFFERED: "1"
-
-  # Alembic Job Configuration (데이터베이스 스키마 마이그레이션)
-  alembic:
-    enabled: true  # alembic job 활성화
-    restartPolicy: Never
-    activeDeadlineSeconds: 1800  # 30분 타임아웃
-    backoffLimit: 3  # 최대 재시도 횟수
-    ttlSecondsAfterFinished: 3600  # 1시간 후 자동 삭제
-    # Helm hook 설정 (선택사항)
-    hook: ""  # pre-install, pre-upgrade, post-install, post-upgrade 등
-    hookWeight: "-5"  # hook 실행 순서
-    hookDeletePolicy: "before-hook-creation,hook-succeeded"  # hook 삭제 정책
-    # Alembic 리소스
-    resources:
-      requests:
-        memory: "256Mi"
-        cpu: "100m"
-      limits:
-        memory: "512Mi"
-        cpu: "200m"
-
-
-# Admin Service Configuration
-admin:
-  enabled: true
   replicaCount: 1
 
   image:
-    repository: ggorockee/fridge2fork-admin-dev
-    tag: sha-3898d9b2
+    repository: ggorockee/fridge2fork-dev-scrape
+    tag: sha-b13755d7
     pullPolicy: IfNotPresent
 
   service:
@@ -210,26 +29,18 @@ admin:
       memory: "512Mi"
       cpu: "200m"
 
+  # ServiceAccount configuration
   serviceAccount:
     create: true
     annotations: {}
     name: ""
     automount: true
 
-  configMap:
-    enabled: true
-    config:
-      ADMIN_PORT: "8000"
-      LOG_LEVEL: "INFO"
-      DEBUG_MODE: "false"
-
-  secret:
-    enabled: true
-    secretName: "fridge2fork-db-credentials"
-
+  # Pod security context
   podSecurityContext:
     fsGroup: 2000
 
+  # Container security context
   securityContext:
     capabilities:
       drop:
@@ -238,12 +49,22 @@ admin:
     runAsNonRoot: true
     runAsUser: 1000
 
+  # Pod annotations
   podAnnotations: {}
+
+  # Image pull secrets
   imagePullSecrets: []
+
+  # Node selector
   nodeSelector: {}
+
+  # Tolerations
   tolerations: []
+
+  # Affinity
   affinity: {}
 
+  # Autoscaling
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -251,11 +72,12 @@ admin:
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
 
+  # Health check configuration
   healthCheck:
-    enabled: false
+    enabled: true
     livenessProbe:
       httpGet:
-        path: /health
+        path: /fridge2fork/v1/system/health
         port: http
       initialDelaySeconds: 30
       periodSeconds: 10
@@ -263,16 +85,43 @@ admin:
       failureThreshold: 3
     readinessProbe:
       httpGet:
-        path: /ready
+        path: /fridge2fork/v1/system/health
         port: http
-      initialDelaySeconds: 5
+      initialDelaySeconds: 10
       periodSeconds: 5
       timeoutSeconds: 3
       failureThreshold: 3
 
-  envFrom: []
+  # Secret configuration
+  # REQUIRED: This secret must exist before deploying the chart
+  secret:
+    enabled: true
+    secretName: "fridge2fork-db-credentials"
 
+  # ConfigMap configuration
+  configMap:
+    enabled: true
+    config:
+      # Python 설정
+      PYTHONPATH: "/app"
+      PYTHONUNBUFFERED: "1"
 
+      # 애플리케이션 설정
+      APP_NAME: "fridge2fork"
+      APP_VERSION: "1.0.0"
+      APP_ENV: "development"
+      LOG_LEVEL: "INFO"
+
+  # Init container for Alembic migration
+  initContainer:
+    enabled: true
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "50m"
+      limits:
+        memory: "256Mi"
+        cpu: "100m"
 # Backend Service Configuration
 server:
   enabled: true
