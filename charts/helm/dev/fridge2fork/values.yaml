@@ -8,8 +8,11 @@ serviceAccount:
 # Scrape Service Configuration (Disabled - not used for scraping)
 scrape:
   enabled: false
+<<<<<<< HEAD
   replicaCount: 1
 
+=======
+>>>>>>> main
   image:
     repository: ggorockee/fridge2fork-dev-scrape
     tag: sha-b13755d7
