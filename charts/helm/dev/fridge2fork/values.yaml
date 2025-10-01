@@ -107,7 +107,7 @@ server:
 
 # Database Configuration
 database:
-  enabled: true
+  enabled: false
   global:
     postgresql:
       auth:
