@@ -109,11 +109,30 @@ server:
 database:
   enabled: true
   global:
+    security:
+      allowInsecureImages: true
     postgresql:
       auth:
         username: fridge2fork
         database: fridge2fork
         existingSecret: fridge2fork-db-credentials
+
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/postgresql
+    tag: 17.5.0-debian-12-r12
+
+  volumePermissions:
+    image:
+      registry: docker.io
+      repository: bitnamilegacy/os-shell
+      tag: 12-debian-12-r46
+
+  metrics:
+    image:
+      registry: docker.io
+      repository: bitnamilegacy/postgres-exporter
+      tag: 0.17.1-debian-12-r11
 
   primary:
     persistence:
