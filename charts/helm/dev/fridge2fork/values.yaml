@@ -104,3 +104,18 @@ server:
       limits:
         memory: "256Mi"
         cpu: "100m"
+
+# Database Configuration
+database:
+  enabled: true
+  global:
+    postgresql:
+      auth:
+        username: fridge2fork
+        database: fridge2fork
+        existingSecret: fridge2fork-db-credentials
+
+  primary:
+    persistence:
+      size: 20Gi
+      volumeName: "data"
