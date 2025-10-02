@@ -83,8 +83,12 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
+            - name: PATH
+              value: "/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
             - name: TMPDIR
               value: "/tmp"
+            - name: RUN_MIGRATIONS
+              value: "false"
           envFrom:
             {{- if .Values.configMap.enabled }}
             - configMapRef:
