@@ -12,7 +12,7 @@ server:
 
   image:
     repository: ggorockee/fridge2fork-dev-server
-    tag: sha-cdc64c16
+    tag: sha-cf7bb7e4
     pullPolicy: IfNotPresent
 
   service:
@@ -100,20 +100,20 @@ server:
     name: migrate
     command: ["/bin/bash", "-c"]
     args:
-      - |
-        set -e
-        echo "🔧 Running database migrations..."
-        cd /app/app
-        uv run python manage.py makemigrations --noinput || true
-        uv run python manage.py migrate --noinput
-        echo "✅ Migrations completed successfully"
+    - |
+      set -e
+      echo "🔧 Running database migrations..."
+      cd /app/app
+      uv run python manage.py makemigrations --noinput || true
+      uv run python manage.py migrate --noinput
+      echo "✅ Migrations completed successfully"
     env:
-      - name: ENVIRONMENT
-        value: "development"
-      - name: RUN_MIGRATIONS
-        value: "true"
-      - name: AUTO_MIGRATE
-        value: "false"
+    - name: ENVIRONMENT
+      value: "development"
+    - name: RUN_MIGRATIONS
+      value: "true"
+    - name: AUTO_MIGRATE
+      value: "false"
     resources:
       requests:
         memory: "128Mi"
