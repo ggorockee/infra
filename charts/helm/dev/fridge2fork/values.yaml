@@ -19,7 +19,7 @@ server:
     type: ClusterIP
     port: 8000
     targetPort: 8000
-    portName: "fastapi"
+    portName: "django"
 
   resources:
     requests:
@@ -94,9 +94,26 @@ server:
       timeoutSeconds: 5
       failureThreshold: 6
 
-  # Init container for Alembic migration
+  # Init container for Django migrations
   initContainer:
-    enabled: false
+    enabled: true
+    name: migrate
+    command: ["/bin/bash", "-c"]
+    args:
+      - |
+        set -e
+        echo "🔧 Running database migrations..."
+        cd /app/app
+        uv run python manage.py makemigrations --noinput || true
+        uv run python manage.py migrate --noinput
+        echo "✅ Migrations completed successfully"
+    env:
+      - name: ENVIRONMENT
+        value: "development"
+      - name: RUN_MIGRATIONS
+        value: "true"
+      - name: AUTO_MIGRATE
+        value: "false"
     resources:
       requests:
         memory: "128Mi"
