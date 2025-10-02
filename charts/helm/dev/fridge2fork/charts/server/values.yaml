@@ -112,6 +112,8 @@ initContainer:
       uv run python manage.py migrate --noinput
       echo "✅ Migrations completed successfully"
   env:
+    - name: PATH
+      value: "/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
     - name: ENVIRONMENT
       value: "development"
     - name: RUN_MIGRATIONS
