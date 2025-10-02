@@ -104,8 +104,8 @@ server:
       set -e
       echo "🔧 Running database migrations..."
       cd /app/app
-      uv run python manage.py makemigrations --noinput || true
-      uv run python manage.py migrate --noinput
+      /root/.local/bin/uv run python manage.py makemigrations --noinput || true
+      /root/.local/bin/uv run python manage.py migrate --noinput
       echo "✅ Migrations completed successfully"
     env:
     - name: PATH
