@@ -46,6 +46,7 @@ server:
       APP_NAME: "fridge2fork"
       APP_VERSION: "1.0.0"
       APP_ENV: "development"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,*.woohalabs.com"
 
   secret:
     enabled: true
