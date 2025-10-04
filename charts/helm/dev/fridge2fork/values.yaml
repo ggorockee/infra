@@ -158,3 +158,6 @@ database:
     persistence:
       size: 20Gi
       volumeName: "data"
+scrape:
+  image:
+    tag: sha-660b0c1f
