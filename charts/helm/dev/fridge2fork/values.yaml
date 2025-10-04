@@ -160,4 +160,4 @@ database:
       volumeName: "data"
 scrape:
   image:
-    tag: sha-660b0c1f
+    tag: sha-38f7a7f9
