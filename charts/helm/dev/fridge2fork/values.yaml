@@ -161,3 +161,6 @@ database:
 scrape:
   image:
     tag: sha-38f7a7f9
+admin:
+  image:
+    tag: sha-0334647c
