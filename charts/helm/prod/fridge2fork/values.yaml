@@ -11,8 +11,8 @@ server:
   replicaCount: 1
 
   image:
-    repository: ggorockee/fridge2fork-dev-server
-    tag: sha-fb1dfe8a
+    repository: ggorockee/fridge2fork-prod-server
+    tag: sha-fa9fb151
     pullPolicy: IfNotPresent
 
   service:
@@ -45,7 +45,7 @@ server:
       PYTHONUNBUFFERED: "1"
       APP_NAME: "fridge2fork"
       APP_VERSION: "1.0.0"
-      APP_ENV: "development"
+      APP_ENV: "production"
       ALLOWED_HOSTS: "localhost,127.0.0.1,api-dev.woohalabs.com,api.woohalabs.com,*.woohalabs.com"
 
   secret:
@@ -112,7 +112,7 @@ server:
     - name: PATH
       value: "/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
     - name: ENVIRONMENT
-      value: "development"
+      value: "production"
     - name: RUN_MIGRATIONS
       value: "true"
     - name: AUTO_MIGRATE
@@ -156,11 +156,5 @@ database:
 
   primary:
     persistence:
-      size: 20Gi
+      size: 40Gi
       volumeName: "data"
-scrape:
-  image:
-    tag: sha-38f7a7f9
-admin:
-  image:
-    tag: sha-0334647c
