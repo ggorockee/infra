@@ -232,7 +232,7 @@ ingressRoutes:
     tlsSecretName: "woohalabs-com-cert"
 
     services:
-      - name: fridge2fork-prod-server
+      - name: fridge2fork-server
         port: 8000
 
   - name: fridge2fork-prod-web
@@ -249,3 +249,4 @@ ingressRoutes:
     services:
       - name: fridge2fork-prod-web
         port: 8000
+
