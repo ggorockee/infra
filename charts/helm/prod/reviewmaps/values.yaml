@@ -384,7 +384,7 @@ server:
   # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
   livenessProbe:
     httpGet:
-      path: /health
+      path: /v1/healthz
       port: django   # 컨테이너 port name이 django일 때
       scheme: HTTP
     initialDelaySeconds: 30
@@ -394,7 +394,7 @@ server:
 
   readinessProbe:
     httpGet:
-      path: /health
+      path: /v1/healthz
       port: django
       scheme: HTTP
     initialDelaySeconds: 15
@@ -404,7 +404,7 @@ server:
 
   startupProbe:
     httpGet:
-      path: /health
+      path: /v1/healthz
       port: django
       scheme: HTTP
     initialDelaySeconds: 0
