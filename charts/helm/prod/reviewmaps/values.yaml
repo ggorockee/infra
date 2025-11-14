@@ -445,6 +445,8 @@ server:
     name: ""
     data:
       PROMETHEUS_MULTIPROC_DIR: "/tmp/metrics"
+      DEBUG: "False"  # 프로덕션
+      ALLOWED_HOSTS: "api.review-maps.com,review-maps.com"
       # BASE_URL: "https://inflexer.net"
       # HEADLESS: "true"
       # # 배치 스케줄 동작 (코드의 Settings와 매핑)
