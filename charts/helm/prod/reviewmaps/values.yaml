@@ -384,23 +384,33 @@ server:
   # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
   livenessProbe:
     httpGet:
-      path: /v1/healthz
+      path: /health
       port: django   # 컨테이너 port name이 django일 때
       scheme: HTTP
-    initialDelaySeconds: 10
+    initialDelaySeconds: 30
     periodSeconds: 10
-    timeoutSeconds: 2
+    timeoutSeconds: 5
     failureThreshold: 3
 
   readinessProbe:
     httpGet:
-      path: /v1/healthz
+      path: /health
       port: django
       scheme: HTTP
-    initialDelaySeconds: 5
+    initialDelaySeconds: 15
     periodSeconds: 10
-    timeoutSeconds: 2
+    timeoutSeconds: 5
     failureThreshold: 3
+
+  startupProbe:
+    httpGet:
+      path: /health
+      port: django
+      scheme: HTTP
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 12
 
   # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
   autoscaling:
@@ -453,6 +463,20 @@ server:
     names:
       - reviewmaps-db-credentials
       - reviewmaps-api-credentials
+
+  # DB Migration Job 설정
+  migration:
+    enabled: false
+    # Job 실행 명령어 (기본값: python manage.py migrate)
+    command: ["python", "manage.py", "migrate"]
+    # 추가 인수 (optional)
+    args: []
+    # Job backoff limit
+    backoffLimit: 3
+    # Job TTL after finished (초 단위, 기본: 1시간)
+    ttlSecondsAfterFinished: 3600
+    # Job restart policy
+    restartPolicy: OnFailure
 
 
 
