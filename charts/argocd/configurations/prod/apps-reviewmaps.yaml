@@ -1,7 +1,0 @@
-env: prod
-chartName: reviewmaps
-appName: reviewmaps
-repoURL: https://ggorockee.github.io/infra/
-revision: main
-chartVersion: 2.1.4
-namespace: reviewmaps
