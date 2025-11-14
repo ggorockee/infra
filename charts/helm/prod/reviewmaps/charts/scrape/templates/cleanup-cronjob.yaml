@@ -1,0 +1,153 @@
+{{- if .Values.cleanup.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "scrape.fullname" . }}-cleanup
+  labels:
+    {{- include "scrape.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cleanup
+spec:
+  schedule: {{ .Values.cleanup.schedule | quote }}
+  {{- if .Values.cleanup.timeZone }}
+  timeZone: {{ .Values.cleanup.timeZone | quote }}
+  {{- end }}
+  concurrencyPolicy: {{ .Values.cleanup.concurrencyPolicy | default "Forbid" }}
+  startingDeadlineSeconds: {{ .Values.cleanup.startingDeadlineSeconds | default 1800 }}
+  successfulJobsHistoryLimit: {{ .Values.cleanup.successfulJobsHistoryLimit | default 3 }}
+  failedJobsHistoryLimit: {{ .Values.cleanup.failedJobsHistoryLimit | default 5 }}
+  jobTemplate:
+    spec:
+      backoffLimit: {{ .Values.cleanup.backoffLimit | default 3 }}
+      {{- with .Values.cleanup.ttlSecondsAfterFinished }}
+      ttlSecondsAfterFinished: {{ . }}
+      {{- end }}
+      template:
+        metadata:
+          labels:
+            {{- include "scrape.labels" . | nindent 12 }}
+            app.kubernetes.io/component: cleanup
+          {{- if .Values.podAnnotations }}
+          annotations:
+          {{- range $k, $v := .Values.podAnnotations }}
+            {{ $k }}: {{ $v | quote }}
+          {{- end }}
+          {{- end }}
+        spec:
+          restartPolicy: Never
+          serviceAccountName: {{ include "scrape.serviceAccountName" . }}
+          containers:
+            - name: cleanup
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  #!/bin/sh
+                  set -e
+                  
+                  echo "Starting data cleanup job at $(date)"
+                  
+                  # 데이터베이스 연결 정보 설정 (Secret에서 가져옴)
+                  export PGHOST="${POSTGRES_HOST}"
+                  export PGPORT="${POSTGRES_PORT}"
+                  export PGDATABASE="${POSTGRES_DB}"
+                  export PGUSER="${POSTGRES_USER}"
+                  export PGPASSWORD="${POSTGRES_PASSWORD}"
+                  
+                  # 환경변수 디버깅 (비밀번호 제외)
+                  echo "Database connection info:"
+                  echo "  PGHOST: ${PGHOST}"
+                  echo "  PGPORT: ${PGPORT}"
+                  echo "  PGDATABASE: ${PGDATABASE}"
+                  echo "  PGUSER: ${PGUSER}"
+                  echo "  PGPASSWORD: [HIDDEN]"
+                  
+                  # psql 설치 확인
+                  if ! command -v psql >/dev/null 2>&1; then
+                    echo "ERROR: psql command not found. Installing postgresql-client..."
+                    apt-get update && apt-get install -y postgresql-client
+                  fi
+                  
+                  # 데이터베이스 연결 테스트 (더 자세한 에러 정보)
+                  echo "Testing database connection..."
+                  if ! psql -c "SELECT 1;" 2>&1; then
+                    echo "ERROR: Failed to connect to database"
+                    echo "Connection details:"
+                    echo "  Host: ${PGHOST}"
+                    echo "  Port: ${PGPORT}"
+                    echo "  Database: ${PGDATABASE}"
+                    echo "  User: ${PGUSER}"
+                    exit 1
+                  fi
+                  echo "Database connection successful"
+                  
+                  # 각 테이블별로 만료된 데이터 정리
+                  {{- range .Values.cleanup.tables }}
+                  echo "Starting cleanup for table: {{ .name }}"
+                  
+                  # 배치 단위로 삭제 (대용량 테이블 고려)
+                  TOTAL_DELETED=0
+                  while true; do
+                    # PostgreSQL에서는 DELETE ... LIMIT이 지원되지 않으므로 CTE 사용
+                    DELETE_RESULT=$(psql -c "
+                      WITH deleted AS (
+                        DELETE FROM {{ .name }} 
+                        WHERE {{ .condition }} 
+                        AND ctid IN (
+                          SELECT ctid FROM {{ .name }} 
+                          WHERE {{ .condition }} 
+                          LIMIT {{ .batchSize }}
+                        )
+                        RETURNING *
+                      )
+                      SELECT COUNT(*) FROM deleted;
+                    " -t | tr -d ' ')
+                    
+                    # 결과가 비어있거나 숫자가 아닌 경우 처리
+                    if [ -z "$DELETE_RESULT" ] || ! echo "$DELETE_RESULT" | grep -q '^[0-9]*$'; then
+                      DELETE_RESULT=0
+                    fi
+                    
+                    if [ "$DELETE_RESULT" -eq 0 ]; then
+                      echo "No more records to delete from {{ .name }}"
+                      break
+                    fi
+                    
+                    TOTAL_DELETED=$((TOTAL_DELETED + DELETE_RESULT))
+                    echo "Deleted $DELETE_RESULT records from {{ .name }} (Total: $TOTAL_DELETED)"
+                    
+                    # 잠시 대기 (DB 부하 방지)
+                    sleep 1
+                  done
+                  
+                  echo "Completed cleanup for table {{ .name }}. Total deleted: $TOTAL_DELETED records"
+                  {{- end }}
+                  
+                  echo "Data cleanup job completed successfully at $(date)"
+              envFrom:
+                - configMapRef:
+                    name: {{ include "scrape.fullname" . }}-cleanup
+                - secretRef:
+                    name: reviewmaps-db-credentials
+              {{- with .Values.resources }}
+              resources:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- with .Values.securityContext }}
+              securityContext:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+{{- end }}
