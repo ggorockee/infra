@@ -1,0 +1,36 @@
+{{- range $i, $s := .Values.runner.scrapers }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "scrape.fullname" $ }}-{{ $s.name }}
+  labels:
+    {{- include "scrape.labels" $ | nindent 4 }}
+data:
+  {{- with $.Values.configMap.data}}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- with $s.keywords }}
+  SCRAPE_KEYWORDS: {{ . | join "," | quote }}
+  {{- end }}
+  {{- with $s.name }}
+  SCRAPER_NAME: {{ . | quote }}
+  {{- end }}
+---
+{{- end }}
+
+{{- if .Values.cleanup.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "scrape.fullname" . }}-cleanup
+  labels:
+    {{- include "scrape.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cleanup
+data:
+  # 정리 작업 설정
+  CLEANUP_ENABLED: "true"
+  CLEANUP_SCHEDULE: {{ .Values.cleanup.schedule | quote }}
+  {{- with .Values.configMap.data}}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+{{- end }}

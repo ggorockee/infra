@@ -1,0 +1,67 @@
+{{- if and .Values.runner.enabled (gt (len .Values.runner.scrapers) 0) }}
+{{- range $i, $s := .Values.runner.scrapers }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $.Release.Name }}-cron-{{ $s.name }} 
+  labels:
+    {{- include "scrape.labels" $ | nindent 4 }} 
+spec:
+  schedule: {{ $s.schedule | quote }}
+  {{- if $s.timeZone }}
+  timeZone: {{ $s.timeZone | quote }}
+  {{- end }}
+  concurrencyPolicy: {{ $s.concurrencyPolicy | default "Forbid" }}
+  startingDeadlineSeconds: {{ $s.startingDeadlineSeconds | default 900 }}
+  successfulJobsHistoryLimit: {{ $s.successfulJobsHistoryLimit | default 0 }}
+  failedJobsHistoryLimit: {{ $s.failedJobsHistoryLimit | default 1 }}
+  jobTemplate:
+    spec:
+      backoffLimit: {{ $s.backoffLimit | default 2 }}
+      {{- with $s.ttlSecondsAfterFinished }}
+      ttlSecondsAfterFinished: {{ . }}
+      {{- end}}
+      {{- if $s.parallel.enabled }}
+      completions: {{ len $s.keywords }}
+      parallelism: {{ $s.parallel.maxParallelism }}
+      completionMode: Indexed
+      {{- end }}
+      template:
+        metadata:
+          labels:
+            {{- include "scrape.labels" $ | nindent 12 }}
+          {{- if $.Values.podAnnotations }}
+          annotations:
+          {{- range $k, $v := $.Values.podAnnotations }}
+            {{ $k }}: {{ $v | quote }}
+          {{- end }}
+          {{- end }}
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: {{ $.Chart.Name }}
+              image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
+              imagePullPolicy: {{ $.Values.image.pullPolicy | default "IfNotPresent" }}
+              envFrom:
+                - configMapRef:
+                    name: {{ include "scrape.fullname" $ }}-{{ $s.name }}
+              {{- if and $.Values.secret.enabled $.Values.secret.names }}
+              {{- range $.Values.secret.names }}
+                - secretRef:
+                    name: {{ . | quote }}
+              {{- end }}
+              {{- end}}
+              {{- if $s.parallel.enabled }}
+              env:
+                - name: JOB_COMPLETION_INDEX
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.annotations['batch.kubernetes.io/job-completion-index']
+              {{- end}}
+              {{- with $.Values.resources }}
+              resources:
+              {{- toYaml . | nindent 14 }}
+              {{- end }}
+---
+{{- end }}
+{{- end}}
