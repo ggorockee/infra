@@ -8,3 +8,6 @@ containerPort: 4443
 service:
   type: ClusterIP
   port: 443
+
+podLabels:
+  k8s-app: metrics-server
