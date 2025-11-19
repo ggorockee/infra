@@ -86,20 +86,6 @@ ingressRoutes:
       - name: kube-prometheus-stack-prometheus
         port: 9090
 
-  - name: kubeshark-front
-    enabled: true
-    namespace: kubeshark
-
-    entryPoints:
-      - websecure
-
-    host: "ks.ggorockee.org"
-    tlsSecretName: "ggorockee-org-cert"
-
-    services:
-      - name: kubeshark-front
-        port: 80
-
   - name: reviewmaps-server
     enabled: true
     namespace: reviewmaps
@@ -113,140 +99,19 @@ ingressRoutes:
     services:
       - name: reviewmaps-server
         port: 8000
+  
+  # - name: fridge2fork-prod-web
+  #   enabled: true
+  #   namespace: fridge2fork
 
-  - name: onedaypillo-fastapi-app
-    enabled: true
-    namespace: onedaypillo-dev
+  #   entryPoints:
+  #     - websecure
 
-    entryPoints:
-      - websecure
+  #   host: "woohalabs.com"
+  #   pathPrefix: "/fridge2fork"
+  #   tlsSecretName: "woohalabs-com-cert"
 
-    host: "api-dev.woohalabs.com"
-    pathPrefix: "/onedaypillo"
-    tlsSecretName: "woohalabs-com-cert"
-
-    services:
-      - name: onedaypillo-fastapi-app
-        port: 8000
-
-  - name: fridge2fork-dev-admin
-    enabled: true
-    namespace: fridge2fork-dev
-
-    entryPoints:
-      - websecure
-
-    host: "admin-api-dev.woohalabs.com"
-    pathPrefix: "/fridge2fork"
-    tlsSecretName: "woohalabs-com-cert"
-
-    services:
-      - name: fridge2fork-dev-admin
-        port: 8000
-
-  - name: fridge2fork-dev-admin-web
-    enabled: true
-    namespace: fridge2fork-dev
-
-    entryPoints:
-      - websecure
-
-    host: "admin-dev.woohalabs.com"
-    pathPrefix: "/fridge2fork"
-    tlsSecretName: "woohalabs-com-cert"
-
-    services:
-      - name: fridge2fork-dev-admin-web
-        port: 8000
-
-  - name: fridge2fork-dev-server
-    enabled: true
-    namespace: fridge2fork-dev
-
-    entryPoints:
-      - websecure
-
-    host: "api-dev.woohalabs.com"
-    pathPrefix: "/fridge2fork"
-    tlsSecretName: "woohalabs-com-cert"
-
-    services:
-      - name: fridge2fork-dev-server
-        port: 8000
-
-  - name: fridge2fork-dev-web
-    enabled: true
-    namespace: fridge2fork-dev
-
-    entryPoints:
-      - websecure
-
-    host: "dev.woohalabs.com"
-    pathPrefix: "/fridge2fork"
-    tlsSecretName: "woohalabs-com-cert"
-
-    services:
-      - name: fridge2fork-dev-web
-        port: 8000
-
-  ## prod
-  - name: fridge2fork-prod-admin
-    enabled: true
-    namespace: fridge2fork
-
-    entryPoints:
-      - websecure
-
-    host: "admin-api.woohalabs.com"
-    pathPrefix: "/fridge2fork"
-    tlsSecretName: "woohalabs-com-cert"
-
-    services:
-      - name: fridge2fork-prod-admin
-        port: 8000
-
-  - name: fridge2fork-prod-admin-web
-    enabled: true
-    namespace: fridge2fork
-
-    entryPoints:
-      - websecure
-
-    host: "admin.woohalabs.com"
-    pathPrefix: "/fridge2fork"
-    tlsSecretName: "woohalabs-com-cert"
-
-    services:
-      - name: fridge2fork-prod-admin-web
-        port: 8000
-
-  - name: fridge2fork-prod-server
-    enabled: true
-    namespace: fridge2fork
-
-    entryPoints:
-      - websecure
-
-    host: "api.woohalabs.com"
-    pathPrefix: "/fridge2fork"
-    tlsSecretName: "woohalabs-com-cert"
-
-    services:
-      - name: fridge2fork-server
-        port: 8000
-
-  - name: fridge2fork-prod-web
-    enabled: true
-    namespace: fridge2fork
-
-    entryPoints:
-      - websecure
-
-    host: "woohalabs.com"
-    pathPrefix: "/fridge2fork"
-    tlsSecretName: "woohalabs-com-cert"
-
-    services:
-      - name: fridge2fork-prod-web
-        port: 8000
+  #   services:
+  #     - name: fridge2fork-prod-web
+  #       port: 8000
 
