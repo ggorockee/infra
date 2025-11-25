@@ -311,7 +311,7 @@ server:
 
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
   replicaCount: 1
-  revisionHistoryLimit: 2
+  revisionHistoryLimit: 1
 
   # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
   image:
@@ -446,7 +446,7 @@ server:
     data:
       PROMETHEUS_MULTIPROC_DIR: "/tmp/metrics"
       DEBUG: "False"  # 프로덕션
-      ALLOWED_HOSTS: "*"
+      ALLOWED_HOSTS: "api.review-maps.com,review-maps.com,localhost,127.0.0.1"
       JWT_ALGORITHM: "HS256"
       JWT_ACCESS_TOKEN_EXPIRE_MINUTES: "60"
       JWT_REFRESH_TOKEN_EXPIRE_DAYS: "7"
