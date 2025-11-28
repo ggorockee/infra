@@ -491,6 +491,18 @@ server:
       enabled: true
       interval: 30s
       scrapeTimeout: 10s
+    # Gauge 메트릭 수집 CronJob 설정
+    collector:
+      enabled: true
+      schedule: "*/5 * * * *"  # 5분마다 실행
+      timeZone: "Asia/Seoul"
+      concurrencyPolicy: "Forbid"
+      successfulJobsHistoryLimit: 1
+      failedJobsHistoryLimit: 3
+      startingDeadlineSeconds: 300
+      ttlSecondsAfterFinished: 3600
+      backoffLimit: 2
+      restartPolicy: "OnFailure"
 
 
 
