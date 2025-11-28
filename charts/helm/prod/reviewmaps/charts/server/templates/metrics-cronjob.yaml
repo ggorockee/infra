@@ -35,10 +35,11 @@ spec:
             image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
             imagePullPolicy: {{ .Values.image.pullPolicy }}
             command:
-              - /app/.venv/bin/python
-              - manage.py
-              - collect_metrics
-              - --once
+              - /bin/sh
+              - -c
+              - |
+                mkdir -p "${PROMETHEUS_MULTIPROC_DIR:-/tmp/metrics}"
+                /app/.venv/bin/python manage.py collect_metrics --once
             {{- if or .Values.configMap.enabled .Values.secret.enabled }}
             envFrom:
             {{- if .Values.configMap.enabled }}
