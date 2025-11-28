@@ -1,0 +1,149 @@
+# ReviewMaps AlertManager SMTP Configuration
+# SMTP 설정은 reviewmaps 네임스페이스의 reviewmaps-api-credentials 시크릿을 참조합니다.
+# 시크릿 값은 Git에 포함되지 않으며, Kubernetes Secret으로만 관리됩니다.
+#
+# ⚠️ 중요: AlertManager는 authSecret에서 'username'과 'password' 키를 찾습니다.
+# reviewmaps-api-credentials 시크릿의 키 이름이 EMAIL_HOST_USER, EMAIL_HOST_PASSWORD이므로
+# monitoring 네임스페이스에 별도 시크릿을 생성해야 합니다:
+#
+# kubectl create secret generic alertmanager-smtp-credentials \
+#   --from-literal=username=$(kubectl get secret -n reviewmaps reviewmaps-api-credentials -o jsonpath='{.data.EMAIL_HOST_USER}' | base64 -d) \
+#   --from-literal=password=$(kubectl get secret -n reviewmaps reviewmaps-api-credentials -o jsonpath='{.data.EMAIL_HOST_PASSWORD}' | base64 -d) \
+#   -n monitoring
+#
+# 그 후 아래 authSecret의 name을 'alertmanager-smtp-credentials'로 변경하세요.
+
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: reviewmaps-smtp-config
+  namespace: monitoring
+  labels:
+    app: reviewmaps
+spec:
+  route:
+    receiver: 'reviewmaps-email'
+    groupBy: ['alertname', 'severity']
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 12h
+    routes:
+      # Critical 알람은 즉시 발송
+      - receiver: 'reviewmaps-email-critical'
+        matchers:
+          - severity = critical
+        groupWait: 10s
+        repeatInterval: 1h
+      # Warning 알람은 그룹화하여 발송
+      - receiver: 'reviewmaps-email-warning'
+        matchers:
+          - severity = warning
+        groupWait: 5m
+        repeatInterval: 6h
+      # Info 알람은 하루에 한 번
+      - receiver: 'reviewmaps-email-info'
+        matchers:
+          - severity = info
+        groupWait: 1h
+        repeatInterval: 24h
+
+  receivers:
+    # Critical 알람 수신자
+    - name: 'reviewmaps-email-critical'
+      emailConfigs:
+        - to: '{{ .CommonLabels.service }} 알람 <noreply@reviewmaps.com>'
+          from: 'ReviewMaps AlertManager <noreply@reviewmaps.com>'
+          smarthost: 'smtp.gmail.com:587'
+          authSecret:
+            name: reviewmaps-api-credentials
+            namespace: reviewmaps
+          requireTLS: true
+          # Note: AlertManager는 authSecret에서 username과 password를 찾습니다.
+          # reviewmaps-api-credentials 시크릿의 EMAIL_HOST_USER와 EMAIL_HOST_PASSWORD를 사용합니다.
+          # 시크릿 키 이름이 다르면 monitoring 네임스페이스에 별도 시크릿 생성 필요
+          headers:
+            Subject: '[CRITICAL] ReviewMaps {{ .GroupLabels.alertname }}'
+          html: |
+            <h2>🚨 Critical Alert: {{ .GroupLabels.alertname }}</h2>
+            <p><strong>Severity:</strong> {{ .GroupLabels.severity }}</p>
+            <p><strong>Service:</strong> {{ .GroupLabels.service }}</p>
+            <p><strong>Summary:</strong> {{ .CommonAnnotations.summary }}</p>
+            <p><strong>Description:</strong> {{ .CommonAnnotations.description }}</p>
+            <hr>
+            <h3>Alerts:</h3>
+            {{ range .Alerts }}
+            <div style="border: 2px solid red; padding: 10px; margin: 10px 0;">
+              <p><strong>Alert:</strong> {{ .Labels.alertname }}</p>
+              <p><strong>Status:</strong> {{ .Status }}</p>
+              <p><strong>Starts At:</strong> {{ .StartsAt }}</p>
+              {{ if .Annotations.summary }}<p><strong>Summary:</strong> {{ .Annotations.summary }}</p>{{ end }}
+              {{ if .Annotations.description }}<p><strong>Description:</strong> {{ .Annotations.description }}</p>{{ end }}
+            </div>
+            {{ end }}
+
+    # Warning 알람 수신자
+    - name: 'reviewmaps-email-warning'
+      emailConfigs:
+        - to: '{{ .CommonLabels.service }} 알람 <noreply@reviewmaps.com>'
+          from: 'ReviewMaps AlertManager <noreply@reviewmaps.com>'
+          smarthost: 'smtp.gmail.com:587'
+          authSecret:
+            name: reviewmaps-api-credentials
+            namespace: reviewmaps
+          requireTLS: true
+          # Note: AlertManager는 authSecret에서 username과 password를 찾습니다.
+          # reviewmaps-api-credentials 시크릿의 EMAIL_HOST_USER와 EMAIL_HOST_PASSWORD를 사용합니다.
+          # 시크릿 키 이름이 다르면 monitoring 네임스페이스에 별도 시크릿 생성 필요
+          headers:
+            Subject: '[WARNING] ReviewMaps {{ .GroupLabels.alertname }}'
+          html: |
+            <h2>⚠️ Warning Alert: {{ .GroupLabels.alertname }}</h2>
+            <p><strong>Severity:</strong> {{ .GroupLabels.severity }}</p>
+            <p><strong>Service:</strong> {{ .GroupLabels.service }}</p>
+            <p><strong>Summary:</strong> {{ .CommonAnnotations.summary }}</p>
+            <hr>
+            <h3>Alerts:</h3>
+            {{ range .Alerts }}
+            <div style="border: 1px solid orange; padding: 10px; margin: 10px 0;">
+              <p><strong>Alert:</strong> {{ .Labels.alertname }}</p>
+              <p><strong>Status:</strong> {{ .Status }}</p>
+              <p><strong>Starts At:</strong> {{ .StartsAt }}</p>
+            </div>
+            {{ end }}
+
+    # Info 알람 수신자
+    - name: 'reviewmaps-email-info'
+      emailConfigs:
+        - to: '{{ .CommonLabels.service }} 알람 <noreply@reviewmaps.com>'
+          from: 'ReviewMaps AlertManager <noreply@reviewmaps.com>'
+          smarthost: 'smtp.gmail.com:587'
+          authSecret:
+            name: reviewmaps-api-credentials
+            namespace: reviewmaps
+          requireTLS: true
+          # Note: AlertManager는 authSecret에서 username과 password를 찾습니다.
+          # reviewmaps-api-credentials 시크릿의 EMAIL_HOST_USER와 EMAIL_HOST_PASSWORD를 사용합니다.
+          # 시크릿 키 이름이 다르면 monitoring 네임스페이스에 별도 시크릿 생성 필요
+          headers:
+            Subject: '[INFO] ReviewMaps {{ .GroupLabels.alertname }}'
+          html: |
+            <h2>ℹ️ Info Alert: {{ .GroupLabels.alertname }}</h2>
+            <p><strong>Service:</strong> {{ .GroupLabels.service }}</p>
+            <p><strong>Summary:</strong> {{ .CommonAnnotations.summary }}</p>
+
+    # 기본 수신자 (fallback)
+    - name: 'reviewmaps-email'
+      emailConfigs:
+        - to: 'ReviewMaps 알람 <noreply@reviewmaps.com>'
+          from: 'ReviewMaps AlertManager <noreply@reviewmaps.com>'
+          smarthost: 'smtp.gmail.com:587'
+          authSecret:
+            name: reviewmaps-api-credentials
+            namespace: reviewmaps
+          requireTLS: true
+          # Note: AlertManager는 authSecret에서 username과 password를 찾습니다.
+          # reviewmaps-api-credentials 시크릿의 EMAIL_HOST_USER와 EMAIL_HOST_PASSWORD를 사용합니다.
+          # 시크릿 키 이름이 다르면 monitoring 네임스페이스에 별도 시크릿 생성 필요
+          headers:
+            Subject: 'ReviewMaps Alert: {{ .GroupLabels.alertname }}'
+
