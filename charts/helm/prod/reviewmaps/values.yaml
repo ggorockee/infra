@@ -483,6 +483,14 @@ server:
     # Job restart policy
     restartPolicy: OnFailure
 
+  # Prometheus Metrics 설정
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+      scrapeTimeout: 10s
+
 
 
 #########################################################################
