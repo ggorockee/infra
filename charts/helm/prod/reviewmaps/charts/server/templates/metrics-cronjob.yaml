@@ -35,7 +35,7 @@ spec:
             image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
             imagePullPolicy: {{ .Values.image.pullPolicy }}
             command:
-              - python
+              - /app/.venv/bin/python
               - manage.py
               - collect_metrics
               - --once
