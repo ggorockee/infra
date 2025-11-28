@@ -491,10 +491,10 @@ server:
       enabled: true
       interval: 30s
       scrapeTimeout: 10s
-    # Gauge 메트릭 수집 CronJob 설정
+    # Gauge 메트릭 수집 CronJob 설정 (APScheduler로 대체됨)
     collector:
-      enabled: true
-      schedule: "*/5 * * * *"  # 5분마다 실행
+      enabled: false  # APScheduler가 Django 프로세스 내에서 수집
+      schedule: "*/5 * * * *"
       timeZone: "Asia/Seoul"
       concurrencyPolicy: "Forbid"
       successfulJobsHistoryLimit: 1
