@@ -39,21 +39,17 @@ spec:
               - manage.py
               - collect_metrics
               - --once
-            env:
+            {{- if or .Values.configMap.enabled .Values.secret.enabled }}
+            envFrom:
             {{- if .Values.configMap.enabled }}
-            {{- range $key, $value := .Values.configMap.data }}
-              - name: {{ $key }}
-                valueFrom:
-                  configMapKeyRef:
-                    name: {{ include "server.fullname" $ }}
-                    key: {{ $key }}
-            {{- end }}
+              - configMapRef:
+                  name: {{ include "server.fullname" . }}
             {{- end }}
             {{- if .Values.secret.enabled }}
             {{- range $secretName := .Values.secret.names }}
-            envFrom:
               - secretRef:
                   name: {{ $secretName }}
+            {{- end }}
             {{- end }}
             {{- end }}
             resources:
