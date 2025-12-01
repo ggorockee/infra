@@ -236,12 +236,16 @@ admin:
       memory: 256Mi
 
   # Health check probes - Django Admin login page
+  # Host 헤더 추가: Django ALLOWED_HOSTS 검증 통과를 위해 필요
   livenessProbe:
     httpGet:
       path: /admin/login/
       port: gunicorn
       scheme: HTTP
-    initialDelaySeconds: 10
+      httpHeaders:
+        - name: Host
+          value: localhost
+    initialDelaySeconds: 15
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 3
@@ -251,7 +255,10 @@ admin:
       path: /admin/login/
       port: gunicorn
       scheme: HTTP
-    initialDelaySeconds: 5
+      httpHeaders:
+        - name: Host
+          value: localhost
+    initialDelaySeconds: 10
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 3
@@ -261,10 +268,13 @@ admin:
       path: /admin/login/
       port: gunicorn
       scheme: HTTP
-    initialDelaySeconds: 0
+      httpHeaders:
+        - name: Host
+          value: localhost
+    initialDelaySeconds: 5
     periodSeconds: 5
-    timeoutSeconds: 3
-    failureThreshold: 12
+    timeoutSeconds: 5
+    failureThreshold: 30
 
   autoscaling:
     enabled: false
