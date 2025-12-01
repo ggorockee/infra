@@ -12,7 +12,7 @@ spec:
       {{- include "server.selectorLabels" . | nindent 6 }}
   endpoints:
   - port: {{ .Values.service.portName | default "http" }}
-    path: /woohalabs/metrics
+    path: /ojeomneo/metrics
     interval: {{ .Values.metrics.serviceMonitor.interval | default "30s" }}
     scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout | default "10s" }}
 {{- end }}
