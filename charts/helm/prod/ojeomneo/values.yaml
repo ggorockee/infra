@@ -235,27 +235,32 @@ admin:
       cpu: 500m
       memory: 256Mi
 
-  # Health check probes - TCP 소켓 방식
-  # Django ALLOWED_HOSTS 검증 우회를 위해 tcpSocket 사용
+  # Health check probes - Django Admin
   livenessProbe:
-    tcpSocket:
+    httpGet:
+      path: /admin/login/
       port: gunicorn
+      scheme: HTTP
     initialDelaySeconds: 15
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 3
 
   readinessProbe:
-    tcpSocket:
+    httpGet:
+      path: /admin/login/
       port: gunicorn
+      scheme: HTTP
     initialDelaySeconds: 10
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 3
 
   startupProbe:
-    tcpSocket:
+    httpGet:
+      path: /admin/login/
       port: gunicorn
+      scheme: HTTP
     initialDelaySeconds: 5
     periodSeconds: 5
     timeoutSeconds: 5
