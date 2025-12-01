@@ -141,8 +141,8 @@ database:
     database: ojeomneo
     existingSecret: ojeomneo-db-credentials
     secretKeys:
-      username: DB_USER
-      password: DB_PASSWORD
+      username: POSTGRES_USER
+      password: POSTGRES_PASSWORD
 
   service:
     type: ClusterIP
