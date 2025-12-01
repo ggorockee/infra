@@ -6,10 +6,10 @@
 reviewmaps:
   alertmanager:
     enabled: true
-    smtpUsername: "your-smtp-username@gmail.com"  # SMTP 사용자명
+    smtpUsername: "woohalabs@gmail.com"
     smtpSecretName: "alertmanager-smtp-credentials"
     smtpSecretKey: "password"
-    emailTo: "reviewmaps-alerts@reviewmaps.com"
+    emailTo: "woohalabs@gmail.com"
 
 ## Provide a name in place of kube-prometheus-stack for `app:` labels
 ##
