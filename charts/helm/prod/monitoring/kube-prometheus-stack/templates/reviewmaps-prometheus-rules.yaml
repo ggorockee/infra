@@ -33,7 +33,7 @@ spec:
             service: reviewmaps
           annotations:
             summary: "ReviewMaps 높은 에러율 (5XX > 5%)"
-            description: "ReviewMaps에서 5XX 에러율이 5% 이상입니다. 현재 에러율: {{ $value | humanizePercentage }}"
+            description: "ReviewMaps에서 5XX 에러율이 5% 이상입니다. 현재 에러율: {{`{{ $value | humanizePercentage }}`}}"
 
         - alert: ReviewMapsDBConnectionError
           expr: increase(django_db_new_connection_errors_total{app="reviewmaps-server"}[5m]) > 10
@@ -59,7 +59,7 @@ spec:
             service: reviewmaps
           annotations:
             summary: "ReviewMaps 응답 속도 저하 (P95 > 1초)"
-            description: "ReviewMaps의 P95 응답 시간이 1초를 초과했습니다. 현재: {{ $value }}초"
+            description: "ReviewMaps의 P95 응답 시간이 1초를 초과했습니다. 현재: {{`{{ $value }}`}}초"
 
         - alert: ReviewMapsHighMemoryUsage
           expr: |
@@ -71,7 +71,7 @@ spec:
             service: reviewmaps
           annotations:
             summary: "ReviewMaps 메모리 사용률 높음 (> 800MB)"
-            description: "ReviewMaps 서버 메모리 사용량이 높습니다. 현재: {{ $value | humanize }}GB"
+            description: "ReviewMaps 서버 메모리 사용량이 높습니다. 현재: {{`{{ $value | humanize }}`}}GB"
 
         - alert: ReviewMapsExceptionSpike
           expr: increase(reviewmaps_exceptions_total[5m]) > 50
@@ -81,7 +81,7 @@ spec:
             service: reviewmaps
           annotations:
             summary: "ReviewMaps 예외 발생 급증"
-            description: "5분 동안 50회 이상의 예외가 발생했습니다. 타입: {{ $labels.exception_type }}"
+            description: "5분 동안 50회 이상의 예외가 발생했습니다. 타입: {{`{{ $labels.exception_type }}`}}"
 
         - alert: ReviewMapsNaverAPIRateLimit
           expr: increase(reviewmaps_naver_api_rate_limit_hits[5m]) > 0
@@ -106,5 +106,5 @@ spec:
             service: reviewmaps
           annotations:
             summary: "ReviewMaps 캐시 히트율 낮음 (< 50%)"
-            description: "캐시 효율이 낮습니다. 캐시 전략 검토가 필요합니다. 현재: {{ $value | humanizePercentage }}"
+            description: "캐시 효율이 낮습니다. 캐시 전략 검토가 필요합니다. 현재: {{`{{ $value | humanizePercentage }}`}}"
 

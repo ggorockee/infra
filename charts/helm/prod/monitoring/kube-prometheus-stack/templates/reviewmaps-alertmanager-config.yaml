@@ -51,7 +51,7 @@ spec:
     # Critical 알람 수신자
     - name: 'reviewmaps-email-critical'
       emailConfigs:
-        - to: '{{ .CommonLabels.service }} 알람 <noreply@reviewmaps.com>'
+        - to: '{{`{{ .CommonLabels.service }}`}} 알람 <noreply@reviewmaps.com>'
           from: 'ReviewMaps AlertManager <noreply@reviewmaps.com>'
           smarthost: 'smtp.gmail.com:587'
           authSecret:
@@ -62,29 +62,29 @@ spec:
           # reviewmaps-api-credentials 시크릿의 EMAIL_HOST_USER와 EMAIL_HOST_PASSWORD를 사용합니다.
           # 시크릿 키 이름이 다르면 monitoring 네임스페이스에 별도 시크릿 생성 필요
           headers:
-            Subject: '[CRITICAL] ReviewMaps {{ .GroupLabels.alertname }}'
+            Subject: '[CRITICAL] ReviewMaps {{`{{ .GroupLabels.alertname }}`}}'
           html: |
-            <h2>🚨 Critical Alert: {{ .GroupLabels.alertname }}</h2>
-            <p><strong>Severity:</strong> {{ .GroupLabels.severity }}</p>
-            <p><strong>Service:</strong> {{ .GroupLabels.service }}</p>
-            <p><strong>Summary:</strong> {{ .CommonAnnotations.summary }}</p>
-            <p><strong>Description:</strong> {{ .CommonAnnotations.description }}</p>
+            <h2>🚨 Critical Alert: {{`{{ .GroupLabels.alertname }}`}}</h2>
+            <p><strong>Severity:</strong> {{`{{ .GroupLabels.severity }}`}}</p>
+            <p><strong>Service:</strong> {{`{{ .GroupLabels.service }}`}}</p>
+            <p><strong>Summary:</strong> {{`{{ .CommonAnnotations.summary }}`}}</p>
+            <p><strong>Description:</strong> {{`{{ .CommonAnnotations.description }}`}}</p>
             <hr>
             <h3>Alerts:</h3>
-            {{ range .Alerts }}
+            {{`{{ range .Alerts }}`}}
             <div style="border: 2px solid red; padding: 10px; margin: 10px 0;">
-              <p><strong>Alert:</strong> {{ .Labels.alertname }}</p>
-              <p><strong>Status:</strong> {{ .Status }}</p>
-              <p><strong>Starts At:</strong> {{ .StartsAt }}</p>
-              {{ if .Annotations.summary }}<p><strong>Summary:</strong> {{ .Annotations.summary }}</p>{{ end }}
-              {{ if .Annotations.description }}<p><strong>Description:</strong> {{ .Annotations.description }}</p>{{ end }}
+              <p><strong>Alert:</strong> {{`{{ .Labels.alertname }}`}}</p>
+              <p><strong>Status:</strong> {{`{{ .Status }}`}}</p>
+              <p><strong>Starts At:</strong> {{`{{ .StartsAt }}`}}</p>
+              {{`{{ if .Annotations.summary }}`}}<p><strong>Summary:</strong> {{`{{ .Annotations.summary }}`}}</p>{{`{{ end }}`}}
+              {{`{{ if .Annotations.description }}`}}<p><strong>Description:</strong> {{`{{ .Annotations.description }}`}}</p>{{`{{ end }}`}}
             </div>
-            {{ end }}
+            {{`{{ end }}`}}
 
     # Warning 알람 수신자
     - name: 'reviewmaps-email-warning'
       emailConfigs:
-        - to: '{{ .CommonLabels.service }} 알람 <noreply@reviewmaps.com>'
+        - to: '{{`{{ .CommonLabels.service }}`}} 알람 <noreply@reviewmaps.com>'
           from: 'ReviewMaps AlertManager <noreply@reviewmaps.com>'
           smarthost: 'smtp.gmail.com:587'
           authSecret:
@@ -95,26 +95,26 @@ spec:
           # reviewmaps-api-credentials 시크릿의 EMAIL_HOST_USER와 EMAIL_HOST_PASSWORD를 사용합니다.
           # 시크릿 키 이름이 다르면 monitoring 네임스페이스에 별도 시크릿 생성 필요
           headers:
-            Subject: '[WARNING] ReviewMaps {{ .GroupLabels.alertname }}'
+            Subject: '[WARNING] ReviewMaps {{`{{ .GroupLabels.alertname }}`}}'
           html: |
-            <h2>⚠️ Warning Alert: {{ .GroupLabels.alertname }}</h2>
-            <p><strong>Severity:</strong> {{ .GroupLabels.severity }}</p>
-            <p><strong>Service:</strong> {{ .GroupLabels.service }}</p>
-            <p><strong>Summary:</strong> {{ .CommonAnnotations.summary }}</p>
+            <h2>⚠️ Warning Alert: {{`{{ .GroupLabels.alertname }}`}}</h2>
+            <p><strong>Severity:</strong> {{`{{ .GroupLabels.severity }}`}}</p>
+            <p><strong>Service:</strong> {{`{{ .GroupLabels.service }}`}}</p>
+            <p><strong>Summary:</strong> {{`{{ .CommonAnnotations.summary }}`}}</p>
             <hr>
             <h3>Alerts:</h3>
-            {{ range .Alerts }}
+            {{`{{ range .Alerts }}`}}
             <div style="border: 1px solid orange; padding: 10px; margin: 10px 0;">
-              <p><strong>Alert:</strong> {{ .Labels.alertname }}</p>
-              <p><strong>Status:</strong> {{ .Status }}</p>
-              <p><strong>Starts At:</strong> {{ .StartsAt }}</p>
+              <p><strong>Alert:</strong> {{`{{ .Labels.alertname }}`}}</p>
+              <p><strong>Status:</strong> {{`{{ .Status }}`}}</p>
+              <p><strong>Starts At:</strong> {{`{{ .StartsAt }}`}}</p>
             </div>
-            {{ end }}
+            {{`{{ end }}`}}
 
     # Info 알람 수신자
     - name: 'reviewmaps-email-info'
       emailConfigs:
-        - to: '{{ .CommonLabels.service }} 알람 <noreply@reviewmaps.com>'
+        - to: '{{`{{ .CommonLabels.service }}`}} 알람 <noreply@reviewmaps.com>'
           from: 'ReviewMaps AlertManager <noreply@reviewmaps.com>'
           smarthost: 'smtp.gmail.com:587'
           authSecret:
@@ -125,11 +125,11 @@ spec:
           # reviewmaps-api-credentials 시크릿의 EMAIL_HOST_USER와 EMAIL_HOST_PASSWORD를 사용합니다.
           # 시크릿 키 이름이 다르면 monitoring 네임스페이스에 별도 시크릿 생성 필요
           headers:
-            Subject: '[INFO] ReviewMaps {{ .GroupLabels.alertname }}'
+            Subject: '[INFO] ReviewMaps {{`{{ .GroupLabels.alertname }}`}}'
           html: |
-            <h2>ℹ️ Info Alert: {{ .GroupLabels.alertname }}</h2>
-            <p><strong>Service:</strong> {{ .GroupLabels.service }}</p>
-            <p><strong>Summary:</strong> {{ .CommonAnnotations.summary }}</p>
+            <h2>ℹ️ Info Alert: {{`{{ .GroupLabels.alertname }}`}}</h2>
+            <p><strong>Service:</strong> {{`{{ .GroupLabels.service }}`}}</p>
+            <p><strong>Summary:</strong> {{`{{ .CommonAnnotations.summary }}`}}</p>
 
     # 기본 수신자 (fallback)
     - name: 'reviewmaps-email'
@@ -145,5 +145,5 @@ spec:
           # reviewmaps-api-credentials 시크릿의 EMAIL_HOST_USER와 EMAIL_HOST_PASSWORD를 사용합니다.
           # 시크릿 키 이름이 다르면 monitoring 네임스페이스에 별도 시크릿 생성 필요
           headers:
-            Subject: 'ReviewMaps Alert: {{ .GroupLabels.alertname }}'
+            Subject: 'ReviewMaps Alert: {{`{{ .GroupLabels.alertname }}`}}'
 
