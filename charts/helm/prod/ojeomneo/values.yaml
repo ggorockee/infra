@@ -9,7 +9,7 @@
 server:
   enabled: true
   replicaCount: 1
-  revisionHistoryLimit: 3
+  revisionHistoryLimit: 1
 
   image:
     repository: ggorockee/ojeomneo-server-with-go
@@ -97,12 +97,13 @@ server:
     name: ""
     data:
       APP_ENV: "production"
-      APP_PORT: "8080"
+      APP_PORT: "3000"
 
   secret:
     enabled: true
     names:
       - ojeomneo-db-credentials
+      - ojeomneo-api-credentials
 
   # Prometheus Metrics 설정
   metrics:
