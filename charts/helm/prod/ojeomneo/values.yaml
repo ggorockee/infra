@@ -235,42 +235,27 @@ admin:
       cpu: 500m
       memory: 256Mi
 
-  # Health check probes - Django Admin login page
-  # Host 헤더 추가: Django ALLOWED_HOSTS 검증 통과를 위해 필요
+  # Health check probes - TCP 소켓 방식
+  # Django ALLOWED_HOSTS 검증 우회를 위해 tcpSocket 사용
   livenessProbe:
-    httpGet:
-      path: /admin/login/
+    tcpSocket:
       port: gunicorn
-      scheme: HTTP
-      httpHeaders:
-        - name: Host
-          value: localhost
     initialDelaySeconds: 15
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 3
 
   readinessProbe:
-    httpGet:
-      path: /admin/login/
+    tcpSocket:
       port: gunicorn
-      scheme: HTTP
-      httpHeaders:
-        - name: Host
-          value: localhost
     initialDelaySeconds: 10
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 3
 
   startupProbe:
-    httpGet:
-      path: /admin/login/
+    tcpSocket:
       port: gunicorn
-      scheme: HTTP
-      httpHeaders:
-        - name: Host
-          value: localhost
     initialDelaySeconds: 5
     periodSeconds: 5
     timeoutSeconds: 5
