@@ -23,19 +23,25 @@ spec:
       # Critical 알람은 즉시 발송
       - receiver: 'reviewmaps-email-critical'
         matchers:
-          - severity = critical
+          - name: severity
+            value: critical
+            matchType: "="
         groupWait: 10s
         repeatInterval: 1h
       # Warning 알람은 그룹화하여 발송
       - receiver: 'reviewmaps-email-warning'
         matchers:
-          - severity = warning
+          - name: severity
+            value: warning
+            matchType: "="
         groupWait: 5m
         repeatInterval: 6h
       # Info 알람은 하루에 한 번
       - receiver: 'reviewmaps-email-info'
         matchers:
-          - severity = info
+          - name: severity
+            value: info
+            matchType: "="
         groupWait: 1h
         repeatInterval: 24h
 
