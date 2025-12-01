@@ -2,6 +2,15 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+## ReviewMaps AlertManager SMTP 설정
+reviewmaps:
+  alertmanager:
+    enabled: true
+    smtpUsername: "your-smtp-username@gmail.com"  # SMTP 사용자명
+    smtpSecretName: "alertmanager-smtp-credentials"
+    smtpSecretKey: "password"
+    emailTo: "reviewmaps-alerts@reviewmaps.com"
+
 ## Provide a name in place of kube-prometheus-stack for `app:` labels
 ##
 nameOverride: ""

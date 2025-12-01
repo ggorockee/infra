@@ -1,10 +1,8 @@
+{{- if .Values.reviewmaps.alertmanager.enabled }}
 # ReviewMaps AlertManager SMTP Configuration
 #
-# ⚠️ 사전 준비: monitoring 네임스페이스에 SMTP 인증 시크릿 생성 필요
-# AlertmanagerConfig는 같은 네임스페이스의 시크릿만 참조할 수 있습니다.
-#
-# kubectl create secret generic alertmanager-smtp-credentials -n monitoring \
-#   --from-literal=username=<SMTP_USERNAME> \
+# ⚠️ 사전 준비: monitoring 네임스페이스에 SMTP 비밀번호 시크릿 생성 필요
+# kubectl create secret generic {{ .Values.reviewmaps.alertmanager.smtpSecretName }} -n monitoring \
 #   --from-literal=password=<SMTP_PASSWORD>
 
 apiVersion: monitoring.coreos.com/v1alpha1
@@ -43,20 +41,15 @@ spec:
 
   receivers:
     # Critical 알람 수신자
-    # Note: authSecret은 같은 네임스페이스(monitoring)에 있어야 합니다.
-    # kubectl create secret generic alertmanager-smtp-credentials -n monitoring \
-    #   --from-literal=username=<SMTP_USER> --from-literal=password=<SMTP_PASSWORD>
     - name: 'reviewmaps-email-critical'
       emailConfigs:
-        - to: 'reviewmaps-alerts@reviewmaps.com'
+        - to: {{ .Values.reviewmaps.alertmanager.emailTo | quote }}
           from: 'ReviewMaps AlertManager <noreply@reviewmaps.com>'
           smarthost: 'smtp.gmail.com:587'
-          authUsername:
-            name: alertmanager-smtp-credentials
-            key: username
+          authUsername: {{ .Values.reviewmaps.alertmanager.smtpUsername | quote }}
           authPassword:
-            name: alertmanager-smtp-credentials
-            key: password
+            name: {{ .Values.reviewmaps.alertmanager.smtpSecretName }}
+            key: {{ .Values.reviewmaps.alertmanager.smtpSecretKey }}
           requireTLS: true
           headers:
             - key: Subject
@@ -82,15 +75,13 @@ spec:
     # Warning 알람 수신자
     - name: 'reviewmaps-email-warning'
       emailConfigs:
-        - to: 'reviewmaps-alerts@reviewmaps.com'
+        - to: {{ .Values.reviewmaps.alertmanager.emailTo | quote }}
           from: 'ReviewMaps AlertManager <noreply@reviewmaps.com>'
           smarthost: 'smtp.gmail.com:587'
-          authUsername:
-            name: alertmanager-smtp-credentials
-            key: username
+          authUsername: {{ .Values.reviewmaps.alertmanager.smtpUsername | quote }}
           authPassword:
-            name: alertmanager-smtp-credentials
-            key: password
+            name: {{ .Values.reviewmaps.alertmanager.smtpSecretName }}
+            key: {{ .Values.reviewmaps.alertmanager.smtpSecretKey }}
           requireTLS: true
           headers:
             - key: Subject
@@ -113,15 +104,13 @@ spec:
     # Info 알람 수신자
     - name: 'reviewmaps-email-info'
       emailConfigs:
-        - to: 'reviewmaps-alerts@reviewmaps.com'
+        - to: {{ .Values.reviewmaps.alertmanager.emailTo | quote }}
           from: 'ReviewMaps AlertManager <noreply@reviewmaps.com>'
           smarthost: 'smtp.gmail.com:587'
-          authUsername:
-            name: alertmanager-smtp-credentials
-            key: username
+          authUsername: {{ .Values.reviewmaps.alertmanager.smtpUsername | quote }}
           authPassword:
-            name: alertmanager-smtp-credentials
-            key: password
+            name: {{ .Values.reviewmaps.alertmanager.smtpSecretName }}
+            key: {{ .Values.reviewmaps.alertmanager.smtpSecretKey }}
           requireTLS: true
           headers:
             - key: Subject
@@ -134,17 +123,15 @@ spec:
     # 기본 수신자 (fallback)
     - name: 'reviewmaps-email'
       emailConfigs:
-        - to: 'reviewmaps-alerts@reviewmaps.com'
+        - to: {{ .Values.reviewmaps.alertmanager.emailTo | quote }}
           from: 'ReviewMaps AlertManager <noreply@reviewmaps.com>'
           smarthost: 'smtp.gmail.com:587'
-          authUsername:
-            name: alertmanager-smtp-credentials
-            key: username
+          authUsername: {{ .Values.reviewmaps.alertmanager.smtpUsername | quote }}
           authPassword:
-            name: alertmanager-smtp-credentials
-            key: password
+            name: {{ .Values.reviewmaps.alertmanager.smtpSecretName }}
+            key: {{ .Values.reviewmaps.alertmanager.smtpSecretKey }}
           requireTLS: true
           headers:
             - key: Subject
               value: 'ReviewMaps Alert: {{`{{ .GroupLabels.alertname }}`}}'
-
+{{- end }}
