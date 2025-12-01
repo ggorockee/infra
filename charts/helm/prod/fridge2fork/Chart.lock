@@ -1,6 +1,0 @@
-dependencies:
-- name: server
-  repository: file://./charts/server
-  version: 0.1.0
-digest: sha256:db4c3862efce8b8a1dfaf18dd0727a2b22dfa28c4fdc69ab8d030a5a4f64af05
-generated: "2025-10-01T07:15:52.070780615Z"
