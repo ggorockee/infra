@@ -101,6 +101,8 @@ server:
       # Redis 연결 설정
       REDIS_HOST: "ojeomneo-redis-master"
       REDIS_PORT: "6379"
+      # 메뉴 시드 데이터 (없는 메뉴만 추가, 기존 데이터 유지)
+      SEED_DATA: "true"
 
   secret:
     enabled: true
