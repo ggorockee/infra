@@ -8,5 +8,8 @@ dependencies:
 - name: admin
   repository: file://./charts/admin
   version: 1.0.0
-digest: sha256:53f8e8eeaa41d15123c5cde059e2752cc035d80bba4f58ec991d5fa0a0635c64
-generated: "2025-12-02T00:47:58.99908+09:00"
+- name: redis
+  repository: file://./charts/redis
+  version: 20.6.0
+digest: sha256:546551443aaafce2a51c05590ca7c5c0d21bd15b98724efe067c328c1c4c6303
+generated: "2025-12-02T06:25:25.912970347Z"
