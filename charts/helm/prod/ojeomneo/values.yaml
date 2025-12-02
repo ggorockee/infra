@@ -236,35 +236,37 @@ admin:
       memory: 256Mi
 
   # Health check probes - Django Admin
+  # /ojeomneo/v1/healthcheck/live/  - K8s startup/liveness probe (항상 200)
+  # /ojeomneo/v1/healthcheck/ready/ - K8s readiness probe (DB 체크)
   livenessProbe:
     httpGet:
-      path: /admin/login/
+      path: /ojeomneo/v1/healthcheck/live/
       port: gunicorn
       scheme: HTTP
-    initialDelaySeconds: 15
+    initialDelaySeconds: 10
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 3
 
   readinessProbe:
     httpGet:
-      path: /admin/login/
+      path: /ojeomneo/v1/healthcheck/ready/
       port: gunicorn
       scheme: HTTP
-    initialDelaySeconds: 10
+    initialDelaySeconds: 5
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 3
 
   startupProbe:
     httpGet:
-      path: /admin/login/
+      path: /ojeomneo/v1/healthcheck/live/
       port: gunicorn
       scheme: HTTP
-    initialDelaySeconds: 10
-    periodSeconds: 10
-    timeoutSeconds: 10
-    failureThreshold: 30
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 12
 
   autoscaling:
     enabled: false
