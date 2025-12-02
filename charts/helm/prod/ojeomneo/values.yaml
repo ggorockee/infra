@@ -207,7 +207,7 @@ admin:
   image:
     repository: ggorockee/ojeomneo-admin
     pullPolicy: IfNotPresent
-    tag: "20251202-3d7dd0e"
+    tag: "20251202-7f1f2c9"
 
   imagePullSecrets: []
   nameOverride: ""
