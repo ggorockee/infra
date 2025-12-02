@@ -306,8 +306,14 @@ admin:
 redis:
   enabled: true
 
-  # 아키텍처: replication (HA) - Master 1 + Replica 2
+  # 아키텍처: replication (HA) - Master 1 + Replica 1
   architecture: replication
+
+  # 이미지 설정 (Bitnami 2025.08 이후 latest 태그만 지원)
+  image:
+    registry: docker.io
+    repository: bitnami/redis
+    tag: latest
 
   # 인증 설정
   auth:
@@ -346,6 +352,10 @@ redis:
   # Metrics (Prometheus)
   metrics:
     enabled: true
+    image:
+      registry: docker.io
+      repository: bitnami/redis-exporter
+      tag: latest
     serviceMonitor:
       enabled: true
       namespace: ""

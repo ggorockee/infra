@@ -16,8 +16,8 @@ dependencies:
 - condition: redis.enabled
   name: redis
   repository: file://./charts/redis
-  version: 20.6.0
+  version: 24.0.0
 description: Ojeomneo (오점너) - Go Fiber v2 API Server + Django Admin + PostgreSQL + Redis
 name: ojeomneo
 type: application
-version: 1.1.0
+version: 1.2.0
