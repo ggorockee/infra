@@ -263,10 +263,10 @@ admin:
       path: /ojeomneo/v1/healthcheck/live/
       port: gunicorn
       scheme: HTTP
-    initialDelaySeconds: 0
-    periodSeconds: 5
-    timeoutSeconds: 3
-    failureThreshold: 12
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 10
+    failureThreshold: 18
 
   autoscaling:
     enabled: false
