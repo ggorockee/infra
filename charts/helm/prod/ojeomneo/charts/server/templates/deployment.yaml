@@ -51,11 +51,20 @@ spec:
           {{- end}}
           {{- if and .Values.secret.enabled .Values.secret.names }}
           {{- range .Values.secret.names }}
+          {{- if ne . "ojeomneo-redis-credentials" }}
             - secretRef:
                 name: {{ . | quote }}
+          {{- end }}
             {{- end }}
             {{- end }}
           {{- end}}
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ojeomneo-redis-credentials
+                  key: redis-password
+                  optional: true
           ports:
             - name: {{ .Values.service.portName | default "http" }}
               containerPort: {{ .Values.service.port }}
