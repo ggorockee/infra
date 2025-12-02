@@ -100,18 +100,27 @@ ingressRoutes:
       - name: reviewmaps-server
         port: 8000
   
-  # - name: fridge2fork-prod-web
-  #   enabled: true
-  #   namespace: fridge2fork
-
-  #   entryPoints:
-  #     - websecure
-
-  #   host: "woohalabs.com"
-  #   pathPrefix: "/fridge2fork"
-  #   tlsSecretName: "woohalabs-com-cert"
-
-  #   services:
-  #     - name: fridge2fork-prod-web
-  #       port: 8000
+  - name: ojeomneo-admin
+    enabled: true
+    namespace: ojeomneo
+    entryPoints:
+      - websecure
+    host: "admin.woohalabs.com"
+    pathPrefix: "/ojeomneo"
+    tlsSecretName: "woohalabs-com-cert"
+    services:
+      - name: ojeomneo-admin
+        port: 8000
+  
+  - name: ojeomneo-server
+    enabled: true
+    namespace: ojeomneo
+    entryPoints:
+      - websecure
+    host: "api.woohalabs.com"
+    pathPrefix: "/ojeomneo"
+    tlsSecretName: "woohalabs-com-cert"
+    services:
+      - name: ojeomneo-server
+        port: 3000
 

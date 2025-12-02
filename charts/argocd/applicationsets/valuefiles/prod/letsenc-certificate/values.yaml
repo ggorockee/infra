@@ -44,10 +44,7 @@ certmanager:
       replicator:
         enabled: true
         targetNamespaces:
-          - onedaypillo-dev
-          - onedaypillo
-          - fridge2fork
-          - fridge2fork-dev
+          - ojeomneo
 
     - name: review-maps-com
       namespace: cert-manager
