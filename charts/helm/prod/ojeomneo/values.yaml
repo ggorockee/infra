@@ -321,6 +321,11 @@ redis:
     existingSecret: "ojeomneo-redis-credentials"
     existingSecretPasswordKey: "redis-password"
 
+  # 공통 Redis 설정
+  commonConfiguration: |-
+    maxmemory 200mb
+    maxmemory-policy allkeys-lru
+
   # Master 설정
   master:
     count: 1
