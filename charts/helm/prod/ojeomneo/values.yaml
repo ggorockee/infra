@@ -14,7 +14,7 @@ server:
   image:
     repository: ggorockee/ojeomneo-server-with-go
     pullPolicy: IfNotPresent
-    tag: "20251203-57c21f4"
+    tag: "20251204-da99530"
 
   imagePullSecrets: []
   nameOverride: ""
@@ -211,7 +211,7 @@ admin:
   image:
     repository: ggorockee/ojeomneo-admin
     pullPolicy: IfNotPresent
-    tag: "20251203-da99530"
+    tag: "20251204-da99530"
 
   imagePullSecrets: []
   nameOverride: ""
@@ -296,6 +296,8 @@ admin:
       # Redis 연결 설정
       REDIS_HOST: "ojeomneo-redis-master"
       REDIS_PORT: "6379"
+      # Server API URL (이미지 업로드용) - K8s 내부 서비스 호출
+      SERVER_API_URL: "http://ojeomneo-server:3000/ojeomneo/v1"
 
   secret:
     enabled: true
