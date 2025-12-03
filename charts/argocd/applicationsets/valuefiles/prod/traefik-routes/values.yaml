@@ -124,3 +124,15 @@ ingressRoutes:
       - name: ojeomneo-server
         port: 3000
 
+  - name: signoz
+    enabled: true
+    namespace: monitoring
+    entryPoints:
+      - websecure
+    host: "signoz.ggorockee.org"
+    pathPrefix: "/"
+    tlsSecretName: "ggorockee-org-cert"
+    services:
+      - name: signoz
+        port: 8080
+
