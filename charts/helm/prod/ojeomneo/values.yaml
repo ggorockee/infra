@@ -103,6 +103,8 @@ server:
       REDIS_PORT: "6379"
       # 메뉴 시드 데이터 (없는 메뉴만 추가, 기존 데이터 유지)
       SEED_DATA: "true"
+      # OpenTelemetry 설정 (SigNoz 연동)
+      OTEL_EXPORTER_OTLP_ENDPOINT: "signoz-otel-collector.monitoring:4317"
 
   secret:
     enabled: true
