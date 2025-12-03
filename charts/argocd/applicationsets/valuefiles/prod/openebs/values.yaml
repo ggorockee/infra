@@ -48,6 +48,6 @@ preUpgradeHook:
     # -- The container repository for the hook job
     repo: openebs/kubectl
     # -- The container image tag for the hook job
-    tag: "latest"
+    tag: "1.25.15"
     # -- The imagePullPolicy for the container
     pullPolicy: IfNotPresent
