@@ -1873,6 +1873,15 @@ otelCollector:
       httplogreceiver/json:
         endpoint: 0.0.0.0:8082
         source: json
+      # Prometheus receiver - ojeomneo 메트릭 스크래핑
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: 'ojeomneo-server'
+              scrape_interval: 30s
+              static_configs:
+                - targets: ['ojeomneo-server.ojeomneo:3000']
+              metrics_path: '/ojeomneo/metrics'
     processors:
       batch:
         send_batch_size: 50000
@@ -1936,7 +1945,7 @@ otelCollector:
           processors: [signozspanmetrics/delta, batch]
           exporters: [clickhousetraces, metadataexporter, signozmeter]
         metrics:
-          receivers: [otlp]
+          receivers: [otlp, prometheus]
           processors: [batch]
           exporters: [metadataexporter, signozclickhousemetrics, signozmeter]
         logs:
