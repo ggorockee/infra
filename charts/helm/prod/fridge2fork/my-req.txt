@@ -1,0 +1,38 @@
+/sc:implement 
+현재 @charts/server
+
+parent value인 @values.yaml에서 helmchart를 제어하고있음
+
+@values.yaml에 
+아래와 같은 yaml을 넣어서 관리할것임
+database:
+  enabled: true
+  global:
+    postgresql:
+      auth:
+        username: fridge2fork
+        database: fridge2fork
+        existingSecret: fridge2fork-db-credentials
+
+  primary:
+    persistence:
+      size: 20Gi
+      volumeName: "data"
+
+이렇게 사용할수있는 헬름 챁트를 구성해줘
+@charts/database/ 는 손댈 것이 없음
+
+작업이 끝나면
+
+git agent로 개발 브랜치에 푸시해줘
+
+/sc:troubleshoot
+🚀 Starting entrypoint script...
+Environment: development
+⏳ Waiting for PostgreSQL at fridge2fork-dev-database.fridge2fork-dev.svc.cluster.local:5432...
+✅ PostgreSQL is ready!
+📦 Running database migrations...
+🔧 Applying migrations...
+/entrypoint.sh: line 45: uv: command not found
+❌ Migration failed!
+완료후 개발에 푸시해줘
