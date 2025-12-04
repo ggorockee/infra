@@ -14,7 +14,7 @@ server:
   image:
     repository: ggorockee/ojeomneo-server-with-go
     pullPolicy: IfNotPresent
-    tag: "20251204-d8c1a04"
+    tag: "20251204-1360555"
 
   imagePullSecrets: []
   nameOverride: ""
