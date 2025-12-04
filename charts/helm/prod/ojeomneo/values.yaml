@@ -105,6 +105,7 @@ server:
       SEED_DATA: "true"
       # OpenTelemetry 설정 (SigNoz 연동)
       OTEL_EXPORTER_OTLP_ENDPOINT: "signoz-otel-collector.monitoring:4317"
+      GEMINI_MODEL: "gemini-2.0-flash"
 
   secret:
     enabled: true
