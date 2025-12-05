@@ -280,12 +280,12 @@ clickhouse:
   # @section -- ClickHouse Resources
   # @default -- { requests: { cpu: "100m", memory: "200Mi" } }
   resources:
-    requests:
-      cpu: 50m
-      memory: 128Mi
     limits:
-      cpu: 500m
-      memory: 512Mi
+      memory: "2Gi"
+      cpu: "1"
+    requests:
+      memory: "1Gi"
+      cpu: "100m"
 
   # clickhouse.securityContext -- Security context for the ClickHouse node.
   # @section -- ClickHouse Settings
