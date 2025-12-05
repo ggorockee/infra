@@ -451,10 +451,7 @@ server:
       JWT_ALGORITHM: "HS256"
       JWT_ACCESS_TOKEN_EXPIRE_MINUTES: "60"
       JWT_REFRESH_TOKEN_EXPIRE_DAYS: "7"
-      # PostgreSQL 연결 정보 (Go server용)
-      POSTGRES_SERVER: "reviewmaps-database"
-      POSTGRES_PORT: "5432"
-      POSTGRES_DB: "reviewmaps"
+      # POSTGRES_* 환경변수는 reviewmaps-db-credentials secret에서 주입됨
       POSTGRES_SSLMODE: "disable"
       # BASE_URL: "https://inflexer.net"
       # HEADLESS: "true"
@@ -606,10 +603,7 @@ admin:
     data:
       DEBUG: "False"
       ALLOWED_HOSTS: "admin.review-maps.com,localhost,127.0.0.1"
-      # PostgreSQL 연결 정보 (Django Admin용)
-      POSTGRES_SERVER: "reviewmaps-database"
-      POSTGRES_PORT: "5432"
-      POSTGRES_DB: "reviewmaps"
+      # POSTGRES_* 환경변수는 reviewmaps-db-credentials secret에서 주입됨
       POSTGRES_SSLMODE: "disable"
 
   secret:
