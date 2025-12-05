@@ -9,6 +9,10 @@ dependencies:
   name: server
   repository: file://./charts/server
   version: 2.1.1
+- condition: admin.enabled
+  name: admin
+  repository: file://./charts/admin
+  version: 1.0.0
 - condition: database.enabled
   name: database
   repository: file://./charts/database

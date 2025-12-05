@@ -1,0 +1,6 @@
+apiVersion: v2
+appVersion: 1.0.0
+description: Django Admin for ReviewMaps
+name: admin
+type: application
+version: 1.0.0
