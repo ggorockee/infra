@@ -520,7 +520,7 @@ admin:
   image:
     repository: ggorockee/reviewmaps-admin
     pullPolicy: IfNotPresent
-    tag: "20251205-5097ede"
+    tag: "20251205-31dfc21"
 
   imagePullSecrets: []
   nameOverride: ""
