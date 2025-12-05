@@ -509,6 +509,125 @@ server:
 #########################################################################
 
 #########################################################################
+admin:
+  enabled: true
+  # Django Admin for ReviewMaps
+  # This is a YAML-formatted file.
+
+  replicaCount: 1
+  revisionHistoryLimit: 1
+
+  image:
+    repository: ggorockee/reviewmaps-admin
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  serviceAccount:
+    create: true
+    automount: true
+    annotations: {}
+    name: ""
+
+  podAnnotations: {}
+  podLabels:
+    app: "reviewmaps-admin"
+    job: "reviewmaps-admin"
+
+  podSecurityContext: {}
+  securityContext: {}
+
+  service:
+    type: ClusterIP
+    port: 8000
+    portName: "django"
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  livenessProbe:
+    httpGet:
+      path: /admin/
+      port: django
+      scheme: HTTP
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /admin/
+      port: django
+      scheme: HTTP
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  startupProbe:
+    httpGet:
+      path: /admin/
+      port: django
+      scheme: HTTP
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 12
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 2
+    targetCPUUtilizationPercentage: 80
+
+  volumes: []
+  volumeMounts: []
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  configMap:
+    enabled: true
+    name: ""
+    data:
+      DEBUG: "False"
+      ALLOWED_HOSTS: "admin.review-maps.com,localhost,127.0.0.1"
+
+  secret:
+    enabled: true
+    names:
+      - reviewmaps-db-credentials
+      - reviewmaps-api-credentials
+
+  migration:
+    enabled: true
+    command: ["python", "manage.py", "migrate"]
+    args: []
+    backoffLimit: 3
+    ttlSecondsAfterFinished: 3600
+    restartPolicy: OnFailure
+
+  metrics:
+    enabled: false
+    serviceMonitor:
+      enabled: false
+      interval: 30s
+      scrapeTimeout: 10s
+    collector:
+      enabled: false
+
+#########################################################################
+
+#########################################################################
 web:
   enabled: false
 
