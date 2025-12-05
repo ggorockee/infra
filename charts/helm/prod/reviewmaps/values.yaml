@@ -385,7 +385,7 @@ server:
   # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
   livenessProbe:
     httpGet:
-      path: /v1/healthz
+      path: /healthz
       port: http
       scheme: HTTP
     initialDelaySeconds: 30
@@ -395,7 +395,7 @@ server:
 
   readinessProbe:
     httpGet:
-      path: /v1/healthz
+      path: /healthz
       port: http
       scheme: HTTP
     initialDelaySeconds: 15
@@ -405,7 +405,7 @@ server:
 
   startupProbe:
     httpGet:
-      path: /v1/healthz
+      path: /healthz
       port: http
       scheme: HTTP
     initialDelaySeconds: 0
@@ -449,7 +449,7 @@ server:
       SERVER_PORT: "3000"
       PROMETHEUS_MULTIPROC_DIR: "/tmp/metrics"
       DEBUG: "False"  # 프로덕션
-      ALLOWED_HOSTS: "api.review-maps.com,review-maps.com,localhost,127.0.0.1"
+      ALLOWED_HOSTS: "*"
       JWT_ALGORITHM: "HS256"
       JWT_ACCESS_TOKEN_EXPIRE_MINUTES: "60"
       JWT_REFRESH_TOKEN_EXPIRE_DAYS: "7"
