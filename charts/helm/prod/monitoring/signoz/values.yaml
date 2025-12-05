@@ -149,9 +149,11 @@ clickhouse:
     # @default -- { limits: {}, requests: { memory: "256Mi", cpu: "100m" } }
     resources:
       limits:
-        memory: 512Mi
+        memory: 1Gi
+        cpu: 500m
       requests:
-        memory: 256Mi
+        memory: 512Mi
+        cpu: 200m
   # clickhouse.namespace -- The namespace to install ClickHouse and `clickhouse-operator` into (defaults to the chart's installation namespace).
   # @section -- ClickHouse Settings
   # @default -- ""
@@ -279,11 +281,11 @@ clickhouse:
   # @default -- { requests: { cpu: "100m", memory: "200Mi" } }
   resources:
     limits:
-      memory: "2Gi"
-      cpu: "1"
+      memory: 4Gi
+      cpu: "2"
     requests:
-      memory: "1Gi"
-      cpu: "100m"
+      memory: 2Gi
+      cpu: 500m
 
   # clickhouse.securityContext -- Security context for the ClickHouse node.
   # @section -- ClickHouse Settings
@@ -1014,12 +1016,12 @@ signoz:
   # @section -- SigNoz
   # @default -- '{ requests: { cpu: "100m", memory: "100Mi" } }'
   resources:
-    requests:
-      cpu: 50m
-      memory: 64Mi
     limits:
-      cpu: 300m
+      memory: 512Mi
+      cpu: 500m
+    requests:
       memory: 256Mi
+      cpu: 200m
 
   # signoz.priorityClassName -- Priority class for the SigNoz pods.
   # @section -- SigNoz
@@ -1730,12 +1732,12 @@ otelCollector:
   # @section -- Otel Collector
   # @default -- { requests: { cpu: "100m", memory: "200Mi" } }
   resources:
-    requests:
-      cpu: 50m
-      memory: 128Mi
     limits:
-      cpu: 500m
+      memory: 1Gi
+      cpu: "1"
+    requests:
       memory: 512Mi
+      cpu: 200m
 
   # otelCollector.priorityClassName -- Priority class for the Otel Collector pods.
   # @section -- Otel Collector
