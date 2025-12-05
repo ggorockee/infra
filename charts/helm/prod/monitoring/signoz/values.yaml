@@ -281,7 +281,7 @@ clickhouse:
   # @default -- { requests: { cpu: "100m", memory: "200Mi" } }
   resources:
     limits:
-      memory: 2Gi
+      memory: 2.5Gi
       cpu: "1"
     requests:
       memory: 1Gi
