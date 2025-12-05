@@ -89,17 +89,25 @@ ingressRoutes:
   - name: reviewmaps-server
     enabled: true
     namespace: reviewmaps
-
     entryPoints:
       - websecure
-
     host: "api.review-maps.com"
     tlsSecretName: "review-maps-com"
-
     services:
       - name: reviewmaps-server
-        port: 8000
+        port: 3000
   
+  - name: reviewmaps-admin
+    enabled: true
+    namespace: reviewmaps
+    entryPoints:
+      - websecure
+    host: "admin.review-maps.com"
+    tlsSecretName: "review-maps-com"
+    services:
+      - name: reviewmaps-admin
+        port: 8000
+
   - name: ojeomneo-admin
     enabled: true
     namespace: ojeomneo
@@ -135,4 +143,3 @@ ingressRoutes:
     services:
       - name: signoz
         port: 8080
-
