@@ -445,6 +445,7 @@ server:
     # name을 지정하지 않으면 차트 이름 기반으로 자동 생성됩니다.
     name: ""
     data:
+      SERVER_ENV: "production"
       PROMETHEUS_MULTIPROC_DIR: "/tmp/metrics"
       DEBUG: "False"  # 프로덕션
       ALLOWED_HOSTS: "api.review-maps.com,review-maps.com,localhost,127.0.0.1"
