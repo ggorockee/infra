@@ -364,8 +364,8 @@ server:
     # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
     type: ClusterIP
     # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
-    port: 8000
-    portName: "django"
+    port: 3000
+    portName: "http"
 
   # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 
@@ -386,7 +386,7 @@ server:
   livenessProbe:
     httpGet:
       path: /v1/healthz
-      port: django   # 컨테이너 port name이 django일 때
+      port: http
       scheme: HTTP
     initialDelaySeconds: 30
     periodSeconds: 10
@@ -396,7 +396,7 @@ server:
   readinessProbe:
     httpGet:
       path: /v1/healthz
-      port: django
+      port: http
       scheme: HTTP
     initialDelaySeconds: 15
     periodSeconds: 10
@@ -406,7 +406,7 @@ server:
   startupProbe:
     httpGet:
       path: /v1/healthz
-      port: django
+      port: http
       scheme: HTTP
     initialDelaySeconds: 0
     periodSeconds: 5
@@ -446,6 +446,7 @@ server:
     name: ""
     data:
       SERVER_ENV: "production"
+      SERVER_PORT: "3000"
       PROMETHEUS_MULTIPROC_DIR: "/tmp/metrics"
       DEBUG: "False"  # 프로덕션
       ALLOWED_HOSTS: "api.review-maps.com,review-maps.com,localhost,127.0.0.1"
