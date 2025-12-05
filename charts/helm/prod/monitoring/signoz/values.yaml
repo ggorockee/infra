@@ -149,11 +149,9 @@ clickhouse:
     # @default -- { limits: {}, requests: { memory: "256Mi", cpu: "100m" } }
     resources:
       limits:
-        cpu: 200m
-        memory: 256Mi
+        memory: 512Mi
       requests:
-        memory: 128Mi
-        cpu: 50m
+        memory: 256Mi
   # clickhouse.namespace -- The namespace to install ClickHouse and `clickhouse-operator` into (defaults to the chart's installation namespace).
   # @section -- ClickHouse Settings
   # @default -- ""
