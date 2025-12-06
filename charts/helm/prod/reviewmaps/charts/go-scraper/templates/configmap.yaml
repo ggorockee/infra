@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "goScraper.fullname" $ }}-{{ $s.name }}
+  name: {{ include "go-scraper.fullname" $ }}-{{ $s.name }}
   labels:
-    {{- include "goScraper.labels" $ | nindent 4 }}
+    {{- include "go-scraper.labels" $ | nindent 4 }}
 data:
   {{- with $.Values.configMap.data}}
   {{- toYaml . | nindent 2 }}
@@ -20,9 +20,9 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "goScraper.fullname" . }}-cleanup
+  name: {{ include "go-scraper.fullname" . }}-cleanup
   labels:
-    {{- include "goScraper.labels" . | nindent 4 }}
+    {{- include "go-scraper.labels" . | nindent 4 }}
     app.kubernetes.io/component: cleanup
 data:
   CLEANUP_ENABLED: "true"
