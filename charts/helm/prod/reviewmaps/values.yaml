@@ -455,6 +455,8 @@ server:
       JWT_REFRESH_TOKEN_EXPIRE_DAYS: "7"
       # POSTGRES_* 환경변수는 reviewmaps-db-credentials secret에서 주입됨
       POSTGRES_SSLMODE: "disable"
+      # OpenTelemetry/SigNoz 설정
+      SIGNOZ_ENDPOINT: "http://signoz-otel-collector.monitoring.svc.cluster.local:4318"
       # BASE_URL: "https://inflexer.net"
       # HEADLESS: "true"
       # # 배치 스케줄 동작 (코드의 Settings와 매핑)
