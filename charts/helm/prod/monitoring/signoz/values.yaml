@@ -74,7 +74,8 @@ clickhouse:
     # clickhouse.zookeeper.enabled -- Whether to install Zookeeper. If false, `clickhouse.externalZookeeper` must be set.
     # @section -- Zookeeper Settings
     # @default -- true
-    enabled: true
+    # Zookeeper 비활성화 - single ClickHouse node에서 불필요
+    enabled: false
     # clickhouse.zookeeper.podAnnotations -- Annotations for the Zookeeper pod.
     # @section -- Zookeeper Settings
     # @default -- { signoz.io/scrape: "true", signoz.io/port: "9141", signoz.io/path: "/metrics" }
@@ -279,13 +280,14 @@ clickhouse:
   # Ref: http://kubernetes.io/docs/user-guide/compute-resources/
   # @section -- ClickHouse Resources
   # @default -- { requests: { cpu: "100m", memory: "200Mi" } }
+  # ClickHouse 메모리 증가 (6GB VM 기준)
   resources:
     limits:
-      memory: 2.5Gi
-      cpu: "1"
+      memory: 4Gi
+      cpu: "2"
     requests:
-      memory: 1Gi
-      cpu: 250m
+      memory: 2Gi
+      cpu: 500m
 
   # clickhouse.securityContext -- Security context for the ClickHouse node.
   # @section -- ClickHouse Settings
