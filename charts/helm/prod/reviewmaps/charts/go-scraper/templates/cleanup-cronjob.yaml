@@ -46,10 +46,8 @@ spec:
                     name: {{ . | quote }}
               {{- end }}
               {{- end }}
-              {{- with .Values.resources }}
               resources:
-              {{- toYaml . | nindent 14 }}
-              {{- end }}
+                {{- toYaml .Values.resources | nindent 16 }}
           {{- with .Values.nodeSelector }}
           nodeSelector:
             {{- toYaml . | nindent 12 }}
