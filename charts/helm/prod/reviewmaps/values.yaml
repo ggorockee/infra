@@ -692,6 +692,7 @@ go-scraper:
       TIMEZONE: "Asia/Seoul"
       LOG_LEVEL: "info"
       SIGNOZ_ENDPOINT: "signoz-otel-collector.monitoring.svc.cluster.local:4318"
+      SCRAPE_MAX_ITEMS: "100"  # 테스트용 최대 수집 개수 (0 = 무제한)
 
   secret:
     enabled: true
