@@ -50,11 +50,9 @@ spec:
                 - secretRef:
                     name: {{ . | quote }}
               {{- end }}
-              {{- end}}
-              {{- with $.Values.resources }}
-              resources:
-              {{- toYaml . | nindent 14 }}
               {{- end }}
+              resources:
+                {{- toYaml $.Values.resources | nindent 16 }}
           {{- with $.Values.nodeSelector }}
           nodeSelector:
             {{- toYaml . | nindent 12 }}
