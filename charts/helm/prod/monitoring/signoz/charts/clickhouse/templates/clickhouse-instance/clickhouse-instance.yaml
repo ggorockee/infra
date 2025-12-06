@@ -114,6 +114,7 @@ spec:
       {{- end }}
       {{ include "clickhouse.files" . | indent 6 }}
 
+    {{- if or .Values.zookeeper.enabled .Values.externalZookeeper }}
     zookeeper:
       nodes:
       {{- if .Values.externalZookeeper }}
@@ -127,6 +128,7 @@ spec:
           port: {{ include "clickhouse.zookeeper.port" . }}
         {{- end }}
       {{- end }}
+    {{- end }}
 
   templates:
     podTemplates:
