@@ -1,0 +1,65 @@
+{{- if .Values.cleanup.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Release.Name }}-go-cleanup
+  labels:
+    {{- include "goScraper.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cleanup
+spec:
+  schedule: {{ .Values.cleanup.schedule | quote }}
+  {{- if .Values.cleanup.timeZone }}
+  timeZone: {{ .Values.cleanup.timeZone | quote }}
+  {{- end }}
+  concurrencyPolicy: {{ .Values.cleanup.concurrencyPolicy | default "Forbid" }}
+  startingDeadlineSeconds: {{ .Values.cleanup.startingDeadlineSeconds | default 1800 }}
+  successfulJobsHistoryLimit: {{ .Values.cleanup.successfulJobsHistoryLimit | default 1 }}
+  failedJobsHistoryLimit: {{ .Values.cleanup.failedJobsHistoryLimit | default 3 }}
+  jobTemplate:
+    spec:
+      backoffLimit: {{ .Values.cleanup.backoffLimit | default 3 }}
+      {{- with .Values.cleanup.ttlSecondsAfterFinished }}
+      ttlSecondsAfterFinished: {{ . }}
+      {{- end }}
+      template:
+        metadata:
+          labels:
+            {{- include "goScraper.labels" . | nindent 12 }}
+            app.kubernetes.io/component: cleanup
+        spec:
+          restartPolicy: {{ .Values.cleanup.restartPolicy | default "OnFailure" }}
+          {{- if .Values.serviceAccount.create }}
+          serviceAccountName: {{ include "goScraper.serviceAccountName" . }}
+          {{- end }}
+          containers:
+            - name: {{ .Chart.Name }}-cleanup
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+              command: ["/app/entrypoint.sh"]
+              args: ["cleanup"]
+              envFrom:
+                - configMapRef:
+                    name: {{ include "goScraper.fullname" . }}-cleanup
+              {{- if and .Values.secret.enabled .Values.secret.names }}
+              {{- range .Values.secret.names }}
+                - secretRef:
+                    name: {{ . | quote }}
+              {{- end }}
+              {{- end }}
+              {{- with .Values.resources }}
+              resources:
+              {{- toYaml . | nindent 14 }}
+              {{- end }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+{{- end }}
