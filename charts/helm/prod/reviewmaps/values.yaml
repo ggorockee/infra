@@ -717,6 +717,20 @@ go-scraper:
         keywords: []
         restartPolicy: "OnFailure"
 
+      - name: inflexer
+        schedule: "0 4 * * *"              # 매일 04:00
+        timeZone: "Asia/Seoul"
+        concurrencyPolicy: "Forbid"
+        startingDeadlineSeconds: 900
+        successfulJobsHistoryLimit: 1
+        failedJobsHistoryLimit: 3
+        backoffLimit: 3
+        ttlSecondsAfterFinished: 3600
+        # 테스트용: 김포만 수집
+        keywords:
+          - "경기 김포"
+        restartPolicy: "OnFailure"
+
   # Cleanup CronJob (만료된 캠페인 정리)
   # 삭제 조건: apply_deadline < TODAY (자정이 지난 경우)
   cleanup:
