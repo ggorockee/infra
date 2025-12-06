@@ -692,7 +692,7 @@ go-scraper:
       TIMEZONE: "Asia/Seoul"
       LOG_LEVEL: "info"
       SIGNOZ_ENDPOINT: "signoz-otel-collector.monitoring.svc.cluster.local:4318"
-      SCRAPE_MAX_ITEMS: "100"  # 테스트용 최대 수집 개수 (0 = 무제한)
+      SCRAPE_MAX_ITEMS: "0"  # 최대 수집 개수 (0 = 무제한)
 
   secret:
     enabled: true
@@ -717,10 +717,11 @@ go-scraper:
         keywords: []
         restartPolicy: "OnFailure"
 
-  # Cleanup CronJob (만료된 캠페인 정리) - 추후 구현 시 활성화
+  # Cleanup CronJob (만료된 캠페인 정리)
+  # 삭제 조건: apply_deadline < TODAY (자정이 지난 경우)
   cleanup:
-    enabled: false
-    schedule: "0 5 * * *"                  # 매일 05:00
+    enabled: true
+    schedule: "0 6 * * *"                  # 매일 06:00 (새벽 6시)
     timeZone: "Asia/Seoul"
     concurrencyPolicy: "Forbid"
     startingDeadlineSeconds: 1800
