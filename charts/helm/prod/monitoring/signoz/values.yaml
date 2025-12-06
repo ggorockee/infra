@@ -63,98 +63,13 @@ clickhouse:
   # @section -- ClickHouse Settings
   # @default -- true
   enabled: true
-  # clickhouse.zookeeper -- Zookeeper default values.
-  # Ref: https://github.com/bitnami/charts/blob/main/bitnami/zookeeper/values.yaml
+  # clickhouse.zookeeper -- Zookeeper 설정
+  # Single ClickHouse node 환경에서는 Zookeeper 불필요
   # @ignored
   zookeeper:
-    # Please DO NOT override this value. This chart installs Zookeeper separately.
-    # Only if you know what you are doing, proceed with overriding.
-    # To see default values, refer to the zookeeper section in the values.yaml of the upstream clickhouse chart.
-
-    # clickhouse.zookeeper.enabled -- Whether to install Zookeeper. If false, `clickhouse.externalZookeeper` must be set.
-    # @section -- Zookeeper Settings
-    # @default -- true
     # Zookeeper 비활성화 - single ClickHouse node에서 불필요
+    # ReplicatedMergeTree 미사용, distributed DDL 미사용
     enabled: false
-    # clickhouse.zookeeper.podAnnotations -- Annotations for the Zookeeper pod.
-    # @section -- Zookeeper Settings
-    # @default -- { signoz.io/scrape: "true", signoz.io/port: "9141", signoz.io/path: "/metrics" }
-    podAnnotations:
-      signoz.io/scrape: "true"
-      signoz.io/port: "9141"
-      signoz.io/path: "/metrics"
-    # clickhouse.zookeeper.metrics -- Zookeeper metrics settings.
-    # @section -- Zookeeper Settings
-    # @default -- { enabled: true }
-    metrics:
-      enabled: true
-    # clickhouse.zookeeper.logLevel -- Zookeeper log level.
-    # @section -- Zookeeper Settings
-    # @default -- "INFO"
-    logLevel: INFO
-    # clickhouse.zookeeper.livenessProbe -- Zookeeper liveness probe settings.
-    # @section -- Zookeeper Settings
-    # @default -- { enabled: false }
-    livenessProbe:
-      enabled: false
-    # clickhouse.zookeeper.readinessProbe -- Zookeeper readiness probe settings.
-    # @section -- Zookeeper Settings
-    # @default -- { enabled: false }
-    readinessProbe:
-      enabled: false
-    # clickhouse.zookeeper.customLivenessProbe -- Custom liveness probe for Zookeeper.
-    # @section -- Zookeeper Settings
-    # @default -- "Please checkout the default values in values.yml"
-    customLivenessProbe:
-      exec:
-        command: ['/bin/bash', '-c', 'curl -s -m 2 http://localhost:8080/commands/ruok | grep ruok']
-      initialDelaySeconds: 30
-      periodSeconds: 10
-      timeoutSeconds: 5
-      successThreshold: 1
-      failureThreshold: 6
-    # clickhouse.zookeeper.customReadinessProbe -- Custom readiness probe for Zookeeper.
-    # @section -- Zookeeper Settings
-    # @default -- "Please checkout the default values in values.yml"
-    customReadinessProbe:
-      exec:
-        command: ['/bin/bash', '-c', 'curl -s -m 2 http://localhost:8080/commands/ruok | grep error | grep null']
-      initialDelaySeconds: 5
-      periodSeconds: 10
-      timeoutSeconds: 5
-      successThreshold: 1
-      failureThreshold: 6
-    # clickhouse.zookeeper.image -- Zookeeper image configuration.
-    # @section -- Zookeeper Settings
-    image:
-      # clickhouse.zookeeper.image.registry -- Zookeeper image registry to use.
-      # @default -- (value of global.imageRegistry)
-      registry: *GLOBAL_IMAGE_REGISTRY
-      # clickhouse.zookeeper.image.repository -- Zookeeper image repository to use.
-      # @default -- "bitnami/zookeeper"
-      repository: signoz/zookeeper
-      # clickhouse.zookeeper.image.tag -- Zookeeper image tag. SigNoz ClickHouse does not support all versions of Zookeeper.
-      # Please override the default only if you know what you are doing.
-      # @default -- "3.7.1"
-      tag: 3.7.1
-    # clickhouse.zookeeper.replicaCount -- Replica count for Zookeeper.
-    # @section -- Zookeeper Settings
-    # @default -- 1
-    replicaCount: 1
-    # clickhouse.zookeeper.namespaceOverride -- Whether to install Zookeeper into a different namespace than the parent.
-    # @section -- Zookeeper Settings
-    # @default -- ""
-    namespaceOverride: ""
-    # clickhouse.zookeeper.resources -- Resources requests and limits for Zookeeper.
-    # @section -- Zookeeper Settings
-    # @default -- { limits: {}, requests: { memory: "256Mi", cpu: "100m" } }
-    resources:
-      limits:
-        memory: 1Gi
-        cpu: 500m
-      requests:
-        memory: 512Mi
-        cpu: 200m
   # clickhouse.namespace -- The namespace to install ClickHouse and `clickhouse-operator` into (defaults to the chart's installation namespace).
   # @section -- ClickHouse Settings
   # @default -- ""
