@@ -1,0 +1,32 @@
+{{- range $i, $s := .Values.runner.scrapers }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "goScraper.fullname" $ }}-{{ $s.name }}
+  labels:
+    {{- include "goScraper.labels" $ | nindent 4 }}
+data:
+  {{- with $.Values.configMap.data}}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+  SCRAPER_NAME: {{ $s.name | quote }}
+  {{- with $s.keywords }}
+  SCRAPE_KEYWORDS: {{ . | join "," | quote }}
+  {{- end }}
+---
+{{- end }}
+
+{{- if .Values.cleanup.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "goScraper.fullname" . }}-cleanup
+  labels:
+    {{- include "goScraper.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cleanup
+data:
+  CLEANUP_ENABLED: "true"
+  {{- with .Values.configMap.data}}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+{{- end }}

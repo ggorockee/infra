@@ -1,0 +1,82 @@
+# Default values for goScraper
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+enabled: true
+
+image:
+  repository: ggorockee/go-scraper
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels:
+  job: go-scraper
+  service: go-scraper
+
+podSecurityContext: {}
+securityContext: {}
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+configMap:
+  enabled: true
+  name: ""
+  data:
+    TIMEZONE: "Asia/Seoul"
+    LOG_LEVEL: "info"
+
+secret:
+  enabled: true
+  names:
+    - "reviewmaps-db-credentials"
+    - "naver-api-creds"
+
+# CronJob configuration
+runner:
+  enabled: true
+  scrapers:
+    - name: reviewnote
+      schedule: "0 2 * * *"
+      timeZone: "Asia/Seoul"
+      concurrencyPolicy: "Forbid"
+      startingDeadlineSeconds: 900
+      successfulJobsHistoryLimit: 1
+      failedJobsHistoryLimit: 3
+      backoffLimit: 3
+      ttlSecondsAfterFinished: 3600
+      keywords: []
+      restartPolicy: "OnFailure"
+
+# Cleanup CronJob
+cleanup:
+  enabled: false
+  schedule: "0 5 * * *"
+  timeZone: "Asia/Seoul"
+  concurrencyPolicy: "Forbid"
+  startingDeadlineSeconds: 1800
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 3600
+  restartPolicy: "OnFailure"

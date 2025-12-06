@@ -644,6 +644,93 @@ web:
 
 #########################################################################
 
+#########################################################################
+# goScraper 설정 (Go-based scraper)
+#########################################################################
+goScraper:
+  enabled: true
+
+  image:
+    repository: ggorockee/go-scraper
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  serviceAccount:
+    create: true
+    automount: true
+    annotations: {}
+    name: ""
+
+  podAnnotations: {}
+  podLabels:
+    job: go-scraper
+    service: go-scraper
+
+  podSecurityContext: {}
+  securityContext: {}
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  configMap:
+    enabled: true
+    name: ""
+    data:
+      TIMEZONE: "Asia/Seoul"
+      LOG_LEVEL: "info"
+      SIGNOZ_ENDPOINT: "signoz-otel-collector.monitoring.svc.cluster.local:4318"
+
+  secret:
+    enabled: true
+    names:
+      - "reviewmaps-db-credentials"
+      - "naver-api-creds"
+
+  # CronJob 설정
+  runner:
+    enabled: true
+    scrapers:
+      - name: reviewnote
+        schedule: "0 2 * * *"              # 매일 02:00
+        timeZone: "Asia/Seoul"
+        concurrencyPolicy: "Forbid"
+        startingDeadlineSeconds: 900
+        successfulJobsHistoryLimit: 1
+        failedJobsHistoryLimit: 3
+        backoffLimit: 3
+        ttlSecondsAfterFinished: 3600
+        # 키워드 없이 전체 수집
+        keywords: []
+        restartPolicy: "OnFailure"
+
+  # Cleanup CronJob (만료된 캠페인 정리) - 추후 구현 시 활성화
+  cleanup:
+    enabled: false
+    schedule: "0 5 * * *"                  # 매일 05:00
+    timeZone: "Asia/Seoul"
+    concurrencyPolicy: "Forbid"
+    startingDeadlineSeconds: 1800
+    successfulJobsHistoryLimit: 1
+    failedJobsHistoryLimit: 3
+    backoffLimit: 3
+    ttlSecondsAfterFinished: 3600
+    restartPolicy: "OnFailure"
+
+#########################################################################
+
 database:
   enabled: true
   global:
