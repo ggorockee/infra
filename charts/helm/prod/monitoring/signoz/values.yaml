@@ -85,8 +85,7 @@ clickhouse:
   # clickhouse.cluster -- ClickHouse cluster name.
   # @section -- ClickHouse Settings
   # @default -- "cluster"
-  # Single node 모드 - cluster 이름 제거
-  cluster: ""
+  cluster: cluster
   # clickhouse.database -- ClickHouse Settings for SigNoz Metrics.
   # @section -- ClickHouse Settings
   # @default -- "signoz_metrics"
