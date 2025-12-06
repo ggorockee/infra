@@ -64,12 +64,10 @@ clickhouse:
   # @default -- true
   enabled: true
   # clickhouse.zookeeper -- Zookeeper 설정
-  # Single ClickHouse node 환경에서는 Zookeeper 불필요
   # @ignored
   zookeeper:
-    # Zookeeper 비활성화 - single ClickHouse node에서 불필요
-    # ReplicatedMergeTree 미사용, distributed DDL 미사용
-    enabled: false
+    enabled: true
+    replicaCount: 1
   # clickhouse.namespace -- The namespace to install ClickHouse and `clickhouse-operator` into (defaults to the chart's installation namespace).
   # @section -- ClickHouse Settings
   # @default -- ""
