@@ -559,12 +559,36 @@ admin:
       cpu: 500m
       memory: 512Mi
 
-  # Health check probes disabled - /admin/ returns 400 without proper session
-  livenessProbe: {}
+  # Health check probes using dedicated endpoints
+  livenessProbe:
+    httpGet:
+      path: /liveness/
+      port: django
+      scheme: HTTP
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
 
-  readinessProbe: {}
+  readinessProbe:
+    httpGet:
+      path: /readiness/
+      port: django
+      scheme: HTTP
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
 
-  startupProbe: {}
+  startupProbe:
+    httpGet:
+      path: /health/
+      port: django
+      scheme: HTTP
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 12
 
   autoscaling:
     enabled: false
