@@ -4,7 +4,7 @@ kind: CronJob
 metadata:
   name: {{ .Release.Name }}-go-cleanup
   labels:
-    {{- include "goScraper.labels" . | nindent 4 }}
+    {{- include "go-scraper.labels" . | nindent 4 }}
     app.kubernetes.io/component: cleanup
 spec:
   schedule: {{ .Values.cleanup.schedule | quote }}
@@ -24,12 +24,12 @@ spec:
       template:
         metadata:
           labels:
-            {{- include "goScraper.labels" . | nindent 12 }}
+            {{- include "go-scraper.labels" . | nindent 12 }}
             app.kubernetes.io/component: cleanup
         spec:
           restartPolicy: {{ .Values.cleanup.restartPolicy | default "OnFailure" }}
           {{- if .Values.serviceAccount.create }}
-          serviceAccountName: {{ include "goScraper.serviceAccountName" . }}
+          serviceAccountName: {{ include "go-scraper.serviceAccountName" . }}
           {{- end }}
           containers:
             - name: {{ .Chart.Name }}-cleanup
@@ -39,7 +39,7 @@ spec:
               args: ["cleanup"]
               envFrom:
                 - configMapRef:
-                    name: {{ include "goScraper.fullname" . }}-cleanup
+                    name: {{ include "go-scraper.fullname" . }}-cleanup
               {{- if and .Values.secret.enabled .Values.secret.names }}
               {{- range .Values.secret.names }}
                 - secretRef:
