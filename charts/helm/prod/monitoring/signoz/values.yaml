@@ -85,7 +85,8 @@ clickhouse:
   # clickhouse.cluster -- ClickHouse cluster name.
   # @section -- ClickHouse Settings
   # @default -- "cluster"
-  cluster: cluster
+  # Single node 모드 - cluster 이름 제거
+  cluster: ""
   # clickhouse.database -- ClickHouse Settings for SigNoz Metrics.
   # @section -- ClickHouse Settings
   # @default -- "signoz_metrics"
@@ -312,6 +313,7 @@ clickhouse:
   # For a full list of options, see https://github.com/Altinity/clickhouse-operator/blob/master/docs/custom_resource_explained.md
   # @section -- ClickHouse Settings
   # @default -- { shardsCount: 1, replicasCount: 1 }
+  # Single node 모드 - 1 shard, 1 replica (Zookeeper 불필요)
   layout:
     shardsCount: 1
     replicasCount: 1
