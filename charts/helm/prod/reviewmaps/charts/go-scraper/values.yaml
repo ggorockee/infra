@@ -61,7 +61,7 @@ runner:
   enabled: true
   scrapers:
     - name: reviewnote
-      schedule: "0 2 * * *"
+      schedule: "0 2 * * *"  # 새벽 2시
       timeZone: "Asia/Seoul"
       concurrencyPolicy: "Forbid"
       startingDeadlineSeconds: 900
@@ -72,7 +72,7 @@ runner:
       keywords: []
       restartPolicy: "OnFailure"
     - name: inflexer
-      schedule: "0 3 * * *"
+      schedule: "0 1 * * *"  # 새벽 1시
       timeZone: "Asia/Seoul"
       concurrencyPolicy: "Forbid"
       startingDeadlineSeconds: 900
@@ -142,8 +142,8 @@ runner:
 
 # Cleanup CronJob
 cleanup:
-  enabled: false
-  schedule: "0 5 * * *"
+  enabled: true
+  schedule: "0 5 * * *"  # 새벽 5시
   timeZone: "Asia/Seoul"
   concurrencyPolicy: "Forbid"
   startingDeadlineSeconds: 1800
