@@ -72,7 +72,7 @@ runner:
       keywords: []
       restartPolicy: "OnFailure"
     - name: inflexer
-      schedule: "0 1 * * *"  # 새벽 1시
+      schedule: "30 0 * * *"  # 12시 30분
       timeZone: "Asia/Seoul"
       concurrencyPolicy: "Forbid"
       startingDeadlineSeconds: 900
