@@ -203,10 +203,10 @@ clickhouse:
   # @default -- { requests: { cpu: "100m", memory: "200Mi" } }
   # ClickHouse 메모리 증가 (6GB VM 기준)
   # 주의: ClickHouse는 limits의 90%를 max_server_memory_usage로 설정
-  # 5.5Gi limits → 약 4.95GB 내부 메모리 사용 가능
+  # 6Gi limits → 약 5.4GB 내부 메모리 사용 가능
   resources:
     limits:
-      memory: 5.5Gi
+      memory: 6Gi
       cpu: "2"
     requests:
       memory: 3Gi
