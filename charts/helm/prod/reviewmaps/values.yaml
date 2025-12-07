@@ -592,7 +592,7 @@ go-scraper:
         restartPolicy: "OnFailure"
 
       - name: inflexer
-        schedule: "0 4 * * *"              # 매일 04:00
+        schedule: "5 0 * * *"              # 매일 00:05
         timeZone: "Asia/Seoul"
         concurrencyPolicy: "Forbid"
         startingDeadlineSeconds: 900
@@ -609,7 +609,7 @@ go-scraper:
   # 삭제 조건: apply_deadline < TODAY (자정이 지난 경우)
   cleanup:
     enabled: true
-    schedule: "0 6 * * *"                  # 매일 06:00 (새벽 6시)
+    schedule: "0 5 * * *"                  # 매일 05:00
     timeZone: "Asia/Seoul"
     concurrencyPolicy: "Forbid"
     startingDeadlineSeconds: 1800
