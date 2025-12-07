@@ -340,6 +340,15 @@ profiles: {}
 defaultProfiles:
   default/allow_experimental_window_functions: "1"
   default/allow_nondeterministic_mutations: "1"
+  default/secondary_indices_enable_bulk_filtering: "0"
+  admin/secondary_indices_enable_bulk_filtering: "0"
+  default/query_plan_max_limit_for_lazy_materialization: "0"
+  admin/query_plan_max_limit_for_lazy_materialization: "0"
+  # 메모리 제한 추가
+  default/max_memory_usage: "2000000000"           # 2GB per query
+  default/max_bytes_before_external_group_by: "1000000000"  # 1GB, 초과시 디스크 사용
+  default/max_bytes_before_external_sort: "1000000000"      # 1GB
+  admin/max_memory_usage: "3000000000"             # admin은 3GB 허용
 
 # -- Clickhouse init container to copy histogramQuantile UDF
 # @default -- See `values.yaml` for defaults
