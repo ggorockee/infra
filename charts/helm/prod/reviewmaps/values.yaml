@@ -523,7 +523,7 @@ go-scraper:
   image:
     repository: ggorockee/go-scraper
     pullPolicy: IfNotPresent
-    tag: "20251207-bd12547"
+    tag: "20251207-03a1008"
 
   imagePullSecrets: []
   nameOverride: ""
