@@ -5,103 +5,91 @@
   "widgets": [
     {
       "id": "row-server",
-      "title": "Server API (reviewmaps-server)",
+      "title": "Server API",
       "description": "",
       "panelTypes": "row",
       "query": {}
     },
     {
-      "id": "http-requests-rate",
-      "title": "HTTP Requests Rate (/min)",
-      "description": "분당 HTTP 요청 수",
+      "id": "http-request-count",
+      "title": "HTTP Request Count",
+      "description": "HTTP 요청 수",
       "panelTypes": "graph",
       "query": {
-        "clickhouse_sql": [
-          {
-            "name": "A",
-            "legend": "{{method}} {{path}}",
-            "query": "SELECT toStartOfMinute(timestamp) as ts, method, path, count() as value FROM signoz_metrics.distributed_samples_v4 WHERE metric_name = 'http_requests_total' AND JSONExtractString(labels, 'service_name') = 'reviewmaps-server' AND timestamp >= now() - INTERVAL 1 HOUR GROUP BY ts, method, path ORDER BY ts"
-          }
-        ],
         "promql": [
           {
             "name": "A",
-            "query": "sum(rate(http_requests_total{service_name=\"reviewmaps-server\"}[5m])) by (method, path) * 60",
-            "legend": "{{method}} {{path}}"
+            "query": "sum(rate(http_server_response_size_count[5m])) by (http_method, http_route)",
+            "legend": "{{http_method}} {{http_route}}"
           }
         ],
         "queryType": "promql"
       }
     },
     {
-      "id": "http-latency-percentiles",
-      "title": "HTTP Latency (P50, P90, P99)",
-      "description": "HTTP 요청 지연시간 백분위수",
+      "id": "http-duration-max",
+      "title": "HTTP Duration (Max)",
+      "description": "HTTP 요청 최대 지연시간",
       "panelTypes": "graph",
       "query": {
         "promql": [
           {
-            "name": "P50",
-            "query": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{service_name=\"reviewmaps-server\"}[5m])) by (le))",
-            "legend": "P50"
+            "name": "A",
+            "query": "max(http_server_duration_max) by (http_method, http_route)",
+            "legend": "{{http_method}} {{http_route}}"
+          }
+        ],
+        "queryType": "promql"
+      }
+    },
+    {
+      "id": "http-duration-min",
+      "title": "HTTP Duration (Min)",
+      "description": "HTTP 요청 최소 지연시간",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [
+          {
+            "name": "A",
+            "query": "min(http_server_duration_min) by (http_method, http_route)",
+            "legend": "{{http_method}} {{http_route}}"
+          }
+        ],
+        "queryType": "promql"
+      }
+    },
+    {
+      "id": "http-response-size",
+      "title": "HTTP Response Size (Total)",
+      "description": "HTTP 응답 크기 합계",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(rate(http_server_response_size_sum[5m])) by (http_method, http_route)",
+            "legend": "{{http_method}} {{http_route}}"
+          }
+        ],
+        "queryType": "promql"
+      }
+    },
+    {
+      "id": "http-request-size",
+      "title": "HTTP Request Size (Max/Min)",
+      "description": "HTTP 요청 크기",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [
+          {
+            "name": "Max",
+            "query": "max(http_server_request_size_max) by (http_route)",
+            "legend": "Max {{http_route}}"
           },
           {
-            "name": "P90",
-            "query": "histogram_quantile(0.90, sum(rate(http_request_duration_seconds_bucket{service_name=\"reviewmaps-server\"}[5m])) by (le))",
-            "legend": "P90"
-          },
-          {
-            "name": "P99",
-            "query": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{service_name=\"reviewmaps-server\"}[5m])) by (le))",
-            "legend": "P99"
-          }
-        ],
-        "queryType": "promql"
-      }
-    },
-    {
-      "id": "http-active-requests",
-      "title": "Active Requests",
-      "description": "현재 활성 HTTP 요청 수",
-      "panelTypes": "graph",
-      "query": {
-        "promql": [
-          {
-            "name": "A",
-            "query": "sum(http_active_requests{service_name=\"reviewmaps-server\"})",
-            "legend": "Active Requests"
-          }
-        ],
-        "queryType": "promql"
-      }
-    },
-    {
-      "id": "http-error-rate",
-      "title": "HTTP Error Rate (%)",
-      "description": "HTTP 에러 비율 (4xx/5xx)",
-      "panelTypes": "graph",
-      "query": {
-        "promql": [
-          {
-            "name": "A",
-            "query": "sum(rate(http_requests_total{service_name=\"reviewmaps-server\", status=~\"4..|5..\"}[5m])) / sum(rate(http_requests_total{service_name=\"reviewmaps-server\"}[5m])) * 100",
-            "legend": "Error Rate %"
-          }
-        ],
-        "queryType": "promql"
-      }
-    },
-    {
-      "id": "http-requests-by-status",
-      "title": "Requests by Status Code",
-      "description": "상태 코드별 요청 수",
-      "panelTypes": "graph",
-      "query": {
-        "promql": [
-          {
-            "name": "A",
-            "query": "sum(rate(http_requests_total{service_name=\"reviewmaps-server\"}[5m])) by (status) * 60",
-            "legend": "{{status}}"
+            "name": "Min",
+            "query": "min(http_server_request_size_min) by (http_route)",
+            "legend": "Min {{http_route}}"
           }
         ],
         "queryType": "promql"
@@ -117,13 +105,13 @@
     {
       "id": "scraper-campaigns-scraped",
       "title": "Campaigns Scraped",
-      "description": "수집된 캠페인 수 (시간당)",
+      "description": "수집된 캠페인 수",
       "panelTypes": "graph",
       "query": {
         "promql": [
           {
             "name": "A",
-            "query": "sum(increase(scraper_campaigns_scraped_total{service_name=\"go-scraper\"}[1h])) by (scraper)",
+            "query": "sum(increase(scraper_campaigns_scraped_total[1h])) by (scraper)",
             "legend": "{{scraper}}"
           }
         ],
@@ -139,45 +127,40 @@
         "promql": [
           {
             "name": "A",
-            "query": "histogram_quantile(0.95, sum(rate(scraper_scrape_duration_bucket{service_name=\"go-scraper\"}[1h])) by (le, scraper))",
-            "legend": "{{scraper}} P95"
+            "query": "sum(scraper_scrape_duration) by (scraper)",
+            "legend": "{{scraper}}"
           }
         ],
         "queryType": "promql"
       }
     },
     {
-      "id": "scraper-total-vs-errors",
-      "title": "Scrape Total vs Errors",
-      "description": "스크래핑 실행 횟수 vs 에러",
+      "id": "scraper-total",
+      "title": "Scrape Runs",
+      "description": "스크래핑 실행 횟수",
       "panelTypes": "graph",
       "query": {
         "promql": [
           {
-            "name": "Total",
-            "query": "sum(increase(scraper_scrape_total_total{service_name=\"go-scraper\"}[1h])) by (scraper)",
-            "legend": "{{scraper}} Total"
-          },
-          {
-            "name": "Errors",
-            "query": "sum(increase(scraper_scrape_errors_total{service_name=\"go-scraper\"}[1h])) by (scraper)",
-            "legend": "{{scraper}} Errors"
+            "name": "A",
+            "query": "sum(increase(scraper_scrape_total[24h])) by (scraper)",
+            "legend": "{{scraper}}"
           }
         ],
         "queryType": "promql"
       }
     },
     {
-      "id": "scraper-stats-24h",
-      "title": "Scraper Stats (24h)",
-      "description": "24시간 스크래퍼 통계",
-      "panelTypes": "value",
+      "id": "scraper-errors",
+      "title": "Scrape Errors",
+      "description": "스크래핑 에러",
+      "panelTypes": "graph",
       "query": {
         "promql": [
           {
-            "name": "Campaigns",
-            "query": "sum(increase(scraper_campaigns_scraped_total{service_name=\"go-scraper\"}[24h]))",
-            "legend": "Campaigns Scraped"
+            "name": "A",
+            "query": "sum(increase(scraper_scrape_errors[24h])) by (scraper)",
+            "legend": "{{scraper}}"
           }
         ],
         "queryType": "promql"
@@ -191,42 +174,32 @@
       "query": {}
     },
     {
-      "id": "enrich-cache-hit-rate",
-      "title": "Cache Hit Rate (%)",
-      "description": "Enrich 캐시 히트율",
+      "id": "enrich-cache-hits",
+      "title": "Cache Hits",
+      "description": "캐시 히트 수",
       "panelTypes": "graph",
       "query": {
         "promql": [
           {
             "name": "A",
-            "query": "sum(rate(scraper_enrich_cache_hits_total{service_name=\"go-scraper\"}[1h])) / sum(rate(scraper_enrich_total_total{service_name=\"go-scraper\"}[1h])) * 100",
-            "legend": "Cache Hit Rate %"
+            "query": "sum(increase(scraper_enrich_cache_hits[1h])) by (scraper)",
+            "legend": "{{scraper}}"
           }
         ],
         "queryType": "promql"
       }
     },
     {
-      "id": "enrich-operations",
-      "title": "Enrich Operations",
-      "description": "Enrich 작업 통계",
+      "id": "enrich-api-calls",
+      "title": "API Calls (Naver)",
+      "description": "네이버 API 호출 수",
       "panelTypes": "graph",
       "query": {
         "promql": [
           {
-            "name": "Total",
-            "query": "sum(increase(scraper_enrich_total_total{service_name=\"go-scraper\"}[1h])) by (scraper)",
-            "legend": "{{scraper}} Total"
-          },
-          {
-            "name": "Cache Hits",
-            "query": "sum(increase(scraper_enrich_cache_hits_total{service_name=\"go-scraper\"}[1h])) by (scraper)",
-            "legend": "{{scraper}} Cache Hits"
-          },
-          {
-            "name": "API Calls",
-            "query": "sum(increase(scraper_enrich_api_calls_total{service_name=\"go-scraper\"}[1h])) by (scraper)",
-            "legend": "{{scraper}} API Calls"
+            "name": "A",
+            "query": "sum(increase(scraper_enrich_api_calls[1h])) by (scraper)",
+            "legend": "{{scraper}}"
           }
         ],
         "queryType": "promql"
@@ -241,7 +214,7 @@
         "promql": [
           {
             "name": "A",
-            "query": "sum(increase(scraper_enrich_geocodes_total{service_name=\"go-scraper\"}[1h])) by (scraper)",
+            "query": "sum(increase(scraper_enrich_geocodes[1h])) by (scraper)",
             "legend": "{{scraper}}"
           }
         ],
@@ -257,14 +230,14 @@
     },
     {
       "id": "cleanup-deleted",
-      "title": "Campaigns Deleted (24h)",
-      "description": "24시간 삭제된 캠페인 수",
+      "title": "Campaigns Deleted",
+      "description": "삭제된 캠페인 수",
       "panelTypes": "graph",
       "query": {
         "promql": [
           {
             "name": "A",
-            "query": "sum(increase(scraper_cleanup_deleted_total{service_name=\"go-scraper\"}[24h]))",
+            "query": "sum(increase(scraper_cleanup_deleted[24h]))",
             "legend": "Deleted"
           }
         ],
@@ -280,29 +253,8 @@
         "promql": [
           {
             "name": "A",
-            "query": "histogram_quantile(0.95, sum(rate(scraper_cleanup_duration_bucket{service_name=\"go-scraper\"}[24h])) by (le))",
-            "legend": "P95"
-          }
-        ],
-        "queryType": "promql"
-      }
-    },
-    {
-      "id": "cleanup-stats",
-      "title": "Cleanup Stats",
-      "description": "정리 작업 통계",
-      "panelTypes": "graph",
-      "query": {
-        "promql": [
-          {
-            "name": "Total",
-            "query": "sum(increase(scraper_cleanup_total_total{service_name=\"go-scraper\"}[24h]))",
-            "legend": "Total Runs"
-          },
-          {
-            "name": "Errors",
-            "query": "sum(increase(scraper_cleanup_errors_total{service_name=\"go-scraper\"}[24h]))",
-            "legend": "Errors"
+            "query": "sum(scraper_cleanup_duration)",
+            "legend": "Duration"
           }
         ],
         "queryType": "promql"
