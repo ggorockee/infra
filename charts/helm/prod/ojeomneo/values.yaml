@@ -14,7 +14,7 @@ server:
   image:
     repository: ggorockee/ojeomneo-server-with-go
     pullPolicy: IfNotPresent
-    tag: "20251207-ed1e21d"
+    tag: "20251208-42ca510"
 
   imagePullSecrets: []
   nameOverride: ""
@@ -99,27 +99,27 @@ server:
       # 애플리케이션 기본 설정
       APP_ENV: "production"
       APP_PORT: "3000"
-      
+
       # 데이터베이스 설정 (기본값)
       POSTGRES_PORT: "5432"
-      
+
       # Redis 연결 설정 (기본값)
       REDIS_HOST: "ojeomneo-redis-master"
       REDIS_PORT: "6379"
-      
+
       # Gemini LLM 설정 (기본값)
       GEMINI_MODEL: "gemini-2.0-flash"
-      
+
       # OpenTelemetry 설정 (선택적)
       OTEL_EXPORTER_OTLP_ENDPOINT: "signoz-otel-collector.monitoring:4317"
-      
+
       # JWT 토큰 설정 (기본값)
       JWT_ACCESS_TOKEN_EXPIRE_MINUTES: "15"
       JWT_REFRESH_TOKEN_EXPIRE_DAYS: "7"
-      
+
       # SNS 로그인 설정 - Apple (기본값)
       APPLE_CLIENT_ID: "com.woohalabs.ojeomneo"
-      
+
       # 기타 설정
       # 메뉴 시드 데이터 (없는 메뉴만 추가, 기존 데이터 유지)
       SEED_DATA: "true"
