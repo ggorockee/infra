@@ -396,7 +396,7 @@ admin:
   image:
     repository: ggorockee/reviewmaps-admin
     pullPolicy: IfNotPresent
-    tag: "20251207-ffdd0d8"
+    tag: "20251209-1f5b6cb"
 
   imagePullSecrets: []
   nameOverride: ""
