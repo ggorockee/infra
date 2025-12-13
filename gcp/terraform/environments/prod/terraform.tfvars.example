@@ -1,0 +1,13 @@
+# GCP 프로젝트 설정
+project_id  = "infra-480802"
+region      = "asia-northeast3"
+environment = "prod"
+
+# 도메인 설정
+domain_name = "woohalabs.com"
+
+# 예산 설정
+budget_amount = 130
+
+# 이 파일을 terraform.tfvars로 복사하여 사용하세요
+# terraform.tfvars는 .gitignore에 포함되어 있습니다
