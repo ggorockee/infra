@@ -1,12 +1,22 @@
-name: GCP Terraform Apply
+name: GCP Terraform Apply (Disabled)
+
+# This workflow is disabled in favor of PR comment-based apply
+# To apply Terraform changes:
+# 1. Create a PR
+# 2. Review the plan
+# 3. Comment 'apply' or 'ok' on the PR
+# 4. Apply will run automatically
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'gcp/terraform/**'
-      - '.github/workflows/gcp-terraform-apply.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to apply'
+        required: true
+        default: 'prod'
+        type: choice
+        options:
+          - prod
 
 permissions:
   contents: read
