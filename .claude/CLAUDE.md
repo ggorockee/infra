@@ -374,6 +374,34 @@ feat: Cloud SQL 모듈 추가
 
 누락 시 PR 리뷰에서 반드시 지적하고 수정 요청
 
+## Terraform 로컬 검증 제한
+
+**🔴 중요 규칙**: 로컬 환경에서 Terraform Plan/Apply 실행 불가
+
+### 제한 사유
+- GCP 인증 정보는 GitHub Actions Secrets에만 존재
+- 로컬 환경에는 GCP 서비스 계정 키가 없음
+- 보안상 로컬에 프로덕션 인증 정보 저장 금지
+
+### 검증 프로세스
+1. **코드 작성**: 로컬에서 Terraform 코드 작성
+2. **Git 푸시**: Feature 브랜치에 커밋 및 푸시
+3. **CI/CD 검증**: GitHub Actions에서 자동으로 `terraform plan` 실행
+4. **결과 확인**: PR에서 Terraform Plan 결과 확인
+5. **승인 및 배포**: PR 승인 후 자동으로 `terraform apply` 실행
+
+### 작업 플로우
+- ✅ `terraform init`: 로컬에서 실행 가능 (provider 다운로드)
+- ✅ `terraform validate`: 로컬에서 실행 가능 (문법 검증)
+- ✅ `terraform fmt`: 로컬에서 실행 가능 (포맷팅)
+- ❌ `terraform plan`: GitHub Actions에서만 실행
+- ❌ `terraform apply`: GitHub Actions에서만 실행
+
+### 주의사항
+- 로컬에서 `terraform plan` 시도 시 인증 에러 발생
+- 검증은 반드시 Git을 통한 CI/CD 파이프라인으로 수행
+- PR 생성 후 Terraform Plan 결과를 확인하여 변경사항 검증
+
 ## 주의사항
 
 - **멀티 클라우드**: AWS와 GCP 개념을 상호 참조하여 설명
@@ -383,3 +411,4 @@ feat: Cloud SQL 모듈 추가
 - **Git 워크플로우**: main 브랜치 직접 작업 절대 금지, 항상 feature 브랜치 사용
 - **문서 작성**: 프로그래밍 코드 블록 제외, JSON/표 형식만 허용
 - **Terraform 문서 동기화**: 리소스 변경 시 TERRAFORM_RESOURCES.md 필수 업데이트
+- **Terraform 검증**: 로컬에서는 불가능, Git CI/CD 파이프라인으로만 검증
