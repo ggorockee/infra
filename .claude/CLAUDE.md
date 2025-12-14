@@ -321,6 +321,59 @@ npm install package-name
 - `claudedocs/` 디렉토리 내 모든 문서
 - Git 저장소의 모든 마크다운 문서
 
+## Terraform 문서 동기화 규칙
+
+**⚠️ 중요 규칙**: Terraform 리소스 변경 시 문서 동기화 필수
+
+### 문서 동기화 트리거
+
+다음 작업 시 `gcp/terraform/TERRAFORM_RESOURCES.md`를 **반드시** 업데이트:
+
+1. **리소스 생성/삭제**
+   - `terraform apply`로 리소스 추가/제거
+   - 모듈 활성화/비활성화 (`main.tf` 주석 처리 변경)
+   - Phase 진행 (Phase 1 → Phase 2 → Phase 3)
+
+2. **리소스 이름 변경**
+   - 네이밍 컨벤션 변경
+   - 환경 변경 (prod/dev/staging)
+   - 도메인 변경
+
+3. **비용 변동**
+   - 새로운 리소스 추가로 인한 비용 증가
+   - 월별 실제 비용 확인 후 업데이트
+
+### 업데이트 체크리스트
+
+Terraform 변경 시 다음을 확인하고 업데이트:
+
+- [ ] **현재 배포된 리소스 테이블** 업데이트
+- [ ] **Phase 2 예정 리소스** 상태 변경 (⏸️ Pending → ✅ Active)
+- [ ] **리소스 히스토리** 섹션에 변경 내역 추가
+- [ ] **예상 월별 비용** 재계산
+- [ ] **Terraform 모듈 구조** 상태 업데이트
+- [ ] **최종 업데이트 날짜** 수정 (YYYY-MM-DD 형식)
+
+### 커밋 메시지 규칙
+
+Terraform 변경 시 커밋 메시지에 문서 업데이트 명시:
+
+```
+feat: Cloud SQL 모듈 추가
+
+- Cloud SQL PostgreSQL 인스턴스 생성
+- TERRAFORM_RESOURCES.md 업데이트
+- Phase 2 진행률: 1/7 완료
+```
+
+### 자동화 검증
+
+다음 파일이 함께 변경되었는지 확인:
+- `gcp/terraform/environments/prod/main.tf` 변경
+- `gcp/terraform/TERRAFORM_RESOURCES.md` 업데이트
+
+누락 시 PR 리뷰에서 반드시 지적하고 수정 요청
+
 ## 주의사항
 
 - **멀티 클라우드**: AWS와 GCP 개념을 상호 참조하여 설명
@@ -329,3 +382,4 @@ npm install package-name
 - **비용 최적화**: 각 클라우드의 가격 정책 차이 고려
 - **Git 워크플로우**: main 브랜치 직접 작업 절대 금지, 항상 feature 브랜치 사용
 - **문서 작성**: 프로그래밍 코드 블록 제외, JSON/표 형식만 허용
+- **Terraform 문서 동기화**: 리소스 변경 시 TERRAFORM_RESOURCES.md 필수 업데이트

@@ -31,15 +31,16 @@
 
 ## Phase별 마이그레이션 계획
 
-### Phase 1: 기반 구축 (1주차)
+### Phase 1: 기반 구축 및 네트워킹 (1주차) ✅ **완료** (2025-12-14)
 
-**목표**: Terraform 환경 및 GCP 프로젝트 초기 설정
+**목표**: Terraform 환경 및 GCP 프로젝트 초기 설정, VPC 네트워킹 및 GKE 클러스터 배포
 
 #### 1.1 GCP 프로젝트 설정
 - [x] GCP Organization 생성 또는 확인
-- [x] 프로젝트 생성 (infra 단일 환경)
+- [x] 프로젝트 생성 (infra-480802 단일 환경)
 - [x] Billing Account 연결
 - [x] Budget Alert 설정 (GKE $75, Cloud SQL $30, 총 $130)
+- [x] GKE API 활성화
 
 #### 1.2 IAM 설정
 - [ ] Root email에 2FA 활성화
@@ -55,51 +56,88 @@
 - [x] GCS State 백엔드 버킷 생성 (`woohalabs-terraform-state`)
 - [x] State 잠금 활성화 확인 (Object Versioning 활성화)
 
-#### 1.4 GitHub Actions 기본 설정
+#### 1.4 GitHub Actions GitOps 워크플로우 설정
 - [x] `.github/workflows/` 폴더 생성
-- [x] `terraform-plan.yml` 워크플로우 작성
-- [x] `terraform-apply.yml` 워크플로우 작성
+- [x] `gcp-terraform-plan.yml` 워크플로우 작성 (PR 생성 시 Plan)
+- [x] `gcp-terraform-apply.yml` 워크플로우 작성 (main 푸시 시 Apply)
 - [x] GitHub Secrets 설정 확인 (GCP_PROJECT_ID, GCP_SA_KEY)
+- [x] GitOps 패턴 구현 (PR → Plan → Squash Merge → Apply)
 
-**완료 기준**:
+#### 1.5 VPC 네트워킹 배포 (Phase 1 추가)
+- [x] VPC 생성 (`woohalabs-prod-vpc`)
+- [x] Private Subnet 생성 (`woohalabs-prod-private-subnet`)
+  - CIDR: 10.0.0.0/24 (Primary)
+  - Pods Range: 10.1.0.0/16
+  - Services Range: 10.2.0.0/16
+- [x] Cloud Router 생성 (`woohalabs-prod-router`)
+- [x] Cloud NAT 설정 (`woohalabs-prod-nat` - Private Subnet 아웃바운드)
+- [x] Firewall Rules 설정 (`woohalabs-prod-allow-internal` - 내부 통신 허용)
+
+#### 1.6 GKE Autopilot 클러스터 배포 (Phase 1 추가)
+- [x] GKE Autopilot 클러스터 생성 (`woohalabs-prod-gke-cluster`)
+  - 모드: Autopilot (완전 관리형)
+  - 리전: asia-northeast3 (Multi-AZ)
+  - Release Channel: REGULAR
+  - Network: woohalabs-prod-vpc
+  - Subnet: woohalabs-prod-private-subnet
+
+**배포 완료 리소스** (6개):
+- VPC Network: woohalabs-prod-vpc
+- Subnet: woohalabs-prod-private-subnet
+- Cloud Router: woohalabs-prod-router
+- Cloud NAT: woohalabs-prod-nat
+- Firewall Rule: woohalabs-prod-allow-internal
+- GKE Cluster: woohalabs-prod-gke-cluster
+
+**완료 기준**: ✅ 달성
 - Terraform init 성공
 - GitHub Actions에서 plan 실행 확인
 - State가 GCS에 저장됨
+- VPC 네트워킹 배포 완료
+- GKE Autopilot 클러스터 정상 운영
 
 ---
 
-### Phase 2: 네트워크 및 보안 (2주차)
+### Phase 2: Istio 서비스 메시 및 보안 (2주차)
 
-**목표**: VPC, Subnet, Cloud Armor, Cloud DNS 구성
+**목표**: Istio 배포, Ingress Gateway 설정, Cloud Armor, Cloud DNS 구성
 
-#### 2.1 VPC 및 Subnet 생성
-- [ ] VPC 생성 (woohalabs-vpc)
-- [ ] Subnet 생성 (asia-northeast3 region)
-  - [ ] public-subnet (외부 접근용)
-  - [ ] private-subnet (GKE, Cloud SQL용)
-- [ ] Cloud NAT 설정 (Private Subnet 아웃바운드)
-- [ ] Firewall Rules 설정 (최소 권한 원칙)
+#### 2.1 Istio 서비스 메시 배포
+- [ ] Istio 설치 (istioctl 또는 Helm) -- Helm
+- [ ] Istio Ingress Gateway 배포
+- [ ] Gateway 리소스 생성 (HTTP/HTTPS 트래픽 라우팅)
+- [ ] VirtualService 설정 (경로 기반 라우팅)
+- [ ] DestinationRule 설정 (로드 밸런싱, Circuit Breaking)
 
-#### 2.2 Cloud Armor WAF 설정
+#### 2.2 Istio Ingress 트래픽 관리
+- [ ] 기존 Kubernetes Ingress를 Istio Gateway로 전환
+- [ ] Multi-domain 라우팅 설정
+- [ ] Path 기반 라우팅 설정 (`/api/*`, `/admin/*`)
+- [ ] HTTPS 리다이렉트 설정
+
+#### 2.3 Cloud Armor WAF 설정 (Istio Ingress Gateway 연동)
 - [ ] Security Policy 생성
 - [ ] Rate Limiting 규칙 (브루트 포스 방지)
 - [ ] Geo-blocking 설정 (필요 시)
 - [ ] OWASP Top 10 기본 룰셋 적용
+- [ ] Istio Ingress Gateway와 Cloud Armor 연동
 
-#### 2.3 Cloud DNS 설정
+#### 2.4 Cloud DNS 설정
 - [ ] Cloud DNS Zone 생성 (woohalabs.com)
 - [ ] Route53에서 DNS 레코드 확인
 - [ ] NS 레코드 마이그레이션 준비 (도메인 레지스트라 업데이트 대기)
 
-#### 2.4 SSL 인증서 프로비저닝
+#### 2.5 SSL 인증서 프로비저닝
 - [ ] Google-managed SSL Certificate 생성
 - [ ] 도메인 소유권 확인
 - [ ] Certificate Map 생성 (Multi-domain 지원)
+- [ ] Istio Gateway에 SSL 인증서 연결
 
 **완료 기준**:
-- VPC Peering 테스트 성공
+- Istio 서비스 메시 정상 작동
+- Istio Ingress Gateway로 트래픽 라우팅 성공
 - Cloud Armor 정책 활성화
-- DNS Zone 생성 완료 (실제 전환은 Phase 4 이후)
+- DNS Zone 생성 완료 (실제 전환은 Phase 5 이후)
 
 ---
 
@@ -148,20 +186,13 @@
 
 ---
 
-### Phase 4: GKE Autopilot 클러스터 생성 (4주차)
+### Phase 4: 워크로드 마이그레이션 (4주차)
 
-**목표**: 예산 내 ($75/월) GKE Autopilot 클러스터 구축 및 워크로드 이전
+**목표**: GKE Autopilot 클러스터로 애플리케이션 워크로드 이전 (예산: $75/월)
 
-#### 4.1 GKE Autopilot 클러스터 생성
-- [ ] Cluster 생성 (asia-northeast3)
-  - [ ] Mode: Autopilot
-  - [ ] Release Channel: Stable
-  - [ ] Private Cluster 설정
-- [ ] Workload Identity 활성화
-- [ ] Network Policy 활성화
-- [ ] Maintenance Window 설정 (화/수 새벽 2~6시)
+**참고**: GKE 클러스터는 Phase 1에서 이미 배포 완료 (`woohalabs-prod-gke-cluster`)
 
-#### 4.2 워크로드 리소스 최적화 (앱 서비스 2개)
+#### 4.1 워크로드 리소스 최적화 (앱 서비스 2개)
 - [ ] 앱 서비스 1 Deployment 작성
   - [ ] requests: 500m CPU, 1Gi RAM
   - [ ] limits: 1000m CPU, 2Gi RAM
@@ -178,106 +209,96 @@
   - [ ] 비용: ~$3/월
 - [ ] **총 GKE 비용**: 평시 $33/월, 피크 $73/월
 
-#### 4.3 고가용성 설정
+#### 4.2 고가용성 설정
 - [ ] PodDisruptionBudget 설정 (minAvailable: 1)
 - [ ] Health Check 구현
   - [ ] livenessProbe: /health
   - [ ] readinessProbe: /ready
 - [ ] Graceful Shutdown 구현 (SIGTERM 처리)
 
-#### 4.4 워크로드 마이그레이션
+#### 4.3 워크로드 마이그레이션
 - [ ] ArgoCD 설정 업데이트 (GKE 클러스터 연결)
 - [ ] ConfigMap/Secret 복사
 - [ ] 카나리 배포 (트래픽 10% → 50% → 100%)
 - [ ] 모니터링 및 에러 확인
 
-#### 4.5 비용 검증
+#### 4.4 비용 검증
 - [ ] 실제 비용 모니터링 (일주일)
 - [ ] 예산 초과 시 리소스 조정
 - [ ] HPA 동작 확인 (평시 vs 피크)
 
 **완료 기준**:
-- GKE 클러스터 정상 운영
+- 워크로드 GKE 클러스터로 완전 이전
 - 월 비용 $75 이하 확인
 - 구 EKS 클러스터 종료 준비
 
 ---
 
-### Phase 5: Load Balancer 및 라우팅 (5주차)
+### Phase 5: DNS 전환 및 트래픽 마이그레이션 (5주차)
 
-**목표**: HTTP(S) Load Balancer + URL Map으로 AWS ALB 대체
+**목표**: Istio Ingress Gateway로 트래픽 전환 및 AWS 리소스 정리
 
-#### 5.1 Backend Service 생성
-- [ ] GKE Backend Service 생성 (API 서버용)
-- [ ] Health Check 설정
-- [ ] Session Affinity 설정 (필요 시)
-- [ ] Connection Draining 설정 (30초)
+**참고**: HTTP(S) Load Balancer는 Istio Ingress Gateway를 통해 자동 생성됨
 
-#### 5.2 URL Map 및 Routing 설정
-- [ ] URL Map 생성
-- [ ] Path 기반 라우팅 설정
-  - [ ] `/api/*` → API Backend
-  - [ ] `/admin/*` → Admin Backend
-  - [ ] `/` → Default Backend
-- [ ] Host 기반 라우팅 (Multi-domain)
-
-#### 5.3 HTTP(S) Load Balancer 생성
-- [ ] Global Load Balancer 생성
+#### 5.1 Istio Ingress Gateway 외부 IP 확보
+- [ ] Istio Ingress Gateway Service (LoadBalancer 타입) 생성
+- [ ] External IP 확인 및 고정 (Static IP 예약)
+- [ ] Cloud Armor Policy 연동
 - [ ] SSL Certificate 연결
-- [ ] Cloud Armor Policy 연결
-- [ ] Static IP 예약
 
-#### 5.4 DNS 전환
+#### 5.2 DNS 전환
 - [ ] Cloud DNS A 레코드 생성 (LB IP)
 - [ ] TTL 짧게 설정 (300초)
 - [ ] 도메인 레지스트라에서 NS 레코드 변경
 - [ ] DNS 전파 확인 (dig, nslookup)
 
-#### 5.5 트래픽 전환
+#### 5.3 트래픽 전환
 - [ ] DNS 전환 후 모니터링 (에러율, 레이턴시)
 - [ ] 24시간 안정화 확인
 - [ ] AWS ALB 트래픽 감소 확인
 - [ ] Route53 레코드 삭제 준비
 
 **완료 기준**:
-- GCP Load Balancer로 100% 트래픽 전환
+- Istio Ingress Gateway로 100% 트래픽 전환
 - SSL 인증서 정상 작동
 - Cloud Armor WAF 활성화
 - 에러율 0%, 레이턴시 정상
 
 ---
 
-### Phase 4: CI/CD 자동화 및 최종 정리 (4주차)
+### Phase 6: CI/CD 자동화 및 최종 정리 (6주차)
 
-**목표**: Terraform Plan/Apply 자동화 및 AWS 리소스 정리 완료
+**목표**: Terraform 자동화 완료 및 AWS 리소스 정리
 
-#### 4.1 GitHub Actions 완전 자동화
-- [ ] Terraform Plan 자동 실행 (PR 생성 시)
-- [ ] PR 코멘트로 Plan 결과 표시
-- [ ] main 병합 시 Terraform Apply 자동 실행
+**참고**: GitHub Actions GitOps 워크플로우는 Phase 1에서 이미 구현 완료
+
+#### 6.1 GitHub Actions 워크플로우 검증
+- [x] Terraform Plan 자동 실행 (PR 생성 시)
+- [x] PR 코멘트로 Plan 결과 표시
+- [x] main 병합 시 Terraform Apply 자동 실행
 - [ ] Slack/Discord 알림 연동 (선택 사항)
 
-#### 4.2 브랜치 보호 규칙 설정
-- [ ] main 브랜치 직접 푸시 금지
-- [ ] terraform-plan 체크 필수
-- [ ] Squash and Merge 설정
+#### 6.2 브랜치 보호 규칙 강화
+- [x] main 브랜치 직접 푸시 금지
+- [ ] terraform-plan 체크 필수 (Branch Protection Rule)
+- [x] Squash and Merge 기본값 설정
 
-#### 4.3 롤백 절차 문서화
+#### 6.3 롤백 절차 문서화
 - [ ] Terraform State 복원 방법
 - [ ] Git Revert 절차
 - [ ] 긴급 수동 복구 절차
 
-#### 4.4 모니터링 및 알림 설정
+#### 6.4 모니터링 및 알림 설정
 - [ ] Cloud Monitoring Dashboard 생성
   - [ ] GKE Pod CPU/메모리
   - [ ] Cloud SQL 성능
-  - [ ] Load Balancer 트래픽
+  - [ ] Istio Ingress Gateway 트래픽
 - [ ] Budget Alert 설정
   - [ ] GKE $75, Cloud SQL $30, 총 $130
   - [ ] 50%, 75%, 90% 도달 시 알림
 - [ ] Error Reporting 알림
 
-#### 4.5 AWS 리소스 정리
+#### 6.5 AWS 리소스 정리
 - [ ] EKS 클러스터 삭제 (백업 후)
 - [ ] RDS 인스턴스 삭제 (최종 스냅샷 생성)
 - [ ] ALB/Target Group 삭제
