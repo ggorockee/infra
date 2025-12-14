@@ -1,202 +1,108 @@
-# "_internal_defaults_do_not_set" is a workaround for Helm limitations. Users should NOT set "._internal_defaults_do_not_set" explicitly, but rather directly set the fields internally.
-# For instance, instead of `--set _internal_defaults_do_not_set.foo=bar``, just set `--set foo=bar`.
-_internal_defaults_do_not_set:
-  # Name allows overriding the release name. Generally this should not be set
-  name: ""
-  # revision declares which revision this gateway is a part of
-  revision: ""
+# Istio Ingress Gateway Configuration
+# Reference: https://istio.io/latest/docs/setup/additional-setup/gateway/
 
-  # Controls the spec.replicas setting for the Gateway deployment if set.
-  # Otherwise defaults to Kubernetes Deployment default (1).
-  replicaCount:
+# Global settings
+global:
+  # Hub is the container registry to pull from
+  hub: docker.io/istio
+  # Tag is the Istio version
+  tag: 1.28.1
 
-  kind: Deployment
+# Gateway selector labels - IMPORTANT for Gateway resources
+labels:
+  app: istio-ingressgateway
+  istio: ingressgateway
+  "istio.io/dataplane-mode": none
 
-  rbac:
-    # If enabled, roles will be created to enable accessing certificates from Gateways. This is not needed
-    # when using http://gateway-api.org/.
-    enabled: true
+# Replica count
+replicaCount: 2
 
-  serviceAccount:
-    # If set, a service account will be created. Otherwise, the default is used
-    create: true
-    # Annotations to add to the service account
-    annotations: {}
-    # The name of the service account to use.
-    # If not set, the release name is used
-    name: ""
+# Service configuration
+service:
+  type: LoadBalancer
+  ports:
+  - name: status-port
+    port: 15021
+    protocol: TCP
+    targetPort: 15021
+  - name: http2
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  - name: https
+    port: 443
+    protocol: TCP
+    targetPort: 8443
 
-  podAnnotations:
-    prometheus.io/port: "15020"
-    prometheus.io/scrape: "true"
-    prometheus.io/path: "/stats/prometheus"
-    inject.istio.io/templates: "gateway"
-    sidecar.istio.io/inject: "true"
+# Resource limits
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 2000m
+    memory: 1024Mi
 
-  # Define the security context for the pod.
-  # If unset, this will be automatically set to the minimum privileges required to bind to port 80 and 443.
-  # On Kubernetes 1.22+, this only requires the `net.ipv4.ip_unprivileged_port_start` sysctl.
-  securityContext: {}
-  containerSecurityContext: {}
+# Autoscaling configuration
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
 
-  service:
-    # Type of service. Set to "None" to disable the service entirely
-    type: LoadBalancer
-    # Set to a specific ClusterIP, or "" for automatic assignment
-    clusterIP: ""
-    ports:
-    - name: status-port
-      port: 15021
-      protocol: TCP
-      targetPort: 15021
-    - name: http2
-      port: 80
-      protocol: TCP
-      targetPort: 80
-    - name: https
-      port: 443
-      protocol: TCP
-      targetPort: 443
-    annotations: {}
-    loadBalancerIP: ""
-    loadBalancerSourceRanges: []
-    externalTrafficPolicy: ""
-    externalIPs: []
-    ipFamilyPolicy: ""
-    ipFamilies: []
-    ## Whether to automatically allocate NodePorts (only for LoadBalancers).
-    # allocateLoadBalancerNodePorts: false
-    ## Set LoadBalancer class (only for LoadBalancers).
-    # loadBalancerClass: ""
+# Pod annotations for sidecar injection
+podAnnotations:
+  prometheus.io/port: "15020"
+  prometheus.io/scrape: "true"
+  prometheus.io/path: "/stats/prometheus"
+  inject.istio.io/templates: "gateway"
+  sidecar.istio.io/inject: "true"
 
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 2000m
-      memory: 1024Mi
-
-  autoscaling:
-    enabled: true
-    minReplicas: 1
-    maxReplicas: 5
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: {}
-    autoscaleBehavior: {}
-
-  # Pod environment variables
-  env: {}
-
-  # Use envVarFrom to define full environment variable entries with complex sources,
-  # such as valueFrom.secretKeyRef, valueFrom.configMapKeyRef. Each item must include a `name` and `valueFrom`.
-  #
-  # Example:
-  # envVarFrom:
-  #   - name: EXAMPLE_SECRET
-  #     valueFrom:
-  #       secretKeyRef:
-  #         name: example-name
-  #         key: example-key
-  envVarFrom: []
-
-  # Deployment Update strategy
-  strategy: {}
-  
-  # Sets the Deployment minReadySeconds value
-  minReadySeconds:
-  
-  # Optionally configure a custom readinessProbe. By default the control plane
-  # automatically injects the readinessProbe. If you wish to override that
-  # behavior, you may define your own readinessProbe here.
-  readinessProbe: {}
-
-  # Labels to apply to all resources
-  labels:
-    # By default, don't enroll gateways into the ambient dataplane
-    "istio.io/dataplane-mode": none
-
-  # Annotations to apply to all resources
+# ServiceAccount
+serviceAccount:
+  create: true
+  name: istio-ingressgateway
   annotations: {}
 
-  nodeSelector: {}
+# RBAC
+rbac:
+  enabled: true
 
-  tolerations: []
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1337
+  runAsGroup: 1337
+  fsGroup: 1337
 
-  topologySpreadConstraints: []
+containerSecurityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
 
-  affinity: {}
+# Node selector
+nodeSelector: {}
 
-  # If specified, the gateway will act as a network gateway for the given network.
-  networkGateway: ""
+# Tolerations
+tolerations: []
 
-  # Specify image pull policy if default behavior isn't desired.
-  # Default behavior: latest images will be Always else IfNotPresent
-  imagePullPolicy: ""
+# Affinity rules
+affinity: {}
 
-  imagePullSecrets: []
+# Pod disruption budget
+podDisruptionBudget:
+  minAvailable: 1
 
-  # This value is used to configure a Kubernetes PodDisruptionBudget for the gateway.
-  #
-  # By default, the `podDisruptionBudget` is disabled (set to `{}`),
-  # which means that no PodDisruptionBudget resource will be created.
-  #
-  # The PodDisruptionBudget can be only enabled if autoscaling is enabled
-  # with minReplicas > 1 or if autoscaling is disabled but replicaCount > 1.
-  #
-  # To enable the PodDisruptionBudget, configure it by specifying the
-  # `minAvailable` or `maxUnavailable`. For example, to set the
-  # minimum number of available replicas to 1, you can update this value as follows:
-  #
-  # podDisruptionBudget:
-  #   minAvailable: 1
-  #
-  # Or, to allow a maximum of 1 unavailable replica, you can set:
-  #
-  # podDisruptionBudget:
-  #   maxUnavailable: 1
-  #
-  # You can also specify the `unhealthyPodEvictionPolicy` field, and the valid values are `IfHealthyBudget` and `AlwaysAllow`.
-  # For example, to set the `unhealthyPodEvictionPolicy` to `AlwaysAllow`, you can update this value as follows:
-  #
-  # podDisruptionBudget:
-  #   minAvailable: 1
-  #   unhealthyPodEvictionPolicy: AlwaysAllow
-  #
-  # To disable the PodDisruptionBudget, you can leave it as an empty object `{}`:
-  #
-  # podDisruptionBudget: {}
-  #
-  podDisruptionBudget: {}
+# Termination grace period
+terminationGracePeriodSeconds: 30
 
-  # Sets the per-pod terminationGracePeriodSeconds setting.
-  terminationGracePeriodSeconds: 30
+# Environment variables
+env: []
 
-  # A list of `Volumes` added into the Gateway Pods. See
-  # https://kubernetes.io/docs/concepts/storage/volumes/.
-  volumes: []
+# Image pull policy
+imagePullPolicy: IfNotPresent
 
-  # A list of `VolumeMounts` added into the Gateway Pods. See
-  # https://kubernetes.io/docs/concepts/storage/volumes/.
-  volumeMounts: []
-
-  # Inject initContainers into the Gateway Pods.
-  initContainers: []
-
-  # Inject additional containers into the Gateway Pods.
-  additionalContainers: []
-
-  # Configure this to a higher priority class in order to make sure your Istio gateway pods
-  # will not be killed because of low priority class.
-  # Refer to https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/#priorityclass
-  # for more detail.
-  priorityClassName: ""
-
-  # Configure the lifecycle hooks for the gateway. See
-  # https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/.
-  lifecycle: {}
-
-  # When enabled, a default NetworkPolicy for gateways will be created
-  global:
-    networkPolicy:
-      enabled: false
+# Network gateway
+networkGateway: ""
