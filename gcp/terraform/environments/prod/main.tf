@@ -8,28 +8,29 @@ provider "google-beta" {
   region  = var.region
 }
 
-# Get GKE cluster credentials for Kubernetes provider
-data "google_client_config" "default" {}
-
-data "google_container_cluster" "primary" {
-  name       = module.gke.cluster_name
-  location   = module.gke.cluster_location
-  depends_on = [module.gke]
-}
-
-provider "kubernetes" {
-  host                   = "https://${data.google_container_cluster.primary.endpoint}"
-  token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(data.google_container_cluster.primary.master_auth[0].cluster_ca_certificate)
-}
-
-provider "helm" {
-  kubernetes {
-    host                   = "https://${data.google_container_cluster.primary.endpoint}"
-    token                  = data.google_client_config.default.access_token
-    cluster_ca_certificate = base64decode(data.google_container_cluster.primary.master_auth[0].cluster_ca_certificate)
-  }
-}
+# Kubernetes and Helm providers will be enabled after GKE cluster is created
+# Uncomment these after Phase 1 GKE deployment is complete
+# data "google_client_config" "default" {}
+#
+# data "google_container_cluster" "primary" {
+#   name       = module.gke.cluster_name
+#   location   = module.gke.cluster_location
+#   depends_on = [module.gke]
+# }
+#
+# provider "kubernetes" {
+#   host                   = "https://${data.google_container_cluster.primary.endpoint}"
+#   token                  = data.google_client_config.default.access_token
+#   cluster_ca_certificate = base64decode(data.google_container_cluster.primary.master_auth[0].cluster_ca_certificate)
+# }
+#
+# provider "helm" {
+#   kubernetes {
+#     host                   = "https://${data.google_container_cluster.primary.endpoint}"
+#     token                  = data.google_client_config.default.access_token
+#     cluster_ca_certificate = base64decode(data.google_container_cluster.primary.master_auth[0].cluster_ca_certificate)
+#   }
+# }
 
 module "networking" {
   source = "../../modules/networking"
@@ -102,17 +103,19 @@ module "gke" {
 #   environment = var.environment
 # }
 
-module "external_secrets" {
-  source = "../../modules/external-secrets"
-
-  project_id       = var.project_id
-  region           = var.region
-  environment      = var.environment
-  cluster_name     = module.gke.cluster_name
-  cluster_location = module.gke.cluster_location
-
-  depends_on = [module.gke]
-}
+# Phase 1: GKE cluster only
+# External Secrets will be enabled in Phase 2 after cluster is stable
+# module "external_secrets" {
+#   source = "../../modules/external-secrets"
+#
+#   project_id       = var.project_id
+#   region           = var.region
+#   environment      = var.environment
+#   cluster_name     = module.gke.cluster_name
+#   cluster_location = module.gke.cluster_location
+#
+#   depends_on = [module.gke]
+# }
 
 # module "iam" {
 #   source = "../../modules/iam"
