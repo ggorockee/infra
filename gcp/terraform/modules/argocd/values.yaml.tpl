@@ -44,6 +44,8 @@ server:
   serviceAccount:
     create: true
     name: argocd-server
+    annotations:
+      iam.gke.io/gcp-service-account: argocd-${environment}@${project_id}.iam.gserviceaccount.com
 
 repoServer:
   replicas: 1
