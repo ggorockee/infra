@@ -109,6 +109,22 @@ module "external_secrets" {
   depends_on = [module.gke]
 }
 
+# Phase 3: ArgoCD deployment
+module "argocd" {
+  source = "../../modules/argocd"
+
+  project_id       = var.project_id
+  region           = var.region
+  environment      = var.environment
+  cluster_name     = module.gke.cluster_name
+  cluster_location = module.gke.cluster_location
+
+  # ArgoCD domain (optional, for OAuth redirect URIs)
+  argocd_domain = ""
+
+  depends_on = [module.external_secrets]
+}
+
 # module "iam" {
 #   source = "../../modules/iam"
 #
