@@ -4,10 +4,26 @@ GCP 인프라를 코드로 관리하기 위한 Terraform 설정입니다.
 
 ## 📊 현재 배포 상태
 
-**Phase 1 완료** (2025-12-14)
+**Phase 1-3 완료** (2025-12-14)
+
+### Phase 1: 기반 인프라 ✅
 - ✅ VPC 네트워킹 (5개 리소스)
 - ✅ GKE Autopilot 클러스터 (1개 리소스)
-- ⏸️ Phase 2 대기중 (Cloud SQL, Load Balancer 등)
+
+### Phase 2: External Secrets ✅
+- ✅ External Secrets Operator (Helm)
+- ✅ ClusterSecretStore (GCP Secret Manager 연동)
+- ✅ Workload Identity 바인딩
+
+### Phase 3: ArgoCD ✅
+- ✅ ArgoCD (Helm)
+- ✅ Google OAuth 인증 설정
+- ✅ ArgoCD ApplicationSet (GitOps)
+
+### Phase 4: Istio Service Mesh ✅
+- ✅ istio-base (CRDs)
+- ✅ istiod (Control Plane)
+- ✅ istio-ingressgateway (LoadBalancer: 34.50.12.202)
 
 👉 **상세 리소스 현황**: [TERRAFORM_RESOURCES.md](./TERRAFORM_RESOURCES.md)
 
@@ -27,13 +43,14 @@ GCP 인프라를 코드로 관리하기 위한 Terraform 설정입니다.
 | `environments/prod/` | ✅ Active | Production 환경 Terraform 코드 |
 | `modules/networking/` | ✅ Active | VPC, Subnet, Firewall 모듈 |
 | `modules/gke/` | ✅ Active | GKE Autopilot 클러스터 모듈 |
+| `modules/external-secrets/` | ✅ Active | External Secrets Operator 모듈 |
+| `modules/argocd/` | ✅ Active | ArgoCD GitOps 모듈 |
 | `modules/cloud-sql/` | ⏸️ Pending | Cloud SQL PostgreSQL 모듈 |
 | `modules/load-balancer/` | ⏸️ Pending | HTTP(S) Load Balancer 모듈 |
 | `modules/dns/` | ⏸️ Pending | Cloud DNS 모듈 |
 | `modules/cloud-armor/` | ⏸️ Pending | WAF 보안 정책 모듈 |
 | `modules/ssl-certificate/` | ⏸️ Pending | Managed SSL 인증서 모듈 |
 | `modules/iam/` | ⏸️ Pending | IAM 사용자 및 Service Account 모듈 |
-| `modules/external-secrets/` | ⏸️ Pending | External Secrets Operator 모듈 |
 
 ## Terraform State 백엔드
 
@@ -77,8 +94,24 @@ GitHub Actions를 통한 자동 배포:
 GCP Secret Manager와 Kubernetes Secret 동기화:
 - Secret Manager에서 민감 정보 중앙 관리
 - Kubernetes에서 ExternalSecret CRD로 자동 동기화
-- 비밀번호 로테이션 자동화
-- IAM 기반 접근 제어
+- Workload Identity를 통한 안전한 인증
+- ClusterSecretStore를 통한 중앙 집중식 관리
+
+### ArgoCD
+
+GitOps 기반 배포 자동화:
+- GitHub 저장소와 클러스터 상태 동기화
+- ApplicationSet을 통한 다중 애플리케이션 관리
+- Google OAuth 인증 (woohaen88@gmail.com 등)
+- Helm 차트 자동 배포
+
+### Istio Service Mesh
+
+마이크로서비스 트래픽 관리 및 보안:
+- **istio-base**: Custom Resource Definitions
+- **istiod**: 제어 평면 (v1.28.1)
+- **istio-ingressgateway**: 외부 트래픽 진입점 (LoadBalancer)
+- 트래픽 라우팅, 보안, 관찰성 제공
 
 ### 기타 모듈
 
