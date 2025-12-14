@@ -1,0 +1,107 @@
+name: GCP Terraform Import
+
+# Manual workflow for importing existing GKE cluster into Terraform state
+on:
+  workflow_dispatch:
+    inputs:
+      resource_type:
+        description: 'Resource type to import'
+        required: true
+        default: 'gke_cluster'
+        type: choice
+        options:
+          - gke_cluster
+          - gke_node_pool_medium
+          - gke_node_pool_large
+
+permissions:
+  contents: read
+
+jobs:
+  terraform-import:
+    name: Import GKE Resources
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Terraform Init
+        working-directory: ./gcp/terraform/environments/prod
+        run: terraform init
+
+      - name: Import GKE Cluster
+        if: inputs.resource_type == 'gke_cluster'
+        working-directory: ./gcp/terraform/environments/prod
+        run: |
+          terraform import \
+            module.gke.google_container_cluster.primary \
+            projects/${{ secrets.GCP_PROJECT_ID }}/locations/asia-northeast3-a/clusters/woohalabs-prod-gke
+
+      - name: Import Node Pool - Medium
+        if: inputs.resource_type == 'gke_node_pool_medium'
+        working-directory: ./gcp/terraform/environments/prod
+        run: |
+          terraform import \
+            module.gke.google_container_node_pool.spot_pool_medium \
+            projects/${{ secrets.GCP_PROJECT_ID }}/locations/asia-northeast3-a/clusters/woohalabs-prod-gke/nodePools/woohalabs-prod-spot-medium
+
+      - name: Import Node Pool - Large
+        if: inputs.resource_type == 'gke_node_pool_large'
+        working-directory: ./gcp/terraform/environments/prod
+        run: |
+          terraform import \
+            module.gke.google_container_node_pool.spot_pool_large \
+            projects/${{ secrets.GCP_PROJECT_ID }}/locations/asia-northeast3-a/clusters/woohalabs-prod-gke/nodePools/woohalabs-prod-spot-large
+
+      - name: Verify Import
+        working-directory: ./gcp/terraform/environments/prod
+        run: |
+          echo "## Import 결과 확인" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          terraform state list >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## State 세부 정보" >> $GITHUB_STEP_SUMMARY
+          terraform state show module.gke.google_container_cluster.primary >> $GITHUB_STEP_SUMMARY || true
+
+      - name: Terraform Plan After Import
+        working-directory: ./gcp/terraform/environments/prod
+        run: |
+          terraform plan -no-color > plan_output.txt
+          cat plan_output.txt
+
+      - name: Summary
+        if: always()
+        working-directory: ./gcp/terraform/environments/prod
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "## ✅ Terraform Import 성공" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**리소스**: ${{ inputs.resource_type }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Project ID**: ${{ secrets.GCP_PROJECT_ID }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Plan 결과" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            cat plan_output.txt >> $GITHUB_STEP_SUMMARY || true
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ❌ Terraform Import 실패" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "워크플로우 로그를 확인해주세요." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
