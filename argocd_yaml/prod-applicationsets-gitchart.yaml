@@ -53,3 +53,10 @@ spec:
             - /spec/template/spec/containers/0/extraVolumeMounts
             - /spec/template/spec/containers/0/resources/extraWatchVolumes
 
+        - group: ""
+          kind: Service
+          jsonPointers:
+            - /spec/clusterIP
+            - /spec/clusterIPs
+            - /spec/allocateLoadBalancerNodePorts
+
