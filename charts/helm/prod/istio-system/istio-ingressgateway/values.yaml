@@ -1,21 +1,23 @@
-# Istio Ingress Gateway Configuration
+# Istio Gateway (Ingress) Configuration
+# Chart: istio/gateway v1.28.1
 # Reference: https://istio.io/latest/docs/setup/additional-setup/gateway/
 
-# Global settings
-global:
-  # Hub is the container registry to pull from
-  hub: docker.io/istio
-  # Tag is the Istio version
-  tag: 1.28.1
-
-# Gateway selector labels - IMPORTANT for Gateway resources
-labels:
-  app: istio-ingressgateway
-  istio: ingressgateway
-  "istio.io/dataplane-mode": none
-
-# Replica count
+# Replica count (overridden by autoscaling when enabled)
 replicaCount: 2
+
+# Service Account
+serviceAccount:
+  create: true
+  name: istio-ingressgateway
+  annotations: {}
+
+# Pod annotations for gateway injection
+podAnnotations:
+  prometheus.io/port: "15020"
+  prometheus.io/scrape: "true"
+  prometheus.io/path: "/stats/prometheus"
+  inject.istio.io/templates: "gateway"
+  sidecar.istio.io/inject: "true"
 
 # Service configuration
 service:
@@ -28,11 +30,12 @@ service:
   - name: http2
     port: 80
     protocol: TCP
-    targetPort: 8080
+    targetPort: 80
   - name: https
     port: 443
     protocol: TCP
-    targetPort: 8443
+    targetPort: 443
+  annotations: {}
 
 # Resource limits
 resources:
@@ -50,19 +53,18 @@ autoscaling:
   maxReplicas: 5
   targetCPUUtilizationPercentage: 80
 
-# Pod annotations for sidecar injection
-podAnnotations:
-  prometheus.io/port: "15020"
-  prometheus.io/scrape: "true"
-  prometheus.io/path: "/stats/prometheus"
-  inject.istio.io/templates: "gateway"
-  sidecar.istio.io/inject: "true"
+# Pod environment variables (must be object, not array)
+env: {}
 
-# ServiceAccount
-serviceAccount:
-  create: true
-  name: istio-ingressgateway
-  annotations: {}
+# Labels for the gateway deployment
+# IMPORTANT: These labels are used for Gateway resource selectors
+labels:
+  istio: ingressgateway
+  app: istio-ingressgateway
+  "istio.io/dataplane-mode": none
+
+# Annotations for all resources
+annotations: {}
 
 # RBAC
 rbac:
@@ -98,11 +100,8 @@ podDisruptionBudget:
 # Termination grace period
 terminationGracePeriodSeconds: 30
 
-# Environment variables
-env: []
-
 # Image pull policy
 imagePullPolicy: IfNotPresent
 
-# Network gateway
+# Network gateway (leave empty for default)
 networkGateway: ""
