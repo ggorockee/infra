@@ -29,14 +29,8 @@ variable "subnet_id" {
   type        = string
 }
 
-variable "machine_type" {
-  description = "GKE node machine type"
-  type        = string
-  default     = "e2-medium" # 2 vCPU, 4GB RAM
-}
-
 variable "node_count" {
-  description = "Initial number of nodes"
+  description = "Initial number of nodes (for e2-medium pool)"
   type        = number
   default     = 1
 }
