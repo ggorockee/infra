@@ -27,11 +27,11 @@ resource "helm_release" "argocd" {
     templatefile("${path.module}/values.yaml.tpl", {
       environment = var.environment
       domain      = var.argocd_domain
+      project_id  = var.project_id
     })
   ]
 
   depends_on = [
-    kubernetes_manifest.argocd_secret,
-    kubernetes_service_account.argocd_server
+    kubernetes_manifest.argocd_secret
   ]
 }
