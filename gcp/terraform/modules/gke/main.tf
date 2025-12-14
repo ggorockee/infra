@@ -15,13 +15,10 @@ resource "google_container_cluster" "primary" {
   location = var.zone # Single zone for free tier
   project  = var.project_id
 
-  # Disable Autopilot for Standard mode
-  enable_autopilot = false
-
   network    = var.network_id
   subnetwork = var.subnet_id
 
-  # Remove node pool (we'll create it separately)
+  # Remove default node pool (we'll create it separately with Spot instances)
   remove_default_node_pool = true
   initial_node_count       = 1
 
