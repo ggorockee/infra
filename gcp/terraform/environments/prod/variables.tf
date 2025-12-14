@@ -10,6 +10,12 @@ variable "region" {
   default     = "asia-northeast3"
 }
 
+variable "zone" {
+  description = "GCP Zone for single-zone cluster (free tier)"
+  type        = string
+  default     = "asia-northeast3-a"
+}
+
 variable "environment" {
   description = "환경 (prod, dev, staging)"
   type        = string
