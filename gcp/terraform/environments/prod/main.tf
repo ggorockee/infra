@@ -45,11 +45,11 @@ module "gke" {
   subnet_id  = module.networking.private_subnet_id
 
   # Spot instance configuration
-  # e2-medium pool: 1-3 nodes (2 vCPU, 4GB RAM)
+  # e2-medium pool: Fixed 2 nodes (2 vCPU, 4GB RAM)
   # e2-standard-2 pool: 0-3 nodes (2 vCPU, 8GB RAM)
-  node_count     = 1
-  min_node_count = 1
-  max_node_count = 3
+  node_count     = 2
+  min_node_count = 2
+  max_node_count = 2
 }
 
 # Phase 1: Networking and GKE only
