@@ -23,21 +23,20 @@ gcp/terraform/modules/cert-manager/
 └── outputs.tf
 ```
 
-### Kubernetes Manifests
-```
-k8s-manifests/
-├── cert-manager/
-│   ├── clusterissuer-letsencrypt.yaml  # Production + Staging Issuer
-│   └── certificate-wildcard.yaml       # 3개 도메인 인증서
-└── istio/
-    └── gateway-https.yaml               # HTTPS Gateway + VirtualService
-```
-
-### Helm Charts
+### Helm Charts (cert-manager)
 ```
 charts/helm/prod/cert-manager/cert-manager/
-├── Chart.yaml       # jetstack/cert-manager v1.16.2
-└── values.yaml      # cert-manager 설정
+├── Chart.yaml                      # jetstack/cert-manager v1.19.2
+├── values.yaml                     # cert-manager 설정 + SSL 구성
+└── templates/
+    ├── clusterissuer.yaml          # Let's Encrypt Production + Staging Issuer
+    └── certificates.yaml           # 3개 도메인 Wildcard 인증서
+```
+
+### Kubernetes Manifests (Istio)
+```
+k8s-manifests/istio/
+└── gateway-https.yaml              # HTTPS Gateway + VirtualService
 ```
 
 ## 📦 생성될 인증서 및 Secret
@@ -122,11 +121,15 @@ terraform apply
 - ✅ Workload Identity Binding
 - ✅ Kubernetes Secret (clouddns-dns01-solver-sa)
 
-### 4. ClusterIssuer 생성
+### 4. cert-manager Helm Chart 업그레이드
 
-```bash
-kubectl apply -f k8s-manifests/cert-manager/clusterissuer-letsencrypt.yaml
-```
+**ClusterIssuer 및 Certificate가 자동 생성됨**:
+
+ArgoCD가 자동으로 Helm 차트를 동기화하거나, 수동으로 업그레이드:
+
+- ArgoCD에서 cert-manager Application Sync
+- 또는 수동 Helm 업그레이드 (필요 시):
+  `helm upgrade cert-manager ./charts/helm/prod/cert-manager/cert-manager -n cert-manager`
 
 **검증**:
 ```bash
@@ -140,11 +143,9 @@ letsencrypt-prod      True    10s
 letsencrypt-staging   True    10s
 ```
 
-### 5. Certificate 발급 (3개 도메인)
+### 5. Certificate 발급 확인 (3개 도메인)
 
-```bash
-kubectl apply -f k8s-manifests/cert-manager/certificate-wildcard.yaml
-```
+**Helm 차트 배포 시 자동 생성됨**
 
 **검증**:
 ```bash

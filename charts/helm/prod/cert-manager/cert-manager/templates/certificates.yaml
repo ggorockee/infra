@@ -1,0 +1,79 @@
+{{- if .Values.ssl.enabled }}
+{{- if .Values.ssl.certificates.enabled }}
+---
+# Wildcard Certificate for ggorockee.com
+{{- if .Values.ssl.certificates.ggorockee_com.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .Values.ssl.certificates.ggorockee_com.name }}
+  namespace: {{ .Values.ssl.certificates.namespace }}
+  labels:
+    {{- include "cert-manager.labels" . | nindent 4 }}
+spec:
+  secretName: {{ .Values.ssl.certificates.ggorockee_com.secretName }}
+  issuerRef:
+    name: {{ .Values.ssl.clusterIssuer.production.name }}
+    kind: ClusterIssuer
+  dnsNames:
+  {{- range .Values.ssl.certificates.ggorockee_com.dnsNames }}
+  - {{ . | quote }}
+  {{- end }}
+  renewBefore: {{ .Values.ssl.certificates.renewBefore }}
+  privateKey:
+    algorithm: RSA
+    size: 2048
+    rotationPolicy: Always
+{{- end }}
+---
+# Wildcard Certificate for ggorockee.org
+{{- if .Values.ssl.certificates.ggorockee_org.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .Values.ssl.certificates.ggorockee_org.name }}
+  namespace: {{ .Values.ssl.certificates.namespace }}
+  labels:
+    {{- include "cert-manager.labels" . | nindent 4 }}
+spec:
+  secretName: {{ .Values.ssl.certificates.ggorockee_org.secretName }}
+  issuerRef:
+    name: {{ .Values.ssl.clusterIssuer.production.name }}
+    kind: ClusterIssuer
+  dnsNames:
+  {{- range .Values.ssl.certificates.ggorockee_org.dnsNames }}
+  - {{ . | quote }}
+  {{- end }}
+  renewBefore: {{ .Values.ssl.certificates.renewBefore }}
+  privateKey:
+    algorithm: RSA
+    size: 2048
+    rotationPolicy: Always
+{{- end }}
+---
+# Wildcard Certificate for woohalabs.com
+{{- if .Values.ssl.certificates.woohalabs_com.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .Values.ssl.certificates.woohalabs_com.name }}
+  namespace: {{ .Values.ssl.certificates.namespace }}
+  labels:
+    {{- include "cert-manager.labels" . | nindent 4 }}
+spec:
+  secretName: {{ .Values.ssl.certificates.woohalabs_com.secretName }}
+  issuerRef:
+    name: {{ .Values.ssl.clusterIssuer.production.name }}
+    kind: ClusterIssuer
+  dnsNames:
+  {{- range .Values.ssl.certificates.woohalabs_com.dnsNames }}
+  - {{ . | quote }}
+  {{- end }}
+  renewBefore: {{ .Values.ssl.certificates.renewBefore }}
+  privateKey:
+    algorithm: RSA
+    size: 2048
+    rotationPolicy: Always
+{{- end }}
+{{- end }}
+{{- end }}
