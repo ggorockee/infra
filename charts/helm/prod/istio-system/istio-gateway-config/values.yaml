@@ -1,0 +1,100 @@
+# Istio Gateway and VirtualService Configuration
+
+# Gateway Configuration
+gateway:
+  enabled: true
+  name: main-gateway
+  namespace: istio-system
+
+  selector:
+    istio: ingressgateway
+
+  # HTTP to HTTPS redirect
+  http:
+    enabled: true
+    port: 80
+    httpsRedirect: true
+
+  # HTTPS TLS configurations
+  https:
+    enabled: true
+    port: 443
+
+    # TLS configurations per domain
+    tls:
+      - name: ggorockee-com
+        hosts:
+          - "*.ggorockee.com"
+          - "ggorockee.com"
+        credentialName: ggorockee-com-wildcard-tls
+
+      - name: ggorockee-org
+        hosts:
+          - "*.ggorockee.org"
+          - "ggorockee.org"
+        credentialName: ggorockee-org-wildcard-tls
+
+      - name: woohalabs-com
+        hosts:
+          - "*.woohalabs.com"
+          - "woohalabs.com"
+        credentialName: woohalabs-com-wildcard-tls
+
+      - name: review-maps-com
+        hosts:
+          - "*.review-maps.com"
+          - "review-maps.com"
+        credentialName: review-maps-com-wildcard-tls
+
+# VirtualService configurations
+# Each VirtualService is deployed to its respective namespace
+virtualServices:
+  # ArgoCD
+  - name: argocd-vs
+    namespace: argocd
+    enabled: true
+    hosts:
+      - "argocd.ggorockee.org"
+    http:
+      - route:
+          - destination:
+              host: argocd-server
+              port: 80
+
+  # Ojeomneo Admin
+  - name: ojeomneo-admin-vs
+    namespace: ojeomneo
+    enabled: false
+    hosts:
+      - "ojeomneo.ggorockee.com"
+      - "admin.ojeomneo.ggorockee.com"
+    http:
+      - route:
+          - destination:
+              host: ojeomneo-admin
+              port: 3000
+
+  # Ojeomneo API
+  - name: ojeomneo-api-vs
+    namespace: ojeomneo
+    enabled: false
+    hosts:
+      - "api.ojeomneo.ggorockee.com"
+    http:
+      - route:
+          - destination:
+              host: ojeomneo-server
+              port: 8000
+
+  # ReviewMaps
+  - name: reviewmaps-vs
+    namespace: reviewmaps
+    enabled: false
+    hosts:
+      - "reviewmaps.ggorockee.org"
+      - "www.reviewmaps.ggorockee.org"
+    http:
+      - route:
+          - destination:
+              host: reviewmaps-frontend
+              port: 3000
