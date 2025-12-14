@@ -1498,6 +1498,16 @@ enabled: true
 ssl:
   enabled: true
 
+  # ExternalSecret configuration
+  externalSecret:
+    enabled: true
+    name: "clouddns-dns01-solver-sa"
+    namespace: "cert-manager"
+    refreshInterval: "1h"
+    clusterSecretStoreName: "gcpsm-secret-store"
+    gcpSecretName: "cert-manager-dns01-key"
+    secretKey: "key.json"
+
   # ClusterIssuer configuration
   clusterIssuer:
     enabled: true
