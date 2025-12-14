@@ -287,12 +287,13 @@ config: {}
 # For more information, see the [cert-manager documentation](https://cert-manager.io/docs/configuration/acme/dns01/#setting-nameservers-for-dns01-self-check).
 
 # A comma-separated string with the host and port of the recursive nameservers cert-manager should query.
-# Using GCP Cloud DNS authoritative nameservers for faster DNS-01 challenge propagation
-dns01RecursiveNameservers: "ns-cloud-e1.googledomains.com:53,ns-cloud-e2.googledomains.com:53"
+# Using Google Public DNS for reliable DNS resolution
+dns01RecursiveNameservers: "8.8.8.8:53,8.8.4.4:53"
 
 # Forces cert-manager to use only the recursive nameservers for verification.
-# Enabling this option could cause the DNS01 self check to take longer owing to caching performed by the recursive nameservers.
-dns01RecursiveNameserversOnly: true
+# Set to false to allow cert-manager to automatically discover authoritative nameservers for each domain
+# This is necessary when domains use different GCP Cloud DNS nameserver sets (ns-cloud-a, ns-cloud-d, ns-cloud-e)
+dns01RecursiveNameserversOnly: false
 
 # Option to disable cert-manager's build-in auto-approver. The auto-approver
 # approves all CertificateRequests that reference issuers matching the 'approveSignerNames'
