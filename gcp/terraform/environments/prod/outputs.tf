@@ -14,22 +14,23 @@ output "gke_cluster_endpoint" {
   sensitive   = true
 }
 
-output "cloud_sql_instance_name" {
-  description = "Cloud SQL 인스턴스 이름"
-  value       = module.cloud_sql.instance_name
-}
+# Phase 2 outputs (disabled for now)
+# output "cloud_sql_instance_name" {
+#   description = "Cloud SQL 인스턴스 이름"
+#   value       = module.cloud_sql.instance_name
+# }
 
-output "cloud_sql_connection_name" {
-  description = "Cloud SQL 연결 이름"
-  value       = module.cloud_sql.connection_name
-}
+# output "cloud_sql_connection_name" {
+#   description = "Cloud SQL 연결 이름"
+#   value       = module.cloud_sql.connection_name
+# }
 
-output "load_balancer_ip" {
-  description = "Load Balancer IP 주소"
-  value       = module.load_balancer.lb_ip_address
-}
+# output "load_balancer_ip" {
+#   description = "Load Balancer IP 주소"
+#   value       = module.load_balancer.lb_ip_address
+# }
 
-output "dns_name_servers" {
-  description = "Cloud DNS Name Servers"
-  value       = module.dns.name_servers
-}
+# output "dns_name_servers" {
+#   description = "Cloud DNS Name Servers"
+#   value       = module.dns.name_servers
+# }
