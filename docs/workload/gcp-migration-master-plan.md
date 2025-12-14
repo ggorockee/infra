@@ -76,22 +76,28 @@
   - Release Channel: REGULAR
   - Network: default
   - Subnet: default
-  - **Node Pool**: woohalabs-prod-spot-pool
+  - **Node Pool 1**: woohalabs-prod-spot-medium
     - Machine Type: e2-medium (2 vCPU, 4GB RAM)
     - Spot Instance: 활성화 (91% 비용 절감)
     - Node Count: 1 (초기)
     - Auto-scaling: 1-3 nodes
-  - **고가용성**: 리소스 부족 시 자동 노드 확장
+  - **Node Pool 2**: woohalabs-prod-spot-large
+    - Machine Type: e2-large (2 vCPU, 8GB RAM)
+    - Spot Instance: 활성화 (91% 비용 절감)
+    - Node Count: 0 (초기, 필요 시만 확장)
+    - Auto-scaling: 0-3 nodes
+  - **고가용성**: 리소스 부족 시 자동 노드 확장 (medium → large)
 
 #### 1.7 External Secrets Operator 배포
 - [x] Terraform 모듈 작성 완료
 - [ ] 배포 대기 중 (PR #632 머지 후)
 
-**배포 완료 리소스** (3개):
+**배포 완료 리소스** (4개):
 - Default VPC Network (기존 사용)
 - Default Subnet (기존 사용)
 - GKE Standard Cluster: woohalabs-prod-gke-cluster
-- Node Pool: woohalabs-prod-spot-pool (Spot Instance)
+- Node Pool 1: woohalabs-prod-spot-medium (e2-medium, Spot)
+- Node Pool 2: woohalabs-prod-spot-large (e2-large, Spot)
 
 **완료 기준**: 🔄 **진행 중 (PR #632)**
 - [x] Terraform init 성공
@@ -330,26 +336,30 @@
 |-----|---------------------|---------------------|-------------------|-----------------|
 | Default VPC | - | **$0** | **$0** | **$0** |
 | GKE Standard (Free) | - | **$0** | **$0** | **$0** |
-| e2-medium Spot (1 node) | - | **$7** | **$7** | **$7~21** |
+| e2-medium Spot (1-3 nodes) | - | **$7~21** | **$7~21** | **$7~21** |
+| e2-large Spot (0-3 nodes) | - | **$0~42** | **$0~42** | **$0~42** |
 | External Secrets | - | **$4** | **$4** | **$4** |
 | Cloud SQL | - | - | $30 | $30 |
 | Load Balancer | - | - | - | $18 |
 | Cloud DNS | - | - | $0.4 | $0.4 |
 | Cloud Storage | $1 | $1 | $1 | $1 |
 | Cloud Armor | - | - | - | $5 |
-| **GCP 총 비용** | **$1** | **$12** | **$42** | **$65~79** |
+| **GCP 총 비용** | **$1** | **$12~68** | **$42~98** | **$65~121** |
 | **AWS 비용 (병렬)** | **$100** | **$100** | **$70** | **$0** |
-| **합계** | **$101** | **$112** | **$112** | **$65~79** |
+| **합계** | **$101** | **$112~168** | **$112~168** | **$65~121** |
 
-**목표**: Phase 4 완료 후 **월 $80 이하 달성** (평시 $65, 피크 $79)
-**비용 절감**: 기존 계획 대비 **$48~$62/월 절감** (약 50% 절감)
+**목표**: Phase 4 완료 후 **월 $80 이하 달성** (평시 $65~72, 피크 최대 $121)
+**비용 절감**: 기존 계획 대비 평시 **$48~$55/월 절감** (약 42% 절감)
+**고가용성**: e2-large pool 활용 시 최대 메모리 24GB까지 확장 가능 (3 large nodes)
 
 ### 비용 최적화 포인트 (1인 개발 환경 특화) - **Phase 1 완료**
 
 - [x] **Default VPC 사용**: Custom VPC 대신 Default VPC 사용 (절감: $56/월)
 - [x] **GKE Standard + Spot Instance**: Autopilot 대신 Spot 활용 (절감: $33~40/월)
 - [x] **Single Zone 배포**: Free Tier GKE 관리 비용 무료 (절감: $73/월)
-- [x] **Node Auto-scaling**: 리소스 기반 자동 확장 (1-3 nodes)
+- [x] **다중 Node Pool 전략**: e2-medium (평시) + e2-large (피크) 자동 확장
+  - e2-medium pool: 1-3 nodes (기본 워크로드)
+  - e2-large pool: 0-3 nodes (메모리 집약적 워크로드 시에만 확장)
 - [ ] Cloud SQL: db-g1-small 유지, HA 비활성화 (단일 환경으로 충분)
 - [ ] Load Balancer: 단일 LB로 모든 서비스 라우팅 (경로 기반)
 - [ ] Cloud Storage: 로그 30일 이후 Nearline 이동

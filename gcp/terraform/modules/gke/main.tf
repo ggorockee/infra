@@ -38,9 +38,9 @@ resource "google_container_cluster" "primary" {
   }
 }
 
-# Node Pool with Spot Instances
-resource "google_container_node_pool" "spot_pool" {
-  name       = "woohalabs-${var.environment}-spot-pool"
+# Node Pool with Spot Instances - e2-medium (2 vCPU, 4GB RAM)
+resource "google_container_node_pool" "spot_pool_medium" {
+  name       = "woohalabs-${var.environment}-spot-medium"
   location   = var.zone
   cluster    = google_container_cluster.primary.name
   project    = var.project_id
@@ -48,7 +48,7 @@ resource "google_container_node_pool" "spot_pool" {
 
   node_config {
     spot         = true # Enable Spot instances
-    machine_type = var.machine_type
+    machine_type = "e2-medium"
 
     # Google recommended settings for spot instances
     disk_size_gb = 30
@@ -64,8 +64,9 @@ resource "google_container_node_pool" "spot_pool" {
     }
 
     labels = {
-      environment = var.environment
-      node_type   = "spot"
+      environment  = var.environment
+      node_type    = "spot"
+      machine_size = "medium"
     }
 
     tags = ["gke-node", "${var.environment}"]
@@ -78,6 +79,51 @@ resource "google_container_node_pool" "spot_pool" {
 
   autoscaling {
     min_node_count = var.min_node_count
+    max_node_count = var.max_node_count
+  }
+}
+
+# Node Pool with Spot Instances - e2-large (2 vCPU, 8GB RAM)
+resource "google_container_node_pool" "spot_pool_large" {
+  name       = "woohalabs-${var.environment}-spot-large"
+  location   = var.zone
+  cluster    = google_container_cluster.primary.name
+  project    = var.project_id
+  node_count = 0 # Start with 0, only scale up when medium pool is insufficient
+
+  node_config {
+    spot         = true # Enable Spot instances
+    machine_type = "e2-large"
+
+    # Google recommended settings for spot instances
+    disk_size_gb = 30
+    disk_type    = "pd-standard"
+
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform"
+    ]
+
+    # Workload Identity
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
+
+    labels = {
+      environment  = var.environment
+      node_type    = "spot"
+      machine_size = "large"
+    }
+
+    tags = ["gke-node", "${var.environment}"]
+  }
+
+  management {
+    auto_repair  = true
+    auto_upgrade = true
+  }
+
+  autoscaling {
+    min_node_count = 0
     max_node_count = var.max_node_count
   }
 }
