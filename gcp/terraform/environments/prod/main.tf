@@ -11,23 +11,17 @@ provider "google-beta" {
 # Kubernetes and Helm providers for External Secrets deployment
 data "google_client_config" "default" {}
 
-data "google_container_cluster" "primary" {
-  name       = module.gke.cluster_name
-  location   = module.gke.cluster_location
-  depends_on = [module.gke]
-}
-
 provider "kubernetes" {
-  host                   = "https://${data.google_container_cluster.primary.endpoint}"
+  host                   = "https://${module.gke.cluster_endpoint}"
   token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(data.google_container_cluster.primary.master_auth[0].cluster_ca_certificate)
+  cluster_ca_certificate = base64decode(module.gke.cluster_ca_certificate)
 }
 
 provider "helm" {
   kubernetes {
-    host                   = "https://${data.google_container_cluster.primary.endpoint}"
+    host                   = "https://${module.gke.cluster_endpoint}"
     token                  = data.google_client_config.default.access_token
-    cluster_ca_certificate = base64decode(data.google_container_cluster.primary.master_auth[0].cluster_ca_certificate)
+    cluster_ca_certificate = base64decode(module.gke.cluster_ca_certificate)
   }
 }
 
