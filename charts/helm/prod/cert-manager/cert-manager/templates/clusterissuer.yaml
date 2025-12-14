@@ -7,8 +7,6 @@ apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: {{ .Values.ssl.clusterIssuer.production.name }}
-  labels:
-    {{- include "cert-manager.labels" . | nindent 4 }}
 spec:
   acme:
     server: {{ .Values.ssl.clusterIssuer.production.server }}
@@ -30,8 +28,6 @@ apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: {{ .Values.ssl.clusterIssuer.staging.name }}
-  labels:
-    {{- include "cert-manager.labels" . | nindent 4 }}
 spec:
   acme:
     server: {{ .Values.ssl.clusterIssuer.staging.server }}
