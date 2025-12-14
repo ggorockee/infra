@@ -1,25 +1,21 @@
-name: GCP Terraform Apply (Disabled)
+name: GCP Terraform Apply
 
-# This workflow is disabled in favor of PR comment-based apply
-# To apply Terraform changes:
-# 1. Create a PR
-# 2. Review the plan
-# 3. Comment 'apply' or 'ok' on the PR
-# 4. Apply will run automatically
+# This workflow runs automatically when PR is merged to main branch
+# Workflow:
+# 1. Create a PR → Plan runs automatically
+# 2. Review the plan results
+# 3. Squash and Merge PR → Apply runs automatically
 
 on:
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment to apply'
-        required: true
-        default: 'prod'
-        type: choice
-        options:
-          - prod
+  push:
+    branches:
+      - main
+    paths:
+      - 'gcp/terraform/**'
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   terraform-apply:
@@ -62,16 +58,24 @@ jobs:
         working-directory: ./gcp/terraform/environments/prod
         run: terraform output -json
 
-      - name: Notify on Success
-        if: success()
+      - name: Summary
+        if: always()
+        working-directory: ./gcp/terraform/environments/prod
         run: |
-          echo "✅ Terraform Apply completed successfully"
-          echo "Environment: prod"
-          echo "Project: ${{ secrets.GCP_PROJECT_ID }}"
-
-      - name: Notify on Failure
-        if: failure()
-        run: |
-          echo "❌ Terraform Apply failed"
-          echo "Please check the logs and state file"
-          exit 1
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "## ✅ Terraform Apply Successful" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Environment**: Production" >> $GITHUB_STEP_SUMMARY
+            echo "**Project ID**: ${{ secrets.GCP_PROJECT_ID }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Region**: asia-northeast3" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Outputs" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+            terraform output -json >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ❌ Terraform Apply Failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Please check the workflow logs for details." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
