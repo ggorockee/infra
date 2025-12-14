@@ -29,6 +29,7 @@ module "gke" {
 
 # Phase 1: Networking and GKE only
 # Other modules will be enabled in future phases
+# GKE API has been enabled in GCP project
 
 # module "cloud_sql" {
 #   source = "../../modules/cloud-sql"
