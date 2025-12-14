@@ -53,7 +53,7 @@ module "gke" {
 
   # Spot instance configuration
   # e2-medium pool: 1-3 nodes (2 vCPU, 4GB RAM)
-  # e2-large pool: 0-3 nodes (2 vCPU, 8GB RAM)
+  # e2-standard-2 pool: 0-3 nodes (2 vCPU, 8GB RAM)
   node_count     = 1
   min_node_count = 1
   max_node_count = 3
