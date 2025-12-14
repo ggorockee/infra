@@ -105,3 +105,8 @@ imagePullPolicy: IfNotPresent
 
 # Network gateway (leave empty for default)
 networkGateway: ""
+
+# Global settings (required by gateway chart templates)
+global:
+  networkPolicy:
+    enabled: false
