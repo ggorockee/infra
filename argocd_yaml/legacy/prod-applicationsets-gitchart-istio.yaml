@@ -1,0 +1,62 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: gitapps-from-git-prod
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/ggorockee/infra.git
+        revision: main
+        directories:
+          - path: charts/helm/prod/istio-system/*
+
+  template:
+    metadata:
+      name: '{{path.basename}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/ggorockee/infra.git
+        targetRevision: main
+        path: '{{path}}'  # charts/helm/fridge2fork 같은 경로
+        helm:
+          valueFiles:
+          - values.yaml
+        
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{path.basename}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+      ignoreDifferences:
+        - group: admissionregistration.k8s.io
+          kind: ValidatingWebhookConfiguration
+          name: istiod-default-validator
+          jsonPointers:
+            - /webhooks/0/failurePolicy
+
+        - group: admissionregistration.k8s.io
+          kind: ValidatingWebhookConfiguration
+          name: istio-validator-istio-system
+          jsonPointers:
+            - /webhooks/0/failurePolicy
+          
+        # --- 여기에 Fluent Bit DaemonSet을 위한 ignoreDifferences를 추가합니다 ---
+        - group: apps # DaemonSet의 API 그룹입니다.
+          kind: DaemonSet # 리소스 종류입니다.
+          jsonPointers:
+            # hostNetwork 필드의 경로입니다.
+            - /spec/template/spec/hostNetwork
+            # extraVolumeMounts 필드의 경로입니다.
+            # Pod Template Spec 내부의 컨테이너 배열 중 첫 번째 컨테이너에 해당 필드가 있다면 이 경로를 사용합니다.
+            - /spec/template/spec/containers/0/extraVolumeMounts 
+            - /spec/template/spec/containers/0/resources/extraWatchVolumes 
+            # 만약 Fluent Bit Pod에 컨테이너가 여러 개 있거나, extraVolumeMounts가 다른 컨테이너에 있다면
+            # '/spec/template/spec/containers[*]/extraVolumeMounts' 처럼 와일드카드를 사용하거나
+            # 해당 컨테이너의 정확한 인덱스를 사용해야 할 수 있습니다.
+

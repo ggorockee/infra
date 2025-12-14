@@ -1,0 +1,79 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: gitapps-from-git-prod-monitoring
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/ggorockee/infra.git
+        revision: main
+        directories:
+          - path: charts/helm/prod/monitoring/*
+  template:
+    metadata:
+      name: '{{path[4]}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/ggorockee/infra.git
+        targetRevision: main
+        path: '{{path}}'
+        helm:
+          valueFiles:
+            - values.yaml
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: monitoring
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+      ignoreDifferences:
+        # Prometheus Operator Webhooks
+        - group: admissionregistration.k8s.io
+          kind: ValidatingWebhookConfiguration
+          jqPathExpressions:
+            - .webhooks[].failurePolicy
+            - .webhooks[].clientConfig.caBundle
+        - group: admissionregistration.k8s.io
+          kind: MutatingWebhookConfiguration
+          jqPathExpressions:
+            - .webhooks[].failurePolicy
+            - .webhooks[].clientConfig.caBundle
+        
+        # Istio 관련 (기존 유지)
+        - group: admissionregistration.k8s.io
+          kind: ValidatingWebhookConfiguration
+          name: istiod-default-validator
+          jsonPointers:
+            - /webhooks/0/failurePolicy
+        - group: admissionregistration.k8s.io
+          kind: ValidatingWebhookConfiguration
+          name: istio-validator-istio-system
+          jsonPointers:
+            - /webhooks/0/failurePolicy
+        
+        # DaemonSet 관련 (기존 유지)
+        - group: apps
+          kind: DaemonSet
+          jsonPointers:
+            - /spec/template/spec/hostNetwork
+            - /spec/template/spec/containers/0/extraVolumeMounts
+            - /spec/template/spec/containers/0/resources/extraWatchVolumes
+
+        # ClickHouse Operator - resourceFieldRef divisor 기본값 drift 무시
+        - group: apps
+          kind: Deployment
+          jqPathExpressions:
+            - .spec.template.spec.containers[].env[].valueFrom.resourceFieldRef.divisor
+
+        # StatefulSet - volumeClaimTemplates 기본값 drift 무시
+        - group: apps
+          kind: StatefulSet
+          jqPathExpressions:
+            - .spec.volumeClaimTemplates[].apiVersion
+            - .spec.volumeClaimTemplates[].kind

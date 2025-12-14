@@ -1,0 +1,55 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: gitapps-from-git-prod
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/ggorockee/infra.git
+        revision: main
+        directories:
+          - path: charts/helm/prod/*/*
+
+  template:
+    metadata:
+      name: '{{path.basename}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/ggorockee/infra.git
+        targetRevision: main
+        path: '{{path}}'
+        helm:
+          valueFiles:
+          - values.yaml
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{path[3]}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+      ignoreDifferences:
+        - group: admissionregistration.k8s.io
+          kind: ValidatingWebhookConfiguration
+          name: istiod-default-validator
+          jsonPointers:
+            - /webhooks/0/failurePolicy
+
+        - group: admissionregistration.k8s.io
+          kind: ValidatingWebhookConfiguration
+          name: istio-validator-istio-system
+          jsonPointers:
+            - /webhooks/0/failurePolicy
+
+        - group: apps
+          kind: DaemonSet
+          jsonPointers:
+            - /spec/template/spec/hostNetwork
+            - /spec/template/spec/containers/0/extraVolumeMounts
+            - /spec/template/spec/containers/0/resources/extraWatchVolumes
+
