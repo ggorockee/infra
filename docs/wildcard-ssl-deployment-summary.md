@@ -2,12 +2,13 @@
 
 ## 📋 개요
 
-**3개 도메인**에 대한 **Wildcard SSL 인증서** 자동 발급 및 Istio Gateway 연동
+**4개 도메인**에 대한 **Wildcard SSL 인증서** 자동 발급 및 Istio Gateway 연동
 
 **도메인**:
 - `*.ggorockee.com` + `ggorockee.com`
 - `*.ggorockee.org` + `ggorockee.org`
 - `*.woohalabs.com` + `woohalabs.com`
+- `*.review-maps.com` + `review-maps.com`
 
 **발급 기관**: Let's Encrypt (무료)
 **검증 방식**: DNS-01 Challenge
@@ -30,7 +31,7 @@ charts/helm/prod/cert-manager/cert-manager/
 ├── values.yaml                     # cert-manager 설정 + SSL 구성
 └── templates/
     ├── clusterissuer.yaml          # Let's Encrypt Production + Staging Issuer
-    └── certificates.yaml           # 3개 도메인 Wildcard 인증서
+    └── certificates.yaml           # 4개 도메인 Wildcard 인증서
 ```
 
 ### Kubernetes Manifests (Istio)
@@ -46,6 +47,7 @@ k8s-manifests/istio/
 | ggorockee.com | ggorockee-com-wildcard-cert | ggorockee-com-wildcard-tls | istio-system |
 | ggorockee.org | ggorockee-org-wildcard-cert | ggorockee-org-wildcard-tls | istio-system |
 | woohalabs.com | woohalabs-com-wildcard-cert | woohalabs-com-wildcard-tls | istio-system |
+| review-maps.com | review-maps-com-wildcard-cert | review-maps-com-wildcard-tls | istio-system |
 
 ## 🚀 배포 순서
 
@@ -58,6 +60,7 @@ k8s-manifests/istio/
 | ggorockee.com | ggorockee-com | ggorockee.com |
 | ggorockee.org | ggorockee-org | ggorockee.org |
 | woohalabs.com | woohalabs-com | woohalabs.com |
+| review-maps.com | review-maps-com | review-maps.com |
 
 **생성 방법**:
 1. GCP Console → Cloud DNS → Create Zone

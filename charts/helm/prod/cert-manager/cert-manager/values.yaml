@@ -1556,3 +1556,12 @@ ssl:
       dnsNames:
         - "woohalabs.com"
         - "*.woohalabs.com"
+
+    # Certificate for review-maps.com
+    review_maps_com:
+      enabled: true
+      name: "review-maps-com-wildcard-cert"
+      secretName: "review-maps-com-wildcard-tls"
+      dnsNames:
+        - "review-maps.com"
+        - "*.review-maps.com"

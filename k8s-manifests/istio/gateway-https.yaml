@@ -22,6 +22,8 @@ spec:
     - "ggorockee.org"
     - "*.woohalabs.com"
     - "woohalabs.com"
+    - "*.review-maps.com"
+    - "review-maps.com"
     tls:
       httpsRedirect: true
 
@@ -60,6 +62,18 @@ spec:
     tls:
       mode: SIMPLE
       credentialName: woohalabs-com-wildcard-tls
+
+  # HTTPS (443) - review-maps.com
+  - port:
+      number: 443
+      name: https-review-maps-com
+      protocol: HTTPS
+    hosts:
+    - "*.review-maps.com"
+    - "review-maps.com"
+    tls:
+      mode: SIMPLE
+      credentialName: review-maps-com-wildcard-tls
 
 ---
 # Example VirtualService (ArgoCD - woohalabs.com)
