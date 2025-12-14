@@ -83,7 +83,7 @@ resource "google_container_node_pool" "spot_pool_medium" {
   }
 }
 
-# Node Pool with Spot Instances - e2-standard-4 (4 vCPU, 16GB RAM)
+# Node Pool with Spot Instances - e2-standard-2 (2 vCPU, 8GB RAM)
 resource "google_container_node_pool" "spot_pool_large" {
   name       = "woohalabs-${var.environment}-spot-large"
   location   = var.zone
@@ -93,7 +93,7 @@ resource "google_container_node_pool" "spot_pool_large" {
 
   node_config {
     spot         = true # Enable Spot instances
-    machine_type = "e2-standard-4"
+    machine_type = "e2-standard-2"
 
     # Google recommended settings for spot instances
     disk_size_gb = 30
