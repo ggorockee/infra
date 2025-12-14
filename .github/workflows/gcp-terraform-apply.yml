@@ -45,10 +45,6 @@ jobs:
         working-directory: ./gcp/terraform/environments/prod
         run: terraform init
 
-      - name: Terraform Refresh
-        working-directory: ./gcp/terraform/environments/prod
-        run: terraform apply -refresh-only -auto-approve
-
       - name: Terraform Plan
         working-directory: ./gcp/terraform/environments/prod
         run: terraform plan -no-color
