@@ -8,7 +8,7 @@ provider "google-beta" {
   region  = var.region
 }
 
-# Get GKE cluster credentials for Kubernetes provider
+# Get GKE cluster credentials for Kubernetes and Helm providers
 data "google_client_config" "default" {}
 
 data "google_container_cluster" "primary" {
