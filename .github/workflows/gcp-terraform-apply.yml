@@ -25,9 +25,6 @@ jobs:
   terraform-apply:
     name: Terraform Apply
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./gcp/terraform/environments/prod
 
     steps:
       - name: Checkout code
@@ -49,16 +46,20 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Terraform Init
+        working-directory: ./gcp/terraform/environments/prod
         run: terraform init
 
       - name: Terraform Plan
+        working-directory: ./gcp/terraform/environments/prod
         run: terraform plan -no-color
 
       - name: Terraform Apply
+        working-directory: ./gcp/terraform/environments/prod
         run: terraform apply -auto-approve
 
       - name: Terraform Output
         id: output
+        working-directory: ./gcp/terraform/environments/prod
         run: terraform output -json
 
       - name: Notify on Success

@@ -21,9 +21,6 @@ jobs:
         contains(github.event.comment.body, 'terraform apply')
       )
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./gcp/terraform/environments/prod
 
     steps:
       - name: Add reaction to comment
@@ -76,6 +73,7 @@ jobs:
 
       - name: Terraform Init
         id: init
+        working-directory: ./gcp/terraform/environments/prod
         run: terraform init
 
       - name: Download Plan Artifact
@@ -88,6 +86,7 @@ jobs:
 
       - name: Terraform Apply
         id: apply
+        working-directory: ./gcp/terraform/environments/prod
         run: |
           if [ -f tfplan ]; then
             echo "Applying existing plan..."
@@ -102,6 +101,7 @@ jobs:
       - name: Get Terraform Output
         id: output
         if: steps.apply.outcome == 'success'
+        working-directory: ./gcp/terraform/environments/prod
         run: terraform output -json > tf_output.json
         continue-on-error: true
 
@@ -125,37 +125,24 @@ jobs:
             let commentBody = '';
 
             if (applyOutcome === 'success') {
-              commentBody = `### ✅ Terraform Apply Successful
-
-#### Applied by: @${{ github.event.comment.user.login }}
-
-<details><summary>Terraform Outputs</summary>
-
-\`\`\`json
-${JSON.stringify(outputJson, null, 2)}
-\`\`\`
-
-</details>
-
-**Environment**: Production
-**Project ID**: ${{ secrets.GCP_PROJECT_ID }}
-**Timestamp**: ${new Date().toISOString()}
-
----
-
-*Infrastructure has been successfully deployed to GCP.*`;
+              const outputs = JSON.stringify(outputJson, null, 2);
+              commentBody = '### ✅ Terraform Apply Successful\n\n';
+              commentBody += '#### Applied by: @${{ github.event.comment.user.login }}\n\n';
+              commentBody += '<details><summary>Terraform Outputs</summary>\n\n';
+              commentBody += '```json\n' + outputs + '\n```\n\n';
+              commentBody += '</details>\n\n';
+              commentBody += '**Environment**: Production\n';
+              commentBody += '**Project ID**: ${{ secrets.GCP_PROJECT_ID }}\n';
+              commentBody += '**Timestamp**: ' + new Date().toISOString() + '\n\n';
+              commentBody += '---\n\n';
+              commentBody += '*Infrastructure has been successfully deployed to GCP.*';
             } else {
-              commentBody = `### ❌ Terraform Apply Failed
-
-#### Attempted by: @${{ github.event.comment.user.login }}
-
-**Please check the workflow logs for details.**
-
-[View Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
----
-
-*Infrastructure deployment failed. Please review the error logs.*`;
+              commentBody = '### ❌ Terraform Apply Failed\n\n';
+              commentBody += '#### Attempted by: @${{ github.event.comment.user.login }}\n\n';
+              commentBody += '**Please check the workflow logs for details.**\n\n';
+              commentBody += '[View Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\n\n';
+              commentBody += '---\n\n';
+              commentBody += '*Infrastructure deployment failed. Please review the error logs.*';
             }
 
             github.rest.issues.createComment({

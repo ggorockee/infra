@@ -16,9 +16,6 @@ jobs:
   terraform-plan:
     name: Terraform Plan
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./gcp/terraform/environments/prod
 
     steps:
       - name: Checkout code
@@ -41,19 +38,23 @@ jobs:
 
       - name: Terraform Format Check
         id: fmt
+        working-directory: ./gcp/terraform/environments/prod
         run: terraform fmt -check -recursive
         continue-on-error: true
 
       - name: Terraform Init
         id: init
+        working-directory: ./gcp/terraform/environments/prod
         run: terraform init
 
       - name: Terraform Validate
         id: validate
+        working-directory: ./gcp/terraform/environments/prod
         run: terraform validate
 
       - name: Terraform Plan
         id: plan
+        working-directory: ./gcp/terraform/environments/prod
         run: |
           terraform plan -no-color -out=tfplan
           terraform show -no-color tfplan > plan_output.txt
