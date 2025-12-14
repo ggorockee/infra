@@ -11,7 +11,7 @@ terraform {
 
 # GKE Standard Cluster with Spot Instances
 resource "google_container_cluster" "primary" {
-  name     = "woohalabs-${var.environment}-gke-cluster"
+  name     = "woohalabs-${var.environment}-gke"
   location = var.zone # Single zone for free tier
   project  = var.project_id
 
