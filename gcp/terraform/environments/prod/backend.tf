@@ -3,7 +3,7 @@ terraform {
 
   backend "gcs" {
     bucket = "woohalabs-terraform-state"
-    prefix = "env/prod"
+    prefix = "env/prod/woohalabs-prod"
   }
 
   required_providers {
