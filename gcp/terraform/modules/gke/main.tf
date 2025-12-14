@@ -11,7 +11,7 @@ terraform {
 
 # GKE Autopilot Cluster
 resource "google_container_cluster" "primary" {
-  name     = "${var.environment}-gke-cluster"
+  name     = "woohalabs-${var.environment}-gke-cluster"
   location = var.region
   project  = var.project_id
 

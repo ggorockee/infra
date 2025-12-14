@@ -11,14 +11,14 @@ terraform {
 
 # VPC Network
 resource "google_compute_network" "main" {
-  name                    = "${var.environment}-vpc"
+  name                    = "woohalabs-${var.environment}-vpc"
   auto_create_subnetworks = false
   project                 = var.project_id
 }
 
 # Subnet
 resource "google_compute_subnetwork" "private" {
-  name          = "${var.environment}-private-subnet"
+  name          = "woohalabs-${var.environment}-private-subnet"
   ip_cidr_range = var.private_subnet_cidr
   region        = var.region
   network       = google_compute_network.main.id
@@ -39,7 +39,7 @@ resource "google_compute_subnetwork" "private" {
 
 # Cloud Router for NAT
 resource "google_compute_router" "router" {
-  name    = "${var.environment}-router"
+  name    = "woohalabs-${var.environment}-router"
   region  = var.region
   network = google_compute_network.main.id
   project = var.project_id
@@ -47,7 +47,7 @@ resource "google_compute_router" "router" {
 
 # Cloud NAT
 resource "google_compute_router_nat" "nat" {
-  name                               = "${var.environment}-nat"
+  name                               = "woohalabs-${var.environment}-nat"
   router                             = google_compute_router.router.name
   region                             = var.region
   nat_ip_allocate_option             = "AUTO_ONLY"
@@ -62,7 +62,7 @@ resource "google_compute_router_nat" "nat" {
 
 # Firewall Rules
 resource "google_compute_firewall" "allow_internal" {
-  name    = "${var.environment}-allow-internal"
+  name    = "woohalabs-${var.environment}-allow-internal"
   network = google_compute_network.main.name
   project = var.project_id
 
