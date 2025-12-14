@@ -1,0 +1,56 @@
+# cert-manager Configuration
+# Chart: jetstack/cert-manager v1.16.2
+# Purpose: Automatic SSL certificate management with Let's Encrypt
+
+# Install CRDs with Helm
+installCRDs: true
+
+# Global settings
+global:
+  leaderElection:
+    namespace: cert-manager
+
+# Pod security
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+# Resources
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+
+# Webhook configuration
+webhook:
+  securePort: 10250
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+# CA Injector
+cainjector:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+# Prometheus metrics
+prometheus:
+  enabled: true
+  servicemonitor:
+    enabled: false
+
+# DNS-01 solver for wildcard certificates
+# GCP Cloud DNS will be configured via ClusterIssuer

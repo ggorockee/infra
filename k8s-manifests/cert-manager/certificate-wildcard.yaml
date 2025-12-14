@@ -1,0 +1,62 @@
+---
+# Wildcard Certificate for ggorockee.com
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ggorockee-com-wildcard-cert
+  namespace: istio-system
+spec:
+  secretName: ggorockee-com-wildcard-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - "ggorockee.com"
+  - "*.ggorockee.com"
+  renewBefore: 720h
+  privateKey:
+    algorithm: RSA
+    size: 2048
+    rotationPolicy: Always
+
+---
+# Wildcard Certificate for ggorockee.org
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ggorockee-org-wildcard-cert
+  namespace: istio-system
+spec:
+  secretName: ggorockee-org-wildcard-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - "ggorockee.org"
+  - "*.ggorockee.org"
+  renewBefore: 720h
+  privateKey:
+    algorithm: RSA
+    size: 2048
+    rotationPolicy: Always
+
+---
+# Wildcard Certificate for woohalabs.com
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: woohalabs-com-wildcard-cert
+  namespace: istio-system
+spec:
+  secretName: woohalabs-com-wildcard-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - "woohalabs.com"
+  - "*.woohalabs.com"
+  renewBefore: 720h
+  privateKey:
+    algorithm: RSA
+    size: 2048
+    rotationPolicy: Always
