@@ -19,7 +19,7 @@ spec:
       source:
         repoURL: https://github.com/ggorockee/infra.git
         targetRevision: main
-        path: '{{path}}'  # charts/helm/fridge2fork 같은 경로
+        path: '{{path}}'
         helm:
           valueFiles:
           - values.yaml

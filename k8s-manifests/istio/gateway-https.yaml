@@ -1,0 +1,154 @@
+---
+# Istio Gateway with HTTPS (Multi-domain Wildcard Certificates)
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: main-gateway
+  namespace: istio-system
+spec:
+  selector:
+    istio: ingressgateway
+
+  servers:
+  # HTTP (80) - HTTPS로 리다이렉트
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*.ggorockee.com"
+    - "ggorockee.com"
+    - "*.ggorockee.org"
+    - "ggorockee.org"
+    - "*.woohalabs.com"
+    - "woohalabs.com"
+    - "*.review-maps.com"
+    - "review-maps.com"
+    tls:
+      httpsRedirect: true
+
+  # HTTPS (443) - ggorockee.com
+  - port:
+      number: 443
+      name: https-ggorockee-com
+      protocol: HTTPS
+    hosts:
+    - "*.ggorockee.com"
+    - "ggorockee.com"
+    tls:
+      mode: SIMPLE
+      credentialName: ggorockee-com-wildcard-tls
+
+  # HTTPS (443) - ggorockee.org
+  - port:
+      number: 443
+      name: https-ggorockee-org
+      protocol: HTTPS
+    hosts:
+    - "*.ggorockee.org"
+    - "ggorockee.org"
+    tls:
+      mode: SIMPLE
+      credentialName: ggorockee-org-wildcard-tls
+
+  # HTTPS (443) - woohalabs.com
+  - port:
+      number: 443
+      name: https-woohalabs-com
+      protocol: HTTPS
+    hosts:
+    - "*.woohalabs.com"
+    - "woohalabs.com"
+    tls:
+      mode: SIMPLE
+      credentialName: woohalabs-com-wildcard-tls
+
+  # HTTPS (443) - review-maps.com
+  - port:
+      number: 443
+      name: https-review-maps-com
+      protocol: HTTPS
+    hosts:
+    - "*.review-maps.com"
+    - "review-maps.com"
+    tls:
+      mode: SIMPLE
+      credentialName: review-maps-com-wildcard-tls
+
+---
+# Example VirtualService (ArgoCD - woohalabs.com)
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: argocd-vs
+  namespace: argocd
+spec:
+  hosts:
+  - "argocd.woohalabs.com"
+  gateways:
+  - istio-system/main-gateway
+  http:
+  - route:
+    - destination:
+        host: argocd-server
+        port:
+          number: 80
+
+---
+# Example VirtualService (Ojeomneo - ggorockee.com)
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: ojeomneo-admin-vs
+  namespace: ojeomneo
+spec:
+  hosts:
+  - "ojeomneo.ggorockee.com"
+  - "admin.ojeomneo.ggorockee.com"
+  gateways:
+  - istio-system/main-gateway
+  http:
+  - route:
+    - destination:
+        host: ojeomneo-admin
+        port:
+          number: 3000
+
+---
+# Example VirtualService (Ojeomneo API - ggorockee.com)
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: ojeomneo-api-vs
+  namespace: ojeomneo
+spec:
+  hosts:
+  - "api.ojeomneo.ggorockee.com"
+  gateways:
+  - istio-system/main-gateway
+  http:
+  - route:
+    - destination:
+        host: ojeomneo-server
+        port:
+          number: 8000
+
+---
+# Example VirtualService (ReviewMaps - ggorockee.org)
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: reviewmaps-vs
+  namespace: reviewmaps
+spec:
+  hosts:
+  - "reviewmaps.ggorockee.org"
+  - "www.reviewmaps.ggorockee.org"
+  gateways:
+  - istio-system/main-gateway
+  http:
+  - route:
+    - destination:
+        host: reviewmaps-frontend
+        port:
+          number: 3000
