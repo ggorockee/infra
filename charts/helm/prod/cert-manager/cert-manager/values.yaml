@@ -1546,7 +1546,6 @@ ssl:
       name: "ggorockee-com-wildcard-cert"
       secretName: "ggorockee-com-wildcard-tls"
       dnsNames:
-        - "ggorockee.com"
         - "*.ggorockee.com"
 
     # Certificate for ggorockee.org
@@ -1555,7 +1554,6 @@ ssl:
       name: "ggorockee-org-wildcard-cert"
       secretName: "ggorockee-org-wildcard-tls"
       dnsNames:
-        - "ggorockee.org"
         - "*.ggorockee.org"
 
     # Certificate for woohalabs.com
@@ -1564,7 +1562,6 @@ ssl:
       name: "woohalabs-com-wildcard-cert"
       secretName: "woohalabs-com-wildcard-tls"
       dnsNames:
-        - "woohalabs.com"
         - "*.woohalabs.com"
 
     # Certificate for review-maps.com
@@ -1573,5 +1570,4 @@ ssl:
       name: "review-maps-com-wildcard-cert"
       secretName: "review-maps-com-wildcard-tls"
       dnsNames:
-        - "review-maps.com"
         - "*.review-maps.com"
