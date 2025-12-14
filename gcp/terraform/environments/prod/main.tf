@@ -13,7 +13,7 @@ data "google_client_config" "default" {}
 
 data "google_container_cluster" "primary" {
   name       = module.gke.cluster_name
-  location   = var.region
+  location   = module.gke.cluster_location
   depends_on = [module.gke]
 }
 
@@ -44,10 +44,17 @@ module "gke" {
 
   project_id  = var.project_id
   region      = var.region
+  zone        = var.zone
   environment = var.environment
 
   network_id = module.networking.network_id
   subnet_id  = module.networking.private_subnet_id
+
+  # Spot instance configuration (2 vCPU, 4GB RAM)
+  machine_type   = "e2-medium"
+  node_count     = 1
+  min_node_count = 1
+  max_node_count = 3
 }
 
 # Phase 1: Networking and GKE only
@@ -101,7 +108,7 @@ module "external_secrets" {
   region           = var.region
   environment      = var.environment
   cluster_name     = module.gke.cluster_name
-  cluster_location = var.region
+  cluster_location = module.gke.cluster_location
 
   depends_on = [module.gke]
 }
