@@ -86,7 +86,7 @@ resource "kubernetes_manifest" "argocd_init_password" {
   }
 
   depends_on = [
-    kubernetes_secret.argocd_secret,
+    helm_release.argocd,
     kubernetes_manifest.argocd_secret,
     kubernetes_service_account.argocd_init_password
   ]
