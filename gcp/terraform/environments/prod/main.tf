@@ -119,22 +119,20 @@ module "external_secrets" {
 }
 
 # Phase 3: ArgoCD deployment
-# Temporarily disabled to speed up Terraform Plan/Apply
-# ArgoCD is already deployed and managed separately
-# module "argocd" {
-#   source = "../../modules/argocd"
-#
-#   project_id       = var.project_id
-#   region           = var.region
-#   environment      = var.environment
-#   cluster_name     = module.gke.cluster_name
-#   cluster_location = module.gke.cluster_location
-#
-#   # ArgoCD domain (for OAuth redirect URIs and Istio VirtualService)
-#   argocd_domain = "argocd.ggorockee.com"
-#
-#   depends_on = [module.external_secrets]
-# }
+module "argocd" {
+  source = "../../modules/argocd"
+
+  project_id       = var.project_id
+  region           = var.region
+  environment      = var.environment
+  cluster_name     = module.gke.cluster_name
+  cluster_location = module.gke.cluster_location
+
+  # ArgoCD domain (for OAuth redirect URIs and Istio VirtualService)
+  argocd_domain = "argocd.ggorockee.com"
+
+  depends_on = [module.external_secrets]
+}
 
 # Phase 4: cert-manager deployment
 # Note: cert-manager is already deployed manually via Helm/ArgoCD
