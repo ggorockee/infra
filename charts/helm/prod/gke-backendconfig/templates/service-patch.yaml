@@ -1,0 +1,10 @@
+# Service patch to attach BackendConfig to Istio Ingress Gateway
+# This patch adds the beta.cloud.google.com/backend-config annotation
+apiVersion: v1
+kind: Service
+metadata:
+  name: istio-ingressgateway
+  namespace: istio-system
+  annotations:
+    cloud.google.com/backend-config: '{"default": "istio-ingress-backendconfig"}'
+    beta.cloud.google.com/backend-config: '{"default": "istio-ingress-backendconfig"}'

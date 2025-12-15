@@ -1,0 +1,27 @@
+# GKE BackendConfig for Istio Ingress Gateway
+# Connects CloudArmor security policy to the Load Balancer
+
+cloudArmor:
+  enabled: true
+  # Security policy name from Terraform (will be created after Terraform Apply)
+  securityPolicy: "prod-gke-istio-security-policy"
+
+# Health check configuration for GKE Load Balancer
+healthCheck:
+  checkIntervalSec: 10
+  timeoutSec: 5
+  healthyThreshold: 2
+  unhealthyThreshold: 3
+  type: "HTTP"
+  port: 15021  # Istio health check port
+  requestPath: "/healthz/ready"
+
+# Connection draining timeout
+connectionDraining:
+  drainingTimeoutSec: 60
+
+# Session affinity (optional)
+sessionAffinity:
+  enabled: false
+  affinityType: "CLIENT_IP"
+  affinityCookieTtlSec: 3600
