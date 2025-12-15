@@ -32,6 +32,7 @@ global:
         memory: 512Mi
 
 # Pilot (istiod) specific configuration
+image: pilot
 autoscaleEnabled: true
 autoscaleMin: 1
 autoscaleMax: 5
