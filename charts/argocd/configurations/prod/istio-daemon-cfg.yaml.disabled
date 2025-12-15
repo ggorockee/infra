@@ -1,7 +1,0 @@
-env: prod
-chartName: istiod
-chartVersion: 1.28.1
-appName: istiod
-repoURL: https://istio-release.storage.googleapis.com/charts
-namespace: istio-system
-helmValuesFile: prod/istiod-values.yaml
