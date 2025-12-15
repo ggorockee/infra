@@ -1,6 +1,6 @@
 # GCP Terraform 리소스 현황
 
-**최종 업데이트**: 2025-12-14
+**최종 업데이트**: 2025-12-15
 **프로젝트**: infra-480802
 **리전**: asia-northeast3 (서울)
 
@@ -66,6 +66,39 @@
 ---
 
 ## 📈 리소스 히스토리
+
+### 2025-12-15: ArgoCD-Istio Ingress Gateway 통합 완료
+
+**배포된 변경사항**: ArgoCD Service 타입 변경 및 Istio 통합
+**예상 소요 시간**: 약 3-5분
+
+**변경 내역**:
+- ArgoCD Service 타입: LoadBalancer → ClusterIP
+- ArgoCD 도메인 설정: argocd.ggorockee.org
+- OAuth redirectURI 업데이트: argocd.ggorockee.org/api/dex/callback
+- Istio VirtualService 활성화 (이미 설정되어 있음)
+- 외부 접근 경로: Istio Ingress Gateway (34.50.12.202) → main-gateway → argocd-vs → argocd-server
+
+**통합 효과**:
+- 중복 LoadBalancer 제거 (월 비용 절감: $15-20 예상)
+- 통합 Gateway를 통한 일관된 보안 정책 적용
+- TLS 인증서 자동 갱신 (cert-manager)
+- 트래픽 관리 중앙화 (main-gateway)
+
+**트래픽 흐름**:
+```
+Internet → argocd.ggorockee.org (HTTPS)
+       ↓
+34.50.12.202 (Istio Ingress Gateway)
+       ↓
+main-gateway (istio-system namespace)
+       ↓
+argocd-vs VirtualService (argocd namespace)
+       ↓
+argocd-server Service (ClusterIP)
+       ↓
+argocd-server Pod
+```
 
 ### 2025-12-14: Phase 1 배포 완료
 
