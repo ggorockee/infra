@@ -1,60 +1,6 @@
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: istiod
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: https://istio-release.storage.googleapis.com/charts
-    chart: istiod
-    targetRevision: 1.28.1
-    helm:
-      values: |
-        global:
-          istioNamespace: istio-system
-          hub: docker.io/istio
-          tag: 1.28.1
-
-        autoscaleEnabled: true
-        autoscaleMin: 1
-        autoscaleMax: 5
-
-        resources:
-          requests:
-            cpu: 100m
-            memory: 512Mi
-
-        meshConfig:
-          enablePrometheusMerge: true
-
-        telemetry:
-          enabled: true
-          v2:
-            enabled: true
-            prometheus:
-              enabled: true
-
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: istio-system
-
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
-
-  ignoreDifferences:
-    - group: admissionregistration.k8s.io
-      kind: ValidatingWebhookConfiguration
-      name: istiod-default-validator
-      jsonPointers:
-        - /webhooks/0/failurePolicy
-
-    - group: admissionregistration.k8s.io
-      kind: ValidatingWebhookConfiguration
-      name: istio-validator-istio-system
-      jsonPointers:
-        - /webhooks/0/failurePolicy
+env: prod
+revision: main
+chartName: istiod
+appName: istiod
+repoURL: https://github.com/ggorockee/infra
+namespace: istio-system
