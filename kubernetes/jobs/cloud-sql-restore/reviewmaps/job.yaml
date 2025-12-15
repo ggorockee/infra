@@ -1,0 +1,149 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cloud-sql-restore-reviewmaps
+  namespace: reviewmaps
+  labels:
+    app: cloud-sql-restore
+    database: reviewmaps
+spec:
+  ttlSecondsAfterFinished: 3600  # 1시간 후 자동 삭제
+  backoffLimit: 3  # 최대 3번 재시도
+  template:
+    metadata:
+      labels:
+        app: cloud-sql-restore
+        database: reviewmaps
+    spec:
+      serviceAccountName: cloud-sql-restore-sa
+      restartPolicy: Never
+
+      initContainers:
+        # GCS에서 SQL 백업 파일 다운로드
+        - name: download-backup
+          image: google/cloud-sdk:alpine
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              echo "=== Downloading SQL backup from GCS ==="
+              gsutil cp gs://woohalabs-database-backups/backups/reviewmaps_backup.sql /backup/reviewmaps_backup.sql
+              echo "=== Download completed ==="
+              ls -lh /backup/
+              echo "File size: $(du -h /backup/reviewmaps_backup.sql)"
+          volumeMounts:
+            - name: backup-volume
+              mountPath: /backup
+
+      containers:
+        # PostgreSQL 데이터 복원
+        - name: restore-database
+          image: postgres:15-alpine
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+
+              echo "=== Starting database restore ==="
+              echo "Database: $POSTGRES_DB"
+              echo "Host: $POSTGRES_HOST"
+              echo "Port: $POSTGRES_PORT"
+              echo "User: $POSTGRES_USER"
+
+              # 연결 테스트
+              echo "=== Testing database connection ==="
+              PGPASSWORD=$POSTGRES_PASSWORD psql \
+                -h $POSTGRES_HOST \
+                -p $POSTGRES_PORT \
+                -U $POSTGRES_USER \
+                -d $POSTGRES_DB \
+                -c "SELECT version();"
+
+              if [ $? -ne 0 ]; then
+                echo "ERROR: Failed to connect to database"
+                exit 1
+              fi
+
+              echo "=== Connection successful ==="
+
+              # 데이터베이스 복원 (대용량 파일이므로 진행 상황 출력)
+              echo "=== Restoring database from backup (this may take several minutes) ==="
+              PGPASSWORD=$POSTGRES_PASSWORD psql \
+                -h $POSTGRES_HOST \
+                -p $POSTGRES_PORT \
+                -U $POSTGRES_USER \
+                -d $POSTGRES_DB \
+                -f /backup/reviewmaps_backup.sql \
+                2>&1 | tee /tmp/restore.log
+
+              if [ $? -ne 0 ]; then
+                echo "ERROR: Database restore failed"
+                echo "Last 50 lines of restore log:"
+                tail -50 /tmp/restore.log
+                exit 1
+              fi
+
+              echo "=== Database restore completed successfully ==="
+
+              # 복원 후 검증
+              echo "=== Verifying restored data ==="
+              PGPASSWORD=$POSTGRES_PASSWORD psql \
+                -h $POSTGRES_HOST \
+                -p $POSTGRES_PORT \
+                -U $POSTGRES_USER \
+                -d $POSTGRES_DB \
+                -c "\dt"
+
+              # PostGIS 확장 확인 (ReviewMaps는 공간 데이터 사용)
+              echo "=== Checking PostGIS extension ==="
+              PGPASSWORD=$POSTGRES_PASSWORD psql \
+                -h $POSTGRES_HOST \
+                -p $POSTGRES_PORT \
+                -U $POSTGRES_USER \
+                -d $POSTGRES_DB \
+                -c "SELECT PostGIS_version();" || echo "PostGIS not found (will be installed by application)"
+
+              echo "=== Restore job finished ==="
+          env:
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: reviewmaps-db-credentials
+                  key: POSTGRES_HOST
+            - name: POSTGRES_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: reviewmaps-db-credentials
+                  key: POSTGRES_PORT
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: reviewmaps-db-credentials
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: reviewmaps-db-credentials
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: reviewmaps-db-credentials
+                  key: POSTGRES_DB
+          volumeMounts:
+            - name: backup-volume
+              mountPath: /backup
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+
+      volumes:
+        - name: backup-volume
+          emptyDir:
+            sizeLimit: 1Gi  # ReviewMaps 백업 파일이 크므로 충분한 공간 할당

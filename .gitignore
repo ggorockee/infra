@@ -109,3 +109,4 @@ myrequest.txt
 # Database backups and secrets
 backupsql/
 backup_secrets/
+backup_sql/
