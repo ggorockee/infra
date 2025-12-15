@@ -44,7 +44,7 @@ resource "google_container_node_pool" "spot_pool_medium" {
   location   = var.zone
   cluster    = google_container_cluster.primary.name
   project    = var.project_id
-  node_count = var.node_count
+  node_count = 0 # Scale down to 0, migrating to e2-standard-2
 
   node_config {
     spot         = true # Enable Spot instances
@@ -78,8 +78,8 @@ resource "google_container_node_pool" "spot_pool_medium" {
   }
 
   autoscaling {
-    min_node_count = var.min_node_count
-    max_node_count = var.max_node_count
+    min_node_count = 0
+    max_node_count = 0
   }
 }
 
@@ -89,7 +89,7 @@ resource "google_container_node_pool" "spot_pool_large" {
   location   = var.zone
   cluster    = google_container_cluster.primary.name
   project    = var.project_id
-  node_count = 0 # Start with 0, only scale up when medium pool is insufficient
+  node_count = 2 # Scale up to 2 nodes for better resource allocation
 
   node_config {
     spot         = true # Enable Spot instances
@@ -123,7 +123,7 @@ resource "google_container_node_pool" "spot_pool_large" {
   }
 
   autoscaling {
-    min_node_count = 0
-    max_node_count = 0
+    min_node_count = 2
+    max_node_count = 4
   }
 }
