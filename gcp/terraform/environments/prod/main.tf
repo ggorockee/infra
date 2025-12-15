@@ -126,17 +126,19 @@ module "argocd" {
 }
 
 # Phase 4: cert-manager deployment
-module "cert_manager" {
-  source = "../../modules/cert-manager"
-
-  project_id       = var.project_id
-  region           = var.region
-  environment      = var.environment
-  cluster_name     = module.gke.cluster_name
-  cluster_location = module.gke.cluster_location
-
-  depends_on = [module.argocd]
-}
+# Note: cert-manager is already deployed manually via Helm/ArgoCD
+# Commenting out to avoid conflicts with existing resources
+# module "cert_manager" {
+#   source = "../../modules/cert-manager"
+#
+#   project_id       = var.project_id
+#   region           = var.region
+#   environment      = var.environment
+#   cluster_name     = module.gke.cluster_name
+#   cluster_location = module.gke.cluster_location
+#
+#   depends_on = [module.argocd]
+# }
 
 # module "iam" {
 #   source = "../../modules/iam"
