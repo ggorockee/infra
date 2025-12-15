@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: istio-applicationsets
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      repoURL: https://github.com/ggorockee/infra.git
+      revision: main
+      files:
+      - path: "charts/argocd/configurations/prod/istio-*.yaml"
+  
+  template:
+    metadata:
+      name: '{{appName}}'
+    spec:
+      project: default
+      source:
+        repoURL: '{{repoURL}}'
+        targetRevision: '{{revision}}'
+        path: 'charts/helm/{{env}}//{{chartName}}'
+        helm:
+          valueFiles:
+          - values.yaml
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+      ignoreDifferences:
+        - group: admissionregistration.k8s.io
+          kind: ValidatingWebhookConfiguration
+          name: istiod-default-validator
+          jsonPointers:
+            - /webhooks/0/failurePolicy
+
+        - group: admissionregistration.k8s.io
+          kind: ValidatingWebhookConfiguration
+          name: istio-validator-istio-system
+          jsonPointers:
+            - /webhooks/0/failurePolicy
+
+        - group: apps
+          kind: DaemonSet
+          jsonPointers:
+            - /spec/template/spec/hostNetwork
+            - /spec/template/spec/containers/0/extraVolumeMounts
+            - /spec/template/spec/containers/0/resources/extraWatchVolumes
+
+        - group: ""
+          kind: Service
+          jsonPointers:
+            - /spec/clusterIP
+            - /spec/clusterIPs
+            - /spec/allocateLoadBalancerNodePorts

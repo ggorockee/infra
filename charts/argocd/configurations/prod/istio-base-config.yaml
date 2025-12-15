@@ -1,0 +1,6 @@
+env: prod
+revision: main
+chartName: istio-base
+appName: istio-base
+repoURL: https://github.com/ggorockee/infra
+namespace: istio-system
