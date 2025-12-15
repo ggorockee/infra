@@ -16,6 +16,10 @@ global:
   logging:
     level: "default:info"
 
+  # Istiod configuration
+  istiod:
+    enableAnalysis: false
+
   # Pod Disruption Budget
   defaultPodDisruptionBudget:
     enabled: true
