@@ -1,6 +1,0 @@
-apiVersion: v2
-appVersion: 15.15.0
-description: PostgreSQL database for Ojeomneo
-name: database
-type: application
-version: 1.0.0
