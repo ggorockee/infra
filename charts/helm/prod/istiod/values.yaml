@@ -63,3 +63,7 @@ istiodRemote:
   injectionPath: /inject
   injectionURL: ""
   injectionCABundle: ""
+
+# Experimental features
+experimental:
+  stableValidationPolicy: false
