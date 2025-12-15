@@ -12,6 +12,10 @@ global:
   tag: 1.28.1
   imagePullPolicy: IfNotPresent
 
+  # Pod Disruption Budget
+  defaultPodDisruptionBudget:
+    enabled: true
+
   # Proxy sidecar configuration
   proxy:
     image: proxyv2
@@ -71,3 +75,7 @@ istiodRemote:
 # Experimental features
 experimental:
   stableValidationPolicy: false
+
+# Gateway configuration (required by templates)
+gateways:
+  securityContext: ~

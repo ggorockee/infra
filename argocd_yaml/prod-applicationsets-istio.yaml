@@ -18,11 +18,21 @@ spec:
       project: default
       source:
         repoURL: '{{repoURL}}'
+        {{- if .chartVersion }}
+        chart: '{{chartName}}'
+        targetRevision: '{{chartVersion}}'
+        {{- else }}
         targetRevision: '{{revision}}'
         path: 'charts/helm/{{env}}//{{chartName}}'
+        {{- end }}
         helm:
+          {{- if .helmValuesFile }}
+          valueFiles:
+          - '{{helmValuesFile}}'
+          {{- else }}
           valueFiles:
           - values.yaml
+          {{- end }}
       destination:
         server: https://kubernetes.default.svc
         namespace: '{{namespace}}'
