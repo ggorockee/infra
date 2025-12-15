@@ -183,18 +183,25 @@
 
 ---
 
-### Phase 3: 데이터베이스 마이그레이션 (3주차)
+### Phase 3: 데이터베이스 마이그레이션 (3주차) ⏸️ **대기 중**
 
 **목표**: K8s 내부 VM PostgreSQL → Cloud SQL Private IP 이전
 
 #### 3.1 Cloud SQL 인스턴스 생성
-- [ ] Cloud SQL PostgreSQL 인스턴스 생성
+- [ ] Cloud SQL PostgreSQL 인스턴스 생성 (Terraform)
   - [ ] 스펙: db-g1-small (1 vCPU, 1.7GB RAM)
-  - [ ] 버전: PostgreSQL 15
-  - [ ] Private IP 설정 (VPC 연결)
+  - [ ] 버전: **PostgreSQL 15** (ojeomneo 호환성, reviewmaps는 17.5에서 다운그레이드 필요)
+  - [ ] Private IP 설정 (VPC Peering 연결)
   - [ ] Public IP 비활성화 (보안 강화)
   - [ ] 자동 백업: **비활성화** (비용 절감, 수동 백업으로 대체)
   - [ ] High Availability: **비활성화** (단일 환경으로 비용 절감)
+  - [ ] **필수 확장 기능 설치**:
+    - [ ] `pgcrypto` (reviewmaps 필수)
+    - [ ] `postgis` (reviewmaps 필수, 공간 데이터)
+
+**데이터베이스 구성**:
+- Database 1: `ojeomneo` (Owner: ojeomneo)
+- Database 2: `reviewmaps` (Owner: reviewmaps)
 
 **비용 최적화 전략**:
 - 자동 백업 대신 수동 pg_dump 백업 사용 (절감: ~$3/월)
@@ -203,21 +210,36 @@
 
 #### 3.2 보안 설정
 - [ ] IAM Database Authentication 활성화
-- [ ] VPC Service Controls 적용
-- [ ] Cloud Armor 연동 (Proxy 경유 시)
+- [ ] VPC Private Service Connection 구성
 - [ ] Cloud Audit Logs 활성화
+- [ ] SSL/TLS 연결 강제 (require_ssl flag)
+- [ ] IP 허용 목록 설정 (GKE Node IP만 허용)
 
-#### 3.3 데이터 마이그레이션
-- [ ] 현재 DB 백업 생성 (pg_dump)
-- [ ] Cloud SQL로 데이터 복원 (pg_restore)
-- [ ] 데이터 무결성 검증 (레코드 개수, 샘플 데이터)
-- [ ] 읽기 전용 모드로 병렬 운영 테스트
+#### 3.3 데이터 마이그레이션 (2개 데이터베이스)
+- [ ] **ojeomneo 데이터베이스**:
+  - [ ] 현재 DB 백업 (`backupsql/ojeomneo_backup.sql` 활용)
+  - [ ] Cloud SQL로 데이터 복원 (`psql < ojeomneo_backup.sql`)
+  - [ ] 데이터 무결성 검증 (레코드 개수, 샘플 데이터)
+  - [ ] 읽기 전용 모드로 병렬 운영 테스트
+- [ ] **reviewmaps 데이터베이스**:
+  - [ ] PostgreSQL 17.5 → 15 다운그레이드 호환성 확인
+  - [ ] `pgcrypto`, `postgis` 확장 기능 먼저 설치
+  - [ ] 현재 DB 백업 (`backupsql/reviewmaps_backup.sql` 활용)
+  - [ ] Cloud SQL로 데이터 복원 (`psql < reviewmaps_backup.sql`)
+  - [ ] 공간 데이터 (`postgis`) 무결성 검증
+  - [ ] 데이터 무결성 검증 (레코드 개수, 샘플 데이터)
 
 #### 3.4 애플리케이션 연결 변경
-- [ ] 애플리케이션 DB 연결 문자열 업데이트 (Private IP)
-- [ ] Connection Pooling 설정 (PgBouncer 또는 Cloud SQL Proxy)
-- [ ] 환경 변수 업데이트 (K8s Secret)
-- [ ] 롤아웃 및 헬스 체크 확인
+- [ ] **ojeomneo 앱**:
+  - [ ] DB 연결 문자열 업데이트 (Private IP)
+  - [ ] 환경 변수 업데이트 (K8s Secret via External Secrets)
+  - [ ] 롤아웃 및 헬스 체크 확인
+- [ ] **reviewmaps 앱**:
+  - [ ] DB 연결 문자열 업데이트 (Private IP)
+  - [ ] `postgis` 함수 호환성 테스트
+  - [ ] 환경 변수 업데이트 (K8s Secret via External Secrets)
+  - [ ] 롤아웃 및 헬스 체크 확인
+- [ ] Connection Pooling 설정 (Cloud SQL Proxy 또는 PgBouncer)
 
 #### 3.5 구 VM 정리
 - [ ] 24시간 모니터링 (에러 없음 확인)
@@ -227,8 +249,9 @@
 
 **완료 기준**:
 - Cloud SQL 정상 운영 확인 (24시간)
-- 브루트 포스 공격 차단 확인
+- 브루트 포스 공격 차단 확인 (Private IP로 GKE 내부만 접근 가능)
 - 애플리케이션 에러율 0%
+- `postgis` 공간 데이터 정상 작동 확인
 - 구 VM 완전 제거
 
 ---
@@ -488,6 +511,7 @@
 ### 완료된 Phase
 - ✅ **Phase 1 완료** (2025-12-14): GKE 클러스터, Terraform, GitHub Actions, External Secrets Operator
 - 🔄 **Phase 2 진행 중** (90% 완료): Istio 배포 완료, Rate Limiting 구현, SSL 인증서 일부 발급
+- ⏸️ **Phase 3 대기 중**: PostgreSQL Cloud SQL 마이그레이션 (Phase 2 완료 후 착수)
 
 ### 배포된 주요 리소스
 
@@ -552,11 +576,13 @@
   - Path 기반 라우팅 테스트
 - [ ] **Cloud DNS Zone 생성** (Phase 5 준비)
 
-#### 2. Phase 3 착수 (데이터베이스 마이그레이션)
+#### 2. Phase 3 준비 (데이터베이스 마이그레이션)
 - [ ] Cloud SQL Terraform 모듈 작성
-- [ ] Private IP 설정 및 VPC 연결
-- [ ] 데이터베이스 백업 계획 수립
-- [ ] pg_dump/pg_restore 전략 수립
+- [ ] VPC Private Service Connection 구성 (Private IP용)
+- [ ] PostgreSQL 확장 기능 설치 계획 (`pgcrypto`, `postgis`)
+- [ ] 2개 데이터베이스 복원 전략 수립
+  - [ ] ojeomneo: PostgreSQL 15 → 15 (호환 OK)
+  - [ ] reviewmaps: PostgreSQL 17.5 → 15 (다운그레이드 검증 필요)
 
 #### 3. Phase 4 준비 (워크로드 마이그레이션)
 - [ ] 현재 워크로드 리소스 사용량 분석
