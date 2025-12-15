@@ -5,9 +5,6 @@
 # Replica count (overridden by autoscaling when enabled)
 replicaCount: 2
 
-# Image configuration
-image: proxyv2
-
 # Service Account
 serviceAccount:
   create: true
