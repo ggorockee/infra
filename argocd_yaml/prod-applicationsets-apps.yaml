@@ -19,7 +19,7 @@ spec:
       source:
         repoURL: '{{repoURL}}'
         targetRevision: '{{revision}}'
-        path: 'charts/helm/{{env}}/{{namespace}}/{{chartName}}'
+        path: 'charts/helm/{{env}}/{{chartName}}'
         helm:
           valueFiles:
           - values.yaml
