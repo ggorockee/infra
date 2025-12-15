@@ -88,3 +88,15 @@ experimental:
 # Gateway configuration (required by templates)
 gateways:
   securityContext: ~
+
+# Taint configuration
+taint:
+  enabled: false
+  namespace: ""
+
+# Revision configuration
+revision: ""
+revisionTags: []
+
+# Network configuration
+network: ""
