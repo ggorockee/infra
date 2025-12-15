@@ -28,10 +28,8 @@ configs:
     # Admin enabled
     admin.enabled: "true"
 
-  secret:
-    # Helm이 argocd-secret을 생성하지 않도록 설정
-    # 대신 별도로 생성한 Secret 사용 (admin-password-secret.tf 참조)
-    createSecret: false
+  # secret 설정 제거 - Helm이 기본 argocd-secret 생성
+  # admin password는 초기화 Job에서 업데이트
 
 server:
   service:
