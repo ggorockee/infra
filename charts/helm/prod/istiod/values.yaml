@@ -33,6 +33,10 @@ autoscaleMin: 1
 autoscaleMax: 5
 replicaCount: 1
 
+# Environment variables
+env:
+  MCS_API_GROUP: "multicluster.x-k8s.io"
+
 resources:
   requests:
     cpu: 500m
