@@ -5,6 +5,7 @@
 # Global settings for all Istio components
 global:
   istioNamespace: istio-system
+  resourceScope: all
 
   # Image configuration
   hub: docker.io/istio
