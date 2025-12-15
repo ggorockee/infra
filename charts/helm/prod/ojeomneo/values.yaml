@@ -327,12 +327,13 @@ admin:
 
 #########################################################################
 # Redis 설정 (Bitnami Redis)
+# Disabled - 개발 환경에서만 사용, 프로덕션에서는 비활성화
 #########################################################################
 redis:
-  enabled: true
+  enabled: false
 
-  # 아키텍처: replication (HA) - Master 1 + Replica 1
-  architecture: replication
+  # 아키텍처: standalone (단일 인스턴스)
+  architecture: standalone
 
   # 이미지 설정 (Bitnami 2025.08 이후 latest 태그만 지원)
   image:
@@ -365,12 +366,11 @@ redis:
         cpu: 250m
         memory: 256Mi
 
-  # Replica 설정
+  # Replica 비활성화 (standalone 모드)
   replica:
-    replicaCount: 1
+    replicaCount: 0
     persistence:
-      enabled: true
-      size: 1Gi
+      enabled: false
     resources:
       requests:
         cpu: 100m
