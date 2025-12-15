@@ -221,48 +221,15 @@ resource "google_sql_user" "reviewmaps" {
 # ============================================================
 # Database 소유권 및 권한 설정
 # ============================================================
-
-# Ojeomneo DB 소유권 설정
-resource "null_resource" "ojeomneo_ownership" {
-  provisioner "local-exec" {
-    command = <<-EOT
-      gcloud sql connect ${google_sql_database_instance.main.name} \
-        --user=postgres \
-        --database=${local.ojeomneo_db} \
-        --quiet \
-        --project=${var.project_id} <<SQL
-      ALTER DATABASE ${local.ojeomneo_db} OWNER TO ${local.ojeomneo_user};
-      GRANT ALL PRIVILEGES ON DATABASE ${local.ojeomneo_db} TO ${local.ojeomneo_user};
-      SQL
-    EOT
-  }
-
-  depends_on = [google_sql_user.ojeomneo]
-}
-
-# ReviewMaps DB 소유권 설정 및 PostGIS extension 활성화
-resource "null_resource" "reviewmaps_ownership" {
-  provisioner "local-exec" {
-    command = <<-EOT
-      gcloud sql connect ${google_sql_database_instance.main.name} \
-        --user=postgres \
-        --database=${local.reviewmaps_db} \
-        --quiet \
-        --project=${var.project_id} <<SQL
-      ALTER DATABASE ${local.reviewmaps_db} OWNER TO ${local.reviewmaps_user};
-      GRANT ALL PRIVILEGES ON DATABASE ${local.reviewmaps_db} TO ${local.reviewmaps_user};
-
-      -- PostGIS extension 활성화 (공간 데이터 지원)
-      CREATE EXTENSION IF NOT EXISTS postgis;
-      CREATE EXTENSION IF NOT EXISTS pgcrypto;
-      SQL
-    EOT
-  }
-
-  depends_on = [
-    google_sql_user.reviewmaps
-  ]
-}
+#
+# 참고: Ownership 및 Extension 설정은 수동으로 처리합니다.
+# GitHub Actions에서 postgres 사용자 비밀번호를 알 수 없어 자동화 불가능.
+#
+# 수동 설정 가이드:
+# 1. Cloud SQL Proxy를 통해 연결
+# 2. ALTER DATABASE <db_name> OWNER TO <user>;
+# 3. CREATE EXTENSION IF NOT EXISTS postgis;
+# 4. CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 # ============================================================
 # Secret Manager에 연결 정보 업데이트
