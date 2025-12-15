@@ -169,15 +169,26 @@ virtualServices:
               host: ojeomneo-server
               port: 8000
 
-  # ReviewMaps
-  - name: reviewmaps-vs
+  # ReviewMaps Admin (Django Admin)
+  - name: reviewmaps-admin-vs
     namespace: reviewmaps
-    enabled: false
+    enabled: true
     hosts:
-      - "reviewmaps.ggorockee.org"
-      - "www.reviewmaps.ggorockee.org"
+      - "admin.review-maps.com"
     http:
       - route:
           - destination:
-              host: reviewmaps-frontend
+              host: reviewmaps-admin
+              port: 8000
+
+  # ReviewMaps Server (Go Fiber API)
+  - name: reviewmaps-server-vs
+    namespace: reviewmaps
+    enabled: true
+    hosts:
+      - "api.review-maps.com"
+    http:
+      - route:
+          - destination:
+              host: reviewmaps-server
               port: 3000
