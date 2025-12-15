@@ -46,6 +46,89 @@ gateway:
           - "review-maps.com"
         credentialName: review-maps-com-wildcard-tls
 
+# Security Configuration (비용 최소화: Istio Local Rate Limiting 사용)
+security:
+  # Rate Limiting 설정 (Cloud Armor 대신 Istio EnvoyFilter 사용, 비용 $0)
+  rateLimit:
+    enabled: true
+    name: istio-ratelimit
+
+    # Global Rate Limiting (전체 트래픽)
+    global:
+      maxTokens: 100          # 최대 토큰 수
+      tokensPerFill: 100      # 채울 토큰 수
+      fillInterval: "60s"     # 채우기 간격 (분당 100 요청)
+
+    # Login Path Rate Limiting (브루트 포스 방지)
+    loginPath:
+      enabled: true
+      maxTokens: 10           # 최대 토큰 수
+      tokensPerFill: 10       # 채울 토큰 수
+      fillInterval: "60s"     # 채우기 간격 (분당 10 요청)
+      paths:
+        - "/api/auth/login"
+        - "/api/v1/auth/login"
+        - "/auth/login"
+        - "/login"
+
+    # Admin Path Rate Limiting (관리자 경로 보호)
+    adminPath:
+      enabled: true
+      maxTokens: 30           # 최대 토큰 수
+      tokensPerFill: 30       # 채울 토큰 수
+      fillInterval: "60s"     # 채우기 간격 (분당 30 요청)
+
+  # Authorization Policy 설정 (추가 보안)
+  authorization:
+    enabled: true
+    name: istio-authz
+    action: ALLOW
+
+    # 허용된 HTTP 메서드
+    allowedMethods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - PATCH
+      - OPTIONS
+      - HEAD
+
+    # 차단할 경로
+    denyPaths: []
+      # - "/.env"
+      # - "/.git"
+      # - "/admin/debug"
+
+    # IP Whitelist (관리자 경로)
+    ipWhitelist:
+      enabled: false  # 필요 시 활성화
+      adminPaths:
+        - "/admin/*"
+        - "/api/admin/*"
+      allowedIPs:
+        # - "YOUR_OFFICE_IP/32"
+        # - "YOUR_VPN_IP/32"
+
+    # User-Agent Blacklist (악성 봇 차단)
+    userAgentBlacklist:
+      enabled: true
+      patterns:
+        - "*sqlmap*"
+        - "*nikto*"
+        - "*masscan*"
+        - "*nmap*"
+        - "*ZmEu*"
+        - "*bot*scanner*"
+
+    # Country-based Blocking (국가 기반 차단)
+    countryBlocking:
+      enabled: false  # 필요 시 활성화
+      blockedCountries: []
+        # - "CN"  # China
+        # - "RU"  # Russia
+        # - "KP"  # North Korea
+
 # VirtualService configurations
 # Each VirtualService is deployed to its respective namespace
 virtualServices:

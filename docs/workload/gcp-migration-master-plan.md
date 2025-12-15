@@ -90,36 +90,41 @@
 
 #### 1.7 External Secrets Operator 배포
 - [x] Terraform 모듈 작성 완료
-- [ ] 배포 대기 중 (PR #632 머지 후)
+- [x] 배포 완료 (Helm 차트로 수동 설치)
 
-**배포 완료 리소스** (4개):
+**배포 완료 리소스**:
 - Default VPC Network (기존 사용)
 - Default Subnet (기존 사용)
 - GKE Standard Cluster: woohalabs-prod-gke-cluster
 - Node Pool 1: woohalabs-prod-spot-medium (e2-medium, Spot)
 - Node Pool 2: woohalabs-prod-spot-large (e2-large, Spot)
 
-**완료 기준**: 🔄 **진행 중 (PR #632)**
+**완료 기준**: ✅ **완료** (2025-12-14)
 - [x] Terraform init 성공
 - [x] GitHub Actions에서 plan 실행 확인
 - [x] State가 GCS에 저장됨
 - [x] Default VPC 활용 (비용 최적화)
 - [x] GKE Standard + Spot Instance 설정 완료
 - [x] Node Auto-scaling 설정 (1-3 nodes)
-- [ ] Terraform Plan 성공 대기
-- [ ] PR #632 머지 후 배포 완료
-- [ ] External Secrets Operator 정상 작동 확인
+- [x] GKE 클러스터 배포 완료
+- [x] External Secrets Operator 설치 완료
 
 ---
 
-### Phase 2: Istio 서비스 메시 및 보안 (2주차)
+### Phase 2: Istio 서비스 메시 및 보안 (2주차) 🔄 **진행 중** (2025-12-15)
 
 **목표**: Istio 배포, Ingress Gateway 설정, Cloud Armor, Cloud DNS 구성
 
 #### 2.1 Istio 서비스 메시 배포
-- [ ] Istio 설치 (istioctl 또는 Helm) -- Helm
-- [ ] Istio Ingress Gateway 배포
-- [ ] Gateway 리소스 생성 (HTTP/HTTPS 트래픽 라우팅)
+- [x] Istio 설치 (ArgoCD로 Helm 차트 배포)
+  - [x] istio-base (v1.24.2)
+  - [x] istiod (v1.24.2)
+  - [x] istio-ingressgateway (v1.24.2)
+- [x] Istio Ingress Gateway 배포 완료
+  - External IP: 34.50.12.202
+  - LoadBalancer 타입 서비스
+- [x] Gateway 리소스 생성 (main-gateway)
+  - HTTP/HTTPS 트래픽 라우팅 설정 완료
 - [ ] VirtualService 설정 (경로 기반 라우팅)
 - [ ] DestinationRule 설정 (로드 밸런싱, Circuit Breaking)
 
@@ -127,9 +132,10 @@
 - [ ] 기존 Kubernetes Ingress를 Istio Gateway로 전환
 - [ ] Multi-domain 라우팅 설정
 - [ ] Path 기반 라우팅 설정 (`/api/*`, `/admin/*`)
-- [ ] HTTPS 리다이렉트 설정
+- [x] HTTPS 리다이렉트 설정 (Gateway에 구성됨)
 
 #### 2.3 Cloud Armor WAF 설정 (Istio Ingress Gateway 연동)
+비용 최소로 진행
 - [ ] Security Policy 생성
 - [ ] Rate Limiting 규칙 (브루트 포스 방지)
 - [ ] Geo-blocking 설정 (필요 시)
@@ -142,16 +148,28 @@
 - [ ] NS 레코드 마이그레이션 준비 (도메인 레지스트라 업데이트 대기)
 
 #### 2.5 SSL 인증서 프로비저닝
-- [ ] Google-managed SSL Certificate 생성
-- [ ] 도메인 소유권 확인
-- [ ] Certificate Map 생성 (Multi-domain 지원)
-- [ ] Istio Gateway에 SSL 인증서 연결
+- [x] cert-manager 설치 완료 (ArgoCD로 배포)
+- [x] Let's Encrypt ClusterIssuer 설정 완료
+- [x] SSL 인증서 발급 완료 (일부)
+  - [x] ggorockee-com-wildcard-cert (Ready)
+  - [x] review-maps-com-wildcard-cert (Ready)
+  - [ ] ggorockee-org-wildcard-cert (발급 대기 중)
+  - [ ] woohalabs-com-wildcard-cert (발급 대기 중)
+- [x] Istio Gateway에 SSL 인증서 연결 완료
 
-**완료 기준**:
-- Istio 서비스 메시 정상 작동
-- Istio Ingress Gateway로 트래픽 라우팅 성공
-- Cloud Armor 정책 활성화
-- DNS Zone 생성 완료 (실제 전환은 Phase 5 이후)
+**배포 완료 리소스**:
+- ArgoCD Applications: 5개 (cert-manager, istio-base, istiod, istio-ingressgateway, istio-gateway-config)
+- Istio Ingress Gateway External IP: 34.50.12.202
+- SSL 인증서: 2개 발급 완료, 2개 발급 대기 중
+
+**완료 기준**: 🔄 **80% 완료**
+- [x] Istio 서비스 메시 정상 작동
+- [x] Istio Ingress Gateway 배포 완료
+- [x] External IP 할당 완료 (34.50.12.202)
+- [x] cert-manager 및 SSL 인증서 발급 (2개 완료, 2개 진행 중)
+- [ ] VirtualService 및 DestinationRule 설정 필요
+- [ ] Cloud Armor 정책 활성화 필요
+- [ ] DNS Zone 생성 필요 (Phase 5 이전)
 
 ---
 
@@ -161,12 +179,12 @@
 
 #### 3.1 Cloud SQL 인스턴스 생성
 - [ ] Cloud SQL PostgreSQL 인스턴스 생성
-  - [ ] 스펙: db-g1-small (1 vCPU, 1.7GB RAM)
-  - [ ] 버전: PostgreSQL 14 또는 15
-  - [ ] Private IP 설정 (VPC 연결)
-  - [ ] Public IP 비활성화
-- [ ] 자동 백업 설정 (매일 새벽 3시)
-- [ ] High Availability 설정 (선택 사항, 비용 추가)
+  - [ ] 스펙: db-g1-small (1 vCPU, 1.7GB RAM) 
+  - [ ] 버전: PostgreSQL 14 또는 15 15버전
+  - [ ] Private IP 설정 (VPC 연결) -- db연결 가이드
+  - [ ] Public IP 비활성화 -- db연결은 어떻게하나? dbvear나 이런거 확인은 못하는가?
+- [ ] 자동 백업 설정 (매일 새벽 3시) 자동백업 없음
+- [ ] High Availability 설정 (선택 사항, 비용 추가) 안함
 
 #### 3.2 보안 설정
 - [ ] IAM Database Authentication 활성화
@@ -437,17 +455,45 @@
 
 ---
 
-## 다음 단계
+## 현재 상태 요약 (2025-12-15 업데이트)
 
-### 즉시 착수 가능한 작업
+### 완료된 Phase
+- ✅ **Phase 1 완료** (2025-12-14): GKE 클러스터, Terraform, GitHub Actions, External Secrets Operator
+- 🔄 **Phase 2 진행 중** (80% 완료): Istio 배포 완료, SSL 인증서 일부 발급, Cloud Armor 및 DNS 작업 대기
 
-1. **Phase 1 시작**: GCP 프로젝트 생성 및 IAM 설정
-2. **Terraform 폴더 구조 생성**: `gcp/terraform/` 초기화
-3. **GitHub Actions 기본 워크플로우 작성**: plan.yml 템플릿
+### 배포된 주요 리소스
+- **GKE Cluster**: woohalabs-prod-gke-cluster (Standard + Spot Instance)
+  - Node Pool 1: e2-medium (1-3 nodes, Spot)
+  - Node Pool 2: e2-large (0-3 nodes, Spot)
+- **Istio 서비스 메시**: v1.24.2 (istio-base, istiod, istio-ingressgateway)
+- **Istio Ingress Gateway**: External IP 34.50.12.202
+- **ArgoCD**: 7개 Applications (정상 동작)
+  - argocd-server (Running)
+  - cert-manager, istio-base, istiod, istio-ingressgateway, istio-gateway-config
+- **SSL 인증서**: 2개 발급 완료, 2개 발급 대기 중
+- **cert-manager**: Let's Encrypt ClusterIssuer 설정 완료
+
+### 다음 단계 (우선순위 순)
+
+#### 1. Phase 2 완료 작업
+- [ ] 나머지 SSL 인증서 발급 완료 (ggorockee-org, woohalabs-com)
+- [ ] VirtualService 및 DestinationRule 설정
+- [ ] Cloud Armor WAF 정책 생성 및 연동
+- [ ] Cloud DNS Zone 생성 (woohalabs.com 등)
+
+#### 2. Phase 3 준비 (데이터베이스 마이그레이션)
+- [ ] Cloud SQL Terraform 모듈 작성
+- [ ] Private IP 설정 및 VPC 연결
+- [ ] 데이터베이스 백업 계획 수립
+
+#### 3. Phase 4 준비 (워크로드 마이그레이션)
+- [ ] 현재 워크로드 리소스 사용량 분석
+- [ ] HPA 설정 계획
+- [ ] ArgoCD Application 매니페스트 준비
 
 ### 컨펌 필요 사항
 
-- [ ] Phase별 일정 승인 (4~5주 일정)
+- [ ] Phase별 일정 재확인 (Phase 2 진행 중)
 - [ ] 예산 최종 확정 (GKE $75, Cloud SQL $30, 총 $130)
 - [ ] 데이터베이스 마이그레이션 다운타임 허용 시간
 - [ ] DNS 전환 희망 시간대 (주말 vs 평일 야간)
@@ -455,11 +501,21 @@
 
 ### 주간 체크포인트 (1인 운영)
 
-**매주 일정**:
-- [ ] 완료된 작업 확인
-- [ ] 다음 주 작업 계획
-- [ ] 리스크 리뷰
-- [ ] 예산 사용 현황 점검
+**이번 주 완료**:
+- [x] Istio 서비스 메시 배포
+- [x] Istio Ingress Gateway External IP 확보
+- [x] cert-manager 설치 및 SSL 인증서 발급 시작
+- [x] ArgoCD로 GitOps 파이프라인 구성
+
+**다음 주 계획**:
+- [ ] SSL 인증서 발급 완료
+- [ ] VirtualService/DestinationRule 설정
+- [ ] Cloud Armor 정책 활성화
+- [ ] Cloud DNS 설정 시작
+
+**리스크 모니터링**:
+- [ ] 예산 사용 현황 점검 (현재: GKE + Istio만 활성화)
+- [ ] SSL 인증서 발급 실패 원인 분석 (2개 대기 중)
 - [ ] AWS 리소스 병렬 운영 상태 확인
 
 ### 향후 서비스 확장 계획
@@ -467,6 +523,6 @@
 **새 서비스 추가 시 절차** (기존 인프라 활용):
 1. 새 Deployment YAML 작성
 2. ArgoCD에 Application 추가
-3. Ingress 라우팅 규칙 추가 (기존 LB 활용)
+3. VirtualService 라우팅 규칙 추가 (Istio Gateway 활용)
 4. HPA 설정으로 비용 최적화
 5. **추가 인프라 비용**: Pod 리소스 비용만 ($5~20/서비스)

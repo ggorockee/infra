@@ -1,0 +1,120 @@
+{{- if .Values.security.authorization.enabled }}
+---
+# Authorization Policy for Additional Security (추가 보안 정책)
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ .Values.security.authorization.name }}
+  namespace: {{ .Values.gateway.namespace }}
+spec:
+  selector:
+    matchLabels:
+      {{- toYaml .Values.gateway.selector | nindent 6 }}
+
+  action: {{ .Values.security.authorization.action }}
+
+  rules:
+    {{- if .Values.security.authorization.allowedMethods }}
+    # HTTP 메서드 제한
+    - to:
+        - operation:
+            methods:
+              {{- range .Values.security.authorization.allowedMethods }}
+              - {{ . | quote }}
+              {{- end }}
+    {{- end }}
+
+    {{- if .Values.security.authorization.denyPaths }}
+    # 특정 경로 차단
+    {{- range .Values.security.authorization.denyPaths }}
+    - to:
+        - operation:
+            paths:
+              - {{ . | quote }}
+      when:
+        - key: request.headers[x-forwarded-for]
+          notValues: ["*"]  # 모든 IP 차단
+    {{- end }}
+    {{- end }}
+
+{{- if .Values.security.authorization.ipWhitelist.enabled }}
+---
+# IP Whitelist for Admin Paths (관리자 경로 IP 화이트리스트)
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ .Values.security.authorization.name }}-admin-whitelist
+  namespace: {{ .Values.gateway.namespace }}
+spec:
+  selector:
+    matchLabels:
+      {{- toYaml .Values.gateway.selector | nindent 6 }}
+
+  action: ALLOW
+
+  rules:
+    # 관리자 경로는 화이트리스트 IP만 허용
+    - to:
+        - operation:
+            paths:
+              {{- range .Values.security.authorization.ipWhitelist.adminPaths }}
+              - {{ . | quote }}
+              {{- end }}
+      from:
+        - source:
+            ipBlocks:
+              {{- range .Values.security.authorization.ipWhitelist.allowedIPs }}
+              - {{ . | quote }}
+              {{- end }}
+{{- end }}
+
+{{- if .Values.security.authorization.userAgentBlacklist.enabled }}
+---
+# User-Agent Blacklist (악성 봇 차단)
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ .Values.security.authorization.name }}-useragent-blacklist
+  namespace: {{ .Values.gateway.namespace }}
+spec:
+  selector:
+    matchLabels:
+      {{- toYaml .Values.gateway.selector | nindent 6 }}
+
+  action: DENY
+
+  rules:
+    # User-Agent 헤더 기반 차단
+    {{- range .Values.security.authorization.userAgentBlacklist.patterns }}
+    - when:
+        - key: request.headers[user-agent]
+          values:
+            - {{ . | quote }}
+    {{- end }}
+{{- end }}
+
+{{- if .Values.security.authorization.countryBlocking.enabled }}
+---
+# Country-based Blocking (국가 기반 차단 - X-Forwarded-For 헤더 활용)
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ .Values.security.authorization.name }}-country-block
+  namespace: {{ .Values.gateway.namespace }}
+spec:
+  selector:
+    matchLabels:
+      {{- toYaml .Values.gateway.selector | nindent 6 }}
+
+  action: DENY
+
+  rules:
+    # 특정 국가 코드 차단 (X-Country-Code 헤더 사용 시)
+    {{- range .Values.security.authorization.countryBlocking.blockedCountries }}
+    - when:
+        - key: request.headers[x-country-code]
+          values:
+            - {{ . | quote }}
+    {{- end }}
+{{- end }}
+{{- end }}

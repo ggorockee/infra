@@ -1,13 +1,17 @@
 apiVersion: v2
 name: istio-gateway-config
-description: Istio Gateway and VirtualService unified configuration
+description: Istio Gateway, VirtualService, Rate Limiting, and Authorization Policy unified configuration (Cost-optimized with $0 security)
 type: application
-version: 1.0.0
-appVersion: "1.0"
+version: 1.1.0
+appVersion: "1.1"
 keywords:
   - istio
   - gateway
   - virtualservice
+  - rate-limiting
+  - authorization
+  - security
+  - cost-optimization
 maintainers:
   - name: WoohaLabs
     email: woohaen88@gmail.com

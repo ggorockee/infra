@@ -1,0 +1,197 @@
+{{- if .Values.security.rateLimit.enabled }}
+---
+# Global Rate Limiting EnvoyFilter (비용 최소화: Local Rate Limiting 사용)
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: {{ .Values.security.rateLimit.name }}-global
+  namespace: {{ .Values.gateway.namespace }}
+spec:
+  workloadSelector:
+    labels:
+      {{- toYaml .Values.gateway.selector | nindent 6 }}
+
+  configPatches:
+    # HTTP Connection Manager에 Local Rate Limiter 추가
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+              subFilter:
+                name: envoy.filters.http.router
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.local_ratelimit
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+            stat_prefix: http_local_rate_limiter
+
+            # 토큰 버킷 알고리즘 설정
+            token_bucket:
+              max_tokens: {{ .Values.security.rateLimit.global.maxTokens }}
+              tokens_per_fill: {{ .Values.security.rateLimit.global.tokensPerFill }}
+              fill_interval: {{ .Values.security.rateLimit.global.fillInterval }}
+
+            # Rate Limit 활성화
+            filter_enabled:
+              runtime_key: local_rate_limit_enabled
+              default_value:
+                numerator: 100
+                denominator: HUNDRED
+
+            filter_enforced:
+              runtime_key: local_rate_limit_enforced
+              default_value:
+                numerator: 100
+                denominator: HUNDRED
+
+            # Rate Limit 초과 시 헤더 추가
+            response_headers_to_add:
+              - append_action: OVERWRITE_IF_EXISTS_OR_ADD
+                header:
+                  key: x-local-rate-limit
+                  value: 'true'
+              - append_action: OVERWRITE_IF_EXISTS_OR_ADD
+                header:
+                  key: x-rate-limit-reason
+                  value: 'global-limit-exceeded'
+
+            # HTTP 429 상태 코드 반환
+            status:
+              code: TooManyRequests
+
+{{- if .Values.security.rateLimit.loginPath.enabled }}
+---
+# Login Path Rate Limiting (브루트 포스 방지)
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: {{ .Values.security.rateLimit.name }}-login
+  namespace: {{ .Values.gateway.namespace }}
+spec:
+  workloadSelector:
+    labels:
+      {{- toYaml .Values.gateway.selector | nindent 6 }}
+
+  configPatches:
+    # 로그인 경로에 대한 엄격한 Rate Limiting
+    - applyTo: HTTP_ROUTE
+      match:
+        context: GATEWAY
+        routeConfiguration:
+          vhost:
+            route:
+              action: ANY
+      patch:
+        operation: MERGE
+        value:
+          typed_per_filter_config:
+            envoy.filters.http.local_ratelimit:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+              stat_prefix: login_rate_limiter
+
+              token_bucket:
+                max_tokens: {{ .Values.security.rateLimit.loginPath.maxTokens }}
+                tokens_per_fill: {{ .Values.security.rateLimit.loginPath.tokensPerFill }}
+                fill_interval: {{ .Values.security.rateLimit.loginPath.fillInterval }}
+
+              filter_enabled:
+                runtime_key: login_rate_limit_enabled
+                default_value:
+                  numerator: 100
+                  denominator: HUNDRED
+
+              filter_enforced:
+                runtime_key: login_rate_limit_enforced
+                default_value:
+                  numerator: 100
+                  denominator: HUNDRED
+
+              response_headers_to_add:
+                - append_action: OVERWRITE_IF_EXISTS_OR_ADD
+                  header:
+                    key: x-login-rate-limit
+                    value: 'true'
+                - append_action: OVERWRITE_IF_EXISTS_OR_ADD
+                  header:
+                    key: x-rate-limit-reason
+                    value: 'login-bruteforce-protection'
+
+              status:
+                code: TooManyRequests
+
+              # 로그인 경로에만 적용
+              {{- if .Values.security.rateLimit.loginPath.paths }}
+              descriptors:
+                {{- range .Values.security.rateLimit.loginPath.paths }}
+                - entries:
+                    - key: header_match
+                      value: {{ . | quote }}
+                {{- end }}
+              {{- end }}
+{{- end }}
+
+{{- if .Values.security.rateLimit.adminPath.enabled }}
+---
+# Admin Path Rate Limiting (관리자 경로 보호)
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: {{ .Values.security.rateLimit.name }}-admin
+  namespace: {{ .Values.gateway.namespace }}
+spec:
+  workloadSelector:
+    labels:
+      {{- toYaml .Values.gateway.selector | nindent 6 }}
+
+  configPatches:
+    - applyTo: HTTP_ROUTE
+      match:
+        context: GATEWAY
+        routeConfiguration:
+          vhost:
+            route:
+              action: ANY
+      patch:
+        operation: MERGE
+        value:
+          typed_per_filter_config:
+            envoy.filters.http.local_ratelimit:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+              stat_prefix: admin_rate_limiter
+
+              token_bucket:
+                max_tokens: {{ .Values.security.rateLimit.adminPath.maxTokens }}
+                tokens_per_fill: {{ .Values.security.rateLimit.adminPath.tokensPerFill }}
+                fill_interval: {{ .Values.security.rateLimit.adminPath.fillInterval }}
+
+              filter_enabled:
+                runtime_key: admin_rate_limit_enabled
+                default_value:
+                  numerator: 100
+                  denominator: HUNDRED
+
+              filter_enforced:
+                runtime_key: admin_rate_limit_enforced
+                default_value:
+                  numerator: 100
+                  denominator: HUNDRED
+
+              response_headers_to_add:
+                - append_action: OVERWRITE_IF_EXISTS_OR_ADD
+                  header:
+                    key: x-admin-rate-limit
+                    value: 'true'
+                - append_action: OVERWRITE_IF_EXISTS_OR_ADD
+                  header:
+                    key: x-rate-limit-reason
+                    value: 'admin-path-protection'
+
+              status:
+                code: TooManyRequests
+{{- end }}
+{{- end }}
