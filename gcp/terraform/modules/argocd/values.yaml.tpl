@@ -29,9 +29,9 @@ configs:
     admin.enabled: "true"
 
   secret:
-    # Admin password from external secret
-    argocdServerAdminPassword: $argocd-secrets:admin.password
-    argocdServerAdminPasswordMtime: "2024-01-01T00:00:00Z"
+    # Helm이 argocd-secret을 생성하지 않도록 설정
+    # 대신 별도로 생성한 Secret 사용 (admin-password-secret.tf 참조)
+    createSecret: false
 
 server:
   service:
