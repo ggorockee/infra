@@ -35,7 +35,10 @@ service:
     port: 443
     protocol: TCP
     targetPort: 443
-  annotations: {}
+  annotations:
+    # GKE BackendConfig annotation - connects CloudArmor security policy
+    cloud.google.com/backend-config: '{"default": "istio-ingress-backendconfig"}'
+    beta.cloud.google.com/backend-config: '{"default": "istio-ingress-backendconfig"}'
 
 # Resource limits
 resources:
