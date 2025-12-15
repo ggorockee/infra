@@ -2,14 +2,11 @@ dependencies:
 - name: server
   repository: file://./charts/server
   version: 1.0.0
-- name: database
-  repository: file://./charts/database
-  version: 1.0.0
 - name: admin
   repository: file://./charts/admin
   version: 1.0.0
 - name: redis
   repository: file://./charts/redis
-  version: 20.6.0
-digest: sha256:546551443aaafce2a51c05590ca7c5c0d21bd15b98724efe067c328c1c4c6303
-generated: "2025-12-02T06:25:25.912970347Z"
+  version: 24.0.0
+digest: sha256:0d3dc2cc79188e0e744e058a7951d2b0ad17609adbac1dc95553c622f5dc9b6e
+generated: "2025-12-16T02:31:47.115542+09:00"
