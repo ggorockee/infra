@@ -48,6 +48,8 @@ telemetry:
     enabled: true
     prometheus:
       enabled: true
+    stackdriver:
+      enabled: false
 
 # Sidecar injection
 sidecarInjectorWebhook:
