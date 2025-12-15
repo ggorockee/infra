@@ -119,8 +119,8 @@ module "argocd" {
   cluster_name     = module.gke.cluster_name
   cluster_location = module.gke.cluster_location
 
-  # ArgoCD domain (optional, for OAuth redirect URIs)
-  argocd_domain = ""
+  # ArgoCD domain (for OAuth redirect URIs and Istio VirtualService)
+  argocd_domain = "argocd.ggorockee.org"
 
   depends_on = [module.external_secrets]
 }

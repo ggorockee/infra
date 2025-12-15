@@ -35,10 +35,10 @@ configs:
 
 server:
   service:
-    type: LoadBalancer
+    type: ClusterIP  # Changed from LoadBalancer to integrate with Istio Ingress Gateway
 
   extraArgs:
-    - --insecure
+    - --insecure  # TLS termination handled by Istio Gateway
 
   # Workload Identity annotation
   serviceAccount:
