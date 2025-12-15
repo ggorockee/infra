@@ -45,6 +45,14 @@ resource "kubernetes_manifest" "argocd_secret" {
     }
   }
 
+  computed_fields = ["status"]
+
+  timeouts {
+    create = "5m"
+    update = "5m"
+    delete = "2m"
+  }
+
   depends_on = [
     kubernetes_namespace.argocd
   ]

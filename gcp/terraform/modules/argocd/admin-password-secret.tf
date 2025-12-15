@@ -99,6 +99,8 @@ resource "kubernetes_manifest" "argocd_init_password" {
     }
   }
 
+  computed_fields = ["status"]
+
   wait {
     fields = {
       "status.succeeded" = "1"
