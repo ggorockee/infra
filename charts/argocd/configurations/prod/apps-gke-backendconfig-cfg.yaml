@@ -1,0 +1,6 @@
+env: prod
+revision: main
+chartName: gke-backendconfig
+appName: gke-backendconfig
+repoURL: https://github.com/ggorockee/infra
+namespace: istio-system

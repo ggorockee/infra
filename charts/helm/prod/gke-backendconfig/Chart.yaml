@@ -1,0 +1,6 @@
+apiVersion: v2
+name: gke-backendconfig
+description: GKE BackendConfig for Istio Ingress Gateway with CloudArmor
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

@@ -1,0 +1,30 @@
+{{- if .Values.cloudArmor.enabled }}
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: istio-ingress-backendconfig
+  namespace: {{ .Release.Namespace }}
+spec:
+  {{- if .Values.cloudArmor.enabled }}
+  securityPolicy:
+    name: {{ .Values.cloudArmor.securityPolicy }}
+  {{- end }}
+
+  healthCheck:
+    checkIntervalSec: {{ .Values.healthCheck.checkIntervalSec }}
+    timeoutSec: {{ .Values.healthCheck.timeoutSec }}
+    healthyThreshold: {{ .Values.healthCheck.healthyThreshold }}
+    unhealthyThreshold: {{ .Values.healthCheck.unhealthyThreshold }}
+    type: {{ .Values.healthCheck.type }}
+    port: {{ .Values.healthCheck.port }}
+    requestPath: {{ .Values.healthCheck.requestPath | quote }}
+
+  connectionDraining:
+    drainingTimeoutSec: {{ .Values.connectionDraining.drainingTimeoutSec }}
+
+  {{- if .Values.sessionAffinity.enabled }}
+  sessionAffinity:
+    affinityType: {{ .Values.sessionAffinity.affinityType }}
+    affinityCookieTtlSec: {{ .Values.sessionAffinity.affinityCookieTtlSec }}
+  {{- end }}
+{{- end }}
