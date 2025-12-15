@@ -99,6 +99,20 @@ resource "kubernetes_manifest" "argocd_init_password" {
     }
   }
 
+  computed_fields = ["status"]
+
+  wait {
+    fields = {
+      "status.succeeded" = "1"
+    }
+  }
+
+  timeouts {
+    create = "5m"
+    update = "5m"
+    delete = "2m"
+  }
+
   depends_on = [
     helm_release.argocd,
     kubernetes_service_account.argocd_init_password
