@@ -1,0 +1,6 @@
+env: prod
+revision: main
+chartName: istio-gateway-config
+appName: istio-gateway-config
+repoURL: https://github.com/ggorockee/infra
+namespace: istio-system
