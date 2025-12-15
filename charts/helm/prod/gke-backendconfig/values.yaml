@@ -1,6 +1,15 @@
 # GKE BackendConfig for Istio Ingress Gateway
 # Connects CloudArmor security policy to the Load Balancer
 
+# Target service to attach BackendConfig
+service:
+  name: istio-ingressgateway
+  namespace: istio-system
+
+# BackendConfig resource name
+backendConfig:
+  name: istio-ingress-backendconfig
+
 cloudArmor:
   enabled: true
   # Security policy name from Terraform (will be created after Terraform Apply)
