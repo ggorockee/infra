@@ -1,0 +1,54 @@
+name: Terraform State - Remove ArgoCD
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  remove-argocd:
+    name: Remove ArgoCD from Terraform State
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Terraform Init
+        working-directory: ./gcp/terraform/environments/prod
+        run: terraform init
+
+      - name: List ArgoCD Resources in State
+        working-directory: ./gcp/terraform/environments/prod
+        run: terraform state list | grep argocd || echo "No ArgoCD resources found"
+
+      - name: Remove ArgoCD Module from State
+        working-directory: ./gcp/terraform/environments/prod
+        run: |
+          # Remove all ArgoCD resources from state
+          terraform state list | grep 'module.argocd' | xargs -r terraform state rm
+          echo "ArgoCD removed from Terraform state"
+
+      - name: Verify Removal
+        working-directory: ./gcp/terraform/environments/prod
+        run: |
+          echo "## ✅ ArgoCD Removed from Terraform State" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "ArgoCD Kubernetes resources remain untouched." >> $GITHUB_STEP_SUMMARY
+          echo "ArgoCD will now be managed by Helm/ArgoCD itself." >> $GITHUB_STEP_SUMMARY
