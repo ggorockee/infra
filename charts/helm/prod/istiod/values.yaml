@@ -67,6 +67,7 @@ telemetry:
 sidecarInjectorWebhook:
   enableNamespacesByDefault: false
   rewriteAppHTTPProbe: true
+  templates: {}
 
 # Remote istiod configuration (for multi-cluster setups)
 istiodRemote:
