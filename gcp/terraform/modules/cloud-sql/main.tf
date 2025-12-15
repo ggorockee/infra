@@ -117,6 +117,19 @@ resource "google_sql_database_instance" "main" {
 }
 
 # ============================================================
+# Service Networking API 활성화
+# ============================================================
+
+# VPC Peering을 위해 Service Networking API 활성화 필수
+resource "google_project_service" "servicenetworking" {
+  project = var.project_id
+  service = "servicenetworking.googleapis.com"
+
+  # API 비활성화 시에도 유지 (VPC Peering 보호)
+  disable_on_destroy = false
+}
+
+# ============================================================
 # Private VPC Connection (VPC Peering)
 # ============================================================
 
@@ -133,6 +146,9 @@ resource "google_service_networking_connection" "private_vpc_connection" {
   network                 = var.vpc_network_id
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
+
+  # Service Networking API가 먼저 활성화되어야 함
+  depends_on = [google_project_service.servicenetworking]
 }
 
 # ============================================================
