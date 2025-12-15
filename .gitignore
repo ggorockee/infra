@@ -105,5 +105,7 @@ istio-config
 .env
 charts/helm/fridge2fork/GEMINI.md
 myrequest.txt
+
+# Database backups and secrets
 backupsql/
 backup_secrets/

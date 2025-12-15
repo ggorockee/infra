@@ -1,6 +1,6 @@
 # GCP Terraform 리소스 현황
 
-**최종 업데이트**: 2025-12-15
+**최종 업데이트**: 2025-12-15 (Service Networking API 활성화 완료)
 **프로젝트**: infra-480802
 **리전**: asia-northeast3 (서울)
 
