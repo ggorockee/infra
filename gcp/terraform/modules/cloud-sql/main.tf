@@ -75,11 +75,17 @@ resource "google_sql_database_instance" "main" {
       point_in_time_recovery_enabled = false
     }
 
-    # IP 설정 (Private IP only)
+    # IP 설정 (Private IP + Public IP for management)
     ip_configuration {
-      ipv4_enabled                                  = false
+      ipv4_enabled                                  = true  # Enable for gcloud sql connect
       private_network                               = var.vpc_network_id
       enable_private_path_for_google_cloud_services = true
+
+      # Authorized networks (GitHub Actions runner IP ranges)
+      authorized_networks {
+        name  = "github-actions"
+        value = "0.0.0.0/0"  # Temporarily allow all for initial setup
+      }
     }
 
     # Maintenance window
@@ -137,38 +143,10 @@ resource "google_service_networking_connection" "private_vpc_connection" {
 }
 
 # ============================================================
-# PostgreSQL Extensions 활성화
-# ============================================================
-
-# pgcrypto extension (reviewmaps 필수)
-resource "null_resource" "enable_pgcrypto" {
-  provisioner "local-exec" {
-    command = <<-EOT
-      gcloud sql instances patch ${google_sql_database_instance.main.name} \
-        --database-flags=cloudsql.enable_pgcrypto=on \
-        --project=${var.project_id}
-    EOT
-  }
-
-  depends_on = [google_sql_database_instance.main]
-}
-
-# PostGIS extension (reviewmaps 필수 - 공간 데이터)
-resource "null_resource" "enable_postgis" {
-  provisioner "local-exec" {
-    command = <<-EOT
-      gcloud sql instances patch ${google_sql_database_instance.main.name} \
-        --database-flags=cloudsql.enable_postgis=on \
-        --project=${var.project_id}
-    EOT
-  }
-
-  depends_on = [google_sql_database_instance.main]
-}
-
 # ============================================================
 # Database 생성
 # ============================================================
+# PostgreSQL Extensions (pgcrypto, postgis)는 reviewmaps_ownership에서 SQL로 활성화됨
 
 # Ojeomneo Database
 resource "google_sql_database" "ojeomneo" {
@@ -282,9 +260,7 @@ resource "null_resource" "reviewmaps_ownership" {
   }
 
   depends_on = [
-    google_sql_user.reviewmaps,
-    null_resource.enable_postgis,
-    null_resource.enable_pgcrypto
+    google_sql_user.reviewmaps
   ]
 }
 
