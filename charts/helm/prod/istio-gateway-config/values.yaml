@@ -50,7 +50,7 @@ gateway:
 security:
   # Rate Limiting 설정 (Cloud Armor 대신 Istio EnvoyFilter 사용, 비용 $0)
   rateLimit:
-    enabled: true
+    enabled: false  # Temporarily disabled due to configuration issues
     name: istio-ratelimit
 
     # Global Rate Limiting (전체 트래픽)
