@@ -10,7 +10,7 @@ terraform {
 }
 
 # GKE Standard Cluster with Spot Instances
-# Node pool migration: e2-medium (2 vCPU, 4GB) → e2-standard-2 (2 vCPU, 8GB)
+# Node pool migration: e2-medium (2 vCPU, 4GB) → e2-standard-2 (2 vCPU, 8GB RAM)
 resource "google_container_cluster" "primary" {
   name     = "woohalabs-${var.environment}-gke"
   location = var.zone # Single zone for free tier
