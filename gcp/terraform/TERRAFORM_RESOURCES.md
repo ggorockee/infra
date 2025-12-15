@@ -74,8 +74,8 @@
 
 **변경 내역**:
 - ArgoCD Service 타입: LoadBalancer → ClusterIP
-- ArgoCD 도메인 설정: argocd.ggorockee.org
-- OAuth redirectURI 업데이트: argocd.ggorockee.org/api/dex/callback
+- ArgoCD 도메인 설정: argocd.ggorockee.com
+- OAuth redirectURI 업데이트: argocd.ggorockee.com/api/dex/callback
 - Istio VirtualService 활성화 (이미 설정되어 있음)
 - 외부 접근 경로: Istio Ingress Gateway (34.50.12.202) → main-gateway → argocd-vs → argocd-server
 
@@ -87,7 +87,7 @@
 
 **트래픽 흐름**:
 ```
-Internet → argocd.ggorockee.org (HTTPS)
+Internet → argocd.ggorockee.com (HTTPS)
        ↓
 34.50.12.202 (Istio Ingress Gateway)
        ↓
