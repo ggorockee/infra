@@ -1,0 +1,6 @@
+env: prod
+revision: main
+chartName: cert-manager
+appName: cert-manager
+repoURL: https://github.com/ggorockee/infra
+namespace: cert-manager
