@@ -291,9 +291,10 @@ config: {}
 dns01RecursiveNameservers: "8.8.8.8:53,8.8.4.4:53"
 
 # Forces cert-manager to use only the recursive nameservers for verification.
-# Set to false to allow cert-manager to automatically discover authoritative nameservers for each domain
-# This is necessary when domains use different GCP Cloud DNS nameserver sets (ns-cloud-a, ns-cloud-d, ns-cloud-e)
-dns01RecursiveNameserversOnly: false
+# Set to true to use only Google Public DNS (8.8.8.8, 8.8.4.4) for DNS-01 challenge verification
+# This prevents issues with Cloudflare DNS propagation delays and ensures consistent DNS resolution
+# Changed from false to true to fix DNS propagation check failures for ggorockee.org and woohalabs.com
+dns01RecursiveNameserversOnly: true
 
 # Option to disable cert-manager's build-in auto-approver. The auto-approver
 # approves all CertificateRequests that reference issuers matching the 'approveSignerNames'
