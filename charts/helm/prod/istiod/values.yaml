@@ -53,3 +53,10 @@ telemetry:
 sidecarInjectorWebhook:
   enableNamespacesByDefault: false
   rewriteAppHTTPProbe: true
+
+# Remote istiod configuration (for multi-cluster setups)
+istiodRemote:
+  enabled: false
+  injectionPath: /inject
+  injectionURL: ""
+  injectionCABundle: ""
