@@ -108,5 +108,7 @@ networkGateway: ""
 
 # Global settings (required by gateway chart templates)
 global:
+  hub: docker.io/istio
+  tag: 1.28.1
   networkPolicy:
     enabled: false
