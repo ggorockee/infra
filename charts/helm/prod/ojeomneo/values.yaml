@@ -129,7 +129,6 @@ server:
     names:
       - ojeomneo-db-credentials
       - ojeomneo-api-credentials
-      - ojeomneo-redis-credentials
 
   # Prometheus Metrics 설정
   metrics:
@@ -323,7 +322,6 @@ admin:
     names:
       - ojeomneo-admin-credentials
       - ojeomneo-db-credentials
-      - ojeomneo-redis-credentials
 
 #########################################################################
 # Redis 설정 (Bitnami Redis)
