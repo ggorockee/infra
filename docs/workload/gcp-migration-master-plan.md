@@ -134,13 +134,19 @@
 - [ ] Path 기반 라우팅 설정 (`/api/*`, `/admin/*`)
 - [x] HTTPS 리다이렉트 설정 (Gateway에 구성됨)
 
-#### 2.3 Cloud Armor WAF 설정 (Istio Ingress Gateway 연동)
-비용 최소로 진행
-- [ ] Security Policy 생성
-- [ ] Rate Limiting 규칙 (브루트 포스 방지)
-- [ ] Geo-blocking 설정 (필요 시)
-- [ ] OWASP Top 10 기본 룰셋 적용
-- [ ] Istio Ingress Gateway와 Cloud Armor 연동
+#### 2.3 보안 설정 (비용 최소화: Istio EnvoyFilter 사용)
+**Cloud Armor 대신 Istio 자체 보안 기능 사용으로 월 $5 절감**
+- [x] Istio Local Rate Limiting 구현 (EnvoyFilter)
+  - [x] Global Rate Limiting: 100 req/min
+  - [x] Login Path Rate Limiting: 10 req/min (브루트 포스 방지)
+  - [x] Admin Path Rate Limiting: 30 req/min
+- [x] Authorization Policy 추가
+  - [x] User-Agent 기반 악성 봇 차단 (sqlmap, nikto, nmap 등)
+  - [x] IP Whitelist 지원 (선택적, 비활성화 기본값)
+  - [x] 국가 기반 차단 지원 (선택적, 비활성화 기본값)
+- [x] Helm Chart 문서화 완료 (README.md)
+- [ ] Rate Limiting 동작 테스트
+- [ ] Authorization Policy 동작 검증
 
 #### 2.4 Cloud DNS 설정
 - [ ] Cloud DNS Zone 생성 (woohalabs.com)
@@ -161,48 +167,79 @@
 - ArgoCD Applications: 5개 (cert-manager, istio-base, istiod, istio-ingressgateway, istio-gateway-config)
 - Istio Ingress Gateway External IP: 34.50.12.202
 - SSL 인증서: 2개 발급 완료, 2개 발급 대기 중
+- Rate Limiting EnvoyFilter: Global, Login Path, Admin Path
+- Authorization Policy: User-Agent 차단, HTTP 메서드 제한
 
-**완료 기준**: 🔄 **80% 완료**
+**완료 기준**: 🔄 **90% 완료**
 - [x] Istio 서비스 메시 정상 작동
 - [x] Istio Ingress Gateway 배포 완료
 - [x] External IP 할당 완료 (34.50.12.202)
 - [x] cert-manager 및 SSL 인증서 발급 (2개 완료, 2개 진행 중)
+- [x] Rate Limiting 구현 완료 (Istio EnvoyFilter, 비용 $0)
+- [x] Authorization Policy 구현 완료 (악성 봇 차단)
 - [ ] VirtualService 및 DestinationRule 설정 필요
-- [ ] Cloud Armor 정책 활성화 필요
+- [ ] Rate Limiting 동작 테스트 필요
 - [ ] DNS Zone 생성 필요 (Phase 5 이전)
 
 ---
 
-### Phase 3: 데이터베이스 마이그레이션 (3주차)
+### Phase 3: 데이터베이스 마이그레이션 (3주차) ⏸️ **대기 중**
 
 **목표**: K8s 내부 VM PostgreSQL → Cloud SQL Private IP 이전
 
 #### 3.1 Cloud SQL 인스턴스 생성
-- [ ] Cloud SQL PostgreSQL 인스턴스 생성
-  - [ ] 스펙: db-g1-small (1 vCPU, 1.7GB RAM) 
-  - [ ] 버전: PostgreSQL 14 또는 15 15버전
-  - [ ] Private IP 설정 (VPC 연결) -- db연결 가이드
-  - [ ] Public IP 비활성화 -- db연결은 어떻게하나? dbvear나 이런거 확인은 못하는가?
-- [ ] 자동 백업 설정 (매일 새벽 3시) 자동백업 없음
-- [ ] High Availability 설정 (선택 사항, 비용 추가) 안함
+- [ ] Cloud SQL PostgreSQL 인스턴스 생성 (Terraform)
+  - [ ] 스펙: db-g1-small (1 vCPU, 1.7GB RAM)
+  - [ ] 버전: **PostgreSQL 15** (ojeomneo 호환성, reviewmaps는 17.5에서 다운그레이드 필요)
+  - [ ] Private IP 설정 (VPC Peering 연결)
+  - [ ] Public IP 비활성화 (보안 강화)
+  - [ ] 자동 백업: **비활성화** (비용 절감, 수동 백업으로 대체)
+  - [ ] High Availability: **비활성화** (단일 환경으로 비용 절감)
+  - [ ] **필수 확장 기능 설치**:
+    - [ ] `pgcrypto` (reviewmaps 필수)
+    - [ ] `postgis` (reviewmaps 필수, 공간 데이터)
+
+**데이터베이스 구성**:
+- Database 1: `ojeomneo` (Owner: ojeomneo)
+- Database 2: `reviewmaps` (Owner: reviewmaps)
+
+**비용 최적화 전략**:
+- 자동 백업 대신 수동 pg_dump 백업 사용 (절감: ~$3/월)
+- HA 비활성화로 인스턴스 이중화 비용 절감 (절감: ~$30/월)
+- 최종 Cloud SQL 비용: **$30/월** (db-g1-small 단일 인스턴스)
 
 #### 3.2 보안 설정
 - [ ] IAM Database Authentication 활성화
-- [ ] VPC Service Controls 적용
-- [ ] Cloud Armor 연동 (Proxy 경유 시)
+- [ ] VPC Private Service Connection 구성
 - [ ] Cloud Audit Logs 활성화
+- [ ] SSL/TLS 연결 강제 (require_ssl flag)
+- [ ] IP 허용 목록 설정 (GKE Node IP만 허용)
 
-#### 3.3 데이터 마이그레이션
-- [ ] 현재 DB 백업 생성 (pg_dump)
-- [ ] Cloud SQL로 데이터 복원 (pg_restore)
-- [ ] 데이터 무결성 검증 (레코드 개수, 샘플 데이터)
-- [ ] 읽기 전용 모드로 병렬 운영 테스트
+#### 3.3 데이터 마이그레이션 (2개 데이터베이스)
+- [ ] **ojeomneo 데이터베이스**:
+  - [ ] 현재 DB 백업 (`backupsql/ojeomneo_backup.sql` 활용)
+  - [ ] Cloud SQL로 데이터 복원 (`psql < ojeomneo_backup.sql`)
+  - [ ] 데이터 무결성 검증 (레코드 개수, 샘플 데이터)
+  - [ ] 읽기 전용 모드로 병렬 운영 테스트
+- [ ] **reviewmaps 데이터베이스**:
+  - [ ] PostgreSQL 17.5 → 15 다운그레이드 호환성 확인
+  - [ ] `pgcrypto`, `postgis` 확장 기능 먼저 설치
+  - [ ] 현재 DB 백업 (`backupsql/reviewmaps_backup.sql` 활용)
+  - [ ] Cloud SQL로 데이터 복원 (`psql < reviewmaps_backup.sql`)
+  - [ ] 공간 데이터 (`postgis`) 무결성 검증
+  - [ ] 데이터 무결성 검증 (레코드 개수, 샘플 데이터)
 
 #### 3.4 애플리케이션 연결 변경
-- [ ] 애플리케이션 DB 연결 문자열 업데이트 (Private IP)
-- [ ] Connection Pooling 설정 (PgBouncer 또는 Cloud SQL Proxy)
-- [ ] 환경 변수 업데이트 (K8s Secret)
-- [ ] 롤아웃 및 헬스 체크 확인
+- [ ] **ojeomneo 앱**:
+  - [ ] DB 연결 문자열 업데이트 (Private IP)
+  - [ ] 환경 변수 업데이트 (K8s Secret via External Secrets)
+  - [ ] 롤아웃 및 헬스 체크 확인
+- [ ] **reviewmaps 앱**:
+  - [ ] DB 연결 문자열 업데이트 (Private IP)
+  - [ ] `postgis` 함수 호환성 테스트
+  - [ ] 환경 변수 업데이트 (K8s Secret via External Secrets)
+  - [ ] 롤아웃 및 헬스 체크 확인
+- [ ] Connection Pooling 설정 (Cloud SQL Proxy 또는 PgBouncer)
 
 #### 3.5 구 VM 정리
 - [ ] 24시간 모니터링 (에러 없음 확인)
@@ -212,8 +249,9 @@
 
 **완료 기준**:
 - Cloud SQL 정상 운영 확인 (24시간)
-- 브루트 포스 공격 차단 확인
+- 브루트 포스 공격 차단 확인 (Private IP로 GKE 내부만 접근 가능)
 - 애플리케이션 에러율 0%
+- `postgis` 공간 데이터 정상 작동 확인
 - 구 VM 완전 제거
 
 ---
@@ -361,34 +399,47 @@
 | Load Balancer | - | - | - | $18 |
 | Cloud DNS | - | - | $0.4 | $0.4 |
 | Cloud Storage | $1 | $1 | $1 | $1 |
-| Cloud Armor | - | - | - | $5 |
-| **GCP 총 비용** | **$1** | **$12~68** | **$42~98** | **$65~121** |
+| Cloud Armor (Istio 대체) | - | - | - | ~~$5~~ **$0** |
+| **GCP 총 비용** | **$1** | **$12~68** | **$42~98** | **$60~116** |
 | **AWS 비용 (병렬)** | **$100** | **$100** | **$70** | **$0** |
 | **합계** | **$101** | **$112~168** | **$112~168** | **$65~121** |
 
-**목표**: Phase 4 완료 후 **월 $80 이하 달성** (평시 $65~72, 피크 최대 $121)
-**비용 절감**: 기존 계획 대비 평시 **$48~$55/월 절감** (약 42% 절감)
+**목표**: Phase 4 완료 후 **월 $75 이하 달성** (평시 $60~67, 피크 최대 $116)
+**비용 절감**:
+- 기존 계획 대비 평시 **$53~$60/월 절감** (약 47% 절감)
+- Cloud Armor → Istio Rate Limiting: **$5/월 추가 절감**
 **고가용성**: e2-large pool 활용 시 최대 메모리 24GB까지 확장 가능 (3 large nodes)
 
-### 비용 최적화 포인트 (1인 개발 환경 특화) - **Phase 1 완료**
+### 비용 최적화 포인트 (1인 개발 환경 특화)
 
+**Phase 1 완료**:
 - [x] **Default VPC 사용**: Custom VPC 대신 Default VPC 사용 (절감: $56/월)
 - [x] **GKE Standard + Spot Instance**: Autopilot 대신 Spot 활용 (절감: $33~40/월)
 - [x] **Single Zone 배포**: Free Tier GKE 관리 비용 무료 (절감: $73/월)
 - [x] **다중 Node Pool 전략**: e2-medium (평시) + e2-large (피크) 자동 확장
   - e2-medium pool: 1-3 nodes (기본 워크로드)
   - e2-large pool: 0-3 nodes (메모리 집약적 워크로드 시에만 확장)
+- [x] **개발 환경 없음**: 프로덕션 단일 환경으로 50% 비용 절감
+- [x] **향후 서비스 추가**: 동일 GKE 클러스터 내 Pod 추가만으로 확장
+
+**Phase 2 완료**:
+- [x] **Istio Rate Limiting**: Cloud Armor 대신 Istio EnvoyFilter 사용 (절감: $5/월)
+  - Global Rate Limiting: 100 req/min
+  - Login Path Rate Limiting: 10 req/min (브루트 포스 방지)
+  - Admin Path Rate Limiting: 30 req/min
+- [x] **Authorization Policy**: 추가 비용 없이 악성 봇 차단 및 보안 강화
+
+**Phase 3~4 예정**:
 - [ ] Cloud SQL: db-g1-small 유지, HA 비활성화 (단일 환경으로 충분)
 - [ ] Load Balancer: 단일 LB로 모든 서비스 라우팅 (경로 기반)
 - [ ] Cloud Storage: 로그 30일 이후 Nearline 이동
-- [x] 개발 환경 없음: 프로덕션 단일 환경으로 50% 비용 절감
-- [x] 향후 서비스 추가 시: 동일 GKE 클러스터 내 Pod 추가만으로 확장
 
-**Phase 1 비용 최적화 성과**:
+**총 비용 최적화 성과**:
 - Custom VPC → Default VPC: **-$56/월**
 - GKE Autopilot → Standard + Spot: **-$33/월**
 - Multi-zone → Single Zone (Free Tier): **-$73/월**
-- **총 절감**: **약 $162/월** (기존 계획 대비)
+- Cloud Armor → Istio Rate Limiting: **-$5/월**
+- **총 절감**: **약 $167/월** (기존 계획 대비)
 
 ---
 
@@ -459,37 +510,85 @@
 
 ### 완료된 Phase
 - ✅ **Phase 1 완료** (2025-12-14): GKE 클러스터, Terraform, GitHub Actions, External Secrets Operator
-- 🔄 **Phase 2 진행 중** (80% 완료): Istio 배포 완료, SSL 인증서 일부 발급, Cloud Armor 및 DNS 작업 대기
+- 🔄 **Phase 2 진행 중** (90% 완료): Istio 배포 완료, Rate Limiting 구현, SSL 인증서 일부 발급
+- ⏸️ **Phase 3 대기 중**: PostgreSQL Cloud SQL 마이그레이션 (Phase 2 완료 후 착수)
 
 ### 배포된 주요 리소스
-- **GKE Cluster**: woohalabs-prod-gke-cluster (Standard + Spot Instance)
-  - Node Pool 1: e2-medium (1-3 nodes, Spot)
-  - Node Pool 2: e2-large (0-3 nodes, Spot)
-- **Istio 서비스 메시**: v1.24.2 (istio-base, istiod, istio-ingressgateway)
-- **Istio Ingress Gateway**: External IP 34.50.12.202
-- **ArgoCD**: 7개 Applications (정상 동작)
-  - argocd-server (Running)
-  - cert-manager, istio-base, istiod, istio-ingressgateway, istio-gateway-config
-- **SSL 인증서**: 2개 발급 완료, 2개 발급 대기 중
-- **cert-manager**: Let's Encrypt ClusterIssuer 설정 완료
+
+**인프라 (Phase 1)**:
+- GKE Cluster: woohalabs-prod-gke-cluster (Standard + Spot Instance)
+  - Node Pool 1: e2-medium (1-3 nodes, Spot, 91% 비용 절감)
+  - Node Pool 2: e2-large (0-3 nodes, Spot, 91% 비용 절감)
+- Default VPC Network (비용 $0)
+- Terraform State: GCS Backend (woohalabs-terraform-state)
+
+**Istio 서비스 메시 (Phase 2)**:
+- Istio 버전: v1.24.2
+  - istio-base (CRD 정의)
+  - istiod (Control Plane)
+  - istio-ingressgateway (Data Plane)
+- Istio Ingress Gateway External IP: 34.50.12.202
+- Gateway 리소스: main-gateway (HTTP/HTTPS 라우팅)
+
+**보안 (Phase 2 - 비용 최적화)**:
+- Rate Limiting (Istio EnvoyFilter):
+  - Global: 100 req/min
+  - Login Path: 10 req/min (브루트 포스 방지)
+  - Admin Path: 30 req/min
+- Authorization Policy:
+  - User-Agent 기반 악성 봇 차단 (sqlmap, nikto, nmap 등)
+  - HTTP 메서드 제한 (GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD)
+  - IP Whitelist 지원 (비활성화 기본값)
+  - 국가 기반 차단 지원 (비활성화 기본값)
+- **비용 절감**: Cloud Armor $5/월 → Istio $0/월
+
+**SSL 인증서 (Phase 2)**:
+- cert-manager 설치 완료 (Let's Encrypt ClusterIssuer)
+- SSL 인증서 발급:
+  - ✅ ggorockee-com-wildcard-cert (Ready)
+  - ✅ review-maps-com-wildcard-cert (Ready)
+  - ⏳ ggorockee-org-wildcard-cert (발급 대기 중)
+  - ⏳ woohalabs-com-wildcard-cert (발급 대기 중)
+
+**ArgoCD (GitOps)**:
+- ArgoCD Applications: 5개 (모두 Synced 상태)
+  - cert-manager (Progressing)
+  - istio-base (Healthy)
+  - istiod (Healthy)
+  - istio-ingressgateway (Healthy)
+  - istio-gateway-config (Healthy)
 
 ### 다음 단계 (우선순위 순)
 
-#### 1. Phase 2 완료 작업
-- [ ] 나머지 SSL 인증서 발급 완료 (ggorockee-org, woohalabs-com)
-- [ ] VirtualService 및 DestinationRule 설정
-- [ ] Cloud Armor WAF 정책 생성 및 연동
-- [ ] Cloud DNS Zone 생성 (woohalabs.com 등)
+#### 1. Phase 2 완료 작업 (남은 10%)
+- [ ] **SSL 인증서 발급 완료** (ggorockee-org, woohalabs-com)
+  - 발급 실패 원인 분석
+  - DNS 검증 문제 해결
+- [ ] **Rate Limiting 동작 테스트**
+  - Global Rate Limiting 테스트 (100 req/min)
+  - Login Path Rate Limiting 테스트 (10 req/min)
+  - HTTP 429 응답 확인
+- [ ] **Authorization Policy 검증**
+  - User-Agent 차단 테스트
+  - 허용된 HTTP 메서드 검증
+- [ ] **VirtualService 설정** (경로 기반 라우팅)
+  - ArgoCD VirtualService 생성
+  - Path 기반 라우팅 테스트
+- [ ] **Cloud DNS Zone 생성** (Phase 5 준비)
 
 #### 2. Phase 3 준비 (데이터베이스 마이그레이션)
 - [ ] Cloud SQL Terraform 모듈 작성
-- [ ] Private IP 설정 및 VPC 연결
-- [ ] 데이터베이스 백업 계획 수립
+- [ ] VPC Private Service Connection 구성 (Private IP용)
+- [ ] PostgreSQL 확장 기능 설치 계획 (`pgcrypto`, `postgis`)
+- [ ] 2개 데이터베이스 복원 전략 수립
+  - [ ] ojeomneo: PostgreSQL 15 → 15 (호환 OK)
+  - [ ] reviewmaps: PostgreSQL 17.5 → 15 (다운그레이드 검증 필요)
 
 #### 3. Phase 4 준비 (워크로드 마이그레이션)
 - [ ] 현재 워크로드 리소스 사용량 분석
-- [ ] HPA 설정 계획
+- [ ] HPA 설정 계획 수립
 - [ ] ArgoCD Application 매니페스트 준비
+- [ ] 카나리 배포 전략 수립
 
 ### 컨펌 필요 사항
 
@@ -501,22 +600,34 @@
 
 ### 주간 체크포인트 (1인 운영)
 
-**이번 주 완료**:
-- [x] Istio 서비스 메시 배포
-- [x] Istio Ingress Gateway External IP 확보
-- [x] cert-manager 설치 및 SSL 인증서 발급 시작
-- [x] ArgoCD로 GitOps 파이프라인 구성
+**2025-12-15 완료**:
+- [x] Istio 서비스 메시 배포 (istio-base, istiod, istio-ingressgateway)
+- [x] Istio Ingress Gateway External IP 확보 (34.50.12.202)
+- [x] cert-manager 설치 및 SSL 인증서 발급 시작 (2개 발급 완료)
+- [x] ArgoCD로 GitOps 파이프라인 구성 (5개 Applications)
+- [x] **Istio Rate Limiting 구현** (EnvoyFilter, 비용 $0)
+  - Global, Login Path, Admin Path Rate Limiting
+- [x] **Authorization Policy 구현** (User-Agent 차단, HTTP 메서드 제한)
+- [x] **Helm Chart 문서화** (istio-gateway-config README.md)
 
-**다음 주 계획**:
-- [ ] SSL 인증서 발급 완료
+**비용 절감 성과**:
+- Cloud Armor ($5/월) → Istio Rate Limiting ($0/월)
+- 총 비용 최적화: **$167/월 절감** (기존 계획 대비)
+
+**다음 주 계획** (Phase 2 완료):
+- [ ] SSL 인증서 발급 완료 (ggorockee-org, woohalabs-com)
+- [ ] Rate Limiting 동작 테스트 및 검증
 - [ ] VirtualService/DestinationRule 설정
-- [ ] Cloud Armor 정책 활성화
-- [ ] Cloud DNS 설정 시작
+- [ ] Cloud DNS Zone 생성 시작
 
 **리스크 모니터링**:
-- [ ] 예산 사용 현황 점검 (현재: GKE + Istio만 활성화)
-- [ ] SSL 인증서 발급 실패 원인 분석 (2개 대기 중)
-- [ ] AWS 리소스 병렬 운영 상태 확인
+- [ ] **예산 사용 현황**: 현재 GKE $12~68 + Istio $0 = 예산 범위 내
+- [ ] **SSL 인증서 발급 실패**: ggorockee-org, woohalabs-com DNS 검증 문제 분석 필요
+- [ ] **AWS 리소스 병렬 운영**: 정상, Phase 3 완료 후 종료 예정
+
+**주요 의사결정**:
+- Cloud Armor 사용 안 함 → Istio Rate Limiting으로 대체 (비용 절감)
+- VirtualService는 Phase 2 완료 전 구현 (트래픽 라우팅 준비)
 
 ### 향후 서비스 확장 계획
 

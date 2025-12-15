@@ -56,13 +56,22 @@ module "gke" {
 # Other modules will be enabled in future phases
 # GKE API has been enabled in GCP project
 
-# module "cloud_sql" {
-#   source = "../../modules/cloud-sql"
-#
-#   project_id  = var.project_id
-#   region      = var.region
-#   environment = var.environment
-# }
+# Phase 2: Cloud SQL 활성화 (Secret Manager DB credentials 사용)
+module "cloud_sql" {
+  source = "../../modules/cloud-sql"
+
+  project_id     = var.project_id
+  region         = var.region
+  environment    = var.environment
+  vpc_network_id = module.networking.network_id
+
+  # Cloud SQL 설정
+  instance_tier        = "db-g1-small"
+  disk_size_gb         = 20
+  deletion_protection  = true
+
+  depends_on = [module.external_secrets]
+}
 
 # module "dns" {
 #   source = "../../modules/dns"
