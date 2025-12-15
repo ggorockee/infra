@@ -12,6 +12,10 @@ global:
   tag: 1.28.1
   imagePullPolicy: IfNotPresent
 
+  # Logging configuration
+  logging:
+    level: "default:info"
+
   # Pod Disruption Budget
   defaultPodDisruptionBudget:
     enabled: true
