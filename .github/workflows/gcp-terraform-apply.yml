@@ -45,10 +45,6 @@ jobs:
         working-directory: ./gcp/terraform/environments/prod
         run: terraform init
 
-      - name: Terraform Plan
-        working-directory: ./gcp/terraform/environments/prod
-        run: terraform plan -no-color
-
       - name: Terraform Apply
         working-directory: ./gcp/terraform/environments/prod
         run: terraform apply -auto-approve
