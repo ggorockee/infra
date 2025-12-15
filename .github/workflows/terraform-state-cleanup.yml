@@ -1,0 +1,44 @@
+name: Terraform State Cleanup
+
+on:
+  workflow_dispatch:
+    inputs:
+      resources:
+        description: 'Resources to remove (comma-separated)'
+        required: true
+        default: 'module.argocd.kubernetes_manifest.argocd_init_password,module.argocd.kubernetes_service_account.argocd_init_password,module.argocd.kubernetes_role.argocd_init_password,module.argocd.kubernetes_role_binding.argocd_init_password'
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Terraform Init
+        working-directory: gcp/terraform/environments/prod
+        run: terraform init
+
+      - name: Remove resources from state
+        working-directory: gcp/terraform/environments/prod
+        run: |
+          IFS=',' read -ra RESOURCES <<< "${{ github.event.inputs.resources }}"
+          for resource in "${RESOURCES[@]}"; do
+            echo "Removing $resource from state..."
+            terraform state rm "$resource" || echo "Resource $resource not found in state"
+          done
+
+      - name: Verify state
+        working-directory: gcp/terraform/environments/prod
+        run: terraform state list | grep -i argocd || echo "No ArgoCD Job resources in state"
