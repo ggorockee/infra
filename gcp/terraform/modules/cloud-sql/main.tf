@@ -1,5 +1,6 @@
 # Cloud SQL PostgreSQL 인스턴스 및 데이터베이스 구성
 # Secret Manager에서 DB credentials를 읽어 사용자 생성
+# VPC Peering을 통한 Private IP 전용 연결
 
 terraform {
   required_version = ">= 1.5.0"
