@@ -51,16 +51,28 @@ resource "kubernetes_manifest" "argocd_init_password" {
                 EXISTING_KEY=$(kubectl get secret argocd-secret -n argocd -o jsonpath='{.data.server\.secretkey}' 2>/dev/null || echo "")
 
                 if [ -z "$EXISTING_KEY" ]; then
-                  # server.secretkey가 없으면 생성
+                  echo "server.secretkey not found, generating new one"
                   apt-get install -y openssl --quiet
-                  SERVER_KEY=$(openssl rand -base64 32 | base64 -w0)
+                  SERVER_KEY=$(openssl rand -base64 32)
+                  SERVER_KEY_B64=$(echo -n "$SERVER_KEY" | base64 -w0)
                 else
-                  # 기존 server.secretkey 보존
-                  SERVER_KEY="$EXISTING_KEY"
+                  echo "Preserving existing server.secretkey"
+                  SERVER_KEY_B64="$EXISTING_KEY"
                 fi
 
-                # Secret 패치 (merge 방식으로 기존 데이터 보존)
-                kubectl patch secret argocd-secret -n argocd --type=merge -p="{\"data\":{\"admin.password\":\"$HASHED_B64\",\"admin.passwordMtime\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ | base64 -w0)\",\"server.secretkey\":\"$SERVER_KEY\"}}"
+                # Kubernetes API를 통해 argocd-secret 패치 (merge로 기존 데이터 보존)
+                cat <<EOF > /tmp/patch.json
+                {
+                  "data": {
+                    "admin.password": "$HASHED_B64",
+                    "admin.passwordMtime": "$(date -u +%Y-%m-%dT%H:%M:%SZ | base64 -w0)",
+                    "server.secretkey": "$SERVER_KEY_B64"
+                  }
+                }
+                EOF
+
+                # Secret 패치
+                kubectl patch secret argocd-secret -n argocd --type=merge --patch-file=/tmp/patch.json
 
                 echo "Admin password initialized successfully"
                 EOT
@@ -89,7 +101,6 @@ resource "kubernetes_manifest" "argocd_init_password" {
 
   depends_on = [
     helm_release.argocd,
-    kubernetes_manifest.argocd_secret,
     kubernetes_service_account.argocd_init_password
   ]
 }
