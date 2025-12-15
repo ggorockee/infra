@@ -81,13 +81,14 @@ module "cloud_sql" {
 #   environment = var.environment
 # }
 
-# module "cloud_armor" {
-#   source = "../../modules/cloud-armor"
-#
-#   project_id  = var.project_id
-#   region      = var.region
-#   environment = var.environment
-# }
+# Phase 3: Cloud Armor Security Policy
+module "cloud_armor" {
+  source = "../../modules/cloud-armor"
+
+  project_id  = var.project_id
+  region      = var.region
+  environment = var.environment
+}
 
 # module "ssl_certificate" {
 #   source = "../../modules/ssl-certificate"
