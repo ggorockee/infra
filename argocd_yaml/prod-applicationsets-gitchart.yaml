@@ -10,6 +10,9 @@ spec:
         revision: main
         directories:
           - path: charts/helm/prod/*/*
+            exclude: true
+          - path: charts/helm/prod/ojeomneo/*
+          - path: charts/helm/prod/reviewmaps/*
 
   template:
     metadata:
