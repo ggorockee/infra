@@ -1,31 +1,5 @@
-# argocd-secret을 별도로 생성하여 ExternalSecret의 값을 참조
-# Helm이 관리하지 않으므로 재시작 시에도 유지됨
-resource "kubernetes_secret" "argocd_secret" {
-  metadata {
-    name      = "argocd-secret"
-    namespace = kubernetes_namespace.argocd.metadata[0].name
-    labels = {
-      "app.kubernetes.io/name"    = "argocd-secret"
-      "app.kubernetes.io/part-of" = "argocd"
-    }
-  }
-
-  # ArgoCD가 생성하는 server.secretkey는 자동 생성되도록 빈 값으로 설정
-  data = {
-    "server.secretkey" = ""
-  }
-
-  # Lifecycle을 설정하여 server.secretkey는 변경하지 않음
-  lifecycle {
-    ignore_changes = [
-      data["server.secretkey"]
-    ]
-  }
-
-  depends_on = [
-    kubernetes_namespace.argocd
-  ]
-}
+# argocd-secret은 Helm이 생성하도록 둠 (createSecret: false 설정 제거 필요)
+# 대신 Job만 실행하여 비밀번호 동기화
 
 # Kubernetes Job to sync admin password from argocd-secrets to argocd-secret
 # 이 Job은 한 번만 실행되며, argocd-secrets의 비밀번호를 bcrypt 해시로 변환하여
@@ -112,7 +86,7 @@ resource "kubernetes_manifest" "argocd_init_password" {
   }
 
   depends_on = [
-    kubernetes_secret.argocd_secret,
+    helm_release.argocd,
     kubernetes_manifest.argocd_secret,
     kubernetes_service_account.argocd_init_password
   ]
