@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: reviewmaps
+  labels:
+    name: reviewmaps
+    app: reviewmaps
+    env: prod
