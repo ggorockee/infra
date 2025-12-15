@@ -1,5 +1,5 @@
-# argocd-secret은 Helm이 생성하도록 둠 (createSecret: false 설정 제거 필요)
-# 대신 Job만 실행하여 비밀번호 동기화
+# argocd-secret은 Helm이 생성하도록 둠
+# 초기화 Job만 실행하여 비밀번호 동기화
 
 # Kubernetes Job to sync admin password from argocd-secrets to argocd-secret
 # 이 Job은 한 번만 실행되며, argocd-secrets의 비밀번호를 bcrypt 해시로 변환하여
