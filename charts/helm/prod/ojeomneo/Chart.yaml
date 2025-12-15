@@ -5,10 +5,11 @@ dependencies:
   name: server
   repository: file://./charts/server
   version: 1.0.0
-- condition: database.enabled
-  name: database
-  repository: file://./charts/database
-  version: 1.0.0
+# Database subchart disabled - using Cloud SQL instead
+# - condition: database.enabled
+#   name: database
+#   repository: file://./charts/database
+#   version: 1.0.0
 - condition: admin.enabled
   name: admin
   repository: file://./charts/admin

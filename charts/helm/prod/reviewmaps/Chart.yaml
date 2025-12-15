@@ -13,10 +13,11 @@ dependencies:
   name: admin
   repository: file://./charts/admin
   version: 1.0.0
-- condition: database.enabled
-  name: database
-  repository: file://./charts/database
-  version: 2.31.3
+# Database subchart disabled - using Cloud SQL instead
+# - condition: database.enabled
+#   name: database
+#   repository: file://./charts/database
+#   version: 2.31.3
 description: A Helm chart for Kubernetes
 name: reviewmaps
 type: application
