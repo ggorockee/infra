@@ -181,6 +181,11 @@ resource "google_sql_database" "ojeomneo" {
   collation = "en_US.UTF8"
 
   depends_on = [google_sql_database_instance.main]
+
+  # Prevent accidental recreation due to sensitive attribute changes
+  lifecycle {
+    ignore_changes = [name]
+  }
 }
 
 # ReviewMaps Database
@@ -194,6 +199,11 @@ resource "google_sql_database" "reviewmaps" {
   collation = "en_US.UTF8"
 
   depends_on = [google_sql_database_instance.main]
+
+  # Prevent accidental recreation due to sensitive attribute changes
+  lifecycle {
+    ignore_changes = [name]
+  }
 }
 
 # ============================================================
@@ -208,6 +218,11 @@ resource "google_sql_user" "ojeomneo" {
   project  = var.project_id
 
   depends_on = [google_sql_database.ojeomneo]
+
+  # Prevent accidental recreation due to sensitive attribute changes
+  lifecycle {
+    ignore_changes = [name]
+  }
 }
 
 # ReviewMaps User
@@ -218,6 +233,11 @@ resource "google_sql_user" "reviewmaps" {
   project  = var.project_id
 
   depends_on = [google_sql_database.reviewmaps]
+
+  # Prevent accidental recreation due to sensitive attribute changes
+  lifecycle {
+    ignore_changes = [name]
+  }
 }
 
 # ============================================================
