@@ -33,30 +33,5 @@ spec:
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
-      ignoreDifferences:
-        - group: admissionregistration.k8s.io
-          kind: ValidatingWebhookConfiguration
-          name: istiod-default-validator
-          jsonPointers:
-            - /webhooks/0/failurePolicy
-
-        - group: admissionregistration.k8s.io
-          kind: ValidatingWebhookConfiguration
-          name: istio-validator-istio-system
-          jsonPointers:
-            - /webhooks/0/failurePolicy
-
-        - group: apps
-          kind: DaemonSet
-          jsonPointers:
-            - /spec/template/spec/hostNetwork
-            - /spec/template/spec/containers/0/extraVolumeMounts
-            - /spec/template/spec/containers/0/resources/extraWatchVolumes
-
-        - group: ""
-          kind: Service
-          jsonPointers:
-            - /spec/clusterIP
-            - /spec/clusterIPs
-            - /spec/allocateLoadBalancerNodePorts
+      
 
