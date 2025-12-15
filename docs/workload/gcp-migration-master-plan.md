@@ -193,11 +193,13 @@
   - [ ] 버전: PostgreSQL 15
   - [ ] Private IP 설정 (VPC 연결)
   - [ ] Public IP 비활성화 (보안 강화)
-- [ ] 자동 백업 설정
-  - [ ] 백업 시간: 매일 새벽 3시 (KST)
-  - [ ] 보관 기간: 7일
-  - [ ] Point-in-Time Recovery 활성화
-- [ ] High Availability 설정: 비활성화 (단일 환경으로 비용 절감)
+  - [ ] 자동 백업: **비활성화** (비용 절감, 수동 백업으로 대체)
+  - [ ] High Availability: **비활성화** (단일 환경으로 비용 절감)
+
+**비용 최적화 전략**:
+- 자동 백업 대신 수동 pg_dump 백업 사용 (절감: ~$3/월)
+- HA 비활성화로 인스턴스 이중화 비용 절감 (절감: ~$30/월)
+- 최종 Cloud SQL 비용: **$30/월** (db-g1-small 단일 인스턴스)
 
 #### 3.2 보안 설정
 - [ ] IAM Database Authentication 활성화
