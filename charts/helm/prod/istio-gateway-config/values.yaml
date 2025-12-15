@@ -54,7 +54,7 @@ virtualServices:
     namespace: argocd
     enabled: true
     hosts:
-      - "argocd.ggorockee.org"
+      - "argocd.ggorockee.com"
     http:
       - route:
           - destination:
