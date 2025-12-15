@@ -25,11 +25,11 @@ global:
 
     resources:
       requests:
-        cpu: 100m
-        memory: 128Mi
+        cpu: 50m
+        memory: 256Mi
       limits:
-        cpu: 2000m
-        memory: 1024Mi
+        cpu: 200m
+        memory: 512Mi
 
 # Pilot (istiod) specific configuration
 autoscaleEnabled: true
@@ -43,6 +43,9 @@ env:
 
 resources:
   requests:
+    cpu: 200m
+    memory: 1024Mi
+  limits:
     cpu: 500m
     memory: 2048Mi
 
