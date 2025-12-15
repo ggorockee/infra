@@ -37,15 +37,15 @@ data "google_secret_manager_secret_version" "reviewmaps_db_credentials" {
 locals {
   # Ojeomneo credentials
   ojeomneo_creds = jsondecode(data.google_secret_manager_secret_version.ojeomneo_db_credentials.secret_data)
-  ojeomneo_user  = local.ojeomneo_creds.POSTGRES_USER
+  ojeomneo_user  = nonsensitive(local.ojeomneo_creds.POSTGRES_USER)
   ojeomneo_pass  = local.ojeomneo_creds.POSTGRES_PASSWORD
-  ojeomneo_db    = local.ojeomneo_creds.POSTGRES_DB
+  ojeomneo_db    = nonsensitive(local.ojeomneo_creds.POSTGRES_DB)
 
   # ReviewMaps credentials
   reviewmaps_creds = jsondecode(data.google_secret_manager_secret_version.reviewmaps_db_credentials.secret_data)
-  reviewmaps_user  = local.reviewmaps_creds.POSTGRES_USER
+  reviewmaps_user  = nonsensitive(local.reviewmaps_creds.POSTGRES_USER)
   reviewmaps_pass  = local.reviewmaps_creds.POSTGRES_PASSWORD
-  reviewmaps_db    = local.reviewmaps_creds.POSTGRES_DB
+  reviewmaps_db    = nonsensitive(local.reviewmaps_creds.POSTGRES_DB)
 }
 
 # ============================================================
