@@ -1,6 +1,7 @@
 env: prod
-revision: main
 chartName: istiod
+chartVersion: 1.28.1
 appName: istiod
-repoURL: https://github.com/ggorockee/infra
+repoURL: https://istio-release.storage.googleapis.com/charts
 namespace: istio-system
+helmValuesFile: prod/istiod-values.yaml
