@@ -18,12 +18,16 @@ spec:
       project: default
       source:
         repoURL: '{{repoURL}}'
+        targetRevision: '{{revision}}'
+        path: 'charts/helm/{{env}}/{{chartName}}'
+        helm:
+          valueFiles:
+          - values.yaml
       destination:
         server: https://kubernetes.default.svc
         namespace: '{{namespace}}'
       syncPolicy:
         automated:
-          prune: true
           selfHeal: true
         syncOptions:
         - CreateNamespace=true
