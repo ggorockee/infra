@@ -157,27 +157,32 @@ virtualServices:
   # Ojeomneo Admin
   - name: ojeomneo-admin-vs
     namespace: ojeomneo
-    enabled: false
+    enabled: true
     hosts:
-      - "ojeomneo.ggorockee.com"
-      - "admin.ojeomneo.ggorockee.com"
+      - "admin.woohalabs.com"
     http:
-      - route:
+      - match:
+          - uri:
+              prefix: "/ojeomneo"
+        route:
           - destination:
               host: ojeomneo-admin
-              port: 3000
+              port: 8000
 
   # Ojeomneo API
   - name: ojeomneo-api-vs
     namespace: ojeomneo
-    enabled: false
+    enabled: true
     hosts:
-      - "api.ojeomneo.ggorockee.com"
+      - "api.woohalabs.com"
     http:
-      - route:
+      - match:
+          - uri:
+              prefix: "/ojeomneo"
+        route:
           - destination:
               host: ojeomneo-server
-              port: 8000
+              port: 3000
 
   # ReviewMaps Admin (Django Admin)
   - name: reviewmaps-admin-vs
