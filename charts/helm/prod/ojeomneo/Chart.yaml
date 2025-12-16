@@ -18,7 +18,11 @@ dependencies:
   name: redis
   repository: file://./charts/redis
   version: 24.0.0
-description: Ojeomneo (오점너) - Go Fiber v2 API Server + Django Admin + PostgreSQL + Redis
+- condition: web.enabled
+  name: web
+  repository: file://./charts/web
+  version: 1.0.0
+description: Ojeomneo (오점너) - Go Fiber v2 API Server + Django Admin + Next.js Web + PostgreSQL + Redis
 name: ojeomneo
 type: application
 version: 1.3.0
