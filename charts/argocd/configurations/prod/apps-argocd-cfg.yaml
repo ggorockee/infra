@@ -5,5 +5,4 @@ appName: argo-cd
 repoURL: https://github.com/ggorockee/infra
 namespace: argocd
 # Custom values file for Dex OIDC integration
-valuesFiles:
-  - values-custom.yaml
+valueFile: values-custom.yaml
