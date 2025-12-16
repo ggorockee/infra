@@ -78,6 +78,16 @@ security:
       tokensPerFill: 30       # 채울 토큰 수
       fillInterval: "60s"     # 채우기 간격 (분당 30 요청)
 
+    # ArgoCD Dex OAuth Callback Rate Limiting (OAuth 공격 방지)
+    dexCallback:
+      enabled: true
+      maxTokens: 20           # 최대 토큰 수
+      tokensPerFill: 20       # 채울 토큰 수
+      fillInterval: "60s"     # 채우기 간격 (분당 20 요청)
+      paths:
+        - "/api/dex/callback"
+        - "/auth/callback"
+
   # Authorization Policy 설정 (추가 보안)
   authorization:
     enabled: true
