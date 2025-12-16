@@ -2,7 +2,7 @@
 ## Ref: https://github.com/argoproj/argo-cd
 ##
 
-# ExternalSecrets configuration for Dex credentials
+# ExternalSecrets configuration for Dex credentials and RBAC
 externalSecrets:
   dex:
     enabled: true
@@ -15,6 +15,13 @@ externalSecrets:
     targetSecretName: argocd-secret
     # Merge: 기존 argocd-secret에 병합 (ArgoCD Helm이 생성한 Secret 유지)
     creationPolicy: Merge
+
+  rbac:
+    enabled: true
+    secretStore: gcpsm-secret-store
+    secretStoreKind: ClusterSecretStore
+    # GCP Secret Manager의 시크릿 이름 (admin.emails 포함)
+    secretKey: prod-argocd-dex-credentials
 
 # -- Provide a name in place of `argocd`
 nameOverride: argocd
@@ -453,10 +460,8 @@ configs:
 
     # -- File containing user-defined policies and role definitions.
     # @default -- `''` (See [values.yaml])
-    policy.csv: |
-      g, woohaen88@gmail.com, role:admin
-      g, woohalabs@gmail.com, role:admin
-      g, ggorockee@gmail.com, role:admin
+    # Admin emails are managed via ExternalSecret from Secret Manager
+    policy.csv: ''
 
     # -- OIDC scopes to examine during rbac enforcement (in addition to `sub` scope).
     # The scope value can be a string, or a list of strings.
