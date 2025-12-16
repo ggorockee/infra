@@ -37,35 +37,11 @@ resources:
     cpu: 200m
     memory: 256Mi
 
-livenessProbe:
-  httpGet:
-    path: /ojeomneo
-    port: http
-    scheme: HTTP
-  initialDelaySeconds: 10
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
+livenessProbe: {}
 
-readinessProbe:
-  httpGet:
-    path: /ojeomneo
-    port: http
-    scheme: HTTP
-  initialDelaySeconds: 5
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
+readinessProbe: {}
 
-startupProbe:
-  httpGet:
-    path: /ojeomneo
-    port: http
-    scheme: HTTP
-  initialDelaySeconds: 0
-  periodSeconds: 5
-  timeoutSeconds: 3
-  failureThreshold: 12
+startupProbe: {}
 
 autoscaling:
   enabled: false
