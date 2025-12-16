@@ -1,8 +1,8 @@
 #########################################################################
-# scrape 설정
+# scrape 설정 (비활성화 - go-scraper 사용)
 #########################################################################
 scrape:
-  enabled: true
+  enabled: false
   # Default values for backend.
   # This is a YAML-formatted file.
   # Declare variables to be passed into your templates.
@@ -704,3 +704,101 @@ database:
       periodSeconds: 10
       timeoutSeconds: 10
       failureThreshold: 6
+
+#########################################################################
+# Web 설정 (Next.js Web Application)
+#########################################################################
+web:
+  enabled: true
+  replicaCount: 1
+  revisionHistoryLimit: 3
+
+  image:
+    repository: ggorockee/reviewmaps-web
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  serviceAccount:
+    create: true
+    automount: true
+    annotations: {}
+    name: ""
+
+  podAnnotations: {}
+  podLabels:
+    app: "reviewmaps-web"
+
+  podSecurityContext: {}
+  securityContext: {}
+
+  service:
+    type: ClusterIP
+    port: 3000
+    portName: "http"
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  livenessProbe:
+    httpGet:
+      path: /
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  startupProbe:
+    httpGet:
+      path: /
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 12
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+
+  volumes: []
+  volumeMounts: []
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  configMap:
+    enabled: true
+    name: ""
+    data:
+      NODE_ENV: "production"
+      PORT: "3000"
+      # Server API URL (클라이언트 사이드 요청용)
+      NEXT_PUBLIC_API_URL: "https://api.review-maps.com"
+
+  secret:
+    enabled: false
+    names: []
