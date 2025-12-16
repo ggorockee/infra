@@ -15,7 +15,22 @@ spec:
   - {{ $.Values.gateway.namespace }}/{{ $.Values.gateway.name }}
   http:
   {{- range .http }}
-  - route:
+  - {{- if .match }}
+    match:
+    {{- range .match }}
+    - {{- if .uri }}
+      uri:
+        {{- if .uri.prefix }}
+        prefix: {{ .uri.prefix | quote }}
+        {{- else if .uri.exact }}
+        exact: {{ .uri.exact | quote }}
+        {{- else if .uri.regex }}
+        regex: {{ .uri.regex | quote }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- end }}
+    route:
     {{- range .route }}
     - destination:
         host: {{ .destination.host }}
