@@ -205,7 +205,7 @@ virtualServices:
     http:
       - route:
           - destination:
-              host: reviewmaps-web
+              host: reviewmaps-server
               port: 3000
 
   # Ojeomneo Web (Next.js)
