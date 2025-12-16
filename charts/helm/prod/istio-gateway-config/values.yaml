@@ -205,7 +205,7 @@ virtualServices:
     http:
       - route:
           - destination:
-              host: reviewmaps-server
+              host: reviewmaps-web
               port: 3000
 
   # Ojeomneo Web (Next.js)
@@ -223,8 +223,8 @@ virtualServices:
               host: ojeomneo-web
               port: 3000
 
-  # ReviewMaps Main (전체 도메인)
-  - name: reviewmaps-main-vs
+  # ReviewMaps Web (전체 도메인)
+  - name: reviewmaps-web-vs
     namespace: reviewmaps
     enabled: true
     hosts:
@@ -232,5 +232,5 @@ virtualServices:
     http:
       - route:
           - destination:
-              host: reviewmaps-server
+              host: reviewmaps-web
               port: 3000
