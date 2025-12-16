@@ -334,7 +334,7 @@ web:
   image:
     repository: ggorockee/ojeomneo-web
     pullPolicy: IfNotPresent
-    tag: "20251216-53f3d24"
+    tag: "20251216-242183c"
 
   imagePullSecrets: []
   nameOverride: ""
