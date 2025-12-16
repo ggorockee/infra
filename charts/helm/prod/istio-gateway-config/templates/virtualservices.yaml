@@ -30,6 +30,15 @@ spec:
       {{- end }}
     {{- end }}
     {{- end }}
+    {{- if .rewrite }}
+    rewrite:
+      {{- if .rewrite.uri }}
+      uri: {{ .rewrite.uri | quote }}
+      {{- end }}
+      {{- if .rewrite.authority }}
+      authority: {{ .rewrite.authority | quote }}
+      {{- end }}
+    {{- end }}
     route:
     {{- range .route }}
     - destination:
