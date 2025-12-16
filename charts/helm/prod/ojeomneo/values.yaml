@@ -324,6 +324,105 @@ admin:
       - ojeomneo-db-credentials
 
 #########################################################################
+# Web 설정 (Next.js Web Application)
+#########################################################################
+web:
+  enabled: true
+  replicaCount: 1
+  revisionHistoryLimit: 1
+
+  image:
+    repository: ggorockee/ojeomneo-web
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  serviceAccount:
+    create: true
+    automount: true
+    annotations: {}
+    name: ""
+
+  podAnnotations: {}
+  podLabels:
+    app: "ojeomneo-web"
+
+  podSecurityContext: {}
+  securityContext: {}
+
+  service:
+    type: ClusterIP
+    port: 3000
+    portName: "http"
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  # Health check probes - Next.js Web
+  livenessProbe:
+    httpGet:
+      path: /
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  startupProbe:
+    httpGet:
+      path: /
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 10
+    failureThreshold: 18
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+
+  volumes: []
+  volumeMounts: []
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  configMap:
+    enabled: true
+    name: ""
+    data:
+      NODE_ENV: "production"
+      PORT: "3000"
+      # Server API URL (클라이언트 사이드 요청용)
+      NEXT_PUBLIC_API_URL: "https://api.woohalabs.com/ojeomneo/v1"
+
+  secret:
+    enabled: false
+    names: []
+
+#########################################################################
 # Redis 설정 (Bitnami Redis)
 # Disabled - 개발 환경에서만 사용, 프로덕션에서는 비활성화
 #########################################################################
