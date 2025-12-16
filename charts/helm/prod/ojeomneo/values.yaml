@@ -427,7 +427,7 @@ web:
 # Disabled - 개발 환경에서만 사용, 프로덕션에서는 비활성화
 #########################################################################
 redis:
-  enabled: false
+  enabled: true
 
   # 아키텍처: standalone (단일 인스턴스)
   architecture: standalone
