@@ -39,7 +39,7 @@ resources:
 
 livenessProbe:
   httpGet:
-    path: /
+    path: /ojeomneo
     port: http
     scheme: HTTP
   initialDelaySeconds: 10
@@ -49,7 +49,7 @@ livenessProbe:
 
 readinessProbe:
   httpGet:
-    path: /
+    path: /ojeomneo
     port: http
     scheme: HTTP
   initialDelaySeconds: 5
@@ -59,7 +59,7 @@ readinessProbe:
 
 startupProbe:
   httpGet:
-    path: /
+    path: /ojeomneo
     port: http
     scheme: HTTP
   initialDelaySeconds: 0
