@@ -218,8 +218,6 @@ virtualServices:
       - match:
           - uri:
               prefix: "/ojeomneo"
-        rewrite:
-          uri: "/"
         route:
           - destination:
               host: ojeomneo-web
