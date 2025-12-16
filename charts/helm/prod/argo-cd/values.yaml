@@ -2,6 +2,20 @@
 ## Ref: https://github.com/argoproj/argo-cd
 ##
 
+# ExternalSecrets configuration for Dex credentials
+externalSecrets:
+  dex:
+    enabled: true
+    # ClusterSecretStore 이름 (External Secrets Operator에서 생성됨)
+    secretStore: gcpsm-secret-store
+    secretStoreKind: ClusterSecretStore
+    # GCP Secret Manager의 시크릿 이름
+    secretKey: prod-argocd-dex-credentials
+    # 생성될 Kubernetes Secret 이름 (ArgoCD가 참조)
+    targetSecretName: argocd-secret
+    # Merge: 기존 argocd-secret에 병합 (ArgoCD Helm이 생성한 Secret 유지)
+    creationPolicy: Merge
+
 # -- Provide a name in place of `argocd`
 nameOverride: argocd
 # -- String to fully override `"argo-cd.fullname"`
@@ -42,7 +56,7 @@ crds:
 global:
   # -- Default domain used by all components
   ## Used for ingresses, certificates, SSO, notifications, etc.
-  domain: argocd.example.com
+  domain: argocd.ggorockee.com
 
   # -- Runtime class name for all components
   runtimeClassName: ""
@@ -202,17 +216,21 @@ configs:
     statusbadge.enabled: false
 
     # Dex configuration
-    # dex.config: |
-    #   connectors:
-    #     # GitHub example
-    #     - type: github
-    #       id: github
-    #       name: GitHub
-    #       config:
-    #         clientID: aabbccddeeff00112233
-    #         clientSecret: $dex.github.clientSecret # Alternatively $<some_K8S_secret>:dex.github.clientSecret
-    #         orgs:
-    #         - name: your-github-org
+    dex.config: |
+      connectors:
+        - type: google
+          id: google
+          name: Google
+          config:
+            # ExternalSecret이 argocd-secret에 google.clientId 키로 주입
+            clientID: $argocd-secret:google.clientId
+            # ExternalSecret이 argocd-secret에 google.clientSecret 키로 주입
+            clientSecret: $argocd-secret:google.clientSecret
+            redirectURI: https://argocd.ggorockee.com/api/dex/callback
+            hostedDomains:
+              - gmail.com
+            # Prompt을 항상 표시하여 계정 선택 가능하게 설정
+            prompt: select_account
 
     # OIDC configuration as an alternative to dex (optional).
     # oidc.config: |
@@ -415,6 +433,9 @@ configs:
     # (e.g.)
     # otlp.address: ''
 
+    # Istio Gateway에서 TLS 처리하므로 insecure 모드
+    server.insecure: true
+
   # Argo CD RBAC policy configuration
   ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/rbac.md
   rbac:
@@ -428,26 +449,18 @@ configs:
 
     # -- The name of the default role which Argo CD will falls back to, when authorizing API requests (optional).
     # If omitted or empty, users may be still be able to login, but will see no apps, projects, etc...
-    policy.default: ''
+    policy.default: 'role:readonly'
 
     # -- File containing user-defined policies and role definitions.
     # @default -- `''` (See [values.yaml])
-    policy.csv: ''
-    # Policy rules are in the form:
-    #  p, subject, resource, action, object, effect
-    # Role definitions and bindings are in the form:
-    #  g, subject, inherited-subject
-    # policy.csv: |
-    #   p, role:org-admin, applications, *, */*, allow
-    #   p, role:org-admin, clusters, get, *, allow
-    #   p, role:org-admin, repositories, *, *, allow
-    #   p, role:org-admin, logs, get, *, allow
-    #   p, role:org-admin, exec, create, */*, allow
-    #   g, your-github-org:your-team, role:org-admin
+    policy.csv: |
+      g, woohaen88@gmail.com, role:admin
+      g, woohalabs@gmail.com, role:admin
+      g, ggorockee@gmail.com, role:admin
 
     # -- OIDC scopes to examine during rbac enforcement (in addition to `sub` scope).
     # The scope value can be a string, or a list of strings.
-    scopes: "[groups]"
+    scopes: "[groups, email]"
 
     # -- Matcher function for Casbin, `glob` for glob matcher and `regex` for regex matcher.
     policy.matchMode: "glob"
@@ -1104,7 +1117,7 @@ dex:
 
   metrics:
     # -- Deploy metrics service
-    enabled: false
+    enabled: true
     service:
       # -- Metrics service annotations
       annotations: {}
@@ -1993,7 +2006,8 @@ server:
   imagePullSecrets: []
 
   # -- Additional command line arguments to pass to Argo CD server
-  extraArgs: []
+  extraArgs:
+    - --insecure
 
   # -- Environment variables to pass to Argo CD server
   env: []
@@ -2381,7 +2395,8 @@ server:
     # -- Server service account name
     name: argocd-server
     # -- Annotations applied to created service account
-    annotations: {}
+    annotations:
+      iam.gke.io/gcp-service-account: argocd-prod@infra-480802.iam.gserviceaccount.com
     # -- Labels applied to created service account
     labels: {}
     # -- Automount API credentials for the Service Account
