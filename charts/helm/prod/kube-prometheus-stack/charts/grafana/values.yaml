@@ -1701,3 +1701,13 @@ extraObjects: []
 # Alternatively, if you wish to allow secret values to be exposed in the rendered grafana.ini configmap,
 # you can disable this check by setting assertNoLeakedSecrets to false.
 assertNoLeakedSecrets: true
+
+## External Secret configuration (GCP Secret Manager integration)
+externalSecret:
+  enabled: false
+  name: "grafana-oauth-secret"
+  namespace: ""
+  refreshInterval: "5m"
+  clusterSecretStoreName: "gcpsm-secret-store"
+  gcpSecretName: ""
+  properties: {}
