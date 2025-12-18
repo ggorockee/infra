@@ -41,11 +41,13 @@ grafana:
     clusterSecretStoreName: "gcpsm-secret-store"
     gcpSecretName: "prod-monitoring-smtp-credentials"
     # GCP Secret Manager에서 가져올 속성들 (key: property 매핑)
+    # 왼쪽: Kubernetes Secret 키 (파일 이름으로 마운트됨)
+    # 오른쪽: GCP Secret Manager JSON 속성 경로
     properties:
-      google.clientId: "google.clientId"
-      google.clientSecret: "google.clientSecret"
-      admin.emails: "admin.emails"
-      password: "password"
+      client_id: "google.clientId"
+      client_secret: "google.clientSecret"
+      admin_emails: "admin.emails"
+      admin_password: "password"
       EMAIL_HOST: "EMAIL_HOST"
       EMAIL_PORT: "EMAIL_PORT"
       EMAIL_USE_TLS: "EMAIL_USE_TLS"
