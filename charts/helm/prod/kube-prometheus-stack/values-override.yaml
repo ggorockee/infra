@@ -19,8 +19,8 @@ clusterSecretStore:
   enabled: true
   name: "gcpsm-secret-store"
   gcpProjectID: "infra-480802"
-  clusterLocation: "asia-northeast3"
-  clusterName: "prod-gke-cluster"
+  clusterLocation: "asia-northeast3-a"
+  clusterName: "woohalabs-prod-gke"
   serviceAccount:
     name: "external-secrets"
     namespace: "external-secrets-system"
