@@ -1,4 +1,5 @@
 # ClusterSecretStore for GCP Secret Manager
+# This resource creates the ClusterSecretStore that connects External Secrets Operator to GCP Secret Manager
 resource "kubernetes_manifest" "gcpsm_cluster_secret_store" {
   manifest = {
     apiVersion = "external-secrets.io/v1beta1"
