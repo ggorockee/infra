@@ -75,17 +75,15 @@ resource "google_sql_database_instance" "main" {
       point_in_time_recovery_enabled = false
     }
 
-    # IP 설정 (Private IP + Public IP for management)
+    # IP 설정 (Private IP 전용 - Cloud SQL Proxy 사용)
     ip_configuration {
-      ipv4_enabled                                  = true  # Enable for gcloud sql connect
+      ipv4_enabled                                  = false  # Public IP 비활성화 (보안 강화)
       private_network                               = var.vpc_network_id
       enable_private_path_for_google_cloud_services = true
 
-      # Authorized networks (GitHub Actions runner IP ranges)
-      authorized_networks {
-        name  = "github-actions"
-        value = "0.0.0.0/0"  # Temporarily allow all for initial setup
-      }
+      # Public IP 비활성화로 authorized_networks 불필요
+      # 로컬 접근은 Cloud SQL Proxy 사용:
+      # gcloud sql connect <instance-name> --user=<username> --database=<db-name>
     }
 
     # Maintenance window
