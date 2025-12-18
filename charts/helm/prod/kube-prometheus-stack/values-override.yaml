@@ -15,8 +15,10 @@ externalSecret:
     clientSecret: "google.clientSecret"
 
 # ClusterSecretStore 설정
+# NOTE: ClusterSecretStore는 Terraform에서 관리됩니다 (gcp/terraform/modules/external-secrets/cluster-secret-store.tf)
+# Helm 차트에서는 생성하지 않고, 기존 ClusterSecretStore를 참조만 합니다.
 clusterSecretStore:
-  enabled: true
+  enabled: false  # Terraform에서 관리하므로 비활성화
   name: "gcpsm-secret-store"
   gcpProjectID: "infra-480802"
   clusterLocation: "asia-northeast3-a"
