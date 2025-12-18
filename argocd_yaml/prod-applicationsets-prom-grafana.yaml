@@ -36,6 +36,7 @@ spec:
         - ServerSideApply=true
         - RespectIgnoreDifferences=true
       ignoreDifferences:
+      # Prometheus Operator가 관리하는 StatefulSet의 변경 무시
       - group: apps
         kind: StatefulSet
         name: prometheus-kube-prometheus-stack-prometheus
@@ -46,3 +47,9 @@ spec:
         name: alertmanager-kube-prometheus-stack-alertmanager
         jsonPointers:
         - /
+      # External Secrets Operator가 관리하는 ExternalSecret의 status 변경 무시
+      # refreshTime, conditions 등이 주기적으로 업데이트되어 OutOfSync로 표시되는 것 방지
+      - group: external-secrets.io
+        kind: ExternalSecret
+        jsonPointers:
+        - /status
