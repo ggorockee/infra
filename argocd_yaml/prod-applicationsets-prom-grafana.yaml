@@ -34,16 +34,15 @@ spec:
         syncOptions:
         - CreateNamespace=true
         - ServerSideApply=true
+        - RespectIgnoreDifferences=true
       ignoreDifferences:
       - group: apps
         kind: StatefulSet
         name: prometheus-kube-prometheus-stack-prometheus
         jsonPointers:
-        - /spec
-        - /status
+        - /
       - group: apps
         kind: StatefulSet
         name: alertmanager-kube-prometheus-stack-alertmanager
         jsonPointers:
-        - /spec
-        - /status
+        - /
