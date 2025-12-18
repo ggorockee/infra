@@ -28,6 +28,34 @@ commonLabels: {}
 # scmhash: abc123
 # myLabel: aakkmd
 
+## External Secret configuration for Grafana OAuth
+## This is a custom addition to manage OAuth credentials via GCP Secret Manager
+##
+externalSecret:
+  enabled: false
+  name: "grafana-oauth-secret"
+  namespace: "monitoring"
+  refreshInterval: "5m"
+  clusterSecretStoreName: "gcpsm-secret-store"
+  gcpSecretName: "prod-argocd-dex-credentials"
+  properties:
+    clientId: "google.clientId"
+    clientSecret: "google.clientSecret"
+
+## ClusterSecretStore configuration for GCP Secret Manager
+## This creates a cluster-wide SecretStore that can be used by all ExternalSecrets
+##
+clusterSecretStore:
+  enabled: false
+  name: "gcpsm-secret-store"
+  gcpProjectID: "YOUR_GCP_PROJECT_ID"
+  clusterLocation: "asia-northeast3"
+  clusterName: "prod-gke-cluster"
+  serviceAccount:
+    name: "external-secrets-sa"
+    namespace: "external-secrets-system"
+    gcpServiceAccount: "external-secrets@YOUR_PROJECT_ID.iam.gserviceaccount.com"
+
 ## Install Prometheus Operator CRDs
 ##
 crds:
