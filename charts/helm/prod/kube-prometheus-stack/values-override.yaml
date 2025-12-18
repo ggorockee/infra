@@ -22,9 +22,9 @@ clusterSecretStore:
   clusterLocation: "asia-northeast3"
   clusterName: "prod-gke-cluster"
   serviceAccount:
-    name: "external-secrets-sa"
+    name: "external-secrets"
     namespace: "external-secrets-system"
-    gcpServiceAccount: "external-secrets@infra-480802.iam.gserviceaccount.com"
+    gcpServiceAccount: "external-secrets-prod@infra-480802.iam.gserviceaccount.com"
 
 # Grafana 설정
 grafana:
