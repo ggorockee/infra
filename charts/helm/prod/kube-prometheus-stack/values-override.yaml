@@ -30,6 +30,10 @@ clusterSecretStore:
 grafana:
   enabled: true
 
+  # ArgoCD Sync Wave 설정 (External Secret이 먼저 생성되도록)
+  deploymentAnnotations:
+    argocd.argoproj.io/sync-wave: "0"
+
   # Admin 초기 비밀번호 (External Secret으로 관리 예정)
   adminPassword: "changeme-will-be-overridden-by-external-secret"
 
