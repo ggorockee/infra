@@ -1,0 +1,62 @@
+# StorageClass 설정
+storageClass:
+  # StorageClass 생성 여부
+  enabled: true
+
+  # StorageClass 이름 (GCP 접두사로 명시)
+  name: gcp-standard-rwo-retain
+
+  # Default StorageClass로 설정 여부 (필수 제어 항목)
+  # true: 클러스터의 기본 StorageClass로 설정
+  # false: 일반 StorageClass로 생성
+  isDefault: true
+
+  # GCP Persistent Disk Provisioner
+  provisioner: pd.csi.storage.gke.io
+
+  # Provisioner 파라미터
+  parameters:
+    # Disk 타입 (GCP asia-northeast3 기준)
+    # - pd-standard (HDD): $0.04/GB/월, 0.75 IOPS/GB, 느림 (비용 효율적)
+    # - pd-balanced (Balanced SSD): $0.10/GB/월, 6 IOPS/GB, 보통 (권장)
+    # - pd-ssd (Performance SSD): $0.17/GB/월, 30 IOPS/GB, 빠름 (고성능)
+    type: pd-standard
+    # Replication: none (단일 Zone), regional-pd (Multi-zone 고가용성)
+    replication-type: none
+
+  # Volume Binding Mode
+  # WaitForFirstConsumer: Pod가 스케줄될 때까지 PV 생성 대기 (권장)
+  # Immediate: PVC 생성 즉시 PV 생성
+  volumeBindingMode: WaitForFirstConsumer
+
+  # Volume 확장 허용 여부
+  allowVolumeExpansion: true
+
+  # Reclaim Policy (중요!)
+  # Retain: PVC 삭제 시 PV 유지 (데이터 보존, 계정 이관 가능)
+  # Delete: PVC 삭제 시 PV도 삭제 (기본값)
+  reclaimPolicy: Retain
+
+  # 추가 레이블
+  labels:
+    managed-by: argocd
+    environment: production
+    purpose: data-persistence
+
+  # 추가 Annotation (isDefault: true일 때 자동 추가됨)
+  annotations: {}
+
+# 여러 StorageClass를 생성하려면 이 섹션 사용 (선택사항)
+additionalStorageClasses: []
+  # - name: standard-rwo-delete
+  #   isDefault: false
+  #   provisioner: pd.csi.storage.gke.io
+  #   parameters:
+  #     type: pd-standard
+  #     replication-type: none
+  #   volumeBindingMode: WaitForFirstConsumer
+  #   allowVolumeExpansion: true
+  #   reclaimPolicy: Delete
+  #   labels:
+  #     managed-by: argocd
+  #   annotations: {}

@@ -1,0 +1,6 @@
+env: prod
+revision: main
+chartName: gke-storageclass
+appName: gke-storageclass
+repoURL: https://github.com/ggorockee/infra
+namespace: kube-system

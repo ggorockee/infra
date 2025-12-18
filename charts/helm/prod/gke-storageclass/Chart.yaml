@@ -1,0 +1,13 @@
+apiVersion: v2
+name: storageclass
+description: GCP Persistent Disk StorageClass with customizable reclaim policy
+type: application
+version: 1.0.0
+appVersion: "1.0"
+keywords:
+  - gcp
+  - persistent-disk
+  - storage
+  - storageclass
+maintainers:
+  - name: ggorockee

@@ -1,6 +1,8 @@
 env: prod
 revision: main
-chartName: istio-ingressgateway
-appName: istio-ingressgateway
+chartName: kube-prometheus-stack
+appName: kube-prometheus-stack
 repoURL: https://github.com/ggorockee/infra
-namespace: istio-system
+namespace: monitoring
+# Custom values 파일 (values.yaml 외 추가로 적용)
+additionalValueFile: values-override.yaml
