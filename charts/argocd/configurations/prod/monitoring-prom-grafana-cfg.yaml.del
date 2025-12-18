@@ -1,6 +1,0 @@
-env: prod
-revision: main
-chartName: kube-prometheus-stack
-appName: kube-prometheus-stack
-repoURL: https://github.com/ggorockee/infra
-namespace: monitoring
