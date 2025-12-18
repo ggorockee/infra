@@ -32,6 +32,27 @@ clusterSecretStore:
 grafana:
   enabled: true
 
+  # Grafana External Secret 설정 (GCP Secret Manager 연동)
+  externalSecret:
+    enabled: true
+    name: "grafana-oauth-secret"
+    namespace: "monitoring"
+    refreshInterval: "60m"
+    clusterSecretStoreName: "gcpsm-secret-store"
+    gcpSecretName: "prod-monitoring-smtp-credentials"
+    # GCP Secret Manager에서 가져올 속성들 (key: property 매핑)
+    properties:
+      google.clientId: "google.clientId"
+      google.clientSecret: "google.clientSecret"
+      admin.emails: "admin.emails"
+      password: "password"
+      EMAIL_HOST: "EMAIL_HOST"
+      EMAIL_PORT: "EMAIL_PORT"
+      EMAIL_USE_TLS: "EMAIL_USE_TLS"
+      EMAIL_HOST_USER: "EMAIL_HOST_USER"
+      EMAIL_HOST_PASSWORD: "EMAIL_HOST_PASSWORD"
+      DEFAULT_FROM_EMAIL: "DEFAULT_FROM_EMAIL"
+
   # ArgoCD Sync Wave 설정 (External Secret이 먼저 생성되도록)
   deploymentAnnotations:
     argocd.argoproj.io/sync-wave: "0"
