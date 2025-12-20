@@ -81,6 +81,12 @@ config:
         processors: [batch, resource]
         exporters: [prometheus, logging]
 
+      # Traces pipeline (optional)
+      traces:
+        receivers: [otlp]
+        processors: [batch, resource]
+        exporters: [logging]
+
 # Prometheus ServiceMonitor 설정
 serviceMonitor:
   enabled: true
