@@ -258,3 +258,18 @@ virtualServices:
           - destination:
               host: kube-prometheus-stack-prometheus
               port: 9090
+
+  # Woohalabs App-Ads.txt (Static File Serving)
+  - name: woohalabs-app-ads-vs
+    namespace: woohalabs-app-ads
+    enabled: true
+    hosts:
+      - "woohalabs.com"
+    http:
+      - match:
+          - uri:
+              exact: "/app-ads.txt"
+        route:
+          - destination:
+              host: woohalabs-app-ads
+              port: 80

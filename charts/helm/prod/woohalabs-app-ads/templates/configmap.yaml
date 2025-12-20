@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "woohalabs-app-ads.fullname" . }}
+  labels:
+    {{- include "woohalabs-app-ads.labels" . | nindent 4 }}
+data:
+  app-ads.txt: |
+{{ .Values.appAdsContent | indent 4 }}
+  default.conf: |
+{{ .Values.nginxConfig | indent 4 }}
