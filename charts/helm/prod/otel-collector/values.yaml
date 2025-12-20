@@ -116,11 +116,6 @@ config:
       const_labels:
         environment: production
 
-    # SigNoz로 계속 전송 (기존 모니터링 유지)
-    otlphttp/signoz:
-      endpoint: ${SIGNOZ_ENDPOINT}
-      compression: gzip
-
     # 디버깅용 로깅
     logging:
       verbosity: basic
