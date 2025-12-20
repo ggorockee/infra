@@ -104,7 +104,7 @@ grafana:
       api_url: https://openidconnect.googleapis.com/v1/userinfo
       allowed_domains: gmail.com
       allow_assign_grafana_admin: true
-      role_attribute_path: "email == 'woohaen88@gmail.com' || email == 'woohalabs@gmail.com' || email == 'ggorockee@gmail.com' && 'Admin' || 'Viewer'"
+      role_attribute_path: "(email == 'woohaen88@gmail.com' || email == 'woohalabs@gmail.com' || email == 'ggorockee@gmail.com') && 'Admin' || 'Viewer'"
 
     # 익명 접근 비활성화
     auth.anonymous:
