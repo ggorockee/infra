@@ -110,8 +110,8 @@ server:
       # Gemini LLM 설정 (기본값)
       GEMINI_MODEL: "gemini-2.0-flash"
 
-      # OpenTelemetry 설정 (선택적)
-      OTEL_EXPORTER_OTLP_ENDPOINT: "signoz-otel-collector.monitoring:4317"
+      # OpenTelemetry 설정 (OpenTelemetry Collector 사용)
+      OTEL_EXPORTER_OTLP_ENDPOINT: "otel-collector.monitoring.svc.cluster.local:4317"
 
       # JWT 토큰 설정 (기본값)
       JWT_ACCESS_TOKEN_EXPIRE_MINUTES: "15"
