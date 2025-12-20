@@ -225,6 +225,41 @@ alertmanager:
     secrets:
       - grafana-oauth-secret  # SMTP credentials가 포함된 secret
 
+    # SMTP 환경 변수 주입 (Secret에서 로드)
+    containers:
+      - name: alertmanager
+        env:
+          - name: SMTP_HOST
+            valueFrom:
+              secretKeyRef:
+                name: grafana-oauth-secret
+                key: EMAIL_HOST
+          - name: SMTP_PORT
+            valueFrom:
+              secretKeyRef:
+                name: grafana-oauth-secret
+                key: EMAIL_PORT
+          - name: SMTP_USER
+            valueFrom:
+              secretKeyRef:
+                name: grafana-oauth-secret
+                key: EMAIL_HOST_USER
+          - name: SMTP_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: grafana-oauth-secret
+                key: EMAIL_HOST_PASSWORD
+          - name: EMAIL_FROM
+            valueFrom:
+              secretKeyRef:
+                name: grafana-oauth-secret
+                key: DEFAULT_FROM_EMAIL
+          - name: ADMIN_EMAILS
+            valueFrom:
+              secretKeyRef:
+                name: grafana-oauth-secret
+                key: admin_emails
+
   # Alertmanager Config
   config:
     global:
