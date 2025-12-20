@@ -68,13 +68,32 @@
 
 ### 서버 코드 변경 시 (Phase 2 해당)
 
-**프로세스**:
-1. 서버 레포 (reviewmaps-server 또는 ojeomneo-server) feature 브랜치 작업
+**워크플로우 차이점**:
+
+| 항목 | Ojeomneo | ReviewMaps |
+|------|----------|------------|
+| **infra 레포 업데이트 방식** | 직접 main 브랜치에 커밋/푸시 | Feature 브랜치 생성 → PR 생성 → Auto-merge |
+| **브랜치 생성** | ❌ 없음 | ✅ `ci/update-reviewmaps-server-{태그}` |
+| **Auto-merge** | N/A (직접 푸시) | ✅ `gh pr merge --auto --squash` |
+| **브랜치 자동 삭제** | N/A | ❌ **미설정** (개선 필요) |
+
+**ReviewMaps 프로세스** (Feature 브랜치 방식):
+1. reviewmaps-server 레포 feature 브랜치 작업
 2. PR 생성 및 main 브랜치 병합
 3. GitHub Actions 자동 실행:
    - Docker 이미지 빌드 및 푸시
-   - infra 레포에 feature 브랜치 생성 및 이미지 태그 업데이트
-   - infra 레포 PR 자동 병합 (auto-merge)
+   - **infra 레포에 feature 브랜치 생성** (`ci/update-reviewmaps-server-{태그}`)
+   - infra 레포 PR 생성 및 auto-merge 활성화
+   - ⚠️ **브랜치 자동 삭제 안 됨** (수동 삭제 필요 또는 워크플로우 개선 필요)
+4. **ArgoCD 강제 Sync 필요** (자동 감지 시간이 오래 걸림)
+
+**Ojeomneo 프로세스** (직접 푸시 방식):
+1. ojeomneo-server 레포 feature 브랜치 작업
+2. PR 생성 및 main 브랜치 병합
+3. GitHub Actions 자동 실행:
+   - Docker 이미지 빌드 및 푸시
+   - **infra 레포 main 브랜치에 직접 커밋/푸시**
+   - 브랜치를 생성하지 않음
 4. **ArgoCD 강제 Sync 필요** (자동 감지 시간이 오래 걸림)
 
 **ArgoCD 강제 Sync 방법**:
@@ -106,6 +125,40 @@
 - infra 레포 main 병합 후 즉시 ArgoCD Sync 실행
 - CI/CD 파이프라인 완료 모니터링 후 수동 Sync
 
+---
+
+## CI/CD 워크플로우 개선 권장사항
+
+### ReviewMaps Server CI/CD: 브랜치 자동 삭제 추가
+
+**문제점**:
+- ReviewMaps의 GitHub Actions 워크플로우가 infra 레포에 feature 브랜치를 생성하고 PR을 auto-merge하지만, **병합 후 브랜치를 자동 삭제하지 않음**
+- 결과적으로 infra 레포에 사용되지 않는 `ci/update-reviewmaps-server-*` 브랜치들이 누적됨
+
+**현재 코드** (`reviewmaps-server/.github/workflows/ci-server.yml`):
+```yaml
+# Enable auto-merge (squash) using PR URL
+gh pr merge --auto --squash "$PR_URL"
+```
+
+**개선 방안**:
+```yaml
+# Enable auto-merge (squash) and delete branch after merge
+gh pr merge --auto --squash --delete-branch "$PR_URL"
+```
+
+**수정 위치**:
+- 파일: `/Users/woohyeon/ggorockee/reviewmaps/server/.github/workflows/ci-server.yml`
+- Job: `update-manifest`
+- Step: `Create PR in Infra Repo`
+- 마지막 명령어에 `--delete-branch` 플래그 추가
+
+**적용 효과**:
+- ✅ infra 레포의 브랜치 관리 자동화
+- ✅ 수동 브랜치 삭제 작업 불필요
+- ✅ 레포지토리 정리 상태 유지
+
+---
 
 ## Phase 1: 오점너 ServiceMonitor 활성화
 
