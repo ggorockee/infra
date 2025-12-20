@@ -1,0 +1,6 @@
+env: prod
+revision: main
+chartName: otel-collector
+appName: otel-collector
+repoURL: https://github.com/ggorockee/infra
+namespace: monitoring

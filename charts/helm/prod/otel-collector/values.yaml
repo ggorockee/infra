@@ -1,0 +1,167 @@
+replicaCount: 1
+revisionHistoryLimit: 3
+
+image:
+  repository: otel/opentelemetry-collector-contrib
+  pullPolicy: IfNotPresent
+  tag: "0.115.0"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  ports:
+    # OTLP HTTP receiver
+    otlp-http:
+      port: 4318
+      targetPort: 4318
+      protocol: TCP
+    # OTLP gRPC receiver
+    otlp-grpc:
+      port: 4317
+      targetPort: 4317
+      protocol: TCP
+    # Prometheus exporter
+    prometheus:
+      port: 8889
+      targetPort: 8889
+      protocol: TCP
+    # Health check
+    health:
+      port: 13133
+      targetPort: 13133
+      protocol: TCP
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: 13133
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 2
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: 13133
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 2
+  failureThreshold: 3
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
+volumes: []
+volumeMounts: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# OpenTelemetry Collector 설정
+config:
+  receivers:
+    otlp:
+      protocols:
+        http:
+          endpoint: 0.0.0.0:4318
+        grpc:
+          endpoint: 0.0.0.0:4317
+
+  processors:
+    batch:
+      timeout: 10s
+      send_batch_size: 1024
+
+    # 메트릭에 환경 라벨 추가
+    resource:
+      attributes:
+        - key: environment
+          value: production
+          action: upsert
+
+  exporters:
+    # Prometheus exporter (Prometheus가 스크레이핑)
+    prometheus:
+      endpoint: 0.0.0.0:8889
+      namespace: reviewmaps
+      const_labels:
+        environment: production
+
+    # SigNoz로 계속 전송 (기존 모니터링 유지)
+    otlphttp/signoz:
+      endpoint: ${SIGNOZ_ENDPOINT}
+      compression: gzip
+
+    # 디버깅용 로깅
+    logging:
+      verbosity: basic
+      sampling_initial: 5
+      sampling_thereafter: 200
+
+  extensions:
+    health_check:
+      endpoint: 0.0.0.0:13133
+
+  service:
+    extensions: [health_check]
+    pipelines:
+      metrics:
+        receivers: [otlp]
+        processors: [batch, resource]
+        exporters: [prometheus, otlphttp/signoz, logging]
+
+# Prometheus ServiceMonitor 설정
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  scrapeTimeout: 10s
+  labels: {}
+  annotations: {}
+
+# 환경 변수 (Secret으로 관리)
+env:
+  # SIGNOZ_ENDPOINT는 Secret에서 주입됨
+  # - name: SIGNOZ_ENDPOINT
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: otel-collector-secrets
+  #       key: signoz-endpoint
+
+# ConfigMap 직접 설정 (테스트용)
+configMap:
+  enabled: true
+  name: ""
+  data: {}
+
+secret:
+  enabled: false
+  names: []
