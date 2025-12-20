@@ -37,6 +37,7 @@ grafana:
   # Recreate는 이전 Pod를 먼저 종료하고 새 Pod를 시작하여 PVC 충돌 방지
   deploymentStrategy:
     type: Recreate
+    rollingUpdate: null  # Recreate 사용 시 rollingUpdate 명시적 제거
 
   # Grafana External Secret 설정 (GCP Secret Manager 연동)
   externalSecret:
