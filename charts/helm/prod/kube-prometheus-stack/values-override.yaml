@@ -221,6 +221,91 @@ alertmanager:
         cpu: 200m
         memory: 256Mi
 
+    # External Secret 마운트 (SMTP credentials)
+    secrets:
+      - grafana-oauth-secret  # SMTP credentials가 포함된 secret
+
+  # Alertmanager Config
+  config:
+    global:
+      resolve_timeout: 5m
+      smtp_from: $EMAIL_FROM
+      smtp_smarthost: $SMTP_HOST:$SMTP_PORT
+      smtp_auth_username: $SMTP_USER
+      smtp_auth_password: $SMTP_PASSWORD
+      smtp_require_tls: true
+
+    route:
+      group_by: ['alertname', 'cluster', 'service']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 12h
+      receiver: 'email-notifications'
+      routes:
+        - match:
+            severity: critical
+          receiver: 'email-critical'
+          repeat_interval: 4h
+        - match:
+            severity: warning
+          receiver: 'email-notifications'
+          repeat_interval: 12h
+
+    receivers:
+      - name: 'email-notifications'
+        email_configs:
+          - to: $ADMIN_EMAILS
+            headers:
+              Subject: '[{{ .Status | toUpper }}] {{ .GroupLabels.alertname }} - {{ .CommonLabels.service }}'
+            html: |
+              <!DOCTYPE html>
+              <html>
+              <head><meta charset="UTF-8"></head>
+              <body>
+              <h2>Alert: {{ .GroupLabels.alertname }}</h2>
+              <p><strong>Status:</strong> {{ .Status }}</p>
+              <p><strong>Severity:</strong> {{ .CommonLabels.severity }}</p>
+              <p><strong>Service:</strong> {{ .CommonLabels.service }}</p>
+              <h3>Details:</h3>
+              <ul>
+              {{ range .Alerts }}
+                <li>
+                  <strong>{{ .Labels.alertname }}</strong><br/>
+                  {{ .Annotations.description }}<br/>
+                  <em>Started: {{ .StartsAt }}</em>
+                </li>
+              {{ end }}
+              </ul>
+              </body>
+              </html>
+
+      - name: 'email-critical'
+        email_configs:
+          - to: $ADMIN_EMAILS
+            headers:
+              Subject: '🚨 [CRITICAL] {{ .GroupLabels.alertname }} - {{ .CommonLabels.service }}'
+            html: |
+              <!DOCTYPE html>
+              <html>
+              <head><meta charset="UTF-8"></head>
+              <body style="background-color: #ffebee; padding: 20px;">
+              <h2 style="color: #c62828;">🚨 Critical Alert: {{ .GroupLabels.alertname }}</h2>
+              <p><strong>Status:</strong> {{ .Status }}</p>
+              <p><strong>Severity:</strong> <span style="color: #c62828;">CRITICAL</span></p>
+              <p><strong>Service:</strong> {{ .CommonLabels.service }}</p>
+              <h3>Immediate Action Required:</h3>
+              <ul>
+              {{ range .Alerts }}
+                <li style="margin-bottom: 10px;">
+                  <strong>{{ .Labels.alertname }}</strong><br/>
+                  {{ .Annotations.description }}<br/>
+                  <em>Started: {{ .StartsAt }}</em>
+                </li>
+              {{ end }}
+              </ul>
+              </body>
+              </html>
+
 # Prometheus Operator 설정
 prometheusOperator:
   enabled: true
@@ -286,3 +371,212 @@ coreDns:
 commonLabels:
   managed-by: argocd
   environment: production
+
+# Additional Prometheus Rules (Custom Alert Rules)
+additionalPrometheusRulesMap:
+  custom-application-alerts:
+    groups:
+      - name: http-performance-alerts
+        interval: 30s
+        rules:
+          # ReviewMaps HTTP Error Rate
+          - alert: ReviewMapsHighErrorRate
+            expr: |
+              (sum(rate(reviewmaps_http_requests_total{status=~"5.."}[5m])) / sum(rate(reviewmaps_http_requests_total[5m]))) * 100 > 5
+            for: 5m
+            labels:
+              severity: critical
+              service: reviewmaps
+              category: http
+            annotations:
+              summary: "ReviewMaps HTTP 에러율이 높습니다"
+              description: "ReviewMaps의 HTTP 5xx 에러율이 {{ $value | humanizePercentage }}로 5분 이상 5%를 초과했습니다."
+              runbook_url: "https://docs.ggorockee.com/runbooks/high-error-rate"
+
+          # Ojeomneo HTTP Error Rate
+          - alert: OjeomneoPlatformHighErrorRate
+            expr: |
+              (sum(rate(ojeomneo_http_requests_total{status=~"5.."}[5m])) / sum(rate(ojeomneo_http_requests_total[5m]))) * 100 > 5
+            for: 5m
+            labels:
+              severity: critical
+              service: ojeomneo
+              category: http
+            annotations:
+              summary: "Ojeomneo HTTP 에러율이 높습니다"
+              description: "Ojeomneo의 HTTP 5xx 에러율이 {{ $value | humanizePercentage }}로 5분 이상 5%를 초과했습니다."
+              runbook_url: "https://docs.ggorockee.com/runbooks/high-error-rate"
+
+          # ReviewMaps High Latency
+          - alert: ReviewMapsHighLatency
+            expr: |
+              histogram_quantile(0.95, sum by (le) (rate(reviewmaps_http_request_duration_seconds_bucket[5m]))) > 1
+            for: 5m
+            labels:
+              severity: warning
+              service: reviewmaps
+              category: http
+            annotations:
+              summary: "ReviewMaps HTTP 레이턴시가 높습니다"
+              description: "ReviewMaps의 P95 레이턴시가 {{ $value | humanizeDuration }}로 5분 이상 1초를 초과했습니다."
+              runbook_url: "https://docs.ggorockee.com/runbooks/high-latency"
+
+          # Ojeomneo High Latency
+          - alert: OjeomneoPlatformHighLatency
+            expr: |
+              histogram_quantile(0.95, sum by (le) (rate(ojeomneo_http_request_duration_seconds_bucket[5m]))) > 1
+            for: 5m
+            labels:
+              severity: warning
+              service: ojeomneo
+              category: http
+            annotations:
+              summary: "Ojeomneo HTTP 레이턴시가 높습니다"
+              description: "Ojeomneo의 P95 레이턴시가 {{ $value | humanizeDuration }}로 5분 이상 1초를 초과했습니다."
+              runbook_url: "https://docs.ggorockee.com/runbooks/high-latency"
+
+      - name: database-performance-alerts
+        interval: 30s
+        rules:
+          # ReviewMaps Slow Queries
+          - alert: ReviewMapsDatabaseSlowQueries
+            expr: |
+              sum(rate(reviewmaps_db_slow_queries_total[5m])) > 1
+            for: 5m
+            labels:
+              severity: warning
+              service: reviewmaps
+              category: database
+            annotations:
+              summary: "ReviewMaps 데이터베이스 슬로우 쿼리가 많습니다"
+              description: "ReviewMaps에서 초당 {{ $value | humanize }}개의 슬로우 쿼리(>1초)가 5분 이상 발생하고 있습니다."
+              runbook_url: "https://docs.ggorockee.com/runbooks/slow-queries"
+
+          # Ojeomneo Slow Queries
+          - alert: OjeomneoPlatformDatabaseSlowQueries
+            expr: |
+              sum(rate(ojeomneo_db_slow_queries_total[5m])) > 1
+            for: 5m
+            labels:
+              severity: warning
+              service: ojeomneo
+              category: database
+            annotations:
+              summary: "Ojeomneo 데이터베이스 슬로우 쿼리가 많습니다"
+              description: "Ojeomneo에서 초당 {{ $value | humanize }}개의 슬로우 쿼리(>1초)가 5분 이상 발생하고 있습니다."
+              runbook_url: "https://docs.ggorockee.com/runbooks/slow-queries"
+
+          # ReviewMaps Connection Pool Exhaustion
+          - alert: ReviewMapsDatabaseConnectionPoolExhaustion
+            expr: |
+              reviewmaps_db_connection_pool_in_use > 20
+            for: 5m
+            labels:
+              severity: critical
+              service: reviewmaps
+              category: database
+            annotations:
+              summary: "ReviewMaps 데이터베이스 커넥션 풀이 거의 고갈되었습니다"
+              description: "ReviewMaps의 커넥션 풀 사용량이 {{ $value }}개로 최대 25개 중 80%를 5분 이상 초과했습니다."
+              runbook_url: "https://docs.ggorockee.com/runbooks/connection-pool-exhaustion"
+
+          # Ojeomneo Connection Pool Exhaustion
+          - alert: OjeomneoPlatformDatabaseConnectionPoolExhaustion
+            expr: |
+              ojeomneo_db_connection_pool_in_use > 20
+            for: 5m
+            labels:
+              severity: critical
+              service: ojeomneo
+              category: database
+            annotations:
+              summary: "Ojeomneo 데이터베이스 커넥션 풀이 거의 고갈되었습니다"
+              description: "Ojeomneo의 커넥션 풀 사용량이 {{ $value }}개로 최대 25개 중 80%를 5분 이상 초과했습니다."
+              runbook_url: "https://docs.ggorockee.com/runbooks/connection-pool-exhaustion"
+
+          # ReviewMaps High DB Error Rate
+          - alert: ReviewMapsDatabaseHighErrorRate
+            expr: |
+              sum(rate(reviewmaps_db_errors_total[5m])) > 5
+            for: 5m
+            labels:
+              severity: critical
+              service: reviewmaps
+              category: database
+            annotations:
+              summary: "ReviewMaps 데이터베이스 에러율이 높습니다"
+              description: "ReviewMaps에서 초당 {{ $value | humanize }}개의 데이터베이스 에러가 5분 이상 발생하고 있습니다."
+              runbook_url: "https://docs.ggorockee.com/runbooks/database-errors"
+
+          # Ojeomneo High DB Error Rate
+          - alert: OjeomneoPlatformDatabaseHighErrorRate
+            expr: |
+              sum(rate(ojeomneo_db_errors_total[5m])) > 5
+            for: 5m
+            labels:
+              severity: critical
+              service: ojeomneo
+              category: database
+            annotations:
+              summary: "Ojeomneo 데이터베이스 에러율이 높습니다"
+              description: "Ojeomneo에서 초당 {{ $value | humanize }}개의 데이터베이스 에러가 5분 이상 발생하고 있습니다."
+              runbook_url: "https://docs.ggorockee.com/runbooks/database-errors"
+
+      - name: service-availability-alerts
+        interval: 30s
+        rules:
+          # ReviewMaps Service Down
+          - alert: ReviewMapsServiceDown
+            expr: |
+              sum(rate(reviewmaps_http_requests_total[2m])) == 0
+            for: 2m
+            labels:
+              severity: critical
+              service: reviewmaps
+              category: availability
+            annotations:
+              summary: "ReviewMaps 서비스가 다운되었습니다"
+              description: "ReviewMaps에서 2분간 HTTP 요청이 감지되지 않았습니다. 서비스가 다운된 것으로 보입니다."
+              runbook_url: "https://docs.ggorockee.com/runbooks/service-down"
+
+          # Ojeomneo Service Down
+          - alert: OjeomneoPlatformServiceDown
+            expr: |
+              sum(rate(ojeomneo_http_requests_total[2m])) == 0
+            for: 2m
+            labels:
+              severity: critical
+              service: ojeomneo
+              category: availability
+            annotations:
+              summary: "Ojeomneo 서비스가 다운되었습니다"
+              description: "Ojeomneo에서 2분간 HTTP 요청이 감지되지 않았습니다. 서비스가 다운된 것으로 보입니다."
+              runbook_url: "https://docs.ggorockee.com/runbooks/service-down"
+
+          # ReviewMaps Pod Restart
+          - alert: ReviewMapsPodRestarting
+            expr: |
+              rate(kube_pod_container_status_restarts_total{namespace="reviewmaps"}[15m]) > 0
+            for: 5m
+            labels:
+              severity: warning
+              service: reviewmaps
+              category: availability
+            annotations:
+              summary: "ReviewMaps Pod가 재시작되고 있습니다"
+              description: "ReviewMaps Pod가 지난 15분간 재시작되었습니다. 안정성 문제가 있을 수 있습니다."
+              runbook_url: "https://docs.ggorockee.com/runbooks/pod-restarts"
+
+          # Ojeomneo Pod Restart
+          - alert: OjeomneoPlatformPodRestarting
+            expr: |
+              rate(kube_pod_container_status_restarts_total{namespace="ojeomneo"}[15m]) > 0
+            for: 5m
+            labels:
+              severity: warning
+              service: ojeomneo
+              category: availability
+            annotations:
+              summary: "Ojeomneo Pod가 재시작되고 있습니다"
+              description: "Ojeomneo Pod가 지난 15분간 재시작되었습니다. 안정성 문제가 있을 수 있습니다."
+              runbook_url: "https://docs.ggorockee.com/runbooks/pod-restarts"
