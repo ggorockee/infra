@@ -190,6 +190,11 @@ prometheus:
 alertmanager:
   enabled: true
 
+  # ArgoCD 리소스 추적 제외 (Prometheus Operator가 생성하는 StatefulSet/Pod 보호)
+  # ArgoCD ServerSideApply와 Operator 충돌 방지
+  annotations:
+    argocd.argoproj.io/sync-options: "Prune=false"
+
   # Ingress 비활성화
   ingress:
     enabled: false
