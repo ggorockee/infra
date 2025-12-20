@@ -1,0 +1,13 @@
+apiVersion: v2
+name: otel-collector
+description: OpenTelemetry Collector for ReviewMaps metrics pipeline
+type: application
+version: 1.0.0
+appVersion: "0.115.0"
+keywords:
+  - opentelemetry
+  - metrics
+  - prometheus
+  - observability
+maintainers:
+  - name: ggorockee
