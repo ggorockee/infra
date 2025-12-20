@@ -35,9 +35,9 @@ grafana:
   # Deployment 전략: Recreate (RWO PVC 사용 시 필수)
   # Rolling Update는 새 Pod를 먼저 시작하려 하지만, RWO PVC는 동시 마운트 불가능
   # Recreate는 이전 Pod를 먼저 종료하고 새 Pod를 시작하여 PVC 충돌 방지
-  deploymentStrategy:
+  # Grafana subchart는 'strategy' 필드를 사용 (deploymentStrategy 아님)
+  strategy:
     type: Recreate
-    rollingUpdate: null  # Recreate 사용 시 rollingUpdate 명시적 제거
 
   # Grafana External Secret 설정 (GCP Secret Manager 연동)
   externalSecret:
