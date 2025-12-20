@@ -137,7 +137,13 @@ config:
       metrics:
         receivers: [otlp]
         processors: [batch, resource]
-        exporters: [prometheus, otlphttp/signoz, logging]
+        exporters: [prometheus, logging]
+
+      # Traces pipeline
+      traces:
+        receivers: [otlp]
+        processors: [batch, resource]
+        exporters: [logging]
 
 # Prometheus ServiceMonitor 설정
 serviceMonitor:
