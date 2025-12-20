@@ -1,0 +1,6 @@
+apiVersion: v2
+name: woohalabs-app-ads
+description: Simple nginx server serving app-ads.txt for woohalabs.com
+type: application
+version: 1.0.0
+appVersion: "1.27"

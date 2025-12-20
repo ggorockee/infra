@@ -1,0 +1,41 @@
+# Default values for woohalabs-app-ads
+
+replicaCount: 2
+
+image:
+  repository: nginx
+  tag: "1.27-alpine"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+# app-ads.txt content
+appAdsContent: |
+  google.com, pub-8516861197467665, DIRECT, f08c47fec0942fa0
+
+# nginx configuration
+nginxConfig: |
+  server {
+    listen 80;
+    server_name _;
+
+    location /app-ads.txt {
+      alias /usr/share/nginx/html/app-ads.txt;
+      add_header Content-Type text/plain;
+    }
+
+    location / {
+      return 404;
+    }
+  }

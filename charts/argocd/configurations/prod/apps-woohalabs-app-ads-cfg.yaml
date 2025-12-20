@@ -1,0 +1,6 @@
+env: prod
+revision: main
+chartName: woohalabs-app-ads
+appName: woohalabs-app-ads
+repoURL: https://github.com/ggorockee/infra
+namespace: woohalabs-app-ads
