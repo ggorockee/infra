@@ -115,14 +115,15 @@
 
 ### 1.1 작업 체크리스트
 
-- [ ] infra 레포 Feature 브랜치 생성
-- [ ] `charts/helm/prod/ojeomneo/values.yaml` 수정
-- [ ] Git 커밋 및 푸시
-- [ ] GitHub PR 생성 및 main 병합
-- [ ] **ArgoCD 강제 Sync 실행** (kubectl 또는 UI 사용)
-- [ ] ServiceMonitor 배포 확인
-- [ ] Prometheus Targets 확인
-- [ ] 메트릭 수집 검증
+- [x] infra 레포 Feature 브랜치 생성
+- [x] `charts/helm/prod/ojeomneo/values.yaml` 수정
+- [x] Git 커밋 및 푸시
+- [x] **GitHub PR 생성 및 병합** (gh CLI로 자동화)
+- [x] **ArgoCD 강제 Sync 실행** (kubectl 사용)
+- [x] **ServiceMonitor 배포 확인** (kubectl로 검증)
+- [x] **Pod 로그 확인** (에러 없음 검증)
+- [x] Prometheus Targets 확인
+- [x] 메트릭 수집 검증
 
 ### 1.2 수정 대상 파일
 
@@ -153,14 +154,26 @@ feat(ojeomneo): Prometheus ServiceMonitor 활성화
 - 기존 구현된 메트릭 활성화 (5가지 메트릭)
 ```
 
-**배포 절차**:
+**배포 절차 (자동화)**:
 1. Feature 브랜치 생성: `git checkout -b feature/enable-ojeomneo-prometheus-metrics`
 2. values.yaml 수정
 3. Git 커밋 및 푸시: `git add . && git commit && git push origin feature/enable-ojeomneo-prometheus-metrics`
-4. GitHub PR 생성 및 main 병합
-5. **ArgoCD 강제 Sync**:
-   - kubectl: `kubectl patch app ojeomneo -n argocd -p '{"operation":{"sync":{}}}' --type merge`
-   - 또는 ArgoCD UI에서 ojeomneo Application 선택 후 Sync 버튼 클릭
+4. **GitHub PR 생성** (gh CLI 사용):
+   ```bash
+   gh pr create --title "feat(ojeomneo): Prometheus ServiceMonitor 활성화" --body "..."
+   ```
+5. **GitHub PR 병합** (gh CLI 사용):
+   ```bash
+   gh pr merge <PR번호> --squash --delete-branch
+   ```
+6. **ArgoCD 강제 Sync** (kubectl 사용):
+   ```bash
+   kubectl patch app ojeomneo -n argocd -p '{"operation":{"sync":{}}}' --type merge
+   ```
+7. **배포 검증**:
+   - ServiceMonitor 배포: `kubectl get servicemonitors -n ojeomneo`
+   - Pod 로그 확인: `kubectl logs -n ojeomneo deployment/ojeomneo-server --tail=50`
+   - 메트릭 엔드포인트 테스트: `kubectl exec -n ojeomneo deployment/ojeomneo-server -- curl -s http://localhost:3000/ojeomneo/metrics | head -30`
 
 ### 1.4 검증 방법
 
@@ -219,15 +232,16 @@ feat(ojeomneo): Prometheus ServiceMonitor 활성화
 - [ ] 메트릭 초기화 코드 작성
 - [ ] `/metrics` 엔드포인트 라우팅 추가
 - [ ] 로컬 테스트 (메트릭 엔드포인트 확인: `curl http://localhost:3000/metrics`)
-- [ ] GitHub PR 생성 및 main 병합
+- [ ] **GitHub PR 생성 및 병합** (gh CLI로 자동화)
 - [ ] GitHub Actions 완료 대기 (Docker 이미지 빌드 및 infra 레포 자동 반영)
 
 **Helm Chart 수정 (infra 레포)**:
 - [ ] infra 레포에 자동 생성된 feature 브랜치 확인
 - [ ] `charts/helm/prod/reviewmaps/values.yaml`에서 `serviceMonitor.enabled: true` 설정 추가
-- [ ] infra 레포 PR 생성 및 main 병합
-- [ ] **ArgoCD 강제 Sync 실행** (kubectl 또는 UI 사용)
-- [ ] ServiceMonitor 배포 확인
+- [ ] **infra 레포 PR 생성 및 병합** (gh CLI로 자동화)
+- [ ] **ArgoCD 강제 Sync 실행** (kubectl 사용)
+- [ ] **ServiceMonitor 배포 확인** (kubectl로 검증)
+- [ ] **Pod 로그 확인** (에러 없음 검증)
 - [ ] Prometheus Targets 확인
 - [ ] 메트릭 수집 검증
 
