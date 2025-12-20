@@ -134,7 +134,7 @@ server:
   metrics:
     enabled: true
     serviceMonitor:
-      enabled: false  # Disabled - Prometheus Operator not installed
+      enabled: true  # Enabled - Prometheus ServiceMonitor for /ojeomneo/metrics
       interval: 30s
       scrapeTimeout: 10s
 
