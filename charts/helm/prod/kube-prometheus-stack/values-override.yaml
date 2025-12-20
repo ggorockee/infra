@@ -32,6 +32,12 @@ clusterSecretStore:
 grafana:
   enabled: true
 
+  # Deployment 전략: Recreate (RWO PVC 사용 시 필수)
+  # Rolling Update는 새 Pod를 먼저 시작하려 하지만, RWO PVC는 동시 마운트 불가능
+  # Recreate는 이전 Pod를 먼저 종료하고 새 Pod를 시작하여 PVC 충돌 방지
+  deploymentStrategy:
+    type: Recreate
+
   # Grafana External Secret 설정 (GCP Secret Manager 연동)
   externalSecret:
     enabled: true
