@@ -1,9 +1,37 @@
 # Prometheus 메트릭 수집 구현 계획서
 
 **작성일**: 2025-12-20
+**최종 업데이트**: 2025-12-20
 **작성자**: Claude (AI Assistant)
 **대상 애플리케이션**: ReviewMaps, Ojeomneo
 **목표**: Prometheus를 통한 애플리케이션 메트릭 수집 활성화
+**상태**: ✅ **완료** (Phase 1, 2, 3 모두 완료)
+
+## 📊 프로젝트 진행 현황
+
+| Phase | 작업 내용 | 상태 | 완료일 | 관련 PR |
+|-------|-----------|------|--------|---------|
+| **Phase 1** | Ojeomneo ServiceMonitor 활성화 | ✅ 완료 | 2025-12-20 | infra PR #814 |
+| **Phase 2** | ReviewMaps Prometheus 구현 | ✅ 완료 | 2025-12-20 | reviewmaps-server PR #218, #219 / infra PR #816 |
+| **Phase 3** | Grafana 대시보드 구성 | ✅ 완료 | 2025-12-20 | infra PR #817 |
+| **추가 작업** | CoreDNS 메트릭 수정 | ✅ 완료 | 2025-12-20 | infra PR #818 |
+| **추가 작업** | Helm 템플릿 자동화 | ✅ 완료 | 2025-12-20 | infra PR #819 |
+
+## 🎯 주요 성과
+
+- ✅ **ReviewMaps**: Prometheus 메트릭 엔드포인트 구현 완료 (5개 메트릭)
+- ✅ **Ojeomneo**: ServiceMonitor 활성화 및 메트릭 수집 정상화
+- ✅ **Grafana**: 각 애플리케이션별 대시보드 생성 (7개 패널)
+- ✅ **ArgoCD**: Helm 템플릿 기반 자동 ConfigMap 생성
+- ✅ **CoreDNS**: GKE 환경 메트릭 수집 정상화 (포트 10054)
+
+## 🔧 트러블슈팅 이력
+
+| 문제 | 원인 | 해결 방법 | PR |
+|------|------|-----------|-----|
+| Ojeomneo metrics HTTP 500 | 중복 메트릭 등록 | Pod 재시작으로 registry 초기화 | - |
+| CoreDNS connection refused | GKE 비표준 포트 (10054) | values-override.yaml 수정 | #818 |
+| Dashboard 자동 로드 안됨 | kubectl 생성 ConfigMap | Helm 템플릿 생성 | #819 |
 
 ---
 
@@ -280,23 +308,23 @@ feat(ojeomneo): Prometheus ServiceMonitor 활성화
 ### 2.1 작업 체크리스트
 
 **서버 코드 구현 (reviewmaps-server 레포)**:
-- [ ] reviewmaps-server 레포 Feature 브랜치 생성
-- [ ] Prometheus 미들웨어 파일 생성 (`internal/middleware/prometheus.go`)
-- [ ] 메트릭 초기화 코드 작성
-- [ ] `/metrics` 엔드포인트 라우팅 추가
-- [ ] 로컬 테스트 (메트릭 엔드포인트 확인: `curl http://localhost:3000/metrics`)
-- [ ] **GitHub PR 생성 및 병합** (gh CLI로 자동화)
-- [ ] GitHub Actions 완료 대기 (Docker 이미지 빌드 및 infra 레포 자동 반영)
+- [x] reviewmaps-server 레포 Feature 브랜치 생성
+- [x] Prometheus 미들웨어 파일 생성 (`internal/middleware/prometheus.go`)
+- [x] 메트릭 초기화 코드 작성
+- [x] `/metrics` 엔드포인트 라우팅 추가
+- [x] 로컬 테스트 (메트릭 엔드포인트 확인: `curl http://localhost:3000/metrics`)
+- [x] **GitHub PR 생성 및 병합** (gh CLI로 자동화) - PR #218, #219
+- [x] GitHub Actions 완료 대기 (Docker 이미지 빌드 및 infra 레포 자동 반영)
 
 **Helm Chart 수정 (infra 레포)**:
-- [ ] infra 레포에 자동 생성된 feature 브랜치 확인
-- [ ] `charts/helm/prod/reviewmaps/values.yaml`에서 `serviceMonitor.enabled: true` 설정 추가
-- [ ] **infra 레포 PR 생성 및 병합** (gh CLI로 자동화)
-- [ ] **ArgoCD 강제 Sync 실행** (kubectl 사용)
-- [ ] **ServiceMonitor 배포 확인** (kubectl로 검증)
-- [ ] **Pod 로그 확인** (에러 없음 검증)
-- [ ] Prometheus Targets 확인
-- [ ] 메트릭 수집 검증
+- [x] infra 레포에 자동 생성된 feature 브랜치 확인
+- [x] `charts/helm/prod/reviewmaps/values.yaml`에서 `serviceMonitor.enabled: true` 설정 추가
+- [x] **infra 레포 PR 생성 및 병합** (gh CLI로 자동화) - PR #816
+- [x] **ArgoCD 강제 Sync 실행** (kubectl 사용)
+- [x] **ServiceMonitor 배포 확인** (kubectl로 검증)
+- [x] **Pod 로그 확인** (에러 없음 검증)
+- [x] Prometheus Targets 확인
+- [x] 메트릭 수집 검증
 
 ### 2.2 구현 대상 파일
 
@@ -408,10 +436,12 @@ reviewmaps_http_requests_total{method="GET",path="/v1/campaigns",status="200"} 4
 
 ### 3.1 작업 체크리스트
 
-- [ ] Grafana 접속 확인
-- [ ] Prometheus 데이터소스 연결 확인
-- [ ] ReviewMaps 대시보드 생성
-- [ ] Ojeomneo 대시보드 생성
+- [x] Grafana 접속 확인
+- [x] Prometheus 데이터소스 연결 확인
+- [x] ReviewMaps 대시보드 생성 (`charts/helm/prod/kube-prometheus-stack/dashboards/reviewmaps-dashboard.json`)
+- [x] Ojeomneo 대시보드 생성 (`charts/helm/prod/kube-prometheus-stack/dashboards/ojeomneo-dashboard.json`)
+- [x] **Helm 템플릿을 통한 자동 ConfigMap 생성** (`templates/grafana/configmap-custom-dashboards.yaml`)
+- [x] **Grafana Sidecar를 통한 대시보드 자동 로드** (grafana_dashboard=1 라벨)
 - [ ] 공통 대시보드 생성 (선택)
 - [ ] Alert Rule 설정 (선택)
 
@@ -489,30 +519,31 @@ sum(rate(ojeomneo_http_requests_total{status=~"5.."}[5m])) / sum(rate(ojeomneo_h
 
 ### Phase 1 검증
 
-- [ ] ServiceMonitor 리소스 생성 확인
-- [ ] Prometheus Targets에 ojeomneo-server 등록 (UP 상태)
-- [ ] 메트릭 5개 모두 수집 확인
-- [ ] 메트릭 라벨 정상 확인 (method, path, status)
-- [ ] Grafana에서 메트릭 조회 가능
+- [x] ServiceMonitor 리소스 생성 확인
+- [x] Prometheus Targets에 ojeomneo-server 등록 (UP 상태)
+- [x] 메트릭 5개 모두 수집 확인
+- [x] 메트릭 라벨 정상 확인 (method, path, status)
+- [x] Grafana에서 메트릭 조회 가능
 
 ### Phase 2 검증
 
-- [ ] Prometheus 미들웨어 코드 구현
-- [ ] `/metrics` 엔드포인트 응답 확인
-- [ ] Docker 이미지 빌드 성공
-- [ ] ServiceMonitor 리소스 생성 확인
-- [ ] Prometheus Targets에 reviewmaps-server 등록 (UP 상태)
-- [ ] 메트릭 수집 확인
-- [ ] 기존 API 기능 정상 동작
-- [ ] Pod 로그 에러 없음
+- [x] Prometheus 미들웨어 코드 구현
+- [x] `/metrics` 엔드포인트 응답 확인
+- [x] Docker 이미지 빌드 성공
+- [x] ServiceMonitor 리소스 생성 확인
+- [x] Prometheus Targets에 reviewmaps-server 등록 (UP 상태)
+- [x] 메트릭 수집 확인
+- [x] 기존 API 기능 정상 동작
+- [x] Pod 로그 에러 없음
 
 ### Phase 3 검증
 
-- [ ] Grafana 대시보드 생성 완료
-- [ ] 모든 패널 정상 표시
-- [ ] PromQL 쿼리 정상 동작
+- [x] Grafana 대시보드 생성 완료
+- [x] 모든 패널 정상 표시 (7개 패널: RPS, Latency, Error Rate, Active Connections, Request/Response Size, HTTP Status, Endpoint Summary)
+- [x] PromQL 쿼리 정상 동작
 - [ ] Alert Rule 정상 동작 (선택)
-- [ ] 대시보드 JSON 파일 Git 커밋
+- [x] 대시보드 JSON 파일 Git 커밋
+- [x] **Helm 차트를 통한 ArgoCD 관리** (PR #817, #818, #819)
 
 ---
 
