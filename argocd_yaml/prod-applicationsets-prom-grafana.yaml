@@ -34,3 +34,13 @@ spec:
         syncOptions:
         - CreateNamespace=true
         - ServerSideApply=true
+      # Prometheus Operator가 관리하는 리소스의 status 차이 무시
+      ignoreDifferences:
+      - group: monitoring.coreos.com
+        kind: Alertmanager
+        jsonPointers:
+        - /status
+      - group: monitoring.coreos.com
+        kind: Prometheus
+        jsonPointers:
+        - /status
