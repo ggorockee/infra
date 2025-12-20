@@ -1,0 +1,280 @@
+# Kube-Prometheus-Stack Custom Values Override
+# 1인 개발자용 모니터링 스택 설정
+
+# External Secret 설정
+externalSecret:
+  enabled: true
+  name: "grafana-oauth-secret"
+  namespace: "monitoring"
+  refreshInterval: "5m"
+  clusterSecretStoreName: "gcpsm-secret-store"
+  gcpSecretName: "prod-argocd-dex-credentials"
+  # GCP Secret Manager에서 가져올 속성들
+  properties:
+    clientId: "google.clientId"
+    clientSecret: "google.clientSecret"
+
+# ClusterSecretStore 설정
+# NOTE: ClusterSecretStore는 Terraform에서 관리됩니다 (gcp/terraform/modules/external-secrets/cluster-secret-store.tf)
+# Helm 차트에서는 생성하지 않고, 기존 ClusterSecretStore를 참조만 합니다.
+clusterSecretStore:
+  enabled: false  # Terraform에서 관리하므로 비활성화
+  name: "gcpsm-secret-store"
+  gcpProjectID: "infra-480802"
+  clusterLocation: "asia-northeast3-a"
+  clusterName: "woohalabs-prod-gke"
+  serviceAccount:
+    name: "external-secrets"
+    namespace: "external-secrets-system"
+    gcpServiceAccount: "external-secrets-prod@infra-480802.iam.gserviceaccount.com"
+
+# Grafana 설정
+grafana:
+  enabled: true
+
+  # Grafana External Secret 설정 (GCP Secret Manager 연동)
+  externalSecret:
+    enabled: true
+    name: "grafana-oauth-secret"
+    namespace: "monitoring"
+    refreshInterval: "60m"
+    clusterSecretStoreName: "gcpsm-secret-store"
+    gcpSecretName: "prod-monitoring-smtp-credentials"
+    # GCP Secret Manager에서 가져올 속성들 (key: property 매핑)
+    # 왼쪽: Kubernetes Secret 키 (파일 이름으로 마운트됨)
+    # 오른쪽: GCP Secret Manager JSON 속성 경로
+    properties:
+      client_id: "google.clientId"
+      client_secret: "google.clientSecret"
+      admin_emails: "admin.emails"
+      admin_password: "password"
+      EMAIL_HOST: "EMAIL_HOST"
+      EMAIL_PORT: "EMAIL_PORT"
+      EMAIL_USE_TLS: "EMAIL_USE_TLS"
+      EMAIL_HOST_USER: "EMAIL_HOST_USER"
+      EMAIL_HOST_PASSWORD: "EMAIL_HOST_PASSWORD"
+      DEFAULT_FROM_EMAIL: "DEFAULT_FROM_EMAIL"
+
+  # ArgoCD Sync Wave 설정 (External Secret이 먼저 생성되도록)
+  deploymentAnnotations:
+    argocd.argoproj.io/sync-wave: "0"
+
+  # Admin 초기 비밀번호 (External Secret으로 관리 예정)
+  adminPassword: "changeme-will-be-overridden-by-external-secret"
+
+  # Persistence 설정 (GCP Persistent Disk - 비용 최적화)
+  persistence:
+    enabled: true
+    type: pvc
+    storageClassName: "gcp-standard-rwo-retain"  # GCP Retain 정책으로 데이터 보존
+    accessModes:
+      - ReadWriteOnce
+    size: 5Gi  # Grafana 데이터 축소 (대시보드/설정만 저장)
+    finalizers:
+      - kubernetes.io/pvc-protection
+
+  # Grafana Ingress 비활성화 (Istio VirtualService 사용)
+  ingress:
+    enabled: false
+
+  # Service 설정 (Istio를 통한 외부 노출)
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+    portName: http-web
+
+  # Grafana 도메인 설정
+  grafana.ini:
+    server:
+      domain: grafana.ggorockee.com
+      root_url: "https://grafana.ggorockee.com"
+      serve_from_sub_path: false
+
+    # Google OAuth (Dex) 설정
+    auth.generic_oauth:
+      enabled: true
+      name: Google
+      allow_sign_up: true
+      client_id: $__file{/etc/secrets/auth/client_id}
+      client_secret: $__file{/etc/secrets/auth/client_secret}
+      scopes: openid email profile
+      auth_url: https://accounts.google.com/o/oauth2/v2/auth
+      token_url: https://oauth2.googleapis.com/token
+      api_url: https://openidconnect.googleapis.com/v1/userinfo
+      allowed_domains: gmail.com
+      allow_assign_grafana_admin: true
+      role_attribute_path: "email == 'woohaen88@gmail.com' || email == 'woohalabs@gmail.com' || email == 'ggorockee@gmail.com' && 'Admin' || 'Viewer'"
+
+    # 익명 접근 비활성화
+    auth.anonymous:
+      enabled: false
+
+    # 기본 로그인 비활성화 (OAuth만 사용)
+    auth.basic:
+      enabled: false
+
+  # External Secret 마운트
+  extraSecretMounts:
+    - name: auth-generic-oauth-secret
+      secretName: grafana-oauth-secret
+      defaultMode: 0440
+      mountPath: /etc/secrets/auth
+      readOnly: true
+
+  # Sidecar 설정 (대시보드 자동 로드)
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: ALL
+    datasources:
+      enabled: true
+      defaultDatasourceEnabled: true
+
+# Prometheus 설정
+prometheus:
+  enabled: true
+
+  # Prometheus Ingress 비활성화 (Istio VirtualService 사용)
+  ingress:
+    enabled: false
+
+  # Service 설정
+  service:
+    type: ClusterIP
+    port: 9090
+    targetPort: 9090
+    portName: http-web
+
+  # Prometheus Spec
+  prometheusSpec:
+    # Retention 설정 (1인 개발자용 - 비용 최적화)
+    retention: 15d
+    retentionSize: "18GB"  # 실제 데이터 제한 (20GB 중 여유 공간 2GB)
+
+    # 리소스 제한 (1인 개발자용)
+    resources:
+      requests:
+        cpu: 500m
+        memory: 2Gi
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+
+    # Persistence 설정 (GCP Persistent Disk - 비용 최적화)
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gcp-standard-rwo-retain  # GCP Retain 정책으로 데이터 보존
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 20Gi  # PVC 최대 크기 20GB
+
+    # External URL 설정
+    externalUrl: "https://prom.ggorockee.com"
+
+    # Pod Monitor/Service Monitor 자동 발견
+    podMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+
+    # Scrape 간격
+    scrapeInterval: 30s
+    evaluationInterval: 30s
+
+# Alertmanager 설정
+alertmanager:
+  enabled: true
+
+  # ArgoCD 리소스 추적 제외 (Prometheus Operator가 생성하는 StatefulSet/Pod 보호)
+  # ArgoCD ServerSideApply와 Operator 충돌 방지
+  annotations:
+    argocd.argoproj.io/sync-options: "Prune=false"
+
+  # Ingress 비활성화
+  ingress:
+    enabled: false
+
+  # Alertmanager Spec
+  alertmanagerSpec:
+    # Persistence 설정 (비용 최적화)
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gcp-standard-rwo-retain  # GCP Retain 정책으로 데이터 보존
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 2Gi  # Alert 히스토리만 저장
+
+    # 리소스 제한
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+# Prometheus Operator 설정
+prometheusOperator:
+  enabled: true
+
+  # 리소스 제한
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# Node Exporter 설정
+prometheus-node-exporter:
+  enabled: true
+
+# Kube State Metrics 설정
+kube-state-metrics:
+  enabled: true
+
+# Default Rules 활성화
+defaultRules:
+  create: true
+  rules:
+    alertmanager: true
+    etcd: true
+    configReloaders: true
+    general: true
+    k8s: true
+    kubeApiserverAvailability: true
+    kubeApiserverBurnrate: true
+    kubeApiserverHistogram: true
+    kubeApiserverSlos: true
+    kubeControllerManager: true
+    kubelet: true
+    kubeProxy: true
+    kubePrometheusGeneral: true
+    kubePrometheusNodeRecording: true
+    kubernetesApps: true
+    kubernetesResources: true
+    kubernetesStorage: true
+    kubernetesSystem: true
+    kubeSchedulerAlerting: true
+    kubeSchedulerRecording: true
+    kubeStateMetrics: true
+    network: true
+    node: true
+    nodeExporterAlerting: true
+    nodeExporterRecording: true
+    prometheus: true
+    prometheusOperator: true
+
+# 공통 라벨
+commonLabels:
+  managed-by: argocd
+  environment: production
