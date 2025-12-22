@@ -1,0 +1,6 @@
+env: prod
+revision: main
+chartName: loki
+appName: loki
+repoURL: https://github.com/ggorockee/infra
+namespace: logging
