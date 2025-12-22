@@ -110,3 +110,13 @@ myrequest.txt
 backupsql/
 backup_secrets/
 backup_sql/
+
+# Career-related documents (private information)
+claudedocs/CAREER_ROADMAP_100M.md
+claudedocs/CAREER_ROADMAP_100M_REVISED.md
+claudedocs/NEXT_30_DAYS_ACTION_PLAN.md
+claudedocs/RESUME_ACHIEVEMENTS.md
+claudedocs/RESUME_SUMMARY.md
+claudedocs/PORTFOLIO_BRIEF.md
+claudedocs/TECH_STACK_CAREER_ANALYSIS.md
+claudedocs/PORTFOLIO.md
