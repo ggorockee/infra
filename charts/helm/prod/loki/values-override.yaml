@@ -1,1 +1,101 @@
-# values-override.yaml
+# Loki values override for SingleBinary deployment mode
+# 소규모 앱 환경에 최적화된 설정
+
+# SingleBinary 모드: 단일 프로세스로 모든 컴포넌트 실행
+deploymentMode: SingleBinary
+
+# 단일 인스턴스 설정
+singleBinary:
+  replicas: 1
+
+  # 리소스 제한
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+
+  # Persistent Volume 설정
+  persistence:
+    enabled: true
+    storageClass: gcp-standard-rwo-retain
+    size: 30Gi
+
+# Loki 설정
+loki:
+  # 인증 비활성화 (내부 사용)
+  auth_enabled: false
+
+  # 공통 설정
+  commonConfig:
+    replication_factor: 1
+
+  # 스토리지 설정 - 로컬 파일시스템 사용
+  storage:
+    type: filesystem
+
+  # 스키마 설정
+  schemaConfig:
+    configs:
+      - from: 2024-01-01
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+
+  # 데이터 보존 기간: 90일
+  limits_config:
+    retention_period: 2160h  # 90일 = 90 * 24h
+    max_query_lookback: 2160h
+
+# 모니터링 설정
+monitoring:
+  # ServiceMonitor 활성화 (Prometheus Operator 사용)
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: kube-prometheus-stack
+
+  # Self-monitoring 비활성화 (리소스 절약)
+  selfMonitoring:
+    enabled: false
+    grafanaAgent:
+      installOperator: false
+
+# Gateway 설정 (Nginx)
+gateway:
+  enabled: true
+  replicas: 1
+
+  # 리소스 제한
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# 불필요한 컴포넌트 비활성화 (SingleBinary 모드에서는 필요 없음)
+write:
+  replicas: 0
+read:
+  replicas: 0
+backend:
+  replicas: 0
+
+# 테스트 비활성화
+test:
+  enabled: false
+
+# Minio 비활성화 (로컬 스토리지 사용)
+minio:
+  enabled: false
+
+# Grafana Agent Operator 비활성화
+grafana-agent-operator:
+  enabled: false
