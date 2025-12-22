@@ -99,3 +99,10 @@ minio:
 # Grafana Agent Operator 비활성화
 grafana-agent-operator:
   enabled: false
+
+# Cache 비활성화 (SingleBinary 모드에서는 불필요)
+chunksCache:
+  enabled: false
+
+resultsCache:
+  enabled: false
