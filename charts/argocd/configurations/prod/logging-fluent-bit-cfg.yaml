@@ -1,0 +1,6 @@
+env: prod
+revision: main
+chartName: fluent-bit
+appName: fluent-bit
+repoURL: https://github.com/ggorockee/infra
+namespace: logging
