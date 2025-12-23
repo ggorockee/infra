@@ -11,7 +11,7 @@ resources:
     cpu: 200m
     memory: 256Mi
   requests:
-    cpu: 50m
+    cpu: 40m
     memory: 128Mi
 
 config:
