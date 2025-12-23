@@ -140,6 +140,16 @@ grafana:
       enabled: true
       defaultDatasourceEnabled: true
 
+  # Additional DataSources (Loki)
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki-gateway.logging.svc.cluster.local:80
+      jsonData:
+        maxLines: 1000
+      editable: false
+
 # Prometheus 설정
 prometheus:
   enabled: true
