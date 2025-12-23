@@ -1,0 +1,28 @@
+{{- if .Values.grafana.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "%s-loki-datasource" (include "kube-prometheus-stack.fullname" .) | trunc 63 | trimSuffix "-" }}
+  namespace: {{ include "kube-prometheus-stack.namespace" . }}
+  labels:
+    {{- include "kube-prometheus-stack.labels" . | nindent 4 }}
+    grafana_datasource: "1"  # Grafana sidecar가 자동으로 로드
+data:
+  loki-datasource.yaml: |-
+    apiVersion: 1
+    datasources:
+      - name: Loki
+        type: loki
+        access: proxy
+        url: http://loki-gateway.loki.svc.cluster.local
+        jsonData:
+          maxLines: 1000
+          derivedFields:
+            # 로그에서 traceID를 추출하여 Tempo로 연결 (선택사항)
+            - datasourceName: Tempo
+              matcherRegex: "traceID=(\\w+)"
+              name: TraceID
+              url: "$${__value.raw}"
+        editable: true
+{{- end }}
