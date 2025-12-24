@@ -229,6 +229,7 @@ virtualServices:
     enabled: true
     hosts:
       - "review-maps.com"
+      - "www.review-maps.com"
     http:
       - route:
           - destination:
