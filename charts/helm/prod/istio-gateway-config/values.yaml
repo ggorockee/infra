@@ -265,6 +265,7 @@ virtualServices:
     enabled: true
     hosts:
       - "woohalabs.com"
+      - "www.woohalabs.com"
     http:
       - match:
           - uri:
