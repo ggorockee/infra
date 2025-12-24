@@ -45,7 +45,7 @@ configMap:
   data:
     TIMEZONE: "Asia/Seoul"
     LOG_LEVEL: "info"
-    SIGNOZ_ENDPOINT: "signoz-otel-collector.monitoring.svc.cluster.local:4318"
+    SIGNOZ_ENDPOINT: "otel-collector.monitoring.svc.cluster.local:4318"
     SCRAPE_MAX_ITEMS: "0"  # 최대 수집 개수 (0 = 무제한)
     # Server API 연동 설정 (키워드 알림용)
     SERVER_API_BASE_URL: "http://reviewmaps-server:3000"
