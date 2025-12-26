@@ -256,7 +256,7 @@ server:
 
   readinessProbe:
     httpGet:
-      path: /healthz
+      path: /v1/readiness
       port: http
       scheme: HTTP
     initialDelaySeconds: 15
