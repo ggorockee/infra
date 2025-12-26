@@ -353,9 +353,9 @@ server:
 
   # Prometheus Metrics 설정
   metrics:
-    enabled: true
+    enabled: false  # Disabled - /metrics endpoint not implemented yet
     serviceMonitor:
-      enabled: true  # Enabled - Prometheus ServiceMonitor for /metrics
+      enabled: false  # Disabled - prevents 500 errors from Prometheus scraping
       interval: 30s
       scrapeTimeout: 10s
     # Gauge 메트릭 수집 CronJob 설정 (APScheduler로 대체됨)
