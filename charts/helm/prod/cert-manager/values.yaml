@@ -1552,12 +1552,12 @@ ssl:
         - "*.ggorockee.com"
 
     # Certificate for ggorockee.org
-    # ggorockee_org:
-    #   enabled: true
-    #   name: "ggorockee-org-wildcard-cert"
-    #   secretName: "ggorockee-org-wildcard-tls"
-    #   dnsNames:
-    #     - "*.ggorockee.org"
+    ggorockee_org:
+      enabled: false
+      name: "ggorockee-org-wildcard-cert"
+      secretName: "ggorockee-org-wildcard-tls"
+      dnsNames:
+        - "*.ggorockee.org"
 
     # Certificate for woohalabs.com
     woohalabs_com:
