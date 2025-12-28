@@ -1,0 +1,6 @@
+env: prod
+revision: main
+chartName: hotsao
+appName: hotsao
+repoURL: https://github.com/ggorockee/infra
+namespace: hotsao
