@@ -1,0 +1,165 @@
+{{- if .Values.scraper.enabled }}
+{{- range .Values.scraper.sites }}
+{{- if .enabled }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "hotsao.fullname" $ }}-scraper-{{ .name }}
+  labels:
+    {{- include "hotsao.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: scraper
+    scraper-site: {{ .name }}
+spec:
+  schedule: "{{ .schedule }}"
+  successfulJobsHistoryLimit: {{ $.Values.scraper.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ $.Values.scraper.failedJobsHistoryLimit }}
+  concurrencyPolicy: {{ $.Values.scraper.concurrencyPolicy }}
+  jobTemplate:
+    metadata:
+      labels:
+        {{- include "hotsao.labels" $ | nindent 8 }}
+        app.kubernetes.io/component: scraper
+        scraper-site: {{ .name }}
+    spec:
+      backoffLimit: {{ $.Values.scraper.backoffLimit }}
+      activeDeadlineSeconds: {{ $.Values.scraper.activeDeadlineSeconds }}
+      template:
+        metadata:
+          {{- with $.Values.scraper.podAnnotations }}
+          annotations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          labels:
+            {{- include "hotsao.labels" $ | nindent 12 }}
+            app.kubernetes.io/component: scraper
+            scraper-site: {{ .name }}
+        spec:
+          restartPolicy: OnFailure
+          {{- if $.Values.scraper.serviceAccount.create }}
+          serviceAccountName: {{ include "hotsao.fullname" $ }}-scraper
+          {{- end }}
+          {{- with $.Values.scraper.podSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+          - name: scraper
+            {{- with $.Values.scraper.securityContext }}
+            securityContext:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            image: "{{ $.Values.scraper.image.repository }}:{{ $.Values.scraper.image.tag }}"
+            imagePullPolicy: {{ $.Values.scraper.image.pullPolicy }}
+
+            # --site flag로 특정 사이트 크롤링 실행 후 종료
+            command: ["./scraper"]
+            args: ["--site", "{{ .name }}"]
+
+            env:
+              # 공통 환경변수
+              {{- range $key, $value := $.Values.scraper.env }}
+              - name: {{ $key }}
+                value: {{ $value | quote }}
+              {{- end }}
+
+              # External Secret - Redis
+              - name: REDIS_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $.Values.externalSecrets.scraper.secretName }}
+                    key: REDIS_HOST
+              - name: REDIS_PORT
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $.Values.externalSecrets.scraper.secretName }}
+                    key: REDIS_PORT
+              - name: REDIS_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $.Values.externalSecrets.scraper.secretName }}
+                    key: REDIS_PASSWORD
+
+              # External Secret - PostgreSQL
+              - name: DATABASE_URL
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $.Values.externalSecrets.scraper.secretName }}
+                    key: DATABASE_URL
+              - name: DB_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $.Values.externalSecrets.scraper.secretName }}
+                    key: DB_HOST
+              - name: DB_PORT
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $.Values.externalSecrets.scraper.secretName }}
+                    key: DB_PORT
+              - name: DB_NAME
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $.Values.externalSecrets.scraper.secretName }}
+                    key: DB_NAME
+              - name: DB_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $.Values.externalSecrets.scraper.secretName }}
+                    key: DB_USER
+              - name: DB_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $.Values.externalSecrets.scraper.secretName }}
+                    key: DB_PASSWORD
+
+              # External Secret - Cloudflare (optional)
+              - name: CLOUDFLARE_ACCOUNT_ID
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $.Values.externalSecrets.scraper.secretName }}
+                    key: CLOUDFLARE_ACCOUNT_ID
+                    optional: true
+              - name: CLOUDFLARE_ACCOUNT_HASH
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $.Values.externalSecrets.scraper.secretName }}
+                    key: CLOUDFLARE_ACCOUNT_HASH
+                    optional: true
+              - name: CLOUDFLARE_API_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $.Values.externalSecrets.scraper.secretName }}
+                    key: CLOUDFLARE_API_KEY
+                    optional: true
+
+              # External Secret - RabbitMQ (optional, 추후 사용)
+              - name: RABBITMQ_URL
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $.Values.externalSecrets.scraper.secretName }}
+                    key: RABBITMQ_URL
+                    optional: true
+
+            # 사이트별 리소스 또는 기본 리소스
+            resources:
+              {{- if .resources }}
+              {{- toYaml .resources | nindent 14 }}
+              {{- else }}
+              {{- toYaml $.Values.scraper.defaultResources | nindent 14 }}
+              {{- end }}
+
+          {{- with $.Values.scraper.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $.Values.scraper.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $.Values.scraper.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
