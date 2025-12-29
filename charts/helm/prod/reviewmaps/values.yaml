@@ -708,7 +708,7 @@ web:
   image:
     repository: ggorockee/reviewmaps-web
     pullPolicy: IfNotPresent
-    tag: "20251226-19d0081"
+    tag: "20251226-7075317"
 
   imagePullSecrets: []
   nameOverride: ""
