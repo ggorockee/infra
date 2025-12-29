@@ -39,9 +39,15 @@ go-scraper:
   externalSecret:
     enabled: true
     secretStore: "gcpsm-secret-store"
-    secretKey: "hotsao-app-secrets"
-    targetSecretName: "hotsao-app-secrets"
+    secretKey: "prod-hotsao-credentials"
+    targetSecretName: "prod-hotsao-credentials"
     refreshInterval: "1h"
+
+  # Secret configuration
+  secret:
+    enabled: true
+    names:
+      - prod-hotsao-credentials
 
   # CronJob configuration
   runner:
