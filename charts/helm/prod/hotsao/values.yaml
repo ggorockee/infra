@@ -72,7 +72,7 @@ web:
   image:
     repository: ggorockee/hotsao-web
     pullPolicy: IfNotPresent
-    tag: "20251229-75cc96a"
+    tag: "20251229-809fb37"
 
   serviceAccount:
     create: true
