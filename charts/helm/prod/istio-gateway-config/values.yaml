@@ -46,6 +46,12 @@ gateway:
           - "review-maps.com"
         credentialName: review-maps-com-wildcard-tls
 
+      - name: hotsao-com
+        hosts:
+          - "*.hotsao.com"
+          - "hotsao.com"
+        credentialName: hotsao-com-wildcard-tls
+
 # Security Configuration (비용 최소화: Istio Local Rate Limiting 사용)
 security:
   # Rate Limiting 설정 (Cloud Armor 대신 Istio EnvoyFilter 사용, 비용 $0)
@@ -275,3 +281,16 @@ virtualServices:
           - destination:
               host: woohalabs-app-ads
               port: 80
+
+  # Hotsao Web (Next.js)
+  - name: hotsao-web-vs
+    namespace: hotsao
+    enabled: true
+    hosts:
+      - "hotsao.com"
+      - "www.hotsao.com"
+    http:
+      - route:
+          - destination:
+              host: hotsao-web
+              port: 3000
