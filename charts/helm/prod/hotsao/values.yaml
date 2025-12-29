@@ -86,9 +86,7 @@ redis:
 # RabbitMQ
 #########################################################################
 rabbitmq:
-  enabled: true
-  image:
-    tag: "3.12-debian-12"
+  enabled: false
   auth:
     username: hotsao
     password: "hotsao-rabbitmq-password"
