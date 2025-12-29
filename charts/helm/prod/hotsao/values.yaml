@@ -1,377 +1,80 @@
 #########################################################################
 # Hotsao (핫사오) Helm Chart Values
-# Go Fiber v2 API Server + Go Scraper + Redis + RabbitMQ
+# Subchart 기반 구조: go-scraper, server, web, redis, rabbitmq
 #########################################################################
 
 #########################################################################
-# 기본 호환성 설정 (Helm 기본 템플릿 호환)
+# Go Scraper - CronJob 기반 핫딜 크롤러
 #########################################################################
-# 기본 템플릿들이 참조하는 최상위 값들
-fullnameOverride: ""
-nameOverride: ""
+go-scraper:
+  enabled: true
+  image:
+    repository: ggorockee/hotsao-go-scraper
+    pullPolicy: IfNotPresent
+    tag: "latest"
 
-image:
-  repository: ggorockee/hotsao-server-with-go
-  pullPolicy: IfNotPresent
-  tag: "latest"
+  serviceAccount:
+    create: true
+    automount: true
 
-service:
-  type: ClusterIP
-  port: 3000
-  portName: "fiber"
+  podLabels:
+    job: hotsao-go-scraper
+    service: hotsao-go-scraper
 
-serviceAccount:
-  create: true
-  automount: true
-  annotations: {}
-  name: ""
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
 
-# Istio 사용으로 Ingress 비활성화
-ingress:
-  enabled: false
+  configMap:
+    enabled: true
+    data:
+      TIMEZONE: "Asia/Seoul"
+      LOG_LEVEL: "info"
 
-autoscaling:
-  enabled: false
-
-livenessProbe:
-  httpGet:
-    path: /health
-    port: http
-readinessProbe:
-  httpGet:
-    path: /health
-    port: http
-
-securityContext: {}
-podSecurityContext: {}
-resources: {}
-nodeSelector: {}
-tolerations: []
-affinity: {}
+  # CronJob configuration
+  runner:
+    enabled: true
+    scrapers:
+      - name: ppomppu
+        schedule: "0 * * * *"
+        timeZone: "Asia/Seoul"
 
 #########################################################################
-# Server 설정 (Go Fiber v2 API - 추후 구현)
+# Server - Go Fiber v2 API (추후 구현)
 #########################################################################
 server:
   enabled: false
-  replicaCount: 1
-  revisionHistoryLimit: 1
-
-  image:
-    repository: ggorockee/hotsao-server-with-go
-    pullPolicy: IfNotPresent
-    tag: "latest"
-
-  imagePullSecrets: []
-  nameOverride: ""
-  fullnameOverride: ""
-
-  serviceAccount:
-    create: true
-    automount: true
-    annotations: {}
-    name: ""
-
-  podAnnotations: {}
-  podLabels:
-    app: "hotsao-server"
-    job: "hotsao-server"
-
-  podSecurityContext: {}
-  securityContext: {}
-
-  service:
-    type: ClusterIP
-    port: 3000
-    portName: "fiber"
-
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 500m
-      memory: 256Mi
-
-  # Health check probes - Go Fiber healthcheck endpoint
-  # /v1/healthcheck/live  - K8s startup/liveness probe (항상 200)
-  # /v1/healthcheck/ready - K8s readiness probe (DB 체크)
-  # Note: Ingress/Gateway에서 /hotsao prefix 추가
-  livenessProbe:
-    httpGet:
-      path: /v1/healthcheck/live
-      port: fiber
-      scheme: HTTP
-    initialDelaySeconds: 10
-    periodSeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 3
-
-  readinessProbe:
-    httpGet:
-      path: /v1/healthcheck/ready
-      port: fiber
-      scheme: HTTP
-    initialDelaySeconds: 5
-    periodSeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 3
-
-  startupProbe:
-    httpGet:
-      path: /v1/healthcheck/live
-      port: fiber
-      scheme: HTTP
-    initialDelaySeconds: 0
-    periodSeconds: 5
-    timeoutSeconds: 3
-    failureThreshold: 12
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 3
-    targetCPUUtilizationPercentage: 80
-
-  volumes: []
-  volumeMounts: []
-  nodeSelector: {}
-  tolerations: []
-  affinity: {}
 
 #########################################################################
-# Scraper 설정 (Go Scraper - CronJob 기반 핫딜 크롤러)
+# Web - Frontend (추후 구현)
 #########################################################################
-scraper:
-  enabled: true
-
-  image:
-    repository: ggorockee/hotsao-scraper
-    pullPolicy: IfNotPresent
-    tag: "latest"
-
-  serviceAccount:
-    create: true
-    automount: true
-    annotations: {}
-    name: ""
-
-  # 기본 리소스 (colly 크롤러용 - 가벼움)
-  defaultResources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 300m
-      memory: 256Mi
-
-  # CronJob 공통 설정
-  successfulJobsHistoryLimit: 3
-  failedJobsHistoryLimit: 3
-  concurrencyPolicy: Forbid  # 동시 실행 방지
-  backoffLimit: 2
-  activeDeadlineSeconds: 600  # 10분 타임아웃
-
-  # 사이트별 CronJob 설정
-  sites:
-    # Colly 크롤러 (가벼운 사이트)
-    - name: ppomppu
-      schedule: "*/5 * * * *"  # 5분마다
-      enabled: true
-      # resources 미지정 시 defaultResources 사용
-
-    - name: hotdeal
-      schedule: "*/5 * * * *"
-      enabled: true
-
-    - name: clien
-      schedule: "*/10 * * * *"  # 10분마다
-      enabled: true
-
-    # Chromedp 크롤러 (무거운 사이트 - 헤드리스 브라우저)
-    - name: fmkorea
-      schedule: "*/10 * * * *"
-      enabled: true
-      resources:  # chromedp는 더 많은 리소스 필요
-        requests:
-          cpu: 500m
-          memory: 512Mi
-        limits:
-          cpu: 1000m
-          memory: 1Gi
-
-    - name: quasarzone
-      schedule: "*/5 * * * *"
-      enabled: true
-      resources:
-        requests:
-          cpu: 500m
-          memory: 512Mi
-        limits:
-          cpu: 1000m
-          memory: 1Gi
-
-  # Pod 공통 설정
-  podAnnotations: {}
-  podSecurityContext: {}
-  securityContext: {}
-  nodeSelector: {}
-  tolerations: []
-  affinity: {}
-
-  # 환경변수 (모든 CronJob 공유)
-  env:
-    APP_ENV: "production"
-    LOG_LEVEL: "info"
-
-#########################################################################
-# Worker 설정 (Go Worker - RabbitMQ 컨슈머, 추후 구현)
-#########################################################################
-worker:
+web:
   enabled: false
-  replicaCount: 2
-  revisionHistoryLimit: 1
-
-  image:
-    repository: ggorockee/hotsao-scraper  # scraper와 동일 이미지
-    pullPolicy: IfNotPresent
-    tag: "latest"
-
-  # Worker는 별도 CMD로 실행
-  command: ["./worker"]
-
-  imagePullSecrets: []
-  nameOverride: ""
-  fullnameOverride: ""
-
-  serviceAccount:
-    create: false  # scraper의 serviceAccount 공유
-    automount: true
-    name: ""
-
-  podAnnotations: {}
-  podLabels:
-    app: "hotsao-worker"
-    job: "hotsao-worker"
-
-  podSecurityContext: {}
-  securityContext: {}
-
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 500m
-      memory: 256Mi
-
-  # Worker는 HTTP 엔드포인트 없음
-  # livenessProbe/readinessProbe 제거하고 process 기반 health check 사용
-
-  autoscaling:
-    enabled: false
-    minReplicas: 2
-    maxReplicas: 10
-    targetCPUUtilizationPercentage: 70
-
-  volumes: []
-  volumeMounts: []
-  nodeSelector: {}
-  tolerations: []
-  affinity: {}
 
 #########################################################################
-# External Secrets 설정
-#########################################################################
-externalSecrets:
-  enabled: true
-
-  # Google Secret Manager 설정
-  clusterSecretStore:
-    name: gcpsm-secret-store
-    kind: ClusterSecretStore
-
-  # Scraper용 Secret (Redis, RabbitMQ, DB, Cloudflare)
-  scraper:
-    enabled: true
-    secretName: hotsao-scraper-credentials
-    remoteSecretKey: prod-hotsao-scraper-credentials
-    refreshInterval: 1h
-
-#########################################################################
-# Redis Subchart 설정 (Bitnami Redis)
+# Redis
 #########################################################################
 redis:
   enabled: true
   architecture: standalone
-
   auth:
     enabled: true
-    existingSecret: "hotsao-scraper-credentials"
-    existingSecretPasswordKey: "REDIS_PASSWORD"
-
+    password: "hotsao-redis-password"
   master:
     persistence:
-      enabled: true
-      size: 8Gi
-      storageClass: "standard-rwo"
-
-    resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
-      limits:
-        cpu: 250m
-        memory: 256Mi
+      enabled: false
 
 #########################################################################
-# RabbitMQ Subchart 설정 (Bitnami RabbitMQ)
+# RabbitMQ
 #########################################################################
 rabbitmq:
-  enabled: false  # 추후 subchart 추가 시 활성화
+  enabled: true
   auth:
     username: hotsao
-    existingPasswordSecret: "hotsao-scraper-credentials"
-    existingPasswordKey: "RABBITMQ_PASSWORD"
-
+    password: "hotsao-rabbitmq-password"
   persistence:
-    enabled: true
-    size: 8Gi
-    storageClass: "standard-rwo"
-
-  resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
-    limits:
-      cpu: 500m
-      memory: 512Mi
-
-#########################################################################
-# PostgreSQL 설정 (Server와 공유 - 추후 구현)
-#########################################################################
-postgresql:
-  enabled: false  # 외부 DB 사용 시 false
-
-  # 내부 PostgreSQL 사용 시 설정
-  auth:
-    database: hotsao
-    username: hotsao
-    existingSecret: "hotsao-scraper-credentials"
-    secretKeys:
-      adminPasswordKey: "DB_PASSWORD"
-      userPasswordKey: "DB_PASSWORD"
-
-  primary:
-    persistence:
-      enabled: true
-      size: 10Gi
-      storageClass: "standard-rwo"
-
-    resources:
-      requests:
-        cpu: 250m
-        memory: 256Mi
-      limits:
-        cpu: 1000m
-        memory: 1Gi
+    enabled: false

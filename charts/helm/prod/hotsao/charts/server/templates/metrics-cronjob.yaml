@@ -1,0 +1,75 @@
+{{- if .Values.metrics.collector.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "server.fullname" . }}-metrics-collector
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "server.labels" . | nindent 4 }}
+    app.kubernetes.io/component: metrics-collector
+spec:
+  schedule: {{ .Values.metrics.collector.schedule | quote }}
+  timeZone: {{ .Values.metrics.collector.timeZone | default "Asia/Seoul" | quote }}
+  concurrencyPolicy: {{ .Values.metrics.collector.concurrencyPolicy | default "Forbid" }}
+  successfulJobsHistoryLimit: {{ .Values.metrics.collector.successfulJobsHistoryLimit | default 1 }}
+  failedJobsHistoryLimit: {{ .Values.metrics.collector.failedJobsHistoryLimit | default 3 }}
+  startingDeadlineSeconds: {{ .Values.metrics.collector.startingDeadlineSeconds | default 300 }}
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: {{ .Values.metrics.collector.ttlSecondsAfterFinished | default 3600 }}
+      backoffLimit: {{ .Values.metrics.collector.backoffLimit | default 2 }}
+      template:
+        metadata:
+          labels:
+            {{- include "server.selectorLabels" . | nindent 12 }}
+            app.kubernetes.io/component: metrics-collector
+        spec:
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          serviceAccountName: {{ include "server.serviceAccountName" . }}
+          restartPolicy: {{ .Values.metrics.collector.restartPolicy | default "OnFailure" }}
+          containers:
+          - name: metrics-collector
+            image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            command:
+              - /bin/sh
+              - -c
+              - |
+                mkdir -p "${PROMETHEUS_MULTIPROC_DIR:-/tmp/metrics}"
+                /app/.venv/bin/python manage.py collect_metrics --once
+            {{- if or .Values.configMap.enabled .Values.secret.enabled }}
+            envFrom:
+            {{- if .Values.configMap.enabled }}
+              - configMapRef:
+                  name: {{ include "server.fullname" . }}
+            {{- end }}
+            {{- if .Values.secret.enabled }}
+            {{- range $secretName := .Values.secret.names }}
+              - secretRef:
+                  name: {{ $secretName }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 200m
+                memory: 256Mi
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+{{- end }}
