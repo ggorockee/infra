@@ -90,7 +90,7 @@ rabbitmq:
   image:
     registry: docker.io
     repository: rabbitmq
-    tag: "3.13-management"
+    tag: "management-alpine"
   auth:
     username: hotsao
     password: "hotsao-rabbitmq-password"
