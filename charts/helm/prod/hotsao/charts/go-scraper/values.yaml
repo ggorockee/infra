@@ -51,12 +51,13 @@ configMap:
     SERVER_API_BASE_URL: "http://reviewmaps-server:3000"
     SERVER_API_ENABLED: "true"
 
-secret:
+# ExternalSecret configuration (GCP Secret Manager)
+externalSecret:
   enabled: true
-  names:
-    - "reviewmaps-db-credentials"
-    - "naver-api-creds"
-    - "reviewmaps-api-credentials"  # SERVER_API_KEY (API_SECRET_KEY 사용)
+  secretStore: "gcpsm-secret-store"
+  secretKey: "hotsao-app-secrets"
+  targetSecretName: "hotsao-app-secrets"
+  refreshInterval: "1h"
 
 # CronJob configuration
 runner:

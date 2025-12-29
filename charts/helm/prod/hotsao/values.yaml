@@ -35,6 +35,14 @@ go-scraper:
       TIMEZONE: "Asia/Seoul"
       LOG_LEVEL: "info"
 
+  # ExternalSecret configuration (GCP Secret Manager)
+  externalSecret:
+    enabled: true
+    secretStore: "gcpsm-secret-store"
+    secretKey: "hotsao-app-secrets"
+    targetSecretName: "hotsao-app-secrets"
+    refreshInterval: "1h"
+
   # CronJob configuration
   runner:
     enabled: true
