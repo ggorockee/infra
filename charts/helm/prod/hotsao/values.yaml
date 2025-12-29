@@ -67,7 +67,7 @@ server:
 # Web - Next.js Frontend
 #########################################################################
 web:
-  enabled: false
+  enabled: true
   replicaCount: 2
   image:
     repository: ggorockee/hotsao-web
