@@ -76,7 +76,7 @@ server:
   image:
     repository: ggorockee/hotsao-server
     pullPolicy: IfNotPresent
-    tag: "latest"
+    tag: "20251229-abdca6b"
 
   serviceAccount:
     create: true
