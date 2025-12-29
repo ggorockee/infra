@@ -1,0 +1,70 @@
+{{- if and .Values.runner.enabled (gt (len .Values.runner.scrapers) 0) }}
+{{- range $i, $s := .Values.runner.scrapers }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $.Release.Name }}-go-cron-{{ $s.name }}
+  labels:
+    {{- include "go-scraper.labels" $ | nindent 4 }}
+spec:
+  schedule: {{ $s.schedule | quote }}
+  {{- if $s.timeZone }}
+  timeZone: {{ $s.timeZone | quote }}
+  {{- end }}
+  concurrencyPolicy: {{ $s.concurrencyPolicy | default "Forbid" }}
+  startingDeadlineSeconds: {{ $s.startingDeadlineSeconds | default 900 }}
+  successfulJobsHistoryLimit: {{ $s.successfulJobsHistoryLimit | default 1 }}
+  failedJobsHistoryLimit: {{ $s.failedJobsHistoryLimit | default 3 }}
+  jobTemplate:
+    spec:
+      backoffLimit: {{ $s.backoffLimit | default 3 }}
+      {{- with $s.ttlSecondsAfterFinished }}
+      ttlSecondsAfterFinished: {{ . }}
+      {{- end}}
+      template:
+        metadata:
+          labels:
+            {{- include "go-scraper.labels" $ | nindent 12 }}
+          {{- if $.Values.podAnnotations }}
+          annotations:
+          {{- range $k, $v := $.Values.podAnnotations }}
+            {{ $k }}: {{ $v | quote }}
+          {{- end }}
+          {{- end }}
+        spec:
+          restartPolicy: {{ $s.restartPolicy | default "OnFailure" }}
+          {{- if $.Values.serviceAccount.create }}
+          serviceAccountName: {{ include "go-scraper.serviceAccountName" $ }}
+          {{- end }}
+          containers:
+            - name: {{ $.Chart.Name }}
+              image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
+              imagePullPolicy: {{ $.Values.image.pullPolicy | default "IfNotPresent" }}
+              command: ["/app/entrypoint.sh"]
+              args: ["{{ $s.name }}"]
+              envFrom:
+                - configMapRef:
+                    name: {{ include "go-scraper.fullname" $ }}-{{ $s.name }}
+              {{- if and $.Values.secret.enabled $.Values.secret.names }}
+              {{- range $.Values.secret.names }}
+                - secretRef:
+                    name: {{ . | quote }}
+              {{- end }}
+              {{- end }}
+              resources:
+                {{- toYaml $.Values.resources | nindent 16 }}
+          {{- with $.Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $.Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $.Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+---
+{{- end }}
+{{- end }}

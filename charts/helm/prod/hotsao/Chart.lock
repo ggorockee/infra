@@ -1,0 +1,18 @@
+dependencies:
+- name: go-scraper
+  repository: file://./charts/go-scraper
+  version: 1.0.0
+- name: server
+  repository: file://./charts/server
+  version: 2.1.1
+- name: web
+  repository: file://./charts/web
+  version: 1.0.0
+- name: redis
+  repository: file://./charts/redis
+  version: 0.18.0
+- name: rabbitmq
+  repository: file://./charts/rabbitmq
+  version: 16.0.14
+digest: sha256:e40a14583bb8a9dcbff14e83034857ee4f5b6188d9cb3d2311cefb319a8481b4
+generated: "2025-12-29T20:15:40.177462+09:00"
