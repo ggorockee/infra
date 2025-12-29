@@ -11,8 +11,5 @@ dependencies:
 - name: redis
   repository: file://./charts/redis
   version: 0.18.0
-- name: rabbitmq
-  repository: file://./charts/rabbitmq
-  version: 15.5.3
-digest: sha256:14f91436612e24386972aba6dbaa29e00149b0463c2abc84ee8b3d74bf6cd006
-generated: "2025-12-29T21:04:10.271831+09:00"
+digest: sha256:4d3909e3a7659b174563bce921de5479c79494d988b7ffa684cd3b542445f11f
+generated: "2025-12-29T21:19:46.600127+09:00"
