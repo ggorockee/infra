@@ -4,6 +4,16 @@
 #########################################################################
 
 #########################################################################
+# Global ExternalSecret Configuration (GCP Secret Manager)
+#########################################################################
+externalSecret:
+  enabled: true
+  secretStore: "gcpsm-secret-store"
+  secretKey: "hotsao-app-secrets"
+  targetSecretName: "hotsao-app-secrets"
+  refreshInterval: "1h"
+
+#########################################################################
 # Go Scraper - CronJob 기반 핫딜 크롤러
 #########################################################################
 go-scraper:
@@ -39,15 +49,15 @@ go-scraper:
   externalSecret:
     enabled: true
     secretStore: "gcpsm-secret-store"
-    secretKey: "prod-hotsao-credentials"
-    targetSecretName: "prod-hotsao-credentials"
+    secretKey: "hotsao-app-secrets"
+    targetSecretName: "hotsao-app-secrets"
     refreshInterval: "1h"
 
   # Secret configuration
   secret:
     enabled: true
     names:
-      - prod-hotsao-credentials
+      - hotsao-app-secrets
 
   # CronJob configuration
   runner:
@@ -152,7 +162,8 @@ redis:
   architecture: standalone
   auth:
     enabled: true
-    password: "hotsao-redis-password"
+    existingSecret: "hotsao-app-secrets"
+    existingSecretPasswordKey: "REDIS_PASSWORD"
   master:
     persistence:
       enabled: false
@@ -167,8 +178,9 @@ rabbitmq:
     repository: rabbitmq
     tag: "management-alpine"
   auth:
+    existingPasswordSecret: "hotsao-app-secrets"
+    existingSecretPasswordKey: "RABBITMQ_PASSWORD"
     username: hotsao
-    password: "hotsao-rabbitmq-password"
   persistence:
     enabled: false
     size: "8Gi"
