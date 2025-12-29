@@ -7,7 +7,7 @@
 # Go Scraper - CronJob 기반 핫딜 크롤러
 #########################################################################
 go-scraper:
-  enabled: true
+  enabled: false
   image:
     repository: ggorockee/hotsao-go-scraper
     pullPolicy: IfNotPresent
@@ -67,7 +67,7 @@ server:
 # Web - Next.js Frontend
 #########################################################################
 web:
-  enabled: true
+  enabled: false
   replicaCount: 2
   image:
     repository: ggorockee/hotsao-web
