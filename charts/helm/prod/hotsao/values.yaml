@@ -86,7 +86,7 @@ redis:
 # RabbitMQ
 #########################################################################
 rabbitmq:
-  enabled: false
+  enabled: true
   auth:
     username: hotsao
     password: "hotsao-rabbitmq-password"

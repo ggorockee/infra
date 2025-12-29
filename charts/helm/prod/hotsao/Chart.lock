@@ -13,6 +13,6 @@ dependencies:
   version: 0.18.0
 - name: rabbitmq
   repository: file://./charts/rabbitmq
-  version: 16.0.14
-digest: sha256:e40a14583bb8a9dcbff14e83034857ee4f5b6188d9cb3d2311cefb319a8481b4
-generated: "2025-12-29T20:15:40.177462+09:00"
+  version: 15.5.3
+digest: sha256:14f91436612e24386972aba6dbaa29e00149b0463c2abc84ee8b3d74bf6cd006
+generated: "2025-12-29T21:04:10.271831+09:00"
