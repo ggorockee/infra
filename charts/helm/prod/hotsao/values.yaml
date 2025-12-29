@@ -68,16 +68,88 @@ go-scraper:
         timeZone: "Asia/Seoul"
 
 #########################################################################
-# Server - Go Fiber v2 API (추후 구현)
+# Server - Go Fiber v2 API
 #########################################################################
 server:
-  enabled: false
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: ggorockee/hotsao-server
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+  serviceAccount:
+    create: true
+    automount: true
+
+  podLabels:
+    app: hotsao-server
+    service: hotsao-server
+
+  service:
+    type: ClusterIP
+    port: 3000
+    portName: "http"
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  livenessProbe:
+    httpGet:
+      path: /healthcheck/live
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /healthcheck/ready
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  startupProbe:
+    httpGet:
+      path: /healthcheck/ready
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 20
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+  configMap:
+    enabled: true
+    data:
+      APP_ENV: "production"
+      APP_PORT: "3000"
+
+  secret:
+    enabled: true
+    names:
+      - hotsao-app-secrets
 
 #########################################################################
 # Web - Next.js Frontend
 #########################################################################
-  image:
-    tag: 20251229-b6276a9
 web:
   enabled: true
   replicaCount: 2
