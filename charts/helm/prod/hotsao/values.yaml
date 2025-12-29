@@ -87,6 +87,10 @@ redis:
 #########################################################################
 rabbitmq:
   enabled: true
+  image:
+    registry: docker.io
+    repository: rabbitmq
+    tag: "3.13-management"
   auth:
     username: hotsao
     password: "hotsao-rabbitmq-password"
