@@ -86,11 +86,9 @@ redis:
 # RabbitMQ
 #########################################################################
 rabbitmq:
-  enabled: false
+  enabled: true
   auth:
     username: hotsao
     password: "hotsao-rabbitmq-password"
   persistence:
     enabled: false
-  # TODO: Bitnami 이미지 pull 에러로 임시 비활성화
-  # 추후 공식 RabbitMQ 이미지 또는 Operator로 전환 필요
