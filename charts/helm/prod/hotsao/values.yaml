@@ -4,6 +4,52 @@
 #########################################################################
 
 #########################################################################
+# 기본 호환성 설정 (Helm 기본 템플릿 호환)
+#########################################################################
+# 기본 템플릿들이 참조하는 최상위 값들
+fullnameOverride: ""
+nameOverride: ""
+
+image:
+  repository: ggorockee/hotsao-server-with-go
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 3000
+  portName: "fiber"
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+# Istio 사용으로 Ingress 비활성화
+ingress:
+  enabled: false
+
+autoscaling:
+  enabled: false
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+
+securityContext: {}
+podSecurityContext: {}
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+#########################################################################
 # Server 설정 (Go Fiber v2 API - 추후 구현)
 #########################################################################
 server:
