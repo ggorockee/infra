@@ -86,7 +86,10 @@ redis:
 # RabbitMQ
 #########################################################################
 rabbitmq:
-  enabled: true
+  enabled: false
+  # Bitnami 차트는 Bitnami 이미지 구조에 의존적
+  # 공식 RabbitMQ 이미지 사용 시 /opt/bitnami/scripts 에러 발생
+  # TODO: 공식 RabbitMQ 이미지로 직접 StatefulSet 작성 필요
   image:
     registry: docker.io
     repository: rabbitmq
