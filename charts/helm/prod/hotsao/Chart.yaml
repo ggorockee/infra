@@ -25,4 +25,4 @@ dependencies:
 - condition: rabbitmq.enabled
   name: rabbitmq
   repository: file://./charts/rabbitmq
-  version: 16.0.14
+  version: 15.5.3
