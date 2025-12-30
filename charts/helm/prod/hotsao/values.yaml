@@ -21,7 +21,7 @@ go-scraper:
   image:
     repository: ggorockee/hotsao-go-scraper
     pullPolicy: IfNotPresent
-    tag: "20251230-d51759e"
+    tag: "20251230-f905392"
 
   serviceAccount:
     create: true
