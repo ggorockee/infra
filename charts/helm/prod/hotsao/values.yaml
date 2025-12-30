@@ -66,16 +66,20 @@ go-scraper:
     enabled: true
     scrapers:
       - name: ppomppu
-        schedule: "0 * * * *"  # 매시간 정각
+        schedule: "*/6 * * * *"  # 6분마다 실행
+        failedJobsHistoryLimit: 1
         timeZone: "Asia/Seoul"
       - name: ruliweb
-        schedule: "15 * * * *"  # 매시간 15분
+        schedule: "*/6 * * * *"  # 6분마다 실행
+        failedJobsHistoryLimit: 1
         timeZone: "Asia/Seoul"
       - name: clien
-        schedule: "30 * * * *"  # 매시간 30분
+        schedule: "*/6 * * * *"  # 6분마다 실행
+        failedJobsHistoryLimit: 1
         timeZone: "Asia/Seoul"
       - name: quasarzone
-        schedule: "45 * * * *"  # 매시간 45분
+        schedule: "*/6 * * * *"  # 6분마다 실행
+        failedJobsHistoryLimit: 1
         timeZone: "Asia/Seoul"
 
 #########################################################################
