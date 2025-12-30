@@ -44,6 +44,7 @@ go-scraper:
     data:
       TIMEZONE: "Asia/Seoul"
       LOG_LEVEL: "info"
+      ENABLE_IMAGE_CDN: "false"
 
   # ExternalSecret configuration (GCP Secret Manager)
   # Umbrella chart 레벨의 hotsao-app-secrets 사용
