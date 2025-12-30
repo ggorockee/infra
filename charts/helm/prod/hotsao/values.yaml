@@ -88,6 +88,7 @@ go-scraper:
 server:
   enabled: true
   replicaCount: 2
+  revisionHistoryLimit: 1
   image:
     repository: ggorockee/hotsao-server
     pullPolicy: IfNotPresent
@@ -260,6 +261,7 @@ redis:
     existingSecret: "hotsao-app-secrets"
     existingSecretPasswordKey: "REDIS_PASSWORD"
   master:
+    revisionHistoryLimit: 1
     persistence:
       enabled: false
 
@@ -268,6 +270,7 @@ redis:
 #########################################################################
 rabbitmq:
   enabled: true
+  revisionHistoryLimit: 1
   image:
     registry: docker.io
     repository: rabbitmq
