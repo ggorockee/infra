@@ -101,7 +101,7 @@ server:
 
   livenessProbe:
     httpGet:
-      path: /healthcheck/live
+      path: /v1/healthcheck/live
       port: http
       scheme: HTTP
     initialDelaySeconds: 10
@@ -111,7 +111,7 @@ server:
 
   readinessProbe:
     httpGet:
-      path: /healthcheck/ready
+      path: /v1/healthcheck/ready
       port: http
       scheme: HTTP
     initialDelaySeconds: 5
@@ -121,7 +121,7 @@ server:
 
   startupProbe:
     httpGet:
-      path: /healthcheck/ready
+      path: /v1/healthcheck/ready
       port: http
       scheme: HTTP
     initialDelaySeconds: 0
