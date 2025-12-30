@@ -17,7 +17,7 @@ externalSecret:
 # Go Scraper - CronJob 기반 핫딜 크롤러
 #########################################################################
 go-scraper:
-  enabled: false
+  enabled: true
   image:
     repository: ggorockee/hotsao-go-scraper
     pullPolicy: IfNotPresent
