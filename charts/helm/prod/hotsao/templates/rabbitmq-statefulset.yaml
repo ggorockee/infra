@@ -44,7 +44,10 @@ spec:
         - name: RABBITMQ_DEFAULT_USER
           value: {{ .Values.rabbitmq.auth.username | quote }}
         - name: RABBITMQ_DEFAULT_PASS
-          value: {{ .Values.rabbitmq.auth.password | quote }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.rabbitmq.auth.existingPasswordSecret | quote }}
+              key: {{ .Values.rabbitmq.auth.existingSecretPasswordKey | quote }}
         resources:
           requests:
             cpu: 100m
