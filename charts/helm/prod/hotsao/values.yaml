@@ -46,14 +46,15 @@ go-scraper:
       LOG_LEVEL: "info"
 
   # ExternalSecret configuration (GCP Secret Manager)
+  # Umbrella chart 레벨의 hotsao-app-secrets 사용
   externalSecret:
-    enabled: true
+    enabled: false
     secretStore: "gcpsm-secret-store"
     secretKey: "hotsao-app-secrets"
     targetSecretName: "hotsao-app-secrets"
     refreshInterval: "1h"
 
-  # Secret configuration
+  # Secret configuration - umbrella chart의 hotsao-app-secrets 참조
   secret:
     enabled: true
     names:
