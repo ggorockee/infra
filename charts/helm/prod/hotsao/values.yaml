@@ -21,7 +21,7 @@ go-scraper:
   image:
     repository: ggorockee/hotsao-go-scraper
     pullPolicy: IfNotPresent
-    tag: "latest"
+    tag: "20251230-4f87f7c"
 
   serviceAccount:
     create: true
@@ -65,7 +65,16 @@ go-scraper:
     enabled: true
     scrapers:
       - name: ppomppu
-        schedule: "0 * * * *"
+        schedule: "0 * * * *"  # 매시간 정각
+        timeZone: "Asia/Seoul"
+      - name: ruliweb
+        schedule: "15 * * * *"  # 매시간 15분
+        timeZone: "Asia/Seoul"
+      - name: clien
+        schedule: "30 * * * *"  # 매시간 30분
+        timeZone: "Asia/Seoul"
+      - name: quasarzone
+        schedule: "45 * * * *"  # 매시간 45분
         timeZone: "Asia/Seoul"
 
 #########################################################################
@@ -264,6 +273,3 @@ rabbitmq:
   persistence:
     enabled: false
     size: "8Gi"
-scraper:
-  image:
-    tag: 20251230-4f87f7c
