@@ -263,3 +263,6 @@ rabbitmq:
   persistence:
     enabled: false
     size: "8Gi"
+scraper:
+  image:
+    tag: 20251230-4f87f7c
