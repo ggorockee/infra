@@ -171,7 +171,8 @@ server:
 #########################################################################
 web:
   enabled: true
-  replicaCount: 2
+  replicaCount: 1
+  revisionHistoryLimit: 1
   image:
     repository: ggorockee/hotsao-web
     pullPolicy: IfNotPresent
@@ -231,7 +232,7 @@ web:
   # HPA 설정
   autoscaling:
     enabled: true
-    minReplicas: 2
+    minReplicas: 1
     maxReplicas: 5
     targetCPUUtilizationPercentage: 70
     targetMemoryUtilizationPercentage: 80
