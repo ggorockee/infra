@@ -227,6 +227,7 @@ web:
       NODE_ENV: "production"
       PORT: "3000"
       NEXT_PUBLIC_API_URL: "https://api.hotsao.com"
+      INTERNAL_API_URL: "http://hotsao-server.hotsao.svc.cluster.local:3000"
 
   secret:
     enabled: false
