@@ -369,7 +369,7 @@ web:
   # Health check probes - Next.js Web
   livenessProbe:
     httpGet:
-      path: /ojeomneo
+      path: /
       port: http
       scheme: HTTP
     initialDelaySeconds: 10
@@ -379,7 +379,7 @@ web:
 
   readinessProbe:
     httpGet:
-      path: /ojeomneo
+      path: /
       port: http
       scheme: HTTP
     initialDelaySeconds: 5
@@ -389,7 +389,7 @@ web:
 
   startupProbe:
     httpGet:
-      path: /ojeomneo
+      path: /
       port: http
       scheme: HTTP
     initialDelaySeconds: 0
