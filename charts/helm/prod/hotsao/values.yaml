@@ -247,8 +247,9 @@ web:
       INTERNAL_API_URL: "http://hotsao-server.hotsao.svc.cluster.local:3000"
 
   secret:
-    enabled: false
-    names: []
+    enabled: true
+    names:
+      - hotsao-app-secrets
 
 #########################################################################
 # Redis
