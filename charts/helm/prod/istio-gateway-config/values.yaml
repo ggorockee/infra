@@ -294,3 +294,15 @@ virtualServices:
           - destination:
               host: hotsao-web
               port: 3000
+
+  # Hotsao API (go)
+  - name: hotsao-server-vs
+    namespace: hotsao
+    enabled: true
+    hosts:
+      - "api.hotsao.com"
+    http:
+      - route:
+          - destination:
+              host: hotsao-server
+              port: 3000
