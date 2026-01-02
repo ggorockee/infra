@@ -177,7 +177,7 @@ web:
   image:
     repository: ggorockee/hotsao-web
     pullPolicy: IfNotPresent
-    tag: "20260101-32ecdfe"
+    tag: "20260102-5d8cf21"
 
   serviceAccount:
     create: true
