@@ -14,11 +14,11 @@ service:
 
 resources:
   limits:
-    cpu: 100m
-    memory: 128Mi
-  requests:
     cpu: 50m
     memory: 64Mi
+  requests:
+    cpu: 10m
+    memory: 16Mi
 
 # app-ads.txt content
 appAdsContent: |
