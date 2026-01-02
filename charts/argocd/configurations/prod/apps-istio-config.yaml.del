@@ -1,0 +1,7 @@
+env: prod
+revision: main
+chartName: istio-config
+appName: istio-config
+repoURL: https://ggorockee.github.io/infra/
+chartVersion: 0.1.1
+namespace: istio-system

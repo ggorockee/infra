@@ -265,6 +265,13 @@ redis:
     revisionHistoryLimit: 1
     persistence:
       enabled: false
+    resources:
+      requests:
+        cpu: 20m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
 
 #########################################################################
 # RabbitMQ (공식 이미지 직접 관리)
@@ -283,3 +290,10 @@ rabbitmq:
   persistence:
     enabled: false
     size: "8Gi"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 180Mi
+    limits:
+      cpu: 200m
+      memory: 384Mi

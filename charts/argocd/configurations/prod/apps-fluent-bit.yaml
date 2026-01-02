@@ -1,0 +1,7 @@
+env: prod
+revision: main
+chartName: fluent-bit
+appName: fluent-bit
+repoURL: https://fluent.github.io/helm-charts
+chartVersion: 0.50.0
+namespace: logging
