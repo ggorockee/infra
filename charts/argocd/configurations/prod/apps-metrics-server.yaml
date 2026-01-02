@@ -1,0 +1,7 @@
+env: prod
+revision: main
+chartName: metrics-server
+appName: metrics-server
+repoURL: https://kubernetes-sigs.github.io/metrics-server/
+chartVersion: 3.12.2
+namespace: kube-system

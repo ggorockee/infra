@@ -237,11 +237,11 @@ server:
 
   resources:
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 20m
+      memory: 100Mi
     limits:
-      cpu: 500m
-      memory: 512Mi
+      cpu: 100m
+      memory: 200Mi
 
   # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
   livenessProbe:
@@ -414,10 +414,10 @@ admin:
 
   resources:
     requests:
-      cpu: 50m
-      memory: 128Mi
+      cpu: 20m
+      memory: 180Mi
     limits:
-      cpu: 200m
+      cpu: 100m
       memory: 256Mi
 
   # Health check probes using dedicated endpoints
@@ -530,11 +530,11 @@ go-scraper:
 
   resources:
     requests:
-      cpu: 100m
+      cpu: 50m
       memory: 128Mi
     limits:
-      cpu: 500m
-      memory: 512Mi
+      cpu: 300m
+      memory: 256Mi
 
   nodeSelector: {}
   tolerations: []
@@ -734,11 +734,11 @@ web:
 
   resources:
     requests:
-      cpu: 50m
-      memory: 128Mi
+      cpu: 20m
+      memory: 120Mi
     limits:
-      cpu: 200m
-      memory: 256Mi
+      cpu: 100m
+      memory: 200Mi
 
   livenessProbe:
     httpGet:

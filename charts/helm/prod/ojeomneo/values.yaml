@@ -41,11 +41,11 @@ server:
 
   resources:
     requests:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 20m
+      memory: 80Mi
     limits:
-      cpu: 500m
-      memory: 256Mi
+      cpu: 100m
+      memory: 150Mi
 
   # Health check probes - Go Fiber healthcheck endpoint
   # /ojeomneo/v1/healthcheck/live  - K8s startup/liveness probe (항상 200)
@@ -255,11 +255,11 @@ admin:
 
   resources:
     requests:
-      cpu: 50m
-      memory: 128Mi
+      cpu: 20m
+      memory: 200Mi
     limits:
-      cpu: 200m
-      memory: 256Mi
+      cpu: 100m
+      memory: 300Mi
 
   # Health check probes - Django Admin
   # /ojeomneo/v1/healthcheck/live/  - K8s startup/liveness probe (항상 200)
@@ -360,8 +360,11 @@ web:
 
   resources:
     requests:
-      cpu: 50m
-      memory: 128Mi
+      cpu: 20m
+      memory: 100Mi
+    limits:
+      cpu: 100m
+      memory: 200Mi
     limits:
       cpu: 200m
       memory: 256Mi
