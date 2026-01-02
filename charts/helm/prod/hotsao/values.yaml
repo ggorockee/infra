@@ -33,11 +33,11 @@ go-scraper:
 
   resources:
     requests:
-      cpu: 100m
-      memory: 512Mi
+      cpu: 550m
+      memory: 800Mi
     limits:
-      cpu: 500m
-      memory: 1Gi
+      cpu: 800m
+      memory: 1.2Gi
 
   configMap:
     enabled: true
@@ -109,11 +109,11 @@ server:
 
   resources:
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 30m
+      memory: 80Mi
     limits:
-      cpu: 500m
-      memory: 512Mi
+      cpu: 100m
+      memory: 150Mi
 
   livenessProbe:
     httpGet:
@@ -177,7 +177,7 @@ web:
   image:
     repository: ggorockee/hotsao-web
     pullPolicy: IfNotPresent
-    tag: "20260102-689c88f"
+    tag: "20260102-5d8cf21"
 
   serviceAccount:
     create: true
@@ -194,11 +194,11 @@ web:
 
   resources:
     requests:
-      cpu: 50m
-      memory: 128Mi
+      cpu: 40m
+      memory: 110Mi
     limits:
-      cpu: 200m
-      memory: 256Mi
+      cpu: 100m
+      memory: 200Mi
 
   livenessProbe:
     httpGet:
