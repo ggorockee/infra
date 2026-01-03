@@ -1,7 +1,0 @@
-env: prod
-revision: main
-chartName: reloader
-appName: reloader
-repoURL: https://stakater.github.io/stakater-charts
-chartVersion: 2.1.4
-namespace: kube-system

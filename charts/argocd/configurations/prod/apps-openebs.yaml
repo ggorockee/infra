@@ -1,7 +1,0 @@
-env: prod
-revision: main
-chartName: openebs
-appName: openebs
-repoURL: https://openebs.github.io/openebs
-chartVersion: 4.3.0
-namespace: openebs
