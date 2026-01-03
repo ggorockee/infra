@@ -1,7 +1,0 @@
-env: prod
-revision: main
-chartName: gateway
-appName: istioingress-gateway
-repoURL: https://istio-release.storage.googleapis.com/charts
-chartVersion: 1.26.1
-namespace: istio-system
