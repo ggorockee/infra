@@ -1,7 +1,0 @@
-env: prod
-revision: main
-chartName: cert-manager
-appName: cert-manager
-repoURL: https://charts.jetstack.io
-chartVersion: v1.18.1
-namespace: cert-manager

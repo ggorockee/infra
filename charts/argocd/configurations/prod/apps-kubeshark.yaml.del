@@ -1,7 +1,0 @@
-env: prod
-revision: main
-chartName: kubeshark
-appName: kubeshark
-repoURL: https://helm.kubeshark.co/
-chartVersion: 52.7.8
-namespace: kubeshark
