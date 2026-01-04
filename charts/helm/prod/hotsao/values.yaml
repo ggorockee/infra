@@ -31,15 +31,13 @@ go-scraper:
     job: hotsao-go-scraper
     service: hotsao-go-scraper
 
-  # 기본 리소스 (scraper별로 개별 설정이 없을 때 사용)
-  # 뽐뿌는 chromedp 사용으로 높은 리소스 필요, 나머지는 개별 설정됨
   resources:
     requests:
-      cpu: 300m
-      memory: 400Mi
-    limits:
-      cpu: 500m
+      cpu: 550m
       memory: 800Mi
+    limits:
+      cpu: 800m
+      memory: 1.2Gi
 
   configMap:
     enabled: true
@@ -71,50 +69,18 @@ go-scraper:
         schedule: "*/1 * * * *"  # 1분마다 실행
         failedJobsHistoryLimit: 1
         timeZone: "Asia/Seoul"
-        # chromedp 사용으로 인해 높은 리소스 필요
-        resources:
-          requests:
-            cpu: 550m
-            memory: 800Mi
-          limits:
-            cpu: 800m
-            memory: 1.2Gi
       - name: ruliweb
         schedule: "*/1 * * * *"  # 1분마다 실행
         failedJobsHistoryLimit: 1
         timeZone: "Asia/Seoul"
-        # 일반 크롤링이므로 낮은 리소스로 최적화
-        resources:
-          requests:
-            cpu: 300m
-            memory: 400Mi
-          limits:
-            cpu: 500m
-            memory: 800Mi
       - name: clien
         schedule: "*/1 * * * *"  # 1분마다 실행
         failedJobsHistoryLimit: 1
         timeZone: "Asia/Seoul"
-        # 일반 크롤링이므로 낮은 리소스로 최적화
-        resources:
-          requests:
-            cpu: 300m
-            memory: 400Mi
-          limits:
-            cpu: 500m
-            memory: 800Mi
       - name: quasarzone
         schedule: "*/1 * * * *"  # 1분마다 실행
         failedJobsHistoryLimit: 1
         timeZone: "Asia/Seoul"
-        # 일반 크롤링이므로 낮은 리소스로 최적화
-        resources:
-          requests:
-            cpu: 300m
-            memory: 400Mi
-          limits:
-            cpu: 500m
-            memory: 800Mi
 
 #########################################################################
 # Admin - Django Admin Panel
@@ -295,7 +261,7 @@ web:
   image:
     repository: ggorockee/hotsao-web
     pullPolicy: IfNotPresent
-    tag: "20260104-6fb74c7"
+    tag: "20260104-dc4f1e5"
 
   serviceAccount:
     create: true
