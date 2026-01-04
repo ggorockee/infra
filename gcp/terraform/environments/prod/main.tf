@@ -46,10 +46,11 @@ module "gke" {
 
   # Spot instance configuration
   # e2-medium pool: Fixed 2 nodes (2 vCPU, 4GB RAM)
-  # e2-standard-2 pool: 0-3 nodes (2 vCPU, 8GB RAM)
+  # e2-standard-2 pool: 2-3 nodes (2 vCPU, 8GB RAM)
+  # 최적화: 리소스 사용률 분석 결과 3개 노드로 충분 (CPU 30%, Memory 51% 평균 사용률)
   node_count     = 2
   min_node_count = 2
-  max_node_count = 2
+  max_node_count = 3
 }
 
 # Phase 1: Networking and GKE only
