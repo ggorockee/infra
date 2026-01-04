@@ -1,9 +1,9 @@
-# Default values for reviewmaps web
+# Default values for hotsao web
 replicaCount: 1
 revisionHistoryLimit: 3
 
 image:
-  repository: ggorockee/reviewmaps-web
+  repository: ggorockee/hotsao-web
   pullPolicy: IfNotPresent
   tag: "latest"
 
@@ -19,7 +19,7 @@ serviceAccount:
 
 podAnnotations: {}
 podLabels:
-  app: "reviewmaps-web"
+  app: "hotsao-web"
 
 podSecurityContext: {}
 securityContext: {}
@@ -85,6 +85,8 @@ configMap:
   data:
     NODE_ENV: "production"
     PORT: "3000"
+    NEXT_PUBLIC_API_URL: "https://api.hotsao.com/hotsao"
+    INTERNAL_API_URL: "http://hotsao-server:3000/hotsao"
 
 secret:
   enabled: false
