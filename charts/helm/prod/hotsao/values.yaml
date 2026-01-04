@@ -140,10 +140,10 @@ admin:
       path: /healthz
       port: http
       scheme: HTTP
-    initialDelaySeconds: 0
-    periodSeconds: 5
-    timeoutSeconds: 3
-    failureThreshold: 20
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 30
 
   autoscaling:
     enabled: false
