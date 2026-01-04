@@ -159,7 +159,7 @@ admin:
     enabled: true
     data:
       DJANGO_SETTINGS_MODULE: "settings.settings"
-      DJANGO_ALLOWED_HOSTS: "admin.hotsao.com,localhost,127.0.0.1,10.124.0.0/16"
+      DJANGO_ALLOWED_HOSTS: "*"
 
   secret:
     enabled: true
