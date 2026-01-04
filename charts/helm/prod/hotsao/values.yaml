@@ -145,6 +145,13 @@ admin:
     timeoutSeconds: 3
     failureThreshold: 20
 
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 90
+
   configMap:
     enabled: true
     data:
