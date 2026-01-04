@@ -98,6 +98,9 @@ admin:
     create: true
     automount: true
 
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
+
   podLabels:
     app: hotsao-admin
     service: hotsao-admin
@@ -156,7 +159,7 @@ admin:
     enabled: true
     data:
       DJANGO_SETTINGS_MODULE: "settings.settings"
-      DJANGO_ALLOWED_HOSTS: "admin.hotsao.com,localhost,127.0.0.1"
+      DJANGO_ALLOWED_HOSTS: "admin.hotsao.com,localhost,127.0.0.1,10.124.0.0/16"
 
   secret:
     enabled: true
