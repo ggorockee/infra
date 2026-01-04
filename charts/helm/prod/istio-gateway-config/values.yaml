@@ -306,3 +306,15 @@ virtualServices:
           - destination:
               host: hotsao-server
               port: 3000
+  
+  # Hotsao Admin (go)
+  - name: hotsao-admin-vs
+    namespace: hotsao
+    enabled: true
+    hosts:
+      - "admin.hotsao.com"
+    http:
+      - route:
+          - destination:
+              host: hotsao-admin
+              port: 8000
