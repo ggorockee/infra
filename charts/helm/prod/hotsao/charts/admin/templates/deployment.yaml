@@ -45,16 +45,16 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- if or .Values.configMap.enabled .Values.secret.enabled }}
           envFrom:
-          {{- if .Values.configMap.enabled }}
-            - configMapRef:
-                name: {{ .Values.configMap.name | default (include "admin.fullname" .) }}
-          {{- end}}
           {{- if and .Values.secret.enabled .Values.secret.names }}
           {{- range .Values.secret.names }}
             - secretRef:
                 name: {{ . | quote }}
             {{- end }}
             {{- end }}
+          {{- if .Values.configMap.enabled }}
+            - configMapRef:
+                name: {{ .Values.configMap.name | default (include "admin.fullname" .) }}
+          {{- end}}
           {{- end}}
           ports:
             - name: {{ .Values.service.portName | default "http" }}
