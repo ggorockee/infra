@@ -52,7 +52,11 @@ spec:
               {{- end }}
               {{- end }}
               resources:
+                {{- if $s.resources }}
+                {{- toYaml $s.resources | nindent 16 }}
+                {{- else }}
                 {{- toYaml $.Values.resources | nindent 16 }}
+                {{- end }}
           {{- with $.Values.nodeSelector }}
           nodeSelector:
             {{- toYaml . | nindent 12 }}
