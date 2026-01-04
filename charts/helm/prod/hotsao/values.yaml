@@ -160,7 +160,6 @@ admin:
     data:
       DJANGO_SETTINGS_MODULE: "settings.settings"
       DJANGO_ALLOWED_HOSTS: "*"
-      DJANGO_DEBUG: "True"  # Temporary debug mode
 
   secret:
     enabled: true
