@@ -83,6 +83,80 @@ go-scraper:
         timeZone: "Asia/Seoul"
 
 #########################################################################
+# Admin - Django Admin Panel
+#########################################################################
+admin:
+  enabled: true
+  replicaCount: 1
+  revisionHistoryLimit: 1
+  image:
+    repository: ggorockee/hotsao-admin
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+  serviceAccount:
+    create: true
+    automount: true
+
+  podLabels:
+    app: hotsao-admin
+    service: hotsao-admin
+
+  service:
+    type: ClusterIP
+    port: 8000
+    portName: "http"
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 120Mi
+    limits:
+      cpu: 150m
+      memory: 256Mi
+
+  livenessProbe:
+    httpGet:
+      path: /healthz
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 15
+    periodSeconds: 20
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /healthz
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  startupProbe:
+    httpGet:
+      path: /healthz
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 20
+
+  configMap:
+    enabled: true
+    data:
+      DJANGO_SETTINGS_MODULE: "settings.settings"
+      DJANGO_ALLOWED_HOSTS: "admin.hotsao.com,localhost,127.0.0.1"
+
+  secret:
+    enabled: true
+    names:
+      - hotsao-app-secrets
+
+#########################################################################
 # Server - Go Fiber v2 API
 #########################################################################
 server:
