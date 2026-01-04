@@ -10,6 +10,10 @@ dependencies:
   name: go-scraper
   repository: file://./charts/go-scraper
   version: 1.0.0
+- condition: admin.enabled
+  name: admin
+  repository: file://./charts/admin
+  version: 1.0.0
 - condition: server.enabled
   name: server
   repository: file://./charts/server
