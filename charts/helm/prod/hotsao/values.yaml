@@ -69,22 +69,51 @@ go-scraper:
         schedule: "*/1 * * * *"  # 1분마다 실행
         failedJobsHistoryLimit: 1
         timeZone: "Asia/Seoul"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 200m
+            memory: 512Mi
       - name: ruliweb
         schedule: "*/1 * * * *"  # 1분마다 실행
         failedJobsHistoryLimit: 1
         timeZone: "Asia/Seoul"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 200m
+            memory: 512Mi
       - name: clien
         schedule: "*/1 * * * *"  # 1분마다 실행
         failedJobsHistoryLimit: 1
         timeZone: "Asia/Seoul"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 200m
+            memory: 512Mi
       - name: quasarzone
         schedule: "*/1 * * * *"  # 1분마다 실행
         failedJobsHistoryLimit: 1
         timeZone: "Asia/Seoul"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 200m
+            memory: 512Mi
       - name: arcalive
         schedule: "*/1 * * * *"  # 1분마다 실행
         failedJobsHistoryLimit: 1
         timeZone: "Asia/Seoul"
+        # chromedp 사용으로 리소스를 더 많이 사용 (기본값 사용)
 
 #########################################################################
 # Admin - Django Admin Panel
