@@ -81,6 +81,10 @@ go-scraper:
         schedule: "*/1 * * * *"  # 1분마다 실행
         failedJobsHistoryLimit: 1
         timeZone: "Asia/Seoul"
+      - name: arcalive
+        schedule: "*/1 * * * *"  # 1분마다 실행
+        failedJobsHistoryLimit: 1
+        timeZone: "Asia/Seoul"
 
 #########################################################################
 # Admin - Django Admin Panel
