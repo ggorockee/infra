@@ -37,7 +37,7 @@ go-scraper:
       memory: 800Mi
     limits:
       cpu: 800m
-      memory: 1.2Gi
+      memory: 1200Mi
 
   configMap:
     enabled: true
