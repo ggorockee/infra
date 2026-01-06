@@ -365,9 +365,6 @@ web:
     limits:
       cpu: 100m
       memory: 200Mi
-    limits:
-      cpu: 200m
-      memory: 256Mi
 
   # Health check probes - Next.js Web
   livenessProbe:
