@@ -209,7 +209,7 @@ server:
   image:
     repository: ggorockee/hotsao-server
     pullPolicy: IfNotPresent
-    tag: "20260106-4e4358e"
+    tag: "20260107-68314a8"
 
   serviceAccount:
     create: true
