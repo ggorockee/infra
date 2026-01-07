@@ -72,10 +72,10 @@ go-scraper:
         resources:
           requests:
             cpu: 100m
-            memory: 256Mi
+            memory: 512Mi
           limits:
             cpu: 200m
-            memory: 512Mi
+            memory: 1Gi
       - name: ruliweb
         schedule: "*/1 * * * *"  # 1분마다 실행
         failedJobsHistoryLimit: 1
