@@ -1517,7 +1517,7 @@ ssl:
     email: "woohaen88@gmail.com"
 
     # GCP Project ID for Cloud DNS
-    gcpProjectId: "infra-480802"
+    gcpProjectId: "project-2372300d-c493-447b-8ee"
 
     # Secret name for Cloud DNS credentials
     dnsSecretName: "clouddns-dns01-solver-sa"
