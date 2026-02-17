@@ -5,6 +5,11 @@
 # Global settings
 global:
   istioNamespace: istio-system
+  # resourceScope controls which templates are rendered:
+  # "cluster" = CRDs + cluster-scoped resources (no namespace-scoped)
+  # "namespace" = namespace-scoped resources only
+  # "all" = both cluster and namespace-scoped resources
+  resourceScope: "cluster"
 
 # Base chart configuration
 base:
