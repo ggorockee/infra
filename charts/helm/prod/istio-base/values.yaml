@@ -24,3 +24,7 @@ base:
 
 # Default revision
 defaultRevision: "default"
+
+# Experimental features (required to prevent nil pointer errors in templates)
+experimental:
+  stableValidationPolicy: false
