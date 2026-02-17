@@ -1,30 +1,23 @@
 # Istio Base (CRDs and Cluster Resources) Configuration
 # Chart: istio/base v1.28.1
+# Official install: helm install istio-base istio/base -n istio-system --set defaultRevision=default
 # Reference: https://istio.io/latest/docs/setup/install/helm/
 
 # Global settings
 global:
   istioNamespace: istio-system
-  # resourceScope controls which templates are rendered:
-  # "cluster" = CRDs + cluster-scoped resources (no namespace-scoped)
-  # "namespace" = namespace-scoped resources only
-  # "all" = both cluster and namespace-scoped resources
-  resourceScope: "cluster"
+  # resourceScope: all = cluster + namespace scoped resources (upstream default)
+  resourceScope: all
 
 # Base chart configuration
 base:
-  # Enable CRD templates (required for Helm-based management)
   enableCRDTemplates: true
-
-  # Enable Istio config CRDs
   enableIstioConfigCRDs: true
-
-  # Exclude specific CRDs if needed (empty by default)
   excludedCRDs: []
 
-# Default revision
+# Default revision (maps to: --set defaultRevision=default)
 defaultRevision: "default"
 
-# Experimental features (required to prevent nil pointer errors in templates)
+# Experimental features (upstream default: false)
 experimental:
   stableValidationPolicy: false
