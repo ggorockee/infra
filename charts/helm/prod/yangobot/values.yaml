@@ -14,8 +14,8 @@ nameOverride: ""
 fullnameOverride: ""
 
 secret:
-  name: yangobot-secrets
-  lostarkApiKeyRef: lostark-api-key
+  name: yangobot-credentials
+  lostarkApiKeyRef: LOSTARK_API_KEY
 
 extraEnv: []
 
@@ -47,7 +47,13 @@ ingress:
           pathType: ImplementationSpecific
   tls: []
 
-resources: {}
+resources:
+  requests:
+    cpu: 20m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
 
 autoscaling:
   enabled: false
