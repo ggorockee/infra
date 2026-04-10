@@ -1,0 +1,15 @@
+apiVersion: v2
+appVersion: 1.0.0
+dependencies:
+- condition: bot.enabled
+  name: bot
+  repository: file://./charts/bot
+  version: 1.0.0
+- condition: redis.enabled
+  name: redis
+  repository: https://charts.bitnami.com/bitnami
+  version: 24.0.0
+description: yangobot - Kakao chatbot backend for Lost Ark character data (Go)
+name: yangobot
+type: application
+version: 1.0.0

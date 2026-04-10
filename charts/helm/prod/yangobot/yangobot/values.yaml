@@ -1,0 +1,151 @@
+#########################################################################
+# yangobot Helm Chart Values
+# Kakao chatbot backend for Lost Ark character data (Go)
+#########################################################################
+
+#########################################################################
+# Bot 설정 (yangobot Go API)
+#########################################################################
+bot:
+  enabled: true
+  replicaCount: 2
+  revisionHistoryLimit: 1
+
+  image:
+    repository: ggorockee/yangobot
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  serviceAccount:
+    create: true
+    automount: true
+    annotations:
+      # GCP Workload Identity - GSA 이메일로 교체 필요
+      iam.gke.io/gcp-service-account: yangobot@YOUR_GCP_PROJECT.iam.gserviceaccount.com
+    name: ""
+
+  podAnnotations: {}
+  podLabels:
+    app: "yangobot"
+    job: "yangobot"
+
+  podSecurityContext: {}
+  securityContext: {}
+
+  service:
+    type: ClusterIP
+    port: 8080
+    portName: "http"
+
+  resources:
+    requests:
+      cpu: 20m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+  # /healthz - 항상 200 반환
+  livenessProbe:
+    httpGet:
+      path: /healthz
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /healthz
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  startupProbe:
+    httpGet:
+      path: /healthz
+      port: http
+      scheme: HTTP
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 12
+
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+
+  volumes: []
+  volumeMounts: []
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  configMap:
+    enabled: true
+    name: ""
+    data:
+      # Redis 연결 (Bitnami standalone 서비스명: <release>-redis-master)
+      REDIS_ADDR: "yangobot-redis-master:6379"
+
+  secret:
+    enabled: true
+    names:
+      - yangobot-credentials   # ExternalSecret이 생성하는 K8s Secret
+
+#########################################################################
+# Redis 설정 (Bitnami Redis 24.0.0 - standalone)
+# Lost Ark API 분당 100회 제한 대응 캐시 레이어
+#########################################################################
+redis:
+  enabled: true
+
+  # 아키텍처: standalone (단일 인스턴스)
+  architecture: standalone
+
+  image:
+    registry: docker.io
+    repository: bitnami/redis
+    tag: latest
+
+  # 인증 비활성화 (in-cluster ClusterIP, yangobot client 미지원)
+  auth:
+    enabled: false
+
+  # 캐시 전용 설정 (maxmemory-policy: allkeys-lru)
+  commonConfiguration: |-
+    maxmemory 128mb
+    maxmemory-policy allkeys-lru
+    save ""
+
+  master:
+    count: 1
+    persistence:
+      enabled: true
+      size: 1Gi
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 150m
+        memory: 192Mi
+
+  replica:
+    replicaCount: 0
+    persistence:
+      enabled: false
+
+  metrics:
+    enabled: false

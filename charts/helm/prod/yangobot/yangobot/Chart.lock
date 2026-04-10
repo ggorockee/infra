@@ -1,0 +1,9 @@
+dependencies:
+- name: bot
+  repository: file://./charts/bot
+  version: 1.0.0
+- name: redis
+  repository: https://charts.bitnami.com/bitnami
+  version: 24.0.0
+digest: sha256:2b14cc20f213160777e03fe76359282140ebbbeecb1cb6361db8ce2741537f79
+generated: "2026-04-10T23:20:00.213468+09:00"
