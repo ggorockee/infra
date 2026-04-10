@@ -8,7 +8,9 @@ spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
-  revisionHistoryLimit: 3
+  {{- with .Values.revisionHistoryLimit }}
+  revisionHistoryLimit: {{ . | default 3 }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "bot.selectorLabels" . | nindent 6 }}
@@ -41,16 +43,21 @@ spec:
           {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          env:
-            - name: REDIS_ADDR
-              value: {{ .Values.redis.addr | quote }}
-          {{- if .Values.externalSecret.enabled }}
+          {{- if or .Values.configMap.enabled .Values.secret.enabled }}
           envFrom:
+          {{- if .Values.configMap.enabled }}
+            - configMapRef:
+                name: {{ .Values.configMap.name | default (include "bot.fullname" .) }}
+          {{- end }}
+          {{- if and .Values.secret.enabled .Values.secret.names }}
+          {{- range .Values.secret.names }}
             - secretRef:
-                name: {{ .Values.externalSecret.targetSecretName }}
+                name: {{ . | quote }}
+          {{- end }}
+          {{- end }}
           {{- end }}
           ports:
-            - name: http
+            - name: {{ .Values.service.portName | default "http" }}
               containerPort: {{ .Values.service.port }}
               protocol: TCP
           {{- with .Values.livenessProbe }}
@@ -59,6 +66,10 @@ spec:
           {{- end }}
           {{- with .Values.readinessProbe }}
           readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.startupProbe }}
+          startupProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .Values.resources }}
