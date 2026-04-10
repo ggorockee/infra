@@ -7,7 +7,7 @@ replicaCount: 1
 image:
   repository: ggorockee/yangobot
   pullPolicy: Always
-  tag: "20260410-c298514"
+  tag: "20260410-59b527c"
 
 imagePullSecrets: []
 nameOverride: ""
