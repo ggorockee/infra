@@ -8,7 +8,7 @@ image:
   repository: ggorockee/yangobot
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "20260410-5420ce4"
 
 imagePullSecrets: []
 nameOverride: ""
