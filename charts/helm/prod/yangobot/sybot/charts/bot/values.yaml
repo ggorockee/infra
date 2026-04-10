@@ -1,9 +1,9 @@
-# Default values for sybot bot subchart
+# Default values for yangobot bot subchart
 replicaCount: 2
 revisionHistoryLimit: 1
 
 image:
-  repository: ggorockee/sybot
+  repository: ggorockee/yangobot
   pullPolicy: IfNotPresent
   tag: "latest"
 
@@ -19,8 +19,8 @@ serviceAccount:
 
 podAnnotations: {}
 podLabels:
-  app: "sybot"
-  job: "sybot"
+  app: "yangobot"
+  job: "yangobot"
 
 podSecurityContext: {}
 securityContext: {}
@@ -84,9 +84,9 @@ configMap:
   enabled: true
   name: ""
   data:
-    REDIS_ADDR: "sybot-redis-master:6379"
+    REDIS_ADDR: "yangobot-redis-master:6379"
 
 secret:
   enabled: true
   names:
-    - sybot-credentials
+    - yangobot-credentials

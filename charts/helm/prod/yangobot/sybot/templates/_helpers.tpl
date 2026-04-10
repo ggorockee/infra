@@ -1,14 +1,14 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "sybot.name" -}}
+{{- define "yangobot.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Create a default fully qualified app name.
 */}}
-{{- define "sybot.fullname" -}}
+{{- define "yangobot.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -24,16 +24,16 @@ Create a default fully qualified app name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "sybot.chart" -}}
+{{- define "yangobot.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "sybot.labels" -}}
-helm.sh/chart: {{ include "sybot.chart" . }}
-{{ include "sybot.selectorLabels" . }}
+{{- define "yangobot.labels" -}}
+helm.sh/chart: {{ include "yangobot.chart" . }}
+{{ include "yangobot.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -43,7 +43,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "sybot.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "sybot.name" . }}
+{{- define "yangobot.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "yangobot.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}

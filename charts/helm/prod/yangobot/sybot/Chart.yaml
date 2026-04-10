@@ -9,7 +9,7 @@ dependencies:
   name: redis
   repository: https://charts.bitnami.com/bitnami
   version: 24.0.0
-description: sybot - Kakao chatbot backend for Lost Ark character data (Go)
-name: sybot
+description: yangobot - Kakao chatbot backend for Lost Ark character data (Go)
+name: yangobot
 type: application
 version: 1.0.0

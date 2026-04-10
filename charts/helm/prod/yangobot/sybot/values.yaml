@@ -1,10 +1,10 @@
 #########################################################################
-# sybot Helm Chart Values
+# yangobot Helm Chart Values
 # Kakao chatbot backend for Lost Ark character data (Go)
 #########################################################################
 
 #########################################################################
-# Bot 설정 (sybot Go API)
+# Bot 설정 (yangobot Go API)
 #########################################################################
 bot:
   enabled: true
@@ -12,7 +12,7 @@ bot:
   revisionHistoryLimit: 1
 
   image:
-    repository: ggorockee/sybot
+    repository: ggorockee/yangobot
     pullPolicy: IfNotPresent
     tag: "latest"
 
@@ -25,13 +25,13 @@ bot:
     automount: true
     annotations:
       # GCP Workload Identity - GSA 이메일로 교체 필요
-      iam.gke.io/gcp-service-account: sybot@YOUR_GCP_PROJECT.iam.gserviceaccount.com
+      iam.gke.io/gcp-service-account: yangobot@YOUR_GCP_PROJECT.iam.gserviceaccount.com
     name: ""
 
   podAnnotations: {}
   podLabels:
-    app: "sybot"
-    job: "sybot"
+    app: "yangobot"
+    job: "yangobot"
 
   podSecurityContext: {}
   securityContext: {}
@@ -97,12 +97,12 @@ bot:
     name: ""
     data:
       # Redis 연결 (Bitnami standalone 서비스명: <release>-redis-master)
-      REDIS_ADDR: "sybot-redis-master:6379"
+      REDIS_ADDR: "yangobot-redis-master:6379"
 
   secret:
     enabled: true
     names:
-      - sybot-credentials   # ExternalSecret이 생성하는 K8s Secret
+      - yangobot-credentials   # ExternalSecret이 생성하는 K8s Secret
 
 #########################################################################
 # Redis 설정 (Bitnami Redis 24.0.0 - standalone)
@@ -119,7 +119,7 @@ redis:
     repository: bitnami/redis
     tag: latest
 
-  # 인증 비활성화 (in-cluster ClusterIP, sybot client 미지원)
+  # 인증 비활성화 (in-cluster ClusterIP, yangobot client 미지원)
   auth:
     enabled: false
 
