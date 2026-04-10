@@ -1,0 +1,6 @@
+env: prod
+revision: main
+chartName: yangobot
+appName: yangobot
+repoURL: https://github.com/ggorockee/infra
+namespace: lostark
