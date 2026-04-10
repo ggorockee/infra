@@ -1,0 +1,64 @@
+# bot subchart 기본값 (상위 values.yaml의 bot.* 로 오버라이드됨)
+replicaCount: 2
+
+image:
+  repository: gcr.io/YOUR_PROJECT/sybot
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 8080
+
+externalSecret:
+  enabled: true
+  clusterSecretStore: gcp-secret-store
+  refreshInterval: 1h
+  gcpSecretName: sybot-lostark-api-key
+  targetSecretName: sybot-secrets
+
+redis:
+  addr: "sybot-redis:6379"
+
+resources: {}
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+  initialDelaySeconds: 3
+  periodSeconds: 5
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+
+volumes: []
+volumeMounts: []
+nodeSelector: {}
+tolerations: []
+affinity: {}

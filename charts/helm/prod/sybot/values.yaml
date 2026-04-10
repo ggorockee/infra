@@ -1,0 +1,109 @@
+# sybot 최상위 values
+# 각 서브차트 values는 bot.*, redis.* 키로 오버라이드
+
+bot:
+  replicaCount: 2
+
+  image:
+    repository: gcr.io/YOUR_PROJECT/sybot
+    pullPolicy: IfNotPresent
+    tag: ""
+
+  service:
+    type: ClusterIP
+    port: 8080
+
+  serviceAccount:
+    create: true
+    automount: true
+    annotations:
+      # GCP Workload Identity 연동 (실제 GSA 이메일로 교체)
+      iam.gke.io/gcp-service-account: sybot@YOUR_PROJECT.iam.gserviceaccount.com
+    name: ""
+
+  # External Secrets Operator를 통한 GCP Secret Manager 연동
+  externalSecret:
+    enabled: true
+    # 클러스터에 미리 생성된 ClusterSecretStore 이름
+    clusterSecretStore: gcp-secret-store
+    refreshInterval: 1h
+    # GCP Secret Manager에 생성된 시크릿 이름
+    gcpSecretName: sybot-lostark-api-key
+    # 생성될 K8s Secret 이름 (deployment에서 envFrom으로 참조)
+    targetSecretName: sybot-secrets
+
+  # Redis 연결 설정 (redis 서브차트 서비스명과 일치해야 함)
+  redis:
+    addr: "sybot-redis:6379"
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+  livenessProbe:
+    httpGet:
+      path: /healthz
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+  readinessProbe:
+    httpGet:
+      path: /healthz
+      port: http
+    initialDelaySeconds: 3
+    periodSeconds: 5
+
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+
+  podAnnotations: {}
+  podLabels: {}
+  podSecurityContext: {}
+  securityContext: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  volumes: []
+  volumeMounts: []
+
+redis:
+  replicaCount: 1
+
+  image:
+    repository: redis
+    tag: "7.2-alpine"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 6379
+
+  persistence:
+    enabled: true
+    storageClass: ""
+    size: 1Gi
+    accessMode: ReadWriteOnce
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+  podAnnotations: {}
+  podLabels: {}
+  podSecurityContext: {}
+  securityContext: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}

@@ -1,0 +1,9 @@
+dependencies:
+- name: bot
+  repository: file://charts/bot
+  version: 0.1.0
+- name: redis
+  repository: file://charts/redis
+  version: 0.1.0
+digest: sha256:310d7ac7f89ee431e9b07831ba821a37cb31e7ccdc92510f001741fa6654adae
+generated: "2026-04-10T23:11:58.619613+09:00"

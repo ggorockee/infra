@@ -1,0 +1,14 @@
+apiVersion: v2
+name: sybot
+description: Kakao chatbot backend for Lost Ark character data
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+
+dependencies:
+  - name: bot
+    version: "0.1.0"
+    repository: "file://charts/bot"
+  - name: redis
+    version: "0.1.0"
+    repository: "file://charts/redis"
