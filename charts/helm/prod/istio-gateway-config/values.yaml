@@ -318,3 +318,15 @@ virtualServices:
           - destination:
               host: hotsao-admin
               port: 8000
+
+  # Yangobot (카카오 챗봇 - Lost Ark)
+  - name: yangobot-vs
+    namespace: lostark
+    enabled: true
+    hosts:
+      - "yangobot.ggorockee.com"
+    http:
+      - route:
+          - destination:
+              host: yangobot
+              port: 8080
