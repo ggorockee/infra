@@ -8,6 +8,7 @@ spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit | default 2 }}
   selector:
     matchLabels:
       {{- include "yangobot.selectorLabels" . | nindent 6 }}
@@ -46,6 +47,8 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.secret.name }}
                   key: {{ .Values.secret.lostarkApiKeyRef }}
+            - name: REDIS_ADDR
+              value: "{{ include "yangobot.fullname" . }}-redis-master:6379"
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

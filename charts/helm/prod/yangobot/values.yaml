@@ -3,6 +3,7 @@
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
+revisionHistoryLimit: 2
 
 image:
   repository: ggorockee/yangobot
@@ -59,3 +60,20 @@ volumeMounts: []
 nodeSelector: {}
 tolerations: []
 affinity: {}
+
+redis:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    revisionHistoryLimit: 1
+    persistence:
+      enabled: false
+    resources:
+      requests:
+        cpu: 20m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
