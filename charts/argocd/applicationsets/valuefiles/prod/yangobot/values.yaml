@@ -18,3 +18,8 @@ resources:
   limits:
     cpu: 100m
     memory: 128Mi
+
+virtualService:
+  enabled: true
+  host: yangobot.ggorockee.com
+  gateway: istio-system/main-gateway

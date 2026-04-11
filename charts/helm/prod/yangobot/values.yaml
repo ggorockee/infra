@@ -47,6 +47,11 @@ ingress:
           pathType: ImplementationSpecific
   tls: []
 
+virtualService:
+  enabled: true
+  host: yangobot.ggorockee.com
+  gateway: istio-system/main-gateway
+
 resources:
   requests:
     cpu: 20m
