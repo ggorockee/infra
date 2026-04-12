@@ -48,7 +48,7 @@ spec:
                   name: {{ .Values.secret.name }}
                   key: {{ .Values.secret.lostarkApiKeyRef }}
             - name: REDIS_ADDR
-              value: "{{ include "yangobot.fullname" . }}-redis-master:6379"
+              value: "{{ include "yangobot.fullname" . }}-redis:6379"
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
