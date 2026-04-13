@@ -61,6 +61,14 @@ nodeSelector: {}
 tolerations: []
 affinity: {}
 
+kakao-client:
+  enabled: true
+  image:
+    repository: ggorockee/yangobot-kakao-client
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  yanbotApiUrl: "http://yangobot"
+
 redis:
   enabled: true
   architecture: standalone
