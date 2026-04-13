@@ -8,7 +8,7 @@ revisionHistoryLimit: 2
 image:
   repository: ggorockee/yangobot
   pullPolicy: Always
-  tag: "20260413-0d54c07"
+  tag: "20260413-86ea9f3"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -66,7 +66,7 @@ kakao-client:
   image:
     repository: ggorockee/yangobot-kakao-client
     pullPolicy: IfNotPresent
-    tag: "latest"
+    tag: "20260413-86ea9f3"
   yanbotApiUrl: "http://yangobot"
 
 redis:
