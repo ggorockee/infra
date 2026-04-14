@@ -8,7 +8,7 @@ revisionHistoryLimit: 2
 image:
   repository: ggorockee/yangobot
   pullPolicy: Always
-  tag: "20260414-6912414"
+  tag: "20260414-2513f0e"
 
 imagePullSecrets: []
 nameOverride: ""
