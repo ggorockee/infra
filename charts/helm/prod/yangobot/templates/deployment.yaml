@@ -42,11 +42,13 @@ spec:
               containerPort: {{ .Values.service.port }}
               protocol: TCP
           env:
-            - name: LOSTARK_API_KEY
+            {{- range .Values.secret.lostarkApiKeys }}
+            - name: {{ . }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.secret.name }}
-                  key: {{ .Values.secret.lostarkApiKeyRef }}
+                  name: {{ $.Values.secret.name }}
+                  key: {{ . }}
+            {{- end }}
             - name: REDIS_ADDR
               value: "{{ include "yangobot.fullname" . }}-redis:6379"
             {{- with .Values.extraEnv }}

@@ -16,7 +16,10 @@ fullnameOverride: ""
 
 secret:
   name: yangobot-credentials
-  lostarkApiKeyRef: LOSTARK_API_KEY
+  lostarkApiKeys:
+    - LOSTARK_API_KEY_1
+    - LOSTARK_API_KEY_2
+    - LOSTARK_API_KEY_3
 
 extraEnv: []
 
