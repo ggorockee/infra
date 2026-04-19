@@ -47,6 +47,7 @@ configMap:
     LOG_LEVEL: "info"
     SIGNOZ_ENDPOINT: "otel-collector.monitoring.svc.cluster.local:4318"
     SCRAPE_MAX_ITEMS: "0"  # 최대 수집 개수 (0 = 무제한)
+    SCRAPE_MAX_PAGES: "500"  # 최대 페이지 수 (0 = 무제한, 기본 500 - 무한루프 방지)
     # Server API 연동 설정 (키워드 알림용)
     SERVER_API_BASE_URL: "http://reviewmaps-server:3000"
     SERVER_API_ENABLED: "true"
