@@ -28,12 +28,6 @@ gateway:
           - "ggorockee.com"
         credentialName: ggorockee-com-wildcard-tls
 
-      - name: ggorockee-org
-        hosts:
-          - "*.ggorockee.org"
-          - "ggorockee.org"
-        credentialName: ggorockee-org-wildcard-tls
-
       - name: woohalabs-com
         hosts:
           - "*.woohalabs.com"
