@@ -65,10 +65,12 @@ env: {}
 
 # Labels for the gateway deployment
 # IMPORTANT: These labels are used for Gateway resource selectors
+# istio.io/rev: default is required for sidecar injector webhook to replace image: auto
 labels:
   istio: ingressgateway
   app: istio-ingressgateway
   "istio.io/dataplane-mode": none
+  "istio.io/rev": default
 
 # Annotations for all resources
 annotations: {}
