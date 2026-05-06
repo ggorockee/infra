@@ -66,9 +66,9 @@ module "cloud_sql" {
   vpc_network_id = module.networking.network_id
 
   # Cloud SQL 설정
-  instance_tier        = "db-g1-small"
-  disk_size_gb         = 20
-  deletion_protection  = true
+  instance_tier       = "db-g1-small"
+  disk_size_gb        = 20
+  deletion_protection = true
 
   depends_on = [module.external_secrets]
 }
