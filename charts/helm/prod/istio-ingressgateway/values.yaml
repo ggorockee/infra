@@ -11,6 +11,10 @@ serviceAccount:
   name: istio-ingressgateway
   annotations: {}
 
+# Pod labels for gateway injection (required for sidecar injector webhook)
+labels:
+  istio.io/rev: default
+
 # Pod annotations for gateway injection
 podAnnotations:
   prometheus.io/port: "15020"
