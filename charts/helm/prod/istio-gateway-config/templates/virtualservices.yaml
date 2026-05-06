@@ -39,12 +39,25 @@ spec:
       authority: {{ .rewrite.authority | quote }}
       {{- end }}
     {{- end }}
+    {{- if .redirect }}
+    redirect:
+      {{- if .redirect.uri }}
+      uri: {{ .redirect.uri | quote }}
+      {{- end }}
+      {{- if .redirect.authority }}
+      authority: {{ .redirect.authority | quote }}
+      {{- end }}
+      {{- if .redirect.redirectCode }}
+      redirectCode: {{ .redirect.redirectCode }}
+      {{- end }}
+    {{- else if .route }}
     route:
     {{- range .route }}
     - destination:
         host: {{ .destination.host }}
         port:
           number: {{ .destination.port }}
+    {{- end }}
     {{- end }}
   {{- end }}
 {{- end }}
