@@ -233,11 +233,6 @@ virtualServices:
               exact: "/"
         redirect:
           uri: "/ojeomneo"
-      - match:
-          - uri:
-              exact: ""
-        redirect:
-          uri: "/ojeomneo"
 
   # ReviewMaps Web (전체 도메인)
   - name: reviewmaps-web-vs
