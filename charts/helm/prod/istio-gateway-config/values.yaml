@@ -228,6 +228,16 @@ virtualServices:
           - destination:
               host: ojeomneo-web
               port: 3000
+      - match:
+          - uri:
+              exact: "/"
+        redirect:
+          uri: "/ojeomneo"
+      - match:
+          - uri:
+              exact: ""
+        redirect:
+          uri: "/ojeomneo"
 
   # ReviewMaps Web (전체 도메인)
   - name: reviewmaps-web-vs
