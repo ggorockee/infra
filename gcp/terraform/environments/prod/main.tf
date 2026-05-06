@@ -8,7 +8,6 @@ provider "google-beta" {
   region  = var.region
 }
 
-# Kubernetes and Helm providers for External Secrets deployment
 data "google_client_config" "default" {}
 
 provider "kubernetes" {
@@ -57,7 +56,7 @@ module "gke" {
 # Other modules will be enabled in future phases
 # GKE API has been enabled in GCP project
 
-# Phase 2: Cloud SQL 활성화 (Secret Manager DB credentials 사용)
+# Phase 2: Cloud SQL 활성화
 module "cloud_sql" {
   source = "../../modules/cloud-sql"
 
