@@ -10,7 +10,8 @@ spec:
       revision: main
       files:
       - path: "charts/argocd/configurations/prod/*-cfg.yaml"
-        exclude: "charts/argocd/configurations/prod/monitoring-*-cfg.yaml"
+      - path: "charts/argocd/configurations/prod/monitoring-*-cfg.yaml"
+        exclude: true
 
   template:
     metadata:
