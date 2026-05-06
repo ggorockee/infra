@@ -12,6 +12,8 @@ spec:
       - path: "charts/argocd/configurations/prod/*-cfg.yaml"
       - path: "charts/argocd/configurations/prod/monitoring-*-cfg.yaml"
         exclude: true
+      - path: "charts/argocd/configurations/prod/istio-*-cfg.yaml"
+        exclude: true
 
   template:
     metadata:
