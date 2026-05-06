@@ -38,12 +38,18 @@ spec:
           name: istiod-default-validator
           jsonPointers:
             - /webhooks/0/failurePolicy
+            - /webhooks/0/namespaceSelector
+            - /webhooks/0/objectSelector
+            - /webhooks/0/clientConfig/caBundle
 
         - group: admissionregistration.k8s.io
           kind: ValidatingWebhookConfiguration
           name: istio-validator-istio-system
           jsonPointers:
             - /webhooks/0/failurePolicy
+            - /webhooks/0/namespaceSelector
+            - /webhooks/0/objectSelector
+            - /webhooks/0/clientConfig/caBundle
 
         - group: apps
           kind: DaemonSet
@@ -58,3 +64,8 @@ spec:
             - /spec/clusterIP
             - /spec/clusterIPs
             - /spec/allocateLoadBalancerNodePorts
+            - /spec/ipFamilies
+            - /spec/ipFamilyPolicy
+            - /spec/internalTrafficPolicy
+            - /metadata/annotations/cloud.google.com~1neg
+            - /metadata/annotations/cloud.google.com~1neg-status
