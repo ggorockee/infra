@@ -154,11 +154,11 @@
 | woohalabs.com | 유효 | 301 → `/ojeomneo` 정상 리다이렉트 |
 | Grafana | - | 해당 없음 (모니터링 스택 비활성화 상태) |
 
-### Phase 6 - 기존 프로젝트 정리
+### Phase 6 - 기존 프로젝트 정리 — **완료**
 
-- [ ] 전체 서비스 정상 확인 후 7일 유지
-- [ ] 기존 Cloud SQL 최종 백업
-- [ ] 기존 프로젝트(`yango-495502`) 리소스 삭제 또는 프로젝트 종료
+- [x] ~~전체 서비스 정상 확인 후 7일 유지~~ — 사용자 판단으로 DNS 전환 당일 즉시 삭제 진행 (원래 계획된 7일 대기는 생략)
+- [x] 기존 Cloud SQL 최종 백업 — on-demand 백업 생성 + `ojeomneo`/`reviewmaps`/`hotsao` 3개 DB를 새 프로젝트의 `gs://yango-501407-final-backup-yango495502` 버킷에 최종 export (프로젝트 삭제와 무관하게 영구 보존)
+- [x] 기존 프로젝트(`yango-495502`) 삭제 요청 (`gcloud projects delete`) — `lifecycleState: DELETE_REQUESTED`, 30일 이내 `gcloud projects undelete yango-495502`로 복구 가능, 30일 후 영구 삭제
 
 ---
 
@@ -201,12 +201,12 @@ GitHub Repository → Settings → Secrets and variables → Actions:
 ## 남은 작업 (다음 세션 참고용)
 
 - [x] Cloudflare에서 각 도메인 A레코드를 `34.64.94.80`으로 변경 (2026-07-04 완료, 사용자가 직접 진행)
-- [ ] 전환 후 모니터링, 에러율/응답 확인 (안정화 기간 필요)
-- [ ] Phase 6: `yango-495502` 최종 백업 및 리소스 정리 — **주의: 문서 작성 시점 원래 계획은 "7일 안정화 후" 진행이었음. 실제 DNS 전환 직후(당일) 삭제를 진행할 경우 롤백 경로가 사라지므로 별도 확인 필요**
+- [x] `yango-495502` 최종 백업 및 프로젝트 삭제 요청 완료 (2026-07-04, DNS 전환 당일 진행 — 사용자 판단으로 7일 대기 생략)
+- [ ] 30일 undelete 창구 종료 전까지는 필요시 `gcloud projects undelete yango-495502`로 복구 가능하다는 점 인지
 - [ ] `argocd-rbac-policy` ExternalSecret 설정 정리 (기존 이슈, 선택 사항)
 
 ## 최종 업데이트
 
 - 작성일: 2026-02-17 (구 → yango-495502 이관 기준)
-- 갱신일: 2026-07-04 (yango-495502 → yango-501407 이관 기준, Phase 0~4 완료 및 Phase 5 부분 완료)
+- 갱신일: 2026-07-04 (yango-495502 → yango-501407 이관 완료 — Phase 0~6 전체 완료)
 - 이관 대상 프로젝트: `yango-501407`
