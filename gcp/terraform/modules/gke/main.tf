@@ -93,6 +93,10 @@ resource "google_container_node_pool" "spot_pool_medium" {
     min_node_count = 0
     max_node_count = 0
   }
+
+  lifecycle {
+    ignore_changes = [node_count]
+  }
 }
 
 # Node Pool with Spot Instances - e2-highmem-2 (2 vCPU, 16GB RAM)
@@ -138,5 +142,9 @@ resource "google_container_node_pool" "spot_pool_large" {
   autoscaling {
     min_node_count = 2
     max_node_count = 3
+  }
+
+  lifecycle {
+    ignore_changes = [node_count]
   }
 }
