@@ -127,32 +127,32 @@
 - `argocd-rbac-policy` ExternalSecret이 `creationPolicy: Merge`로 존재하지 않는 Secret `argocd-rbac-cm`에 병합을 시도하다 `SecretSyncedError` 발생. 이관 이전부터 있던 차트 설정 이슈로 보이며, 이번 이관 범위에서는 수정하지 않고 발견 사항으로만 기록.
 - `hotsao`의 cron 파드들이 일시적으로 `Insufficient cpu`로 Pending (전체 앱이 동시에 최초 부트스트랩되며 발생한 일시적 현상, `spot_pool_large`가 2→3 노드로 오토스케일되며 자연 해소됨).
 
-### Phase 5 - DNS 전환 및 검증 — **부분 완료 (실제 트래픽 전환은 아직 안 됨)**
+### Phase 5 - DNS 전환 및 검증 — **완료**
 
 - [x] 새 Istio Ingress Gateway 외부 IP 확인 (`34.64.94.80`)
 - [x] Cloud DNS 존 5개(`ggorockee-com`, `ggorockee-org`, `hotsao-com`, `review-maps-com`, `woohalabs-com`)를 `yango-501407`에 생성, A레코드(root+wildcard)를 새 IP로 설정
 - [x] HTTPS 인증서 발급 확인 (ggorockee.com, hotsao.com, review-maps.com, woohalabs.com 4개 모두 발급 완료)
-- [x] 각 앱 정상 동작 확인 (ojeomneo, reviewmaps, hotsao — 클러스터 내부에서 파드/DB 연결 기준. sybot/yangobot은 파드 Healthy 확인, 도메인 통한 외부 접근은 미검증)
+- [x] 각 앱 정상 동작 확인 (도메인을 통한 실제 HTTPS 요청으로 검증)
 - [ ] 모니터링 스택 확인 — **해당 없음**: Prometheus/Grafana/Loki는 저장소에서 의도적으로 비활성화된 상태 (`charts/argocd/configurations/prod/legacy/monitoring-kube-prometheus-stack.yaml.monitoring`, PR #1035에서 제거). 이관과 무관한 기존 상태.
-- [ ] **DNS 레코드 실제 전환 (레지스트라/Cloudflare 레벨) — 미실행**
+- [x] **DNS 레코드 실제 전환 (Cloudflare A레코드 → 새 IP)** — 사용자가 Cloudflare에서 각 도메인 A레코드를 `34.64.94.80`으로 직접 변경 완료
 
-**중요**: 각 도메인의 실제 권위 DNS는 Google Cloud DNS가 아니라 **Cloudflare**임 (`isaac.ns.cloudflare.com`, `hope.ns.cloudflare.com`). 위에서 만든 `yango-501407`의 Cloud DNS 존은 실제 트래픽에는 전혀 영향을 주지 않으며, 오직 `_acme-challenge.<domain>` 서브도메인만 Cloudflare에서 Google Cloud DNS로 NS 위임되어 있어 (사용자가 직접 설정) SSL 인증서 발급 자동화 용도로만 쓰이는 상태. **실제 트래픽을 새 클러스터로 전환하려면 Cloudflare에서 각 도메인의 A 레코드(root + wildcard)를 `34.64.94.80`으로 직접 변경해야 함** — 이 작업은 아직 진행되지 않았고, 실제 서비스 다운타임/전환 리스크가 있는 단계라 사용자 확인 후 진행 필요.
+**중요**: 각 도메인의 실제 권위 DNS는 Google Cloud DNS가 아니라 **Cloudflare**임 (`isaac.ns.cloudflare.com`, `hope.ns.cloudflare.com`). `yango-501407`의 Cloud DNS 존은 트래픽 라우팅에는 관여하지 않고, `_acme-challenge.<domain>` 서브도메인만 Cloudflare에서 Google Cloud DNS로 NS 위임되어 있어 (사용자가 직접 설정) SSL 인증서 발급 자동화 용도로 쓰임. 실제 트래픽 전환은 Cloudflare의 A레코드 변경으로 완료됨.
 
 **실행 중 발견/해결한 이슈**:
 
 - `cert-manager-dns01-key` 시크릿이 옛 프로젝트(`yango-495502`) 소속 서비스 계정 키였음 — 그대로 쓰면 Phase 6에서 구 프로젝트 삭제 시 인증서 갱신이 깨짐. 새 프로젝트에 `cert-manager-dns01@yango-501407` 서비스 계정을 새로 만들어 `roles/dns.admin` 부여 후 키 교체.
 - DNS-01 챌린지가 계속 `403 Forbidden`으로 실패했던 최초 원인은 위 서비스 계정 문제였고, 그 다음 발견된 근본 원인이 Cloudflare 권위 DNS 문제였음. 사용자가 Cloudflare에서 `_acme-challenge` 서브도메인 NS 위임을 설정한 뒤 정상적으로 발급됨.
 
-**검증 체크리스트:**
+**최종 검증 결과 (도메인 통한 실제 HTTPS 요청 기준):**
 
-| 서비스 | 확인 방법 | 결과 |
-|--------|---------|------|
-| ArgoCD | 로그인 확인 | 미검증 (도메인 미전환) |
-| Ojeomneo | 앱 정상 동작 | 클러스터 내부 기준 정상 |
-| ReviewMaps | 앱 정상 동작 | 클러스터 내부 기준 정상 |
-| Hotsao | 앱 정상 동작 | 클러스터 내부 기준 정상 |
-| Yangobot | 앱 정상 동작 | 파드 Healthy |
-| Grafana | 대시보드 확인 | 해당 없음 (모니터링 스택 비활성화 상태) |
+| 도메인 | 인증서 | 응답 |
+|--------|--------|------|
+| ggorockee.com | 유효 | 404 (루트에 라우팅 없음, 기존부터 그랬음 — 버그 아님) |
+| argocd.ggorockee.com | 유효 | 200, ArgoCD 정상 |
+| hotsao.com | 유효 | 200, 앱 정상 응답 |
+| review-maps.com | 유효 | 200, 앱 정상 응답 |
+| woohalabs.com | 유효 | 301 → `/ojeomneo` 정상 리다이렉트 |
+| Grafana | - | 해당 없음 (모니터링 스택 비활성화 상태) |
 
 ### Phase 6 - 기존 프로젝트 정리
 
@@ -200,9 +200,9 @@ GitHub Repository → Settings → Secrets and variables → Actions:
 
 ## 남은 작업 (다음 세션 참고용)
 
-- [ ] Cloudflare에서 각 도메인 A레코드를 `34.64.94.80`으로 변경 (실제 트래픽 전환, 사용자 승인 필요)
-- [ ] 전환 후 24시간 모니터링, 에러율/응답 확인
-- [ ] Phase 6: 7일 안정화 후 `yango-495502` 최종 백업 및 리소스 정리
+- [x] Cloudflare에서 각 도메인 A레코드를 `34.64.94.80`으로 변경 (2026-07-04 완료, 사용자가 직접 진행)
+- [ ] 전환 후 모니터링, 에러율/응답 확인 (안정화 기간 필요)
+- [ ] Phase 6: `yango-495502` 최종 백업 및 리소스 정리 — **주의: 문서 작성 시점 원래 계획은 "7일 안정화 후" 진행이었음. 실제 DNS 전환 직후(당일) 삭제를 진행할 경우 롤백 경로가 사라지므로 별도 확인 필요**
 - [ ] `argocd-rbac-policy` ExternalSecret 설정 정리 (기존 이슈, 선택 사항)
 
 ## 최종 업데이트
