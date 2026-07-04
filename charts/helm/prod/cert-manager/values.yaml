@@ -1517,7 +1517,7 @@ ssl:
     email: "woohaen88@gmail.com"
 
     # GCP Project ID for Cloud DNS
-    gcpProjectId: "yango-495502"
+    gcpProjectId: "yango-501407"
 
     # Secret name for Cloud DNS credentials
     dnsSecretName: "clouddns-dns01-solver-sa"
