@@ -233,7 +233,9 @@ resource "google_sql_user" "reviewmaps" {
 # Secret Manager에 연결 정보 업데이트
 # ============================================================
 
-# Ojeomneo DB 연결 정보 업데이트 (POSTGRES_SERVER를 Cloud SQL Private IP로 변경)
+# Ojeomneo DB 연결 정보 업데이트 (POSTGRES_HOST/POSTGRES_SERVER를 Cloud SQL Private IP로 변경)
+# NOTE: 앱은 POSTGRES_HOST를 실제로 사용함 (POSTGRES_SERVER만 갱신하던 이전 버전은
+# 프로젝트 이관 시 앱이 옛 프로젝트의 Private IP로 계속 연결을 시도하는 버그가 있었음)
 resource "null_resource" "update_ojeomneo_secret" {
   provisioner "local-exec" {
     command = <<-EOT
@@ -242,10 +244,10 @@ resource "null_resource" "update_ojeomneo_secret" {
         --secret=prod-ojeomneo-db-credentials \
         --project=${var.project_id})
 
-      # POSTGRES_SERVER만 Cloud SQL Private IP로 업데이트
+      # POSTGRES_HOST, POSTGRES_SERVER 둘 다 Cloud SQL Private IP로 업데이트
       UPDATED_SECRET=$(echo "$EXISTING_SECRET" | jq \
         --arg server "${google_sql_database_instance.main.private_ip_address}" \
-        '.POSTGRES_SERVER = $server')
+        '.POSTGRES_HOST = $server | .POSTGRES_SERVER = $server')
 
       # 새 버전 추가
       echo -n "$UPDATED_SECRET" | gcloud secrets versions add prod-ojeomneo-db-credentials \
@@ -257,7 +259,7 @@ resource "null_resource" "update_ojeomneo_secret" {
   depends_on = [google_sql_database_instance.main]
 }
 
-# ReviewMaps DB 연결 정보 업데이트 (POSTGRES_SERVER를 Cloud SQL Private IP로 변경)
+# ReviewMaps DB 연결 정보 업데이트 (POSTGRES_HOST/POSTGRES_SERVER를 Cloud SQL Private IP로 변경)
 resource "null_resource" "update_reviewmaps_secret" {
   provisioner "local-exec" {
     command = <<-EOT
@@ -266,10 +268,10 @@ resource "null_resource" "update_reviewmaps_secret" {
         --secret=prod-reviewmaps-db-credentials \
         --project=${var.project_id})
 
-      # POSTGRES_SERVER만 Cloud SQL Private IP로 업데이트
+      # POSTGRES_HOST, POSTGRES_SERVER 둘 다 Cloud SQL Private IP로 업데이트
       UPDATED_SECRET=$(echo "$EXISTING_SECRET" | jq \
         --arg server "${google_sql_database_instance.main.private_ip_address}" \
-        '.POSTGRES_SERVER = $server')
+        '.POSTGRES_HOST = $server | .POSTGRES_SERVER = $server')
 
       # 새 버전 추가
       echo -n "$UPDATED_SECRET" | gcloud secrets versions add prod-reviewmaps-db-credentials \
