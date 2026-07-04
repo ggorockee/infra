@@ -107,21 +107,17 @@ module "cloud_armor" {
 # }
 
 # Phase 2: External Secrets Operator deployment
-# NOTE: 신규 프로젝트 최초 부트스트랩 시 임시로 비활성화.
-# kubernetes_manifest 리소스는 GKE 클러스터가 이미 존재해야 REST client를 구성할 수 있는데,
-# 최초 apply에서는 GKE 클러스터도 함께 생성되므로 plan 단계에서 실패함.
-# GKE 클러스터가 생성된 뒤 별도 커밋으로 재활성화할 것.
-# module "external_secrets" {
-#   source = "../../modules/external-secrets"
-#
-#   project_id       = var.project_id
-#   region           = var.region
-#   environment      = var.environment
-#   cluster_name     = module.gke.cluster_name
-#   cluster_location = module.gke.cluster_location
-#
-#   depends_on = [module.gke]
-# }
+module "external_secrets" {
+  source = "../../modules/external-secrets"
+
+  project_id       = var.project_id
+  region           = var.region
+  environment      = var.environment
+  cluster_name     = module.gke.cluster_name
+  cluster_location = module.gke.cluster_location
+
+  depends_on = [module.gke]
+}
 
 # Phase 3: ArgoCD deployment
 # NOTE: ArgoCD is now managed by Helm/ArgoCD itself, not by Terraform
