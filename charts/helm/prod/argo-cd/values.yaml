@@ -2401,7 +2401,7 @@ server:
     name: argocd-server
     # -- Annotations applied to created service account
     annotations:
-      iam.gke.io/gcp-service-account: argocd-prod@infra-480802.iam.gserviceaccount.com
+      iam.gke.io/gcp-service-account: argocd-prod@yango-501407.iam.gserviceaccount.com
     # -- Labels applied to created service account
     labels: {}
     # -- Automount API credentials for the Service Account

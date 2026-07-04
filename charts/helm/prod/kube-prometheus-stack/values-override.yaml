@@ -20,13 +20,13 @@ externalSecret:
 clusterSecretStore:
   enabled: false  # Terraform에서 관리하므로 비활성화
   name: "gcpsm-secret-store"
-  gcpProjectID: "infra-480802"
+  gcpProjectID: "yango-501407"
   clusterLocation: "asia-northeast3-a"
   clusterName: "woohalabs-prod-gke"
   serviceAccount:
     name: "external-secrets"
     namespace: "external-secrets-system"
-    gcpServiceAccount: "external-secrets-prod@infra-480802.iam.gserviceaccount.com"
+    gcpServiceAccount: "external-secrets-prod@yango-501407.iam.gserviceaccount.com"
 
 # Grafana 설정
 grafana:
