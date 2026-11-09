@@ -214,18 +214,68 @@ function renderPhase(p) {
     el.addEventListener("click", () => toggleStep(el.dataset.step)));
   document.querySelectorAll(".copy-btn").forEach((el) =>
     el.addEventListener("click", () => copyCode(el)));
+  document.querySelectorAll(".run-btn").forEach((el) =>
+    el.addEventListener("click", () => runCommand(el)));
+}
+
+// 명령을 로컬 셸로 실행하고 결과를 실시간 스트리밍으로 출력한다.
+async function runCommand(btn) {
+  const code = btn.dataset.code;
+  const danger = btn.dataset.danger === "1";
+  if (danger && !confirm("🚨 되돌리기 어려운 명령입니다.\n정말 실행할까요?\n\n" + code)) return;
+
+  const out = document.getElementById("out-" + btn.dataset.out);
+  out.hidden = false;
+  out.textContent = "";
+  out.classList.add("running");
+  const orig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "⏳ 실행 중";
+
+  try {
+    const resp = await fetch("/api/run", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    });
+    if (!resp.ok || !resp.body) {
+      out.textContent += "\n[오류] 서버 응답 실패 (" + resp.status + ")";
+      return;
+    }
+    const reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      out.textContent += dec.decode(value, { stream: true });
+      out.scrollTop = out.scrollHeight;
+    }
+  } catch (e) {
+    out.textContent += "\n[오류] " + e.message;
+  } finally {
+    out.classList.remove("running");
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
 }
 
 function renderStep(s) {
   const on = !!state.progress[s.id];
-  const cmds = (s.commands || []).map((cmd) => `
+  const cmds = (s.commands || []).map((cmd, ci) => {
+    const cid = `${s.id}-c${ci}`;
+    return `
     <div class="cmd ${cmd.danger ? "danger" : ""}">
       <div class="cmd-head">
         <span class="cmd-label">${esc(cmd.label)}</span>
-        <button class="copy-btn" data-code="${esc(cmd.code)}">복사</button>
+        <div class="cmd-actions">
+          <button class="copy-btn" data-code="${esc(cmd.code)}">복사</button>
+          <button class="run-btn" data-code="${esc(cmd.code)}" data-danger="${cmd.danger ? 1 : 0}" data-out="${cid}">▶ 실행</button>
+        </div>
       </div>
       <pre>${esc(cmd.code)}</pre>
-    </div>`).join("");
+      <div class="cmd-out" id="out-${cid}" hidden></div>
+    </div>`;
+  }).join("");
 
   return `<div class="step ${on ? "done" : ""}">
     <div class="step-head">

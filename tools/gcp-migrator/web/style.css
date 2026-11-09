@@ -228,19 +228,35 @@ body {
 }
 .cmd-label { font-size: 12px; font-weight: 600; }
 .cmd.danger .cmd-label::before { content: "🚨 "; }
-.copy-btn {
+.cmd-actions { display: flex; gap: 6px; }
+.copy-btn, .run-btn {
   background: transparent; border: 1px solid var(--border);
   color: var(--text-dim); border-radius: 6px;
   padding: 3px 10px; font-size: 11px; cursor: pointer;
-  transition: all .15s;
+  transition: all .15s; white-space: nowrap;
 }
 .copy-btn:hover { color: var(--text); border-color: var(--accent); }
 .copy-btn.copied { color: var(--accent-2); border-color: var(--accent-2); }
+.run-btn { color: var(--accent-2); border-color: var(--accent-2); font-weight: 600; }
+.run-btn:hover { background: var(--accent-2); color: #fff; }
+.run-btn:disabled { opacity: .6; cursor: default; background: transparent; color: var(--accent-2); }
+.cmd.danger .run-btn { color: var(--danger); border-color: var(--danger); }
+.cmd.danger .run-btn:hover { background: var(--danger); color: #fff; }
 .cmd pre {
   padding: 12px 14px; overflow-x: auto;
   font-family: var(--mono); font-size: 12.5px; line-height: 1.55;
   color: #c9d1d9; white-space: pre;
 }
+.cmd-out {
+  border-top: 1px solid var(--border);
+  background: #05080d;
+  padding: 12px 14px;
+  font-family: var(--mono); font-size: 12px; line-height: 1.5;
+  color: #b9c2cc; white-space: pre-wrap; word-break: break-word;
+  max-height: 340px; overflow-y: auto;
+}
+.cmd-out.running { border-left: 3px solid var(--warn); }
+.cmd-out:empty { display: none; }
 
 /* toast */
 .toast {

@@ -139,6 +139,9 @@ func main() {
 	// 읽기 전용 gcloud 조회 (불러오기 버튼)
 	mux.HandleFunc("/api/lookup/billing", handleLookupBilling)
 
+	// 명령 실행 + 실시간 스트리밍 (▶ 실행 버튼)
+	mux.HandleFunc("/api/run", handleRun)
+
 	srv := &http.Server{
 		Addr:              *addr,
 		Handler:           mux,
