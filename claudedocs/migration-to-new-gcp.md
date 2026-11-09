@@ -18,8 +18,11 @@
 - [x] 새 프로젝트에 결제 계정 연결 (`019BE5-B9EFB8-C3E4D3`)
 - [x] 필수 API 활성화 (아래 목록)
 - [x] Terraform 서비스 계정 생성 및 권한 부여 (`roles/owner`)
+- [x] (신규 조직만) SA 키 생성 차단 org 정책 해제
 - [x] GCS 버킷 생성 (Terraform state용, 버전관리 활성화)
 - [x] 서비스 계정 키 다운로드 (스크래치패드에 보관, GitHub Secrets 등록 후 로컬 파일 삭제 예정)
+
+**실행 중 발견된 이슈 (신규 조직 보안 기본값)**: 신규 GCP 조직 산하 프로젝트는 `constraints/iam.disableServiceAccountKeyCreation` 가 기본 강제되어 SA 키 생성이 `FAILED_PRECONDITION` 으로 막힘. org 관리자(`resourcemanager.organizationAdmin`)가 ① 본인에게 `roles/orgpolicy.policyAdmin` 부여 → ② `gcloud resource-manager org-policies disable-enforce iam.disableServiceAccountKeyCreation --project=[PROJECT]` 로 프로젝트 레벨 해제. 실효 정책이 `booleanPolicy: {}` 로 바뀐 뒤에도 **실제 키 생성 허용까지 최대 ~7분 전파 지연**이 있어, 바로 `keys create` 하면 여전히 실패할 수 있으므로 2~3분 뒤 재시도 필요. (이전 `yango-495502`/`yango-501407` 이관 때는 조직이 없어 미발생, `yanggo-514212` 이관에서 최초 발견.) 결제 계정도 소유 계정별로 다르므로(구 `019BE5-...` ≠ 신 `01B392-...`) **신 소유 계정으로 로그인한 상태에서** 조회·연결해야 함.
 
 #### 활성화 필요 API 목록
 

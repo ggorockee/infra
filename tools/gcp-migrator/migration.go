@@ -172,7 +172,26 @@ func (c Config) phase0(old, nw, tfSA string) Phase {
 				Commands: []Command{
 					{Label: "SA 생성", Code: fmt.Sprintf("gcloud iam service-accounts create terraform \\\n  --display-name=\"Terraform\" --project=%s", nw)},
 					{Label: "Owner 바인딩", Code: fmt.Sprintf("gcloud projects add-iam-policy-binding %s \\\n  --member=\"serviceAccount:%s\" \\\n  --role=\"roles/owner\"", nw, tfSA)},
-					{Label: "SA 키 발급 (GitHub Secret용)", Code: fmt.Sprintf("gcloud iam service-accounts keys create terraform-key.json \\\n  --iam-account=%s", tfSA)},
+				},
+			},
+			{
+				ID:    "p0-orgpolicy",
+				Title: "⚠️ SA 키 생성 차단 org 정책 해제 (신규 조직 보안 기본값)",
+				Note: "신규 GCP 조직은 `iam.disableServiceAccountKeyCreation` 가 기본 강제되어 SA 키 생성이 막힘 (FAILED_PRECONDITION).\n" +
+					"org 관리자(organizationAdmin)면 아래로 해제 가능. ⏳ 정책 반영까지 최대 ~7분 전파 지연이 있어, 다음 '키 발급'이 실패하면 2~3분 뒤 다시 실행하면 됨.\n" +
+					"조직이 없거나(개인 프로젝트) 이미 해제돼 있으면 이 단계는 건너뛰어도 됨.",
+				Commands: []Command{
+					{Label: "① orgpolicy.policyAdmin 자가 부여 (org 자동 탐색)", Code: fmt.Sprintf("ORG=$(gcloud projects describe %s --format='value(parent.id)')\ngcloud organizations add-iam-policy-binding \"$ORG\" \\\n  --member=\"user:%s\" \\\n  --role=\"roles/orgpolicy.policyAdmin\" --condition=None", nw, def(c.NewOwnerEmail, "<NEW_OWNER>"))},
+					{Label: "② 프로젝트 레벨 정책 강제 해제", Code: fmt.Sprintf("gcloud resource-manager org-policies disable-enforce \\\n  iam.disableServiceAccountKeyCreation --project=%s", nw)},
+					{Label: "③ 실효 정책 확인 (booleanPolicy: {} 면 해제됨)", Code: fmt.Sprintf("gcloud resource-manager org-policies describe \\\n  iam.disableServiceAccountKeyCreation --project=%s --effective", nw)},
+				},
+			},
+			{
+				ID:    "p0-key",
+				Title: "SA 키 발급 (GitHub Secret용)",
+				Note:  "org 정책 해제 직후엔 전파 지연으로 FAILED_PRECONDITION 이 날 수 있음 — 실패 시 2~3분 뒤 재실행. 키는 서버 실행 디렉토리에 생성되며 .gitignore 처리됨.",
+				Commands: []Command{
+					{Label: "SA 키 발급", Code: fmt.Sprintf("gcloud iam service-accounts keys create terraform-key.json \\\n  --iam-account=%s", tfSA)},
 				},
 			},
 			{
