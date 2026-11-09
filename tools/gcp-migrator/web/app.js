@@ -1,0 +1,243 @@
+"use strict";
+
+const api = {
+  async get(path) { const r = await fetch(path); return r.json(); },
+  async post(path, body) {
+    const r = await fetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    return r.json();
+  },
+};
+
+const state = {
+  config: {},
+  phases: [],
+  progress: {}, // stepID -> bool
+  view: "config", // "config" | phaseID
+};
+
+// 설정 폼 필드 정의 (라벨/힌트/타입)
+const FIELDS = [
+  { key: "oldProjectID", label: "구 프로젝트 ID", hint: "현재 운영 중인 프로젝트" },
+  { key: "newProjectID", label: "신 프로젝트 ID *", hint: "이관 대상 (필수)" },
+  { key: "oldOwnerEmail", label: "구 소유 계정" },
+  { key: "newOwnerEmail", label: "신 소유 계정" },
+  { key: "billingAccount", label: "결제 계정 ID", hint: "예: 019BE5-B9EFB8-C3E4D3" },
+  { key: "region", label: "리전" },
+  { key: "tfStateBucket", label: "TF State 버킷", hint: "비우면 {신}-tfstate 자동" },
+  { key: "cloudSQLInstance", label: "Cloud SQL 인스턴스" },
+  { key: "gatewayIP", label: "Istio Gateway IP", hint: "Phase 4 에서 확인 후 입력" },
+  { key: "githubRepo", label: "GitHub 저장소", hint: "예: woohaen88/infra" },
+  { key: "finalBackupBucket", label: "최종 백업 버킷", hint: "비우면 자동 생성" },
+];
+const LIST_FIELDS = [
+  { key: "databases", label: "이관 DB 목록 (쉼표 구분)" },
+  { key: "domains", label: "도메인 목록 (쉼표 구분)" },
+  { key: "dnsZones", label: "Cloud DNS 존 목록 (쉼표 구분)" },
+  { key: "secrets", label: "Secret Manager 시크릿 목록 (쉼표 구분)" },
+];
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+// ── progress 계산 ──
+function allStepIDs() {
+  const ids = [];
+  for (const p of state.phases) for (const s of p.steps) ids.push(s.id);
+  return ids;
+}
+function phaseProgress(p) {
+  const total = p.steps.length;
+  const done = p.steps.filter((s) => state.progress[s.id]).length;
+  return { done, total };
+}
+function overallProgress() {
+  const ids = allStepIDs();
+  const done = ids.filter((id) => state.progress[id]).length;
+  return { done, total: ids.length };
+}
+
+// ── 렌더: 사이드바 ──
+function renderSidebar() {
+  document.getElementById("route-old").textContent = state.config.oldProjectID || "—";
+  document.getElementById("route-new").textContent = state.config.newProjectID || "신규?";
+
+  const ov = overallProgress();
+  const pct = ov.total ? Math.round((ov.done / ov.total) * 100) : 0;
+  document.getElementById("overall-pct").textContent = pct + "%";
+  document.getElementById("overall-bar").style.width = pct + "%";
+
+  const nav = document.getElementById("nav");
+  let html = navItem("config", "⚙", "설정", state.view === "config", "", true);
+  for (const p of state.phases) {
+    const pr = phaseProgress(p);
+    const done = pr.total > 0 && pr.done === pr.total;
+    const num = p.id.replace("phase", "");
+    html += navItem(p.id, done ? "✓" : num, p.title.split("·")[1]?.trim() || p.title,
+      state.view === p.id, `${pr.done}/${pr.total}`, false, done);
+  }
+  nav.innerHTML = html;
+  nav.querySelectorAll(".nav-item").forEach((el) =>
+    el.addEventListener("click", () => { state.view = el.dataset.id; render(); }));
+}
+
+function navItem(id, dot, title, active, prog, isConfig, done) {
+  return `<div class="nav-item ${active ? "active" : ""}" data-id="${id}">
+    <div class="nav-dot ${done ? "done" : ""}">${esc(dot)}</div>
+    <div class="nav-label">
+      <div class="nav-title">${esc(title)}</div>
+      ${isConfig ? "" : `<div class="nav-prog">${prog} 완료</div>`}
+    </div>
+  </div>`;
+}
+
+// ── 렌더: 설정 뷰 ──
+function renderConfig() {
+  const c = state.config;
+  let fields = FIELDS.map((f) => `
+    <div class="field ${f.key === "githubRepo" ? "" : ""}">
+      <label>${esc(f.label)}</label>
+      <input id="f-${f.key}" value="${esc(c[f.key] || "")}" placeholder="${esc(f.hint || "")}" />
+      ${f.hint ? `<span class="hint">${esc(f.hint)}</span>` : ""}
+    </div>`).join("");
+
+  let lists = LIST_FIELDS.map((f) => `
+    <div class="field full">
+      <label>${esc(f.label)}</label>
+      <textarea id="f-${f.key}">${esc((c[f.key] || []).join(", "))}</textarea>
+    </div>`).join("");
+
+  document.getElementById("view").innerHTML = `
+    <div class="page-head">
+      <h1>이관 설정</h1>
+      <p>신규 프로젝트 정보를 입력하면 Phase 0~6 의 모든 명령이 자동으로 채워집니다.
+      입력값은 로컬 파일(.migrator-config.json)에만 저장됩니다.</p>
+    </div>
+    <div class="form-grid">${fields}${lists}</div>
+    <div class="form-actions">
+      <button class="btn" id="save-cfg">저장하고 명령 생성 →</button>
+      <button class="btn btn-sec" id="load-def">기본값 불러오기</button>
+    </div>`;
+
+  document.getElementById("save-cfg").addEventListener("click", saveConfig);
+  document.getElementById("load-def").addEventListener("click", async () => {
+    state.config = await api.get("/api/defaults");
+    renderConfig();
+    toast("기본값을 불러왔습니다");
+  });
+}
+
+function collectConfig() {
+  const c = { ...state.config };
+  for (const f of FIELDS) c[f.key] = document.getElementById("f-" + f.key).value.trim();
+  for (const f of LIST_FIELDS) {
+    c[f.key] = document.getElementById("f-" + f.key).value
+      .split(",").map((s) => s.trim()).filter(Boolean);
+  }
+  return c;
+}
+
+async function saveConfig() {
+  const c = collectConfig();
+  if (!c.newProjectID) { toast("⚠️ 신 프로젝트 ID는 필수입니다"); return; }
+  await api.post("/api/config", c);
+  state.config = c;
+  state.phases = await api.get("/api/phases");
+  state.view = "phase0";
+  render();
+  toast("저장 완료 · 명령이 생성되었습니다");
+}
+
+// ── 렌더: Phase 뷰 ──
+function renderPhase(p) {
+  const steps = p.steps.map(renderStep).join("");
+  document.getElementById("view").innerHTML = `
+    <div class="page-head">
+      <h1>${esc(p.title)}</h1>
+      <p>${esc(p.summary)}</p>
+    </div>
+    ${steps}`;
+
+  document.querySelectorAll(".check").forEach((el) =>
+    el.addEventListener("click", () => toggleStep(el.dataset.step)));
+  document.querySelectorAll(".copy-btn").forEach((el) =>
+    el.addEventListener("click", () => copyCode(el)));
+}
+
+function renderStep(s) {
+  const on = !!state.progress[s.id];
+  const cmds = (s.commands || []).map((cmd) => `
+    <div class="cmd ${cmd.danger ? "danger" : ""}">
+      <div class="cmd-head">
+        <span class="cmd-label">${esc(cmd.label)}</span>
+        <button class="copy-btn" data-code="${esc(cmd.code)}">복사</button>
+      </div>
+      <pre>${esc(cmd.code)}</pre>
+    </div>`).join("");
+
+  return `<div class="step ${on ? "done" : ""}">
+    <div class="step-head">
+      <div class="check ${on ? "on" : ""}" data-step="${s.id}"></div>
+      <div class="step-body">
+        <div class="step-title">${esc(s.title)}${s.manual ? '<span class="badge-manual">수동</span>' : ""}</div>
+        ${s.note ? `<div class="step-note">${esc(s.note)}</div>` : ""}
+        ${cmds ? `<div class="cmds">${cmds}</div>` : ""}
+      </div>
+    </div>
+  </div>`;
+}
+
+async function toggleStep(id) {
+  state.progress[id] = !state.progress[id];
+  await api.post("/api/state", state.progress);
+  render();
+}
+
+function copyCode(el) {
+  const code = el.dataset.code;
+  navigator.clipboard.writeText(code).then(() => {
+    el.textContent = "복사됨";
+    el.classList.add("copied");
+    toast("클립보드에 복사했습니다");
+    setTimeout(() => { el.textContent = "복사"; el.classList.remove("copied"); }, 1500);
+  });
+}
+
+// ── 메인 렌더 ──
+function render() {
+  renderSidebar();
+  if (state.view === "config") { renderConfig(); return; }
+  const p = state.phases.find((x) => x.id === state.view);
+  if (p) renderPhase(p); else renderConfig();
+}
+
+async function init() {
+  state.config = await api.get("/api/config");
+  state.phases = await api.get("/api/phases");
+  state.progress = await api.get("/api/state");
+  state.view = state.config.newProjectID ? "phase0" : "config";
+  render();
+
+  document.getElementById("reset-btn").addEventListener("click", async () => {
+    if (!confirm("모든 진행상태를 초기화할까요? (설정값은 유지)")) return;
+    state.progress = {};
+    await api.post("/api/state", {});
+    render();
+    toast("진행상태를 초기화했습니다");
+  });
+}
+
+init();

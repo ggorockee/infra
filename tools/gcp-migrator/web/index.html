@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GCP Migration Wizard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">⇄</div>
+        <div>
+          <div class="brand-title">GCP Migration</div>
+          <div class="brand-sub">Wizard</div>
+        </div>
+      </div>
+
+      <div class="route-box">
+        <span id="route-old" class="pill">—</span>
+        <span class="arrow">→</span>
+        <span id="route-new" class="pill pill-accent">—</span>
+      </div>
+
+      <div class="overall">
+        <div class="overall-head">
+          <span>전체 진행률</span>
+          <span id="overall-pct">0%</span>
+        </div>
+        <div class="bar"><div id="overall-bar" class="bar-fill"></div></div>
+      </div>
+
+      <nav id="nav" class="nav"></nav>
+
+      <div class="sidebar-foot">
+        <button id="reset-btn" class="btn-ghost">진행상태 초기화</button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div id="view"></div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
