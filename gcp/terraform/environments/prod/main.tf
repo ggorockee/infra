@@ -107,20 +107,18 @@ module "cloud_armor" {
 # }
 
 # Phase 2: External Secrets Operator deployment
-# NOTE (yanggo-514212 이관 1차 부트스트랩): 최초 apply는 GKE와 external_secrets를
-# 동시에 생성할 수 없어(kubernetes_manifest가 live cluster 필요) 일시 주석 처리함.
-# 1차 apply로 GKE 생성 완료 후, 이 블록의 주석을 풀어 2차 apply로 재활성화할 것.
-# module "external_secrets" {
-#   source = "../../modules/external-secrets"
-#
-#   project_id       = var.project_id
-#   region           = var.region
-#   environment      = var.environment
-#   cluster_name     = module.gke.cluster_name
-#   cluster_location = module.gke.cluster_location
-#
-#   depends_on = [module.gke]
-# }
+# 2차 부트스트랩: GKE 생성 완료 후 재활성화 (ESO CRD는 Helm 소유권 라벨과 함께 사전 설치됨)
+module "external_secrets" {
+  source = "../../modules/external-secrets"
+
+  project_id       = var.project_id
+  region           = var.region
+  environment      = var.environment
+  cluster_name     = module.gke.cluster_name
+  cluster_location = module.gke.cluster_location
+
+  depends_on = [module.gke]
+}
 
 # Phase 3: ArgoCD deployment
 # NOTE: ArgoCD is now managed by Helm/ArgoCD itself, not by Terraform
