@@ -68,6 +68,8 @@
 - [x] 기존 프로젝트 시크릿 목록 확인 (`gcloud secrets list --project=yango-495502`)
 - [x] 새 프로젝트에 시크릿 재등록
 
+**실행 중 발견된 이슈 (yanggo-514212 이관, 순서·계정 함정)**: 이 Phase는 문서상 Phase 1 뒤에 있지만, 실제로는 **Phase 1의 Cloud SQL apply보다 먼저** 수행해야 함. Cloud SQL 모듈(`modules/cloud-sql/main.tf`)이 `data.google_secret_manager_secret_version` 으로 `prod-ojeomneo-db-credentials`, `prod-reviewmaps-db-credentials` 를 **apply 시점에 읽기** 때문에, 시크릿이 없으면 apply가 `Error 404: Secret not found` 로 실패함. 또한 구/신 프로젝트 **소유 계정이 다르면**(구 `yango-501407`=woohalabs10, 신 `yanggo-514212`=woohalabs11) 단일 계정으로는 복제 불가 — 읽기는 구 소유 계정, 쓰기는 신 소유 계정으로 `--account` 를 분리해야 함. (참고: Service Networking Connection 생성이 `Error code 16 invalid auth` 로 간헐 실패하는데, apply 재실행하면 통과함 — 일시적 토큰 오류.)
+
 **실제로는 13개만 존재했음** (아래 표는 코드 스캔 기준 예상 목록이며, `argocd-dex-google-client-id/secret`, `argocd-admin-password`, `argocd-admin-emails`는 `prod-argocd-dex-credentials` 하나로 통합되어 있었고, `prod-sybot-credentials`는 아직 생성된 적이 없었음). 실제 목록 기준 13개를 그대로 이관함.
 
 | 시크릿 이름 | 용도 |

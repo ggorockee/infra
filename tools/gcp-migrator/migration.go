@@ -260,7 +260,7 @@ func (c Config) phase1(old, nw string) Phase {
 				Title: "apply 완료 후 GKE 접근 확인",
 				Note:  "아래 명령은 위 머지로 apply가 끝나 GKE가 생성된 '뒤에만' 동작함. apply 전에는 클러스터가 없어 실패가 정상.",
 				Commands: []Command{
-					{Label: "GKE 자격증명 가져오기", Code: fmt.Sprintf("gcloud container clusters get-credentials prod-gke \\\n  --region=%s --project=%s", c.Region, nw)},
+					{Label: "GKE 자격증명 가져오기 (location 자동 탐색)", Code: fmt.Sprintf("gcloud container clusters get-credentials woohalabs-prod-gke \\\n  --location=$(gcloud container clusters list --project=%s --format='value(location)' --limit=1) \\\n  --project=%s", nw, nw)},
 					{Label: "노드 확인", Code: "kubectl get nodes"},
 				},
 			},
@@ -278,27 +278,27 @@ func (c Config) phase2(old, nw string) Phase {
 			},
 		},
 	}
-	// 시크릿별 복제 스크립트 (값을 구 → 신으로 복사)
+	readAcct := def(c.OldOwnerEmail, "<OLD_OWNER>")
+	writeAcct := def(c.NewOwnerEmail, "<NEW_OWNER>")
+
+	// 시크릿별 복제 스크립트 — 구/신 프로젝트 소유 계정이 다를 수 있으므로
+	// 읽기(구 소유 계정) / 쓰기(신 소유 계정)를 --account 로 분리한다.
 	var b strings.Builder
-	b.WriteString("# 구 프로젝트 → 신 프로젝트 시크릿 일괄 복제\n")
-	b.WriteString(fmt.Sprintf("for S in \\\n"))
-	for i, s := range c.Secrets {
-		sep := " \\"
-		if i == len(c.Secrets)-1 {
-			sep = ""
-		}
-		b.WriteString(fmt.Sprintf("  %s%s\n", s, sep))
-	}
-	b.WriteString("; do\n")
-	b.WriteString(fmt.Sprintf("  gcloud secrets create \"$S\" --project=%s 2>/dev/null\n", nw))
-	b.WriteString(fmt.Sprintf("  gcloud secrets versions access latest --secret=\"$S\" --project=%s \\\n", old))
-	b.WriteString(fmt.Sprintf("    | gcloud secrets versions add \"$S\" --data-file=- --project=%s\n", nw))
+	b.WriteString("# 구 프로젝트 → 신 프로젝트 시크릿 일괄 복제 (읽기/쓰기 계정 분리)\n")
+	b.WriteString(fmt.Sprintf("gcloud secrets list --project=%s --account=%s --format='value(name)' \\\n", old, readAcct))
+	b.WriteString("  | while IFS= read -r S; do\n")
+	b.WriteString("  [ -z \"$S\" ] && continue\n")
+	b.WriteString(fmt.Sprintf("  gcloud secrets create \"$S\" --project=%s --account=%s 2>/dev/null\n", nw, writeAcct))
+	b.WriteString(fmt.Sprintf("  gcloud secrets versions access latest --secret=\"$S\" --project=%s --account=%s \\\n", old, readAcct))
+	b.WriteString(fmt.Sprintf("    | gcloud secrets versions add \"$S\" --data-file=- --project=%s --account=%s\n", nw, writeAcct))
+	b.WriteString("  echo \"copied: $S\"\n")
 	b.WriteString("done")
 
 	steps = append(steps, Step{
 		ID:    "p2-copy",
-		Title: fmt.Sprintf("시크릿 일괄 복제 (%d개)", len(c.Secrets)),
-		Note:  "민감정보가 로컬 파이프를 통과함. 작업 후 셸 히스토리 주의.",
+		Title: "시크릿 일괄 복제 (구 목록 전체, 읽기/쓰기 계정 분리)",
+		Note: "⚠️ 구/신 프로젝트 소유 계정이 다르면 단일 계정으론 복제 불가 — 읽기는 구 소유 계정, 쓰기는 신 소유 계정으로 --account 분리함 (이 스크립트가 처리).\n" +
+			"민감정보가 로컬 파이프를 통과하므로 작업 후 셸 히스토리 주의.",
 		Commands: []Command{
 			{Label: "일괄 복제 스크립트", Code: b.String()},
 		},
@@ -306,7 +306,7 @@ func (c Config) phase2(old, nw string) Phase {
 	return Phase{
 		ID:      "phase2",
 		Title:   "Phase 2 · Secret Manager 이관",
-		Summary: "구 프로젝트의 시크릿을 신 프로젝트로 복제합니다.",
+		Summary: "⚠️ 순서 주의: Cloud SQL 모듈이 DB 시크릿(prod-*-db-credentials)을 읽으므로, 이 Phase를 Phase 1의 Cloud SQL apply보다 '먼저' 실행해야 함(안 그러면 apply가 Secret 404로 실패). 구 프로젝트의 시크릿을 신 프로젝트로 복제합니다.",
 		Steps:   steps,
 	}
 }
