@@ -36,7 +36,8 @@ func handleRun(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var body struct {
-		Code string `json:"code"`
+		Code    string `json:"code"`
+		Account string `json:"account"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -54,6 +55,9 @@ func handleRun(w http.ResponseWriter, r *http.Request) {
 	flusher, _ := w.(http.Flusher)
 	fw := flushWriter{w: w, f: flusher}
 
+	if body.Account != "" {
+		fmt.Fprintf(fw, "# 실행 계정: %s\n", body.Account)
+	}
 	fmt.Fprintf(fw, "$ %s\n\n", singleLine(code))
 
 	// 장시간 작업(터라폼/큰 export)도 고려해 넉넉한 타임아웃.
@@ -63,6 +67,7 @@ func handleRun(w http.ResponseWriter, r *http.Request) {
 	// 로그인 셸(-l)로 실행해 사용자 PATH(gcloud SDK 등)와 프로파일을 그대로 사용.
 	// 파이프/for 루프/$(...) 등 셸 기능을 쓰는 생성 명령을 그대로 실행하기 위함.
 	cmd := exec.CommandContext(ctx, "bash", "-lc", code)
+	cmd.Env = envWithAccount(body.Account)
 	cmd.Stdout = fw
 	cmd.Stderr = fw
 

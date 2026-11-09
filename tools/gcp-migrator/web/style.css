@@ -74,6 +74,21 @@ body {
 .pill-accent { color: var(--accent); border-color: var(--accent); }
 .arrow { color: var(--text-dim); }
 
+.acct-box { display: flex; flex-direction: column; gap: 6px; }
+.acct-box label { font-size: 11px; color: var(--text-dim); font-weight: 600; }
+.acct-box select {
+  background: var(--bg-elev2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 9px 10px;
+  color: var(--text);
+  font-size: 12.5px;
+  font-family: var(--mono);
+  cursor: pointer;
+}
+.acct-box select:focus { outline: none; border-color: var(--accent); }
+.acct-hint { font-size: 10.5px; color: var(--text-dim); }
+
 .overall-head {
   display: flex; justify-content: space-between;
   font-size: 12px; color: var(--text-dim); margin-bottom: 8px;

@@ -17,6 +17,8 @@ const state = {
   phases: [],
   progress: {}, // stepID -> bool
   view: "config", // "config" | phaseID
+  runAccount: "", // gcloud 실행 계정 (빈 값 = gcloud 활성 계정)
+  accounts: [],
 };
 
 // 설정 폼 필드 정의 (라벨/힌트/타입)
@@ -153,7 +155,8 @@ async function lookupBilling(btn) {
   btn.textContent = "조회 중…";
   btn.disabled = true;
   try {
-    const r = await api.get("/api/lookup/billing");
+    const q = state.runAccount ? "?account=" + encodeURIComponent(state.runAccount) : "";
+    const r = await api.get("/api/lookup/billing" + q);
     if (!r.ok) { toast("⚠️ " + (r.error || "조회 실패")); return; }
     const accs = r.accounts || [];
     if (accs.length === 0) { toast("조회된 결제 계정이 없습니다"); return; }
@@ -236,7 +239,7 @@ async function runCommand(btn) {
     const resp = await fetch("/api/run", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ code, account: state.runAccount }),
     });
     if (!resp.ok || !resp.body) {
       out.textContent += "\n[오류] 서버 응답 실패 (" + resp.status + ")";
@@ -313,10 +316,34 @@ function render() {
   if (p) renderPhase(p); else renderConfig();
 }
 
+async function loadAccounts() {
+  const sel = document.getElementById("acct-sel");
+  const hint = document.getElementById("acct-hint");
+  const r = await api.get("/api/lookup/accounts");
+  if (!r.ok) {
+    sel.innerHTML = `<option value="">(gcloud 조회 실패)</option>`;
+    hint.textContent = r.error || "gcloud 인증을 확인하세요";
+    return;
+  }
+  state.accounts = r.accounts || [];
+  const saved = localStorage.getItem("runAccount");
+  state.runAccount = (saved && state.accounts.includes(saved)) ? saved : (r.active || "");
+  sel.innerHTML = state.accounts
+    .map((a) => `<option value="${esc(a)}" ${a === state.runAccount ? "selected" : ""}>${esc(a)}${a === r.active ? " (활성)" : ""}</option>`)
+    .join("");
+  hint.textContent = `${state.accounts.length}개 계정 인증됨 · 선택 계정으로 실행`;
+  sel.addEventListener("change", () => {
+    state.runAccount = sel.value;
+    localStorage.setItem("runAccount", sel.value);
+    toast("실행 계정: " + sel.value);
+  });
+}
+
 async function init() {
   state.config = await api.get("/api/config");
   state.phases = await api.get("/api/phases");
   state.progress = await api.get("/api/state");
+  await loadAccounts();
   state.view = state.config.newProjectID ? "phase0" : "config";
   render();
 
