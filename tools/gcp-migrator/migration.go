@@ -216,15 +216,13 @@ func (c Config) phase1(old, nw string) Phase {
 				ID:     "p1-code",
 				Title:  "코드 내 프로젝트 참조 교체 (5개 파일)",
 				Manual: true,
-				Note: "다음 파일의 '" + old + "' → '" + nw + "' 교체:\n" +
+				Note: "다음 파일의 '" + old + "' → '" + nw + "' 교체 (코드 직접 편집 — 버튼 실행 아님):\n" +
 					"• gcp/terraform/environments/prod/variables.tf (project_id default)\n" +
 					"• gcp/terraform/environments/prod/backend.tf (bucket = " + c.TFStateBucket + ")\n" +
 					"• charts/helm/prod/cert-manager/values.yaml (gcpProjectId)\n" +
 					"• charts/helm/prod/argo-cd/values.yaml (iam.gke.io/gcp-service-account → argocd-prod@" + nw + ")\n" +
-					"• charts/helm/prod/kube-prometheus-stack/values-override.yaml (gcpProjectID)",
-				Commands: []Command{
-					{Label: "참조 위치 전수 검색", Code: fmt.Sprintf("grep -rn \"%s\" --include='*.tf' --include='*.yaml' . | grep -v .git", old)},
-				},
+					"• charts/helm/prod/kube-prometheus-stack/values-override.yaml (gcpProjectID + external-secrets SA)\n" +
+					"교체 후 남은 참조 확인(선택): grep -rn \"" + old + "\" --include='*.tf' --include='*.yaml' . (결과 없으면 완료)",
 			},
 			{
 				ID:     "p1-secrets",
