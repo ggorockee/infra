@@ -4,12 +4,18 @@
 
 | 항목 | 기존 | 신규 |
 |------|------|------|
-| Project ID | `yango-495502` | `yango-501407` |
-| 소유 계정 | `woohalabs4@gmail.com` | `woohalabs10@gmail.com` |
-| TF State 버킷 | `yango-495502-tfstate` | `yango-501407-tfstate` |
+| Project ID | `yango-501407` | `yanggo-514212` |
+| 소유 계정 | `woohalabs10@gmail.com` | `woohalabs11@gmail.com` |
+| 조직 | 없음 | `woohalabs11-org` (신규 조직 — 보안 기본 정책 영향) |
+| 결제 계정 | `019BE5-B9EFB8-C3E4D3` | `01B392-392E5A-9FEE6D` (계정별 상이) |
+| TF State 버킷 | `yango-501407-tfstate` | `yanggo-514212-tfstate` |
+| 신 Gateway IP | `34.64.94.80` | `34.22.107.0` |
+| GKE 클러스터 | `woohalabs-prod-gke` (zonal `asia-northeast3-a`) | 동일 (zonal) |
 | 리전 | `asia-northeast3` | `asia-northeast3` (동일) |
 
-이 문서는 이전(구 프로젝트 → `yango-495502`) 이관 때 작성되었던 문서를 이번 이관(`yango-495502` → `yango-501407`) 기준으로 갱신한 버전입니다.
+이 문서는 과거 이관 문서를 이번 이관(`yango-501407` → `yanggo-514212`) 기준으로 갱신한 버전입니다. 이전 이관들(`→ yango-495502`, `yango-495502 → yango-501407`)과 달리, 이번엔 **구/신 프로젝트 소유 계정이 다르고(woohalabs10 → woohalabs11) 신 프로젝트가 조직 산하**라 크로스 계정·조직 정책 이슈가 다수 발생했습니다. 또한 이번 이관은 **선택적 전환**입니다: `ggorockee.com`, `review-maps.com`, `woohalabs.com` 3개 도메인만 전환하고 `hotsao`는 내림(제외).
+
+> ⚠️ 이번 이관에서 새로 발견된 함정들은 각 Phase의 "실행 중 발견된 이슈"와 하단 "이번 이관(yanggo-514212) 추가 발견사항"에 정리되어 있음. **gcp-migrator GUI 도구**(`tools/gcp-migrator`)에도 일부 반영됨.
 
 ## 이관 체크리스트
 
@@ -45,13 +51,15 @@
 
 - [x] 코드 변경 (아래 "코드 변경 사항 요약" 참고)
 - [x] GitHub Repository Secrets 업데이트
-  - `GCP_PROJECT_ID` → `yango-501407`
+  - `GCP_PROJECT_ID` → `yanggo-514212`
   - `GCP_SA_KEY` → 새 서비스 계정 키 내용 (JSON)
-- [x] feature 브랜치 PR → main 머지 (#1096, #1097, #1098)
+- [x] feature 브랜치 PR → main 머지 (#1102 1차 부트스트랩, #1104 external_secrets 재활성화)
 - [x] GitHub Actions `gcp-terraform-apply` 워크플로우 성공 확인
-- [x] 신규 GKE 클러스터 접근 확인
+- [x] 신규 GKE 클러스터 접근 확인 (⚠️ 클러스터는 **zonal**이라 `--region`이 아닌 `--zone=asia-northeast3-a`, 클러스터명 `woohalabs-prod-gke`)
 
-**실행 중 발견된 이슈**: `external_secrets` 모듈(kubernetes_manifest 리소스)은 GKE 클러스터가 이미 떠 있어야 REST client를 구성할 수 있는데, 최초 apply에서는 GKE도 함께 생성되므로 plan이 실패함. 최초 apply에서는 해당 모듈을 비활성화하고, GKE 생성 완료 후 별도 PR(#1097)로 재활성화하는 2단계 부트스트랩으로 처리함. 그 과정에서 External Secrets Operator CRD도 Helm 릴리스와 별개로 먼저 설치해야 하는 동일한 순서 문제가 있어 CRD만 먼저 적용 후 소유권 라벨을 붙여 Helm이 입양하도록 처리함.
+**실행 중 발견된 이슈 (external_secrets 2단계 부트스트랩)**: `external_secrets` 모듈의 `kubernetes_manifest`(ClusterSecretStore)는 GKE가 이미 떠 있어야 plan이 통과함. 그래서 1차 apply(#1102)는 모듈을 주석 처리해 GKE만 생성하고, 2차 apply(#1104)로 재활성화하는 2단계가 필요.
+
+ESO CRD 순서 문제 상세 (이번에 정립된 절차): 2차 재활성화 전에 ESO CRD(`external-secrets v0.9.11`)를 **Helm 소유권 메타데이터와 함께 수동 선설치**해야 plan·apply가 충돌 없이 통과함. 구체적으로 `helm template external-secrets/external-secrets --version 0.9.11 --set installCRDs=true`에서 CRD만 추출해 `kubectl apply --server-side` 한 뒤, 모든 `*.external-secrets.io` CRD에 라벨 `app.kubernetes.io/managed-by=Helm` + 어노테이션 `meta.helm.sh/release-name=external-secrets`, `meta.helm.sh/release-namespace=external-secrets-system` 를 부착. ⚠️ **네임스페이스는 `external-secrets`가 아니라 `external-secrets-system`** 임 — release-namespace 어노테이션을 틀리면 apply가 `invalid ownership metadata ... must equal "external-secrets-system"` 로 실패함(이번에 실제 겪음, 어노테이션 수정 후 재apply로 해결). 2차 apply 성공 후 ESO 파드 3개 Running + `ClusterSecretStore gcpsm-secret-store` 가 `READY=True(Valid)` 면 정상.
 
 **배포되는 리소스:**
 
@@ -105,12 +113,12 @@
 - [x] 신규 Cloud SQL에 import
 - [x] 데이터 정합성 확인 (export 후 재검증용으로 새 인스턴스에서 다시 export하여 파일 크기 바이트 단위 일치 확인)
 
-**실제로 사용한 절차** (계획했던 Cloud SQL Auth Proxy + pg_dump/psql 대신, 네트워크 접근 불필요한 서버사이드 export/import 사용):
+**실제로 사용한 절차** (계획했던 Cloud SQL Auth Proxy + pg_dump/psql 대신, 네트워크 접근 불필요한 서버사이드 export/import 사용). ⚠️ 이번엔 **크로스 계정**이라 export는 구 소유 계정(woohalabs10), import는 신 소유 계정(woohalabs11)으로 `--account`를 분리해야 함:
 
-1. `gcloud sql export sql prod-woohalabs-cloudsql gs://[BUCKET]/[DB].sql --database=[DB] --project=yango-495502`
-2. GCS 버킷에 대해 새 프로젝트 Cloud SQL 서비스 계정에 `storage.objectViewer` 임시 부여
-3. `gcloud sql import sql prod-woohalabs-cloudsql gs://[BUCKET]/[DB].sql --database=[DB] --project=yango-501407`
-4. 검증 후 임시 버킷/권한 정리
+1. 전송 버킷을 신 프로젝트에 생성하고, **구 인스턴스 SA**에 `storage.objectAdmin`(쓰기), **신 인스턴스 SA**에 `storage.objectViewer`(읽기)를 부여 (양쪽 SA 이메일은 `gcloud sql instances describe ... --format='value(serviceAccountEmailAddress)'`로 확인)
+2. `gcloud sql export sql prod-woohalabs-cloudsql gs://[BUCKET]/[DB].sql --database=[DB] --project=yango-501407 --account=woohalabs10@gmail.com`
+3. `gcloud sql import sql prod-woohalabs-cloudsql gs://[BUCKET]/[DB].sql --database=[DB] --project=yanggo-514212 --account=woohalabs11@gmail.com`
+4. 정합성 검증: 신 인스턴스에서 다시 export하여 구 export와 **바이트 단위 일치** 확인 (이번에 ojeomneo/reviewmaps/hotsao 3개 모두 일치 확인)
 
 **실행 중 발견된 이슈**:
 
@@ -119,51 +127,44 @@
 
 ### Phase 4 - 워크로드 이관
 
-- [x] 새 GKE 클러스터 kubeconfig 설정
-- [x] ArgoCD 수동 배포 (첫 번째 설치, 사용자가 직접 진행)
-- [x] ArgoCD에 Git 저장소 연결
-- [x] ApplicationSets 적용 → 앱 자동 배포 (ojeomneo, reviewmaps, hotsao, istio, cert-manager, gke-backendconfig, gke-storageclass, woohalabs-app-ads, yangobot — 12개 Application 전부 Synced)
-- [x] Istio Ingress Gateway IP 확인 → `34.64.94.80`
+- [x] 새 GKE 클러스터 kubeconfig 설정 (`--zone=asia-northeast3-a`)
+- [x] ArgoCD **helm 설치** (`helm install argocd charts/helm/prod/argo-cd -n argocd --create-namespace`, 이번엔 사용자가 helm으로 진행) + Git 저장소 연결
+- [x] ApplicationSets 적용 → 앱 자동 배포 (ojeomneo, reviewmaps, istio, cert-manager, gke-backendconfig, gke-storageclass, woohalabs-app-ads, yangobot — **hotsao 제외**)
+- [x] Istio Ingress Gateway IP 확인 → `34.22.107.0`
 
 **실행 중 발견/해결한 이슈**:
 
-- `istio-ingressgateway` 파드가 istiod의 sidecar-injector webhook이 준비되기 전에 스케줄되어 `image: auto` 상태로 ImagePullBackOff 발생. 파드 삭제로 재생성하여 정상 이미지(`proxyv2`)로 교체됨.
-- `istio-gateway-config`의 `grafana-vs`, `prometheus-vs` VirtualService가 `monitoring` 네임스페이스를 참조하는데, 모니터링 스택(kube-prometheus-stack) 자체가 저장소에서 의도적으로 비활성화되어 있어 네임스페이스가 없어 동기화 실패. `monitoring` 네임스페이스만 생성해서 해결 (모니터링 앱 자체를 재활성화하는 것은 이번 범위 밖).
-- `argocd-rbac-policy` ExternalSecret이 `creationPolicy: Merge`로 존재하지 않는 Secret `argocd-rbac-cm`에 병합을 시도하다 `SecretSyncedError` 발생. 이관 이전부터 있던 차트 설정 이슈로 보이며, 이번 이관 범위에서는 수정하지 않고 발견 사항으로만 기록.
-- `hotsao`의 cron 파드들이 일시적으로 `Insufficient cpu`로 Pending (전체 앱이 동시에 최초 부트스트랩되며 발생한 일시적 현상, `spot_pool_large`가 2→3 노드로 오토스케일되며 자연 해소됨).
+- `istio-ingressgateway` 파드가 istiod의 sidecar-injector webhook이 준비되기 전에 스케줄되어 `image: auto` 상태로 ImagePullBackOff 발생 (매 이관 반복되는 함정). 파드 삭제(`kubectl delete pod -n istio-system -l app=istio-ingressgateway`)로 재생성하여 정상 이미지(`proxyv2`)로 교체됨.
+- `istio-gateway-config`의 `grafana-vs`, `prometheus-vs` VirtualService가 `monitoring` 네임스페이스를 참조 → 모니터링 스택 비활성화로 ns 없어 동기화 실패. `monitoring` 네임스페이스만 생성해서 해결.
+- **hotsao 비활성화 — ApplicationSet glob 함정**: hotsao를 내리려고 `apps-hotsao-cfg.yaml`을 `configurations/prod/legacy/`로 옮겼으나, `infra-infrastructure-prod` ApplicationSet의 git files generator 경로 `charts/argocd/configurations/prod/*-cfg.yaml`이 **`legacy/` 하위까지 재귀 매칭**하여 여전히 Application이 생성됨(crash-loop). → 저장소의 비활성화 규칙인 **`.del` 접미사**(`apps-hotsao-cfg.yaml.del`)로 rename해야 glob에서 제외됨(#1105 → #1106). 이후 hotsao Application 수동 삭제 + 네임스페이스 정리로 완전히 내림. (hotsao-server 가 crash하던 직접 원인은 Terraform 미관리 시크릿 `hotsao-app-secrets`의 `DB_HOST`가 구 프로젝트 IP를 가리킨 것 — ojeomneo/reviewmaps는 `null_resource`가 자동 갱신하지만 hotsao는 수동 대상.)
+- `argocd-rbac-policy` ExternalSecret `SecretSyncedError`는 이관 무관 기존 이슈로 그대로 둠.
 
 ### Phase 5 - DNS 전환 및 검증 — **완료**
 
-- [x] 새 Istio Ingress Gateway 외부 IP 확인 (`34.64.94.80`)
-- [x] Cloud DNS 존 5개(`ggorockee-com`, `ggorockee-org`, `hotsao-com`, `review-maps-com`, `woohalabs-com`)를 `yango-501407`에 생성, A레코드(root+wildcard)를 새 IP로 설정
-- [x] HTTPS 인증서 발급 확인 (ggorockee.com, hotsao.com, review-maps.com, woohalabs.com 4개 모두 발급 완료)
-- [x] 각 앱 정상 동작 확인 (도메인을 통한 실제 HTTPS 요청으로 검증)
-- [ ] 모니터링 스택 확인 — **해당 없음**: Prometheus/Grafana/Loki는 저장소에서 의도적으로 비활성화된 상태 (`charts/argocd/configurations/prod/legacy/monitoring-kube-prometheus-stack.yaml.monitoring`, PR #1035에서 제거). 이관과 무관한 기존 상태.
-- [x] **DNS 레코드 실제 전환 (Cloudflare A레코드 → 새 IP)** — 사용자가 Cloudflare에서 각 도메인 A레코드를 `34.64.94.80`으로 직접 변경 완료
+- [x] 새 Istio Ingress Gateway 외부 IP 확인 (`34.22.107.0`) — ⚠️ `.0`으로 끝나지만 GCP 공인 LB IP로 정상 (GCP 포워딩 룰로 교차 확인)
+- [x] Cloud DNS 존(`ggorockee-com`, `review-maps-com`, `woohalabs-com` 등)이 `yanggo-514212`에 존재, cert-manager DNS-01 solver가 `_acme-challenge` TXT 생성
+- [x] HTTPS 인증서 발급 확인 (**ggorockee.com, review-maps.com, woohalabs.com 3개** 발급 완료 — hotsao 제외)
+- [x] 각 앱 정상 동작 확인 (도메인 통한 실제 HTTPS: argocd.ggorockee.com 200, review-maps.com 200, woohalabs.com 301)
+- [x] **DNS 레코드 실제 전환 (Cloudflare A레코드 → `34.22.107.0`)** — 사용자가 Cloudflare에서 3개 도메인 root+wildcard A레코드 변경 (hotsao.com은 미전환 = 제외)
 
-**중요**: 각 도메인의 실제 권위 DNS는 Google Cloud DNS가 아니라 **Cloudflare**임 (`isaac.ns.cloudflare.com`, `hope.ns.cloudflare.com`). `yango-501407`의 Cloud DNS 존은 트래픽 라우팅에는 관여하지 않고, `_acme-challenge.<domain>` 서브도메인만 Cloudflare에서 Google Cloud DNS로 NS 위임되어 있어 (사용자가 직접 설정) SSL 인증서 발급 자동화 용도로 쓰임. 실제 트래픽 전환은 Cloudflare의 A레코드 변경으로 완료됨.
+**중요**: 각 도메인 권위 DNS는 **Cloudflare**(`isaac.ns.cloudflare.com`, `hope.ns.cloudflare.com`). Google Cloud DNS 존은 트래픽 라우팅에 관여하지 않고, `_acme-challenge.<domain>` NS 위임을 통해 SSL 인증서 발급에만 사용됨. 실제 전환은 Cloudflare A레코드 변경으로 완료.
 
-**실행 중 발견/해결한 이슈**:
+**실행 중 발견/해결한 이슈 (이번 이관의 가장 큰 난관 — cert-manager DNS-01):**
 
-- `cert-manager-dns01-key` 시크릿이 옛 프로젝트(`yango-495502`) 소속 서비스 계정 키였음 — 그대로 쓰면 Phase 6에서 구 프로젝트 삭제 시 인증서 갱신이 깨짐. 새 프로젝트에 `cert-manager-dns01@yango-501407` 서비스 계정을 새로 만들어 `roles/dns.admin` 부여 후 키 교체.
-- DNS-01 챌린지가 계속 `403 Forbidden`으로 실패했던 최초 원인은 위 서비스 계정 문제였고, 그 다음 발견된 근본 원인이 Cloudflare 권위 DNS 문제였음. 사용자가 Cloudflare에서 `_acme-challenge` 서브도메인 NS 위임을 설정한 뒤 정상적으로 발급됨.
+1. **403 Forbidden (근본 원인)**: 이관한 `cert-manager-dns01-key` 시크릿이 **구 프로젝트 SA 키**(`cert-manager-dns01@yango-501407`)였음. 신 프로젝트 Cloud DNS에 권한이 없어 cert-manager가 TXT 생성 시 `GoogleCloud API call failed: 403 Forbidden`. 해결 절차: ① `cert-manager-dns01@yanggo-514212` SA에 `roles/dns.admin` 부여 → ② 새 키 발급 → ③ GCP Secret `cert-manager-dns01-key`(신 프로젝트)에 새 키로 버전 추가 → ④ ExternalSecret(`clouddns-dns01-solver-sa`) 강제 재동기화(관리 시크릿 삭제) → ⑤ cert-manager 재시작. 이 solver 시크릿은 ESO가 동기화하므로 GCP Secret만 바꾸면 됨.
+2. **존 dnsName 오타**: `review-maps-com` 존의 dnsName이 `review.maps.com.`(오타, 정상은 `review-maps.com.`)이라 cert-manager가 매칭 존을 못 찾음. **존 dnsName은 생성 후 변경 불가** → 존을 삭제 후 올바른 dnsName으로 재생성. ⚠️ **재생성하면 네임서버가 바뀜**(ns-cloud-b → ns-cloud-d) → Cloudflare의 `_acme-challenge.review-maps.com` NS 위임도 새 네임서버로 다시 바꿔야 함(안 바꾸면 SOA 조회가 `SERVFAIL`).
+3. **Cloudflare `_acme-challenge` NS 위임은 도메인별로 다름**: 각 도메인의 `_acme-challenge.<domain>` NS를 해당 Google Cloud DNS 존의 네임서버로 위임해야 함. 존마다 ns-cloud 세트가 다름(이번: ggorockee=ns-cloud-**e**, woohalabs=ns-cloud-**a**, review-maps=ns-cloud-**d**). 존 네임서버는 `gcloud dns managed-zones describe [ZONE] --format='value(nameServers)'`로 확인.
+4. **멈춘 챌린지 강제 재시도**: 위임 수정 후에도 백오프로 재시도가 느리면, `kubectl delete order,certificaterequest -n istio-system [이름]`으로 order/CR을 삭제하면 cert-manager가 새 order로 즉시 재시도함.
 
-**최종 검증 결과 (도메인 통한 실제 HTTPS 요청 기준):**
-
-| 도메인 | 인증서 | 응답 |
-|--------|--------|------|
-| ggorockee.com | 유효 | 404 (루트에 라우팅 없음, 기존부터 그랬음 — 버그 아님) |
-| argocd.ggorockee.com | 유효 | 200, ArgoCD 정상 |
-| hotsao.com | 유효 | 200, 앱 정상 응답 |
-| review-maps.com | 유효 | 200, 앱 정상 응답 |
-| woohalabs.com | 유효 | 301 → `/ojeomneo` 정상 리다이렉트 |
-| Grafana | - | 해당 없음 (모니터링 스택 비활성화 상태) |
+**최종 검증 결과 (실제 HTTPS):** ggorockee.com 루트는 404/미라우팅(기존부터, argocd 서브도메인이 실서비스) · argocd.ggorockee.com 200 · review-maps.com 200 · woohalabs.com 301. 인증서 3개 모두 발급 완료.
 
 ### Phase 6 - 기존 프로젝트 정리 — **완료**
 
-- [x] ~~전체 서비스 정상 확인 후 7일 유지~~ — 사용자 판단으로 DNS 전환 당일 즉시 삭제 진행 (원래 계획된 7일 대기는 생략)
-- [x] 기존 Cloud SQL 최종 백업 — on-demand 백업 생성 + `ojeomneo`/`reviewmaps`/`hotsao` 3개 DB를 새 프로젝트의 `gs://yango-501407-final-backup-yango495502` 버킷에 최종 export (프로젝트 삭제와 무관하게 영구 보존)
-- [x] 기존 프로젝트(`yango-495502`) 삭제 요청 (`gcloud projects delete`) — `lifecycleState: DELETE_REQUESTED`, 30일 이내 `gcloud projects undelete yango-495502`로 복구 가능, 30일 후 영구 삭제
+- [x] 신 클러스터 실트래픽 정상 확인 후 즉시 삭제 진행 (DNS 전환 당일)
+- [x] 기존 Cloud SQL **최종 재백업** — DB export 시점(초기 이관) 이후 DNS 전환 전까지의 델타를 보존하기 위해, 삭제 직전 `ojeomneo`/`reviewmaps`/`hotsao` 3개 DB를 `gs://yanggo-514212-sqlmigrate/final-*.sql` 로 다시 export (ojeomneo/reviewmaps는 델타 없음, hotsao만 소폭 증가 — hotsao.com이 미전환 상태로 구에서 계속 쓰기 받은 탓)
+- [x] 기존 프로젝트(`yango-501407`) 삭제 요청 (`gcloud projects delete yango-501407 --account=woohalabs10@gmail.com --quiet`) — `lifecycleState: DELETE_REQUESTED`, 30일 이내 `gcloud projects undelete yango-501407`로 복구 가능, 30일 후 영구 삭제. 리소스를 하나씩 영구 삭제하는 대신 프로젝트 삭제(복구 가능)를 선택.
+
+> **hotsao.com 주의**: 이번 이관에서 hotsao는 제외했고 hotsao.com은 미전환(구 프로젝트 `34.64.94.80` 유지)이라, 구 프로젝트가 완전 삭제되면 hotsao.com도 함께 종료됨 (의도된 동작).
 
 ---
 
@@ -188,8 +189,8 @@ GitHub Repository → Settings → Secrets and variables → Actions:
 
 | Secret 이름 | 변경 내용 |
 |------------|---------|
-| `GCP_PROJECT_ID` | `yango-501407` 로 업데이트 |
-| `GCP_SA_KEY` | 새 프로젝트 서비스 계정 키 JSON으로 업데이트 |
+| `GCP_PROJECT_ID` | `yanggo-514212` 로 업데이트 |
+| `GCP_SA_KEY` | 새 프로젝트 서비스 계정 키 JSON으로 업데이트 (`gh secret set GCP_SA_KEY < terraform-key.json --repo ggorockee/infra`) |
 
 ---
 
@@ -203,15 +204,32 @@ GitHub Repository → Settings → Secrets and variables → Actions:
 - 실제 도메인 권위 DNS는 Cloudflare이므로, Google Cloud DNS 존 생성만으로는 트래픽이 전혀 전환되지 않음 (SSL 인증서 자동 발급용 `_acme-challenge` 위임에만 사용됨)
 - `argocd-rbac-policy` ExternalSecret의 `SecretSyncedError`는 이관과 무관한 기존 이슈로 남아있음 (미수정)
 
+## 이번 이관(yanggo-514212) 추가 발견사항 요약
+
+다음 이관에서 반복될 수 있는 함정들 (크로스 계정 + 신규 조직 환경 특유):
+
+| 영역 | 함정 | 대응 |
+|------|------|------|
+| Phase 0 | 신규 조직은 `iam.disableServiceAccountKeyCreation` 강제 → SA 키 생성 불가 | orgpolicy.policyAdmin 자가부여 → `disable-enforce` → ~7분 전파 후 재시도 |
+| Phase 0 | 결제 계정이 소유 계정별로 다름 | 신 소유 계정으로 로그인해 조회·연결 |
+| Phase 2 | Cloud SQL apply가 DB 시크릿을 읽음 → 시크릿이 먼저 있어야 함 | Phase 2를 Phase 1 apply보다 먼저 수행 |
+| Phase 2/3 | 구/신 소유 계정 다름 | 읽기/쓰기 `--account` 분리 |
+| Phase 1 | ESO 네임스페이스는 `external-secrets-system` | CRD 소유권 어노테이션 release-namespace 정확히 일치 |
+| Phase 4 | ApplicationSet glob `*-cfg.yaml`이 `legacy/` 재귀 매칭 | 비활성화는 `.del` 접미사로 |
+| Phase 5 | 이관한 `cert-manager-dns01-key`가 구 프로젝트 SA 키 → 403 | 신 SA에 dns.admin + 새 키 + Secret 교체 + ESO 재동기화 |
+| Phase 5 | 존 dnsName 오타는 재생성만 가능 → 네임서버 변경됨 | Cloudflare `_acme-challenge` NS 위임도 새 네임서버로 재설정 |
+
 ## 남은 작업 (다음 세션 참고용)
 
-- [x] Cloudflare에서 각 도메인 A레코드를 `34.64.94.80`으로 변경 (2026-07-04 완료, 사용자가 직접 진행)
-- [x] `yango-495502` 최종 백업 및 프로젝트 삭제 요청 완료 (2026-07-04, DNS 전환 당일 진행 — 사용자 판단으로 7일 대기 생략)
-- [ ] 30일 undelete 창구 종료 전까지는 필요시 `gcloud projects undelete yango-495502`로 복구 가능하다는 점 인지
+- [x] Cloudflare에서 3개 도메인(ggorockee/review-maps/woohalabs) A레코드를 `34.22.107.0`으로 변경 (2026-11-09 완료, 사용자가 직접 진행)
+- [x] `yango-501407` 최종 재백업 및 프로젝트 삭제 요청 완료 (2026-11-09, DNS 전환 당일)
+- [ ] 30일 undelete 창구 종료 전까지 필요시 `gcloud projects undelete yango-501407`로 복구 가능하다는 점 인지
+- [ ] hotsao 완전 정리 여부 결정 (앱 제외됨, hotsao.com은 구 프로젝트 삭제와 함께 종료)
 - [ ] `argocd-rbac-policy` ExternalSecret 설정 정리 (기존 이슈, 선택 사항)
 
 ## 최종 업데이트
 
 - 작성일: 2026-02-17 (구 → yango-495502 이관 기준)
-- 갱신일: 2026-07-04 (yango-495502 → yango-501407 이관 완료 — Phase 0~6 전체 완료)
-- 이관 대상 프로젝트: `yango-501407`
+- 갱신일: 2026-07-04 (yango-495502 → yango-501407 이관 완료)
+- 갱신일: 2026-11-09 (**yango-501407 → yanggo-514212 이관 완료** — Phase 0~6 전체 완료, 크로스 계정·신규 조직 환경)
+- 이관 대상 프로젝트: `yanggo-514212`
