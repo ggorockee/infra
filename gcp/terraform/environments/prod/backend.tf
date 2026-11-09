@@ -2,7 +2,7 @@ terraform {
   required_version = ">= 1.5.0"
 
   backend "gcs" {
-    bucket = "yango-501407-tfstate"
+    bucket = "yanggo-514212-tfstate"
     prefix = "env/prod/woohalabs-prod"
   }
 
