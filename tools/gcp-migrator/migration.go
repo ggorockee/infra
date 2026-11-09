@@ -210,7 +210,7 @@ func (c Config) phase1(old, nw string) Phase {
 	return Phase{
 		ID:      "phase1",
 		Title:   "Phase 1 · Terraform 인프라 배포",
-		Summary: "코드의 프로젝트 참조를 교체하고, GitHub Secrets를 갱신한 뒤 Actions로 apply 합니다.",
+		Summary: "⚠️ apply는 로컬 버튼이 아니라 'main 브랜치 머지' 시 GitHub Actions가 자동 실행합니다. 순서: 코드 교체 → GitHub Secrets 갱신 → external_secrets 끄기 → PR 생성(자동 plan) → main 머지(자동 apply, 실제 GKE 생성) → GKE 접근 확인.",
 		Steps: []Step{
 			{
 				ID:     "p1-code",
@@ -236,17 +236,29 @@ func (c Config) phase1(old, nw string) Phase {
 			},
 			{
 				ID:     "p1-bootstrap",
-				Title:  "⚠️ external_secrets 2단계 부트스트랩",
+				Title:  "⚠️ external_secrets 끄기 (1차 부트스트랩, 코드 편집)",
 				Manual: true,
-				Note: "최초 apply 는 GKE 와 external_secrets 를 동시에 만들 수 없음 (kubernetes_manifest 가 live cluster 필요).\n" +
-					"1) main.tf 에서 external_secrets 모듈을 먼저 주석 처리하고 apply → GKE 생성\n" +
-					"2) ESO CRD 를 Helm 과 별개로 먼저 적용하고 소유권 라벨 부착\n" +
-					"3) external_secrets 모듈 재활성화 후 다시 apply",
+				Note: "왜: 최초 apply는 GKE와 external_secrets를 동시에 못 만듦 (external_secrets가 살아있는 클러스터를 필요로 함).\n" +
+					"방법: gcp/terraform/environments/prod/main.tf 의 `module \"external_secrets\" { ... }` 블록 전체를 주석 처리.\n" +
+					"→ 이 상태로 1차 apply하면 GKE만 먼저 생성됨. GKE 생성 후 아래 'PR 생성'과 머지를 한 번 더 반복하며 주석을 풀어 2차 apply (external_secrets 생성).\n" +
+					"(참고: 이전 이관 PR #1096 → #1097 이 각각 1차/2차였음)",
 			},
 			{
-				ID:     "p1-apply",
-				Title:  "GitHub Actions apply 실행 + GKE 접근 확인",
-				Manual: false,
+				ID:    "p1-pr",
+				Title: "코드를 GitHub에 올리고 PR 생성 (여기서 apply가 시작됨)",
+				Note: "이 단계가 실제 배포의 시작점. PR을 만들면 GitHub Actions가 자동으로 terraform plan을 돌림(안전, 리소스 안 만듦).\n" +
+					"⚠️ PR을 main에 '머지'하는 순간 terraform apply가 자동 실행되어 실제 GKE/Cloud SQL이 생성됨(과금 시작). plan 결과를 확인한 뒤 머지할 것.",
+				Commands: []Command{
+					{Label: "① 현재 브랜치 push", Code: "git push -u origin HEAD"},
+					{Label: "② PR 생성 (plan 자동 실행)", Code: fmt.Sprintf("gh pr create --repo %s --base main --fill", def(c.GithubRepo, "<OWNER/REPO>"))},
+					{Label: "③ plan 상태 확인", Code: fmt.Sprintf("gh pr checks --repo %s", def(c.GithubRepo, "<OWNER/REPO>"))},
+					{Label: "④ (확인 후) 머지 → apply 자동 실행 🚨", Code: fmt.Sprintf("gh pr merge --repo %s --squash", def(c.GithubRepo, "<OWNER/REPO>")), Danger: true},
+				},
+			},
+			{
+				ID:    "p1-apply",
+				Title: "apply 완료 후 GKE 접근 확인",
+				Note:  "아래 명령은 위 머지로 apply가 끝나 GKE가 생성된 '뒤에만' 동작함. apply 전에는 클러스터가 없어 실패가 정상.",
 				Commands: []Command{
 					{Label: "GKE 자격증명 가져오기", Code: fmt.Sprintf("gcloud container clusters get-credentials prod-gke \\\n  --region=%s --project=%s", c.Region, nw)},
 					{Label: "노드 확인", Code: "kubectl get nodes"},
