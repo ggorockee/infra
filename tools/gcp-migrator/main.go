@@ -136,6 +136,9 @@ func main() {
 		writeJSON(w, DefaultConfig())
 	})
 
+	// 읽기 전용 gcloud 조회 (불러오기 버튼)
+	mux.HandleFunc("/api/lookup/billing", handleLookupBilling)
+
 	srv := &http.Server{
 		Addr:              *addr,
 		Handler:           mux,

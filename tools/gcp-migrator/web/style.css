@@ -153,6 +153,17 @@ body {
 .field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
 .field textarea { resize: vertical; min-height: 70px; }
 .field .hint { font-size: 11px; color: var(--text-dim); }
+.field-row { display: flex; gap: 8px; align-items: stretch; }
+.field-row input { flex: 1; min-width: 0; }
+.fetch-btn {
+  flex-shrink: 0;
+  background: var(--bg-elev2); color: var(--accent);
+  border: 1px solid var(--accent); border-radius: 9px;
+  padding: 0 14px; font-size: 12px; font-weight: 600; cursor: pointer;
+  white-space: nowrap; transition: filter .15s;
+}
+.fetch-btn:hover { filter: brightness(1.2); }
+.fetch-btn:disabled { opacity: .6; cursor: default; }
 
 .form-actions { margin-top: 24px; display: flex; gap: 12px; align-items: center; }
 .btn {

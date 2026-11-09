@@ -25,7 +25,7 @@ const FIELDS = [
   { key: "newProjectID", label: "신 프로젝트 ID *", hint: "이관 대상 (필수)" },
   { key: "oldOwnerEmail", label: "구 소유 계정" },
   { key: "newOwnerEmail", label: "신 소유 계정" },
-  { key: "billingAccount", label: "결제 계정 ID", hint: "예: 019BE5-B9EFB8-C3E4D3" },
+  { key: "billingAccount", label: "결제 계정 ID", hint: "예: 019BE5-B9EFB8-C3E4D3", fetch: "billing" },
   { key: "region", label: "리전" },
   { key: "tfStateBucket", label: "TF State 버킷", hint: "비우면 {신}-tfstate 자동" },
   { key: "cloudSQLInstance", label: "Cloud SQL 인스턴스" },
@@ -108,9 +108,12 @@ function navItem(id, dot, title, active, prog, isConfig, done) {
 function renderConfig() {
   const c = state.config;
   let fields = FIELDS.map((f) => `
-    <div class="field ${f.key === "githubRepo" ? "" : ""}">
+    <div class="field">
       <label>${esc(f.label)}</label>
-      <input id="f-${f.key}" value="${esc(c[f.key] || "")}" placeholder="${esc(f.hint || "")}" />
+      <div class="field-row">
+        <input id="f-${f.key}" value="${esc(c[f.key] || "")}" placeholder="${esc(f.hint || "")}" />
+        ${f.fetch ? `<button class="fetch-btn" data-fetch="${f.fetch}">불러오기</button>` : ""}
+      </div>
       ${f.hint ? `<span class="hint">${esc(f.hint)}</span>` : ""}
     </div>`).join("");
 
@@ -138,6 +141,42 @@ function renderConfig() {
     renderConfig();
     toast("기본값을 불러왔습니다");
   });
+  document.querySelectorAll(".fetch-btn").forEach((el) =>
+    el.addEventListener("click", () => {
+      if (el.dataset.fetch === "billing") lookupBilling(el);
+    }));
+}
+
+// gcloud 인증을 활용해 결제 계정을 조회하고 입력란을 채운다 (읽기 전용)
+async function lookupBilling(btn) {
+  const orig = btn.textContent;
+  btn.textContent = "조회 중…";
+  btn.disabled = true;
+  try {
+    const r = await api.get("/api/lookup/billing");
+    if (!r.ok) { toast("⚠️ " + (r.error || "조회 실패")); return; }
+    const accs = r.accounts || [];
+    if (accs.length === 0) { toast("조회된 결제 계정이 없습니다"); return; }
+
+    let chosen = accs[0];
+    if (accs.length > 1) {
+      const lines = accs.map((a, i) =>
+        `${i + 1}. ${a.id}  (${a.displayName}${a.open ? "" : " · 닫힘"})`).join("\n");
+      const pick = prompt(
+        `현재 gcloud 계정: ${r.account || "?"}\n결제 계정을 선택하세요:\n\n${lines}\n\n번호 입력:`, "1");
+      if (pick === null) return;
+      const idx = parseInt(pick, 10) - 1;
+      if (isNaN(idx) || idx < 0 || idx >= accs.length) { toast("잘못된 선택"); return; }
+      chosen = accs[idx];
+    }
+    document.getElementById("f-billingAccount").value = chosen.id;
+    toast(`결제 계정 입력됨: ${chosen.id} (gcloud: ${r.account || "?"})`);
+  } catch (e) {
+    toast("조회 중 오류: " + e.message);
+  } finally {
+    btn.textContent = orig;
+    btn.disabled = false;
+  }
 }
 
 function collectConfig() {
