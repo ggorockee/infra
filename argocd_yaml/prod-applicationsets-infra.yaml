@@ -14,6 +14,9 @@ spec:
         exclude: true
       - path: "charts/argocd/configurations/prod/istio-*-cfg.yaml"
         exclude: true
+      # apps-*-cfg.yaml 은 infra-apps-prod(apps-*.yaml)가 생성 → 중복 소유 충돌 방지
+      - path: "charts/argocd/configurations/prod/apps-*.yaml"
+        exclude: true
 
   template:
     metadata:

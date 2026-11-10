@@ -40,11 +40,12 @@ gateway:
           - "review-maps.com"
         credentialName: review-maps-com-wildcard-tls
 
-      - name: hotsao-com
-        hosts:
-          - "*.hotsao.com"
-          - "hotsao.com"
-        credentialName: hotsao-com-wildcard-tls
+      # hotsao: yanggo-514212 이관 대상 제외 (DNS 미전환, 인증서 미발급) → 재도입 시 주석 해제
+      # - name: hotsao-com
+      #   hosts:
+      #     - "*.hotsao.com"
+      #     - "hotsao.com"
+      #   credentialName: hotsao-com-wildcard-tls
 
 # Security Configuration (비용 최소화: Istio Local Rate Limiting 사용)
 security:
@@ -284,7 +285,7 @@ virtualServices:
   # Hotsao Web (Next.js)
   - name: hotsao-web-vs
     namespace: hotsao
-    enabled: true
+    enabled: false  # hotsao 이관 제외 (namespace 없음)
     hosts:
       - "hotsao.com"
       - "www.hotsao.com"
@@ -297,7 +298,7 @@ virtualServices:
   # Hotsao API (go)
   - name: hotsao-server-vs
     namespace: hotsao
-    enabled: true
+    enabled: false  # hotsao 이관 제외 (namespace 없음)
     hosts:
       - "api.hotsao.com"
     http:
@@ -309,7 +310,7 @@ virtualServices:
   # Hotsao Admin (go)
   - name: hotsao-admin-vs
     namespace: hotsao
-    enabled: true
+    enabled: false  # hotsao 이관 제외 (namespace 없음)
     hosts:
       - "admin.hotsao.com"
     http:

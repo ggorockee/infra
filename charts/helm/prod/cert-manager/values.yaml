@@ -1578,7 +1578,7 @@ ssl:
         - "review-maps.com"
 
     hotsao_com:
-      enabled: true
+      enabled: false  # hotsao 이관 제외: hotsao.com DNS 미전환으로 ACME 검증 불가
       name: "hotsao-com-wildcard-cert"
       secretName: "hotsao-com-wildcard-tls"
       dnsNames:
