@@ -388,13 +388,13 @@ additionalPrometheusRulesMap:
               description: "최근 5분 요청 중 5% 이상이 서버 오류입니다. HTTP 대시보드: https://monitoring.ggorockee.com/d/reviewmaps-http-metrics"
           - alert: ReviewmapsServerSlow
             expr: |
-              histogram_quantile(0.95, sum by (le) (rate(reviewmaps_http_request_duration_seconds_bucket{path!~"/healthz|/v1/readiness|/v1/liveness|/v1/health|/v1/healthz"}[5m]))) > 1
+              histogram_quantile(0.95, sum by (le) (rate(reviewmaps_http_request_duration_seconds_bucket{path!~"/healthz|/v1/readiness|/v1/liveness|/v1/health|/v1/healthz|/v1/internal/.*"}[5m]))) > 1
             for: 15m
             labels:
               severity: warning
             annotations:
               summary: "⚠️ API 서버 응답 지연 (P95 {{ $value | humanizeDuration }})"
-              description: "상태 확인 요청을 제외한 API의 P95 응답 시간이 15분간 1초를 넘었습니다."
+              description: "상태 확인·내부 배치(/v1/internal/*, 수집 후 키워드 알림 처리) 요청을 제외한 사용자 API의 P95 응답 시간이 15분간 1초를 넘었습니다."
           - alert: ReviewmapsServerDown
             expr: |
               sum(up{namespace="reviewmaps", service="reviewmaps-server"}) == 0

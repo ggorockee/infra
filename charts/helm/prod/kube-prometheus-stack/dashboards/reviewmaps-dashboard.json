@@ -46,7 +46,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "### 리뷰맵 API 서버 (HTTP)\n\n앱이 호출하는 Go API 서버(reviewmaps-server)의 요청 수, 응답 시간, 오류율입니다. 서버 Pod의 /metrics를 30초마다 수집합니다.\n\n| 차트 | 🟢 정상 | 🟠 경고 | 🔴 알람 |\n|---|---|---|---|\n| 응답 시간 P95 | 0.5초 미만 | 0.5~1초 | 1초 초과 ([ALERT] 메일) |\n| 5xx 오류율 | 1% 미만 | 1~5% | 5% 초과 ([ERROR] 메일) |\n| 활성 연결 | 50 미만 | 50~100 | 100 초과 |\n| 서버 수집 대상 | up | - | down 5분 ([ERROR] 메일) |\n\n**메일 알림** (woohaen88@gmail.com)\n\n- [ERROR] 5xx 오류율 5% 초과 10분, API 서버 수집 불가 5분\n- [ALERT] P95 응답 시간 1초 초과 15분\n\n각 차트 제목 옆 ⓘ 에 마우스를 올리면 차트별 설명이 나옵니다."
+        "content": "### 리뷰맵 API 서버 (HTTP)\n\n앱이 호출하는 Go API 서버(reviewmaps-server)의 요청 수, 응답 시간, 오류율입니다. 서버 Pod의 /metrics를 30초마다 수집합니다.\n\n| 차트 | 🟢 정상 | 🟠 경고 | 🔴 알람 |\n|---|---|---|---|\n| 응답 시간 P95 (헬스체크·/v1/internal 제외) | 0.5초 미만 | 0.5~1초 | 1초 초과 ([ALERT] 메일) |\n| 5xx 오류율 | 1% 미만 | 1~5% | 5% 초과 ([ERROR] 메일) |\n| 활성 연결 | 50 미만 | 50~100 | 100 초과 |\n| 서버 수집 대상 | up | - | down 5분 ([ERROR] 메일) |\n\n**메일 알림** (woohaen88@gmail.com)\n\n- [ERROR] 5xx 오류율 5% 초과 10분, API 서버 수집 불가 5분\n- [ALERT] P95 응답 시간 1초 초과 15분\n\n각 차트 제목 옆 ⓘ 에 마우스를 올리면 차트별 설명이 나옵니다."
       },
       "id": 1
     },
@@ -270,7 +270,7 @@
       ],
       "title": "Response Time (Latency)",
       "type": "timeseries",
-      "description": "[무엇] 경로별 응답 시간 P50(절반), P95(95%), P99(99%) 입니다. P95 1초 = 요청 100건 중 95건이 1초 안에 응답.\n\n[보는 법] P95를 기준으로 봅니다. 특정 경로만 느리면 해당 API의 DB 쿼리를 의심합니다.\n\n[범위] 🟢 P95 0.5초 미만 / 🟠 0.5~1초 / 🔴 1초 초과 (15분 지속 시 [ALERT] 메일)"
+      "description": "[무엇] 경로별 응답 시간 P50(절반), P95(95%), P99(99%) 입니다. P95 1초 = 요청 100건 중 95건이 1초 안에 응답.\n\n[보는 법] P95를 기준으로 봅니다. 특정 경로만 느리면 해당 API의 DB 쿼리를 의심합니다.\n\n[참고] /v1/internal/process-campaign-alerts는 수집 직후 호출되는 내부 배치 API라 1초 안팎이 정상이며 응답 지연 알림에서 제외됩니다.\n\n[범위] 🟢 P95 0.5초 미만 / 🟠 0.5~1초 / 🔴 1초 초과 (15분 지속 시 [ALERT] 메일)"
     },
     {
       "datasource": {
@@ -859,6 +859,6 @@
   "timezone": "Asia/Seoul",
   "title": "ReviewMaps HTTP Metrics",
   "uid": "reviewmaps-http-metrics",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }
