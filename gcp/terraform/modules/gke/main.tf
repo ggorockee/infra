@@ -41,6 +41,11 @@ resource "google_container_cluster" "primary" {
   # Cloud Monitoring - 시스템 메트릭만 수집 (워크로드 메트릭 제외)
   monitoring_config {
     enable_components = ["SYSTEM_COMPONENTS"]
+
+    # GKE Managed Prometheus 비활성화 (클러스터 내 kube-prometheus-stack으로 대체, 2026-11-13)
+    managed_prometheus {
+      enabled = false
+    }
   }
 
   maintenance_policy {

@@ -212,7 +212,7 @@ DB 적재 0건 알림은 Prometheus로 SQL을 평가할 수 없으므로 2단계
 ### Phase 1: 정리
 - [x] 제거 대상 디렉터리·파일 삭제 (7장)
 - [x] reviewmaps values에서 OTel 환경변수 제거 (server 영향 확인 후)
-- [ ] 클러스터의 ApplicationSet `infra-logging-prod` 삭제
+- [x] 클러스터의 ApplicationSet `infra-logging-prod` 삭제
 
 ### Phase 2: 배포 구조
 - [x] `argocd_yaml/prod-applicationsets-prom-grafana.yaml` multi-source로 재작성
@@ -228,9 +228,21 @@ DB 적재 0건 알림은 Prometheus로 SQL을 평가할 수 없으므로 2단계
 
 ### Phase 4: 반영 및 검증
 - [ ] Google OAuth 리디렉션 URI 추가 (수동)
-- [ ] PR 생성 → 머지
-- [ ] ApplicationSet 수동 apply
-- [ ] Application Synced/Healthy 확인
-- [ ] Grafana 로그인, 대시보드에 CronJob 3종 및 적재 건수 표시 확인
-- [ ] 알림 테스트 (Job 실패 시 이메일 수신)
-- [ ] (승인 후) GMP 비활성화
+- [x] PR 생성 → 머지
+- [x] ApplicationSet 수동 apply
+- [x] Application Synced/Healthy 확인
+- [x] Grafana 로그인(관리자 계정), 데이터소스 2종 연결, 대시보드 로드 확인
+- [x] 알림 테스트 (테스트 알림 이메일 1건 발송, 실패 0건)
+- [x] (승인 후) GMP 비활성화
+
+### 배포 결과 (2026-11-13)
+
+| 항목 | 결과 |
+|------|------|
+| PR | #1118 (스택 구성), #1119 (ExternalSecret OutOfSync 수정) |
+| ArgoCD `kube-prometheus-stack` | Synced / Healthy (리소스 117개) |
+| Prometheus 수집 대상 | 9종 전부 up |
+| 리뷰맵 CronJob 메트릭 | 3종 수집, 알림 규칙 3종 정상 로드 |
+| 외부 접근 | `monitoring.ggorockee.com` 정상, `prom.ggorockee.com` 404 |
+| GMP | 비활성화 완료, Terraform 코드에 반영 |
+| 남은 수동 작업 | Google OAuth 리디렉션 URI 등록 (`https://monitoring.ggorockee.com/login/generic_oauth`) |
