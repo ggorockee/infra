@@ -7,7 +7,7 @@
   ],
   "timezone": "Asia/Seoul",
   "schemaVersion": 39,
-  "version": 4,
+  "version": 5,
   "editable": true,
   "refresh": "5m",
   "time": {
@@ -63,8 +63,8 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "time() - kube_cronjob_status_last_successful_time{namespace=\"reviewmaps\"}",
-          "legendFormat": "{{cronjob}}",
+          "expr": "label_replace(time() - kube_cronjob_status_last_successful_time{namespace=\"reviewmaps\"}, \"name\", \"$1\", \"cronjob\", \"reviewmaps-go-(?:cron-)?(.*)\")",
+          "legendFormat": "{{name}}",
           "instant": true,
           "range": false,
           "format": "time_series",
@@ -103,10 +103,14 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "background_solid",
         "graphMode": "none",
         "textMode": "value_and_name",
-        "orientation": "horizontal"
+        "orientation": "horizontal",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
       },
       "id": 3,
       "gridPos": {
@@ -129,8 +133,8 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "kube_cronjob_next_schedule_time{namespace=\"reviewmaps\"} * 1000",
-          "legendFormat": "{{cronjob}}",
+          "expr": "label_replace(kube_cronjob_next_schedule_time{namespace=\"reviewmaps\"} * 1000, \"name\", \"$1\", \"cronjob\", \"reviewmaps-go-(?:cron-)?(.*)\")",
+          "legendFormat": "{{name}}",
           "instant": true,
           "range": false,
           "format": "time_series",
@@ -158,7 +162,11 @@
         "colorMode": "value",
         "graphMode": "none",
         "textMode": "value_and_name",
-        "orientation": "horizontal"
+        "orientation": "horizontal",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
       },
       "id": 4,
       "gridPos": {
@@ -218,7 +226,7 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "background_solid",
         "graphMode": "none"
       },
       "id": 5,
@@ -247,14 +255,13 @@
           "instant": true,
           "range": false,
           "format": "time_series",
-          "legendFormat": "{{owner_name}} · {{job_name}}",
-          "expr": "max by (owner_name, job_name) (((time() - kube_job_status_start_time{namespace=\"reviewmaps\"}) and on (namespace, job_name) (kube_job_status_active{namespace=\"reviewmaps\"} > 0)) * on (namespace, job_name) group_left (owner_name) max by (namespace, job_name, owner_name) (kube_job_owner{namespace=\"reviewmaps\", owner_kind=\"CronJob\"}))"
+          "legendFormat": "{{name}}  ·  {{jobname}}",
+          "expr": "label_replace(label_replace(max by (owner_name, job_name) (((time() - kube_job_status_start_time{namespace=\"reviewmaps\"}) and on (namespace, job_name) (kube_job_status_active{namespace=\"reviewmaps\"} > 0)) * on (namespace, job_name) group_left (owner_name) max by (namespace, job_name, owner_name) (kube_job_owner{namespace=\"reviewmaps\", owner_kind=\"CronJob\"})), \"name\", \"$1\", \"owner_name\", \"reviewmaps-go-(?:cron-)?(.*)\"), \"jobname\", \"$1\", \"job_name\", \"reviewmaps-go-(?:cron-)?(.*)\")"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
-          "decimals": 0,
+          "unit": "dthms",
           "noValue": "실행 중인 Job 없음",
           "color": {
             "mode": "thresholds"
@@ -287,11 +294,15 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "background_solid",
         "graphMode": "none",
         "textMode": "value_and_name",
         "orientation": "horizontal",
-        "justifyMode": "auto"
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
       },
       "id": 6,
       "gridPos": {
@@ -511,7 +522,7 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "background_solid",
         "graphMode": "none"
       },
       "id": 10,
@@ -627,7 +638,7 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "background_solid",
         "graphMode": "none"
       },
       "id": 12,
@@ -687,7 +698,7 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "background_solid",
         "graphMode": "none"
       },
       "id": 13,
