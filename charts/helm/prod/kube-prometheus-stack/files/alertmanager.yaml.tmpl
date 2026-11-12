@@ -5,7 +5,8 @@
 #       메일 제목/본문 템플릿은 files/alertmanager-email.tmpl (ConfigMap alertmanager-email-templates)에서 관리.
 global:
   resolve_timeout: 5m
-  smtp_from: "{{ .DEFAULT_FROM_EMAIL }}"
+  # From = SMTP 로그인 Gmail 계정 (noreply@woohalabs.com은 SPF가 Zoho만 허용해 Gmail 경유 시 인증 실패 → 스팸 분류)
+  smtp_from: "ReviewMaps 알림 <{{ .EMAIL_HOST_USER }}>"
   smtp_smarthost: "{{ .EMAIL_HOST }}:{{ .EMAIL_PORT }}"
   smtp_auth_username: "{{ .EMAIL_HOST_USER }}"
   smtp_auth_password: "{{ .EMAIL_HOST_PASSWORD }}"
