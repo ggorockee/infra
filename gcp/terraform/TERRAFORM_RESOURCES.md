@@ -1,6 +1,6 @@
 # GCP Terraform 리소스 현황
 
-**최종 업데이트**: 2025-12-15 (Cloud SQL Admin API 활성화 완료)
+**최종 업데이트**: 2026-11-13 (GKE Managed Prometheus 비활성화)
 **프로젝트**: infra-480802
 **리전**: asia-northeast3 (서울)
 
@@ -66,6 +66,18 @@
 ---
 
 ## 📈 리소스 히스토리
+
+### 2026-11-13: GKE Managed Prometheus 비활성화
+
+**배포된 변경사항**: GKE 클러스터 `monitoring_config.managed_prometheus.enabled = false`
+
+**변경 내역**:
+- 클러스터 내 kube-prometheus-stack(Prometheus + Grafana)으로 모니터링 일원화, 중복 수집 경로 제거
+- `gcloud container clusters update --disable-managed-prometheus`로 선반영 후 Terraform 코드에 명시 (drift 방지)
+- gmp-system collector/operator Pod 제거됨, 사용 중이던 PodMonitoring/Rules 리소스 없음
+- 리소스 수 변동 없음 (클러스터 설정 변경)
+
+**비용 영향**: Managed Service for Prometheus 수집 비용 제거 (시스템 메트릭은 Cloud Monitoring 무료 범위 유지)
 
 ### 2025-12-15: ArgoCD-Istio Ingress Gateway 통합 완료
 
