@@ -7,7 +7,7 @@
   ],
   "timezone": "Asia/Seoul",
   "schemaVersion": 39,
-  "version": 2,
+  "version": 3,
   "editable": true,
   "refresh": "1m",
   "time": {
@@ -226,7 +226,7 @@
           "range": false,
           "format": "time_series",
           "legendFormat": "{{scraper}} 진행률",
-          "expr": "(count by (scraper) (reviewmaps_scraper_last_run_timestamp_seconds{job=\"reviewmaps_scraper\"} >= on (scraper) group_left () max by (scraper) (label_replace(((kube_job_status_start_time{namespace=\"reviewmaps\"} and on (namespace, job_name) (kube_job_status_active{namespace=\"reviewmaps\"} > 0)) * on (namespace, job_name) group_left (owner_name) max by (namespace, job_name, owner_name) (kube_job_owner{namespace=\"reviewmaps\", owner_kind=\"CronJob\"})), \"scraper\", \"$1\", \"owner_name\", \"reviewmaps-go-(?:cron-)?(.*)\")))) / on (scraper) (count by (scraper) (reviewmaps_scraper_last_run_timestamp_seconds{job=\"reviewmaps_scraper\"}))"
+          "expr": "(((count by (scraper) (reviewmaps_scraper_last_run_timestamp_seconds{job=\"reviewmaps_scraper\"} >= on (scraper) group_left () max by (scraper) (label_replace(((kube_job_status_start_time{namespace=\"reviewmaps\"} and on (namespace, job_name) (kube_job_status_active{namespace=\"reviewmaps\"} > 0)) * on (namespace, job_name) group_left (owner_name) max by (namespace, job_name, owner_name) (kube_job_owner{namespace=\"reviewmaps\", owner_kind=\"CronJob\"})), \"scraper\", \"$1\", \"owner_name\", \"reviewmaps-go-(?:cron-)?(.*)\")))) or (0 * max by (scraper) (label_replace(((kube_job_status_start_time{namespace=\"reviewmaps\"} and on (namespace, job_name) (kube_job_status_active{namespace=\"reviewmaps\"} > 0)) * on (namespace, job_name) group_left (owner_name) max by (namespace, job_name, owner_name) (kube_job_owner{namespace=\"reviewmaps\", owner_kind=\"CronJob\"})), \"scraper\", \"$1\", \"owner_name\", \"reviewmaps-go-(?:cron-)?(.*)\"))))) / on (scraper) (count by (scraper) (reviewmaps_scraper_last_run_timestamp_seconds{job=\"reviewmaps_scraper\"}))"
         },
         {
           "datasource": {
@@ -238,7 +238,7 @@
           "range": false,
           "format": "time_series",
           "legendFormat": "{{scraper}} 완료 키워드",
-          "expr": "count by (scraper) (reviewmaps_scraper_last_run_timestamp_seconds{job=\"reviewmaps_scraper\"} >= on (scraper) group_left () max by (scraper) (label_replace(((kube_job_status_start_time{namespace=\"reviewmaps\"} and on (namespace, job_name) (kube_job_status_active{namespace=\"reviewmaps\"} > 0)) * on (namespace, job_name) group_left (owner_name) max by (namespace, job_name, owner_name) (kube_job_owner{namespace=\"reviewmaps\", owner_kind=\"CronJob\"})), \"scraper\", \"$1\", \"owner_name\", \"reviewmaps-go-(?:cron-)?(.*)\")))"
+          "expr": "((count by (scraper) (reviewmaps_scraper_last_run_timestamp_seconds{job=\"reviewmaps_scraper\"} >= on (scraper) group_left () max by (scraper) (label_replace(((kube_job_status_start_time{namespace=\"reviewmaps\"} and on (namespace, job_name) (kube_job_status_active{namespace=\"reviewmaps\"} > 0)) * on (namespace, job_name) group_left (owner_name) max by (namespace, job_name, owner_name) (kube_job_owner{namespace=\"reviewmaps\", owner_kind=\"CronJob\"})), \"scraper\", \"$1\", \"owner_name\", \"reviewmaps-go-(?:cron-)?(.*)\")))) or (0 * max by (scraper) (label_replace(((kube_job_status_start_time{namespace=\"reviewmaps\"} and on (namespace, job_name) (kube_job_status_active{namespace=\"reviewmaps\"} > 0)) * on (namespace, job_name) group_left (owner_name) max by (namespace, job_name, owner_name) (kube_job_owner{namespace=\"reviewmaps\", owner_kind=\"CronJob\"})), \"scraper\", \"$1\", \"owner_name\", \"reviewmaps-go-(?:cron-)?(.*)\"))))"
         }
       ],
       "fieldConfig": {
