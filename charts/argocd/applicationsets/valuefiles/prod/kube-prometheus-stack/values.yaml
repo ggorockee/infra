@@ -307,3 +307,102 @@ additionalPrometheusRulesMap:
             annotations:
               summary: "리뷰맵 Job {{ $labels.job_name }} 2시간 이상 실행 중"
               description: "스크래핑 대상 사이트 응답 지연 또는 hang 가능성이 있습니다."
+
+  # 리뷰맵 수집 서버(go-scraper) 키워드별 결과 — Pushgateway (job="reviewmaps_scraper")
+  # 대시보드 "ReviewMaps 수집 서버"의 색상 기준과 동일한 값 사용
+  reviewmaps-scraper:
+    groups:
+      - name: reviewmaps.scraper
+        rules:
+          - alert: ReviewmapsScraperKeywordFailed
+            expr: reviewmaps_scraper_last_run_success{job="reviewmaps_scraper"} == 0
+            for: 15m
+            labels:
+              severity: critical
+            annotations:
+              summary: "❌ 수집 실패: {{ $labels.scraper }} / {{ $labels.keyword }}"
+              description: "키워드 '{{ $labels.keyword }}' 마지막 실행이 에러로 끝났습니다. CronJob 재시도 후에도 15분간 성공하지 못했습니다. 수집 서버 대시보드: https://monitoring.ggorockee.com/d/reviewmaps-scraper"
+          - alert: ReviewmapsScraperKeywordStale
+            expr: (time() - reviewmaps_scraper_last_success_timestamp_seconds{job="reviewmaps_scraper"}) > 26 * 3600
+            for: 10m
+            labels:
+              severity: critical
+            annotations:
+              summary: "❌ 26시간 넘게 수집 안 됨: {{ $labels.scraper }} / {{ $labels.keyword }}"
+              description: "마지막 성공 후 {{ $value | humanizeDuration }} 경과. 키워드를 설정에서 뺀 경우라면 Pushgateway에서 해당 그룹을 삭제하세요."
+          - alert: ReviewmapsScraperZeroItems
+            expr: |
+              reviewmaps_scraper_last_run_items{job="reviewmaps_scraper", scraper!="cleanup", stage="scraped"} == 0
+              and on (scraper, keyword) reviewmaps_scraper_last_run_success{job="reviewmaps_scraper"} == 1
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 0건 수집: {{ $labels.scraper }} / {{ $labels.keyword }}"
+              description: "실행은 성공했지만 캠페인을 1건도 받지 못했습니다. 사이트 구조 변경, 차단, API 장애를 확인하세요."
+          - alert: ReviewmapsScraperItemsDropped
+            expr: |
+              reviewmaps_scraper_last_run_items{job="reviewmaps_scraper", scraper!="cleanup", stage="scraped"}
+                < 0.5 * (reviewmaps_scraper_last_run_items{job="reviewmaps_scraper", scraper!="cleanup", stage="scraped"} offset 1d)
+              and (reviewmaps_scraper_last_run_items{job="reviewmaps_scraper", scraper!="cleanup", stage="scraped"} offset 1d) >= 20
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 수집량 급감: {{ $labels.scraper }} / {{ $labels.keyword }} ({{ $value }}건)"
+              description: "전일 같은 시각 대비 50% 미만으로 줄었습니다 (전일 20건 이상인 키워드만 판단)."
+          - alert: ReviewmapsScraperEnrichErrorsHigh
+            expr: |
+              (reviewmaps_scraper_last_run_enrich{job="reviewmaps_scraper", type="error"}
+                / on (scraper, keyword) reviewmaps_scraper_last_run_enrich{job="reviewmaps_scraper", type="total"}) > 0.2
+              and on (scraper, keyword) reviewmaps_scraper_last_run_enrich{job="reviewmaps_scraper", type="total"} >= 10
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 주소/좌표 보강 에러율 {{ $value | humanizePercentage }}: {{ $labels.scraper }} / {{ $labels.keyword }}"
+              description: "네이버 검색/지오코딩 API 에러가 20%를 넘었습니다. API 일일 한도 초과나 키 만료를 확인하세요."
+          - alert: ReviewmapsScraperServerAPIError
+            expr: reviewmaps_scraper_last_run_server_api_error{job="reviewmaps_scraper"} == 1
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 키워드 알림 처리 실패: {{ $labels.scraper }} / {{ $labels.keyword }}"
+              description: "수집 후 서버 API(/v1/internal/process-campaign-alerts) 호출에 실패해 사용자 키워드 알림이 생성되지 않았을 수 있습니다."
+
+  # 리뷰맵 API 서버(reviewmaps-server) — 대시보드 "ReviewMaps HTTP Metrics"와 동일 기준
+  reviewmaps-server:
+    groups:
+      - name: reviewmaps.server
+        rules:
+          - alert: ReviewmapsServerHighErrorRate
+            expr: |
+              sum(rate(reviewmaps_http_requests_total{status=~"5.."}[5m]))
+                / sum(rate(reviewmaps_http_requests_total[5m])) > 0.05
+            for: 10m
+            labels:
+              severity: critical
+            annotations:
+              summary: "❌ API 서버 5xx 오류율 {{ $value | humanizePercentage }}"
+              description: "최근 5분 요청 중 5% 이상이 서버 오류입니다. HTTP 대시보드: https://monitoring.ggorockee.com/d/reviewmaps-http-metrics"
+          - alert: ReviewmapsServerSlow
+            expr: |
+              histogram_quantile(0.95, sum by (le) (rate(reviewmaps_http_request_duration_seconds_bucket{path!~"/healthz|/v1/readiness|/v1/liveness|/v1/health|/v1/healthz"}[5m]))) > 1
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ API 서버 응답 지연 (P95 {{ $value | humanizeDuration }})"
+              description: "상태 확인 요청을 제외한 API의 P95 응답 시간이 15분간 1초를 넘었습니다."
+          - alert: ReviewmapsServerDown
+            expr: |
+              sum(up{namespace="reviewmaps", service="reviewmaps-server"}) == 0
+              or absent(up{namespace="reviewmaps", service="reviewmaps-server"})
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "❌ API 서버 메트릭 수집 불가 (서버 다운 가능성)"
+              description: "Prometheus가 5분간 reviewmaps-server /metrics를 수집하지 못했습니다. kubectl -n reviewmaps get pods 로 확인하세요."
+

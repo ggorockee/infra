@@ -7,7 +7,7 @@
   ],
   "timezone": "Asia/Seoul",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "editable": true,
   "refresh": "5m",
   "time": {
@@ -22,13 +22,28 @@
   },
   "panels": [
     {
-      "id": 1,
+      "type": "text",
+      "title": "이 대시보드 보는 법",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 11
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### 리뷰맵 CronJob & DB 적재\n\n위쪽은 Kubernetes CronJob 실행 상태(성공/실패/실행 시간), 아래쪽은 Cloud SQL campaign 테이블에 실제로 데이터가 들어왔는지입니다. 키워드별 수집 결과는 'ReviewMaps 수집 서버' 대시보드에서 봅니다.\n\n| 차트 | 🟢 정상 | 🟠 경고 | 🔴 알람 |\n|---|---|---|---|\n| 마지막 성공 후 경과 | 24시간 이내 | 24~26시간 | 26시간 초과 ([ERROR] 메일) |\n| 실패 Job | 0 | - | 1개 이상 ([ERROR] 메일) |\n| Job 실행 시간 | 30분 미만 | 30분~2시간 | 2시간 초과 ([ALERT] 메일) |\n| 오늘 적재 건수 | 1건 이상 | - | 0건 (00:20 이후) |\n| 마지막 적재 후 경과 | 24시간 이내 | 24~26시간 | 26시간 초과 |\n| 마감 지난 잔존 | 0 (05:00 이후) | 1건 이상 | - |\n| 플랫폼별 마지막 적재 | 26시간 이내 | 26~72시간 | 72시간 초과 |\n\n**메일 알림** (woohaen88@gmail.com)\n\n- [INFO] CronJob 성공 (Job마다 1통)\n- [ERROR] CronJob 실패, 26시간 미성공\n- [ALERT] Job 2시간 초과 실행\n\n각 차트 제목 옆 ⓘ 에 마우스를 올리면 차트별 설명이 나옵니다."
+      },
+      "id": 1
+    },
+    {
+      "id": 2,
       "type": "row",
       "title": "CronJob 상태 (kube-state-metrics)",
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 0,
+        "y": 11,
         "w": 24,
         "h": 1
       },
@@ -37,7 +52,7 @@
     {
       "type": "stat",
       "title": "마지막 성공 후 경과 시간",
-      "description": "26시간 초과 시 빨간색 (ReviewmapsCronJobNotSucceeded 알림 기준)",
+      "description": "[무엇] CronJob별로 마지막으로 성공한 Job이 끝난 뒤 지난 시간입니다.\n\n[보는 법] 세 CronJob 모두 하루 1회라 보통 24시간 이내입니다. 실행 직후에는 0에 가깝고 다음 실행 전까지 계속 늘어납니다.\n\n[범위] 🟢 24시간 이내 / 🟠 24~26시간 / 🔴 26시간 초과 → [ERROR] 메일",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -93,10 +108,10 @@
         "textMode": "value_and_name",
         "orientation": "horizontal"
       },
-      "id": 2,
+      "id": 3,
       "gridPos": {
         "x": 0,
-        "y": 1,
+        "y": 12,
         "w": 10,
         "h": 6
       }
@@ -145,18 +160,19 @@
         "textMode": "value_and_name",
         "orientation": "horizontal"
       },
-      "id": 3,
+      "id": 4,
       "gridPos": {
         "x": 10,
-        "y": 1,
+        "y": 12,
         "w": 7,
         "h": 6
-      }
+      },
+      "description": "[무엇] CronJob별 다음 예약 실행까지 남은 시간입니다.\n\n[보는 법] inflexer 00:05, reviewnote 02:00, cleanup 05:00 (KST). 값이 과거로 표시되면 스케줄이 멈춘 것입니다."
     },
     {
       "type": "stat",
       "title": "실패 Job (현재 보존 중)",
-      "description": "실패 Job은 TTL(1시간) 동안 보존됨. 0이 정상",
+      "description": "[무엇] backoffLimit(3회 재시도)을 넘겨 최종 실패한 Job 수입니다. 실패 Job은 1시간 보존 후 삭제됩니다.\n\n[보는 법] 0이 아니면 1시간 안에 kubectl -n reviewmaps logs job/<Job이름> 으로 원인을 확인하세요.\n\n[범위] 🟢 0 / 🔴 1개 이상 → [ERROR] 메일",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -205,10 +221,10 @@
         "colorMode": "background",
         "graphMode": "none"
       },
-      "id": 4,
+      "id": 5,
       "gridPos": {
         "x": 17,
-        "y": 1,
+        "y": 12,
         "w": 3,
         "h": 6
       }
@@ -255,13 +271,14 @@
         "colorMode": "value",
         "graphMode": "none"
       },
-      "id": 5,
+      "id": 6,
       "gridPos": {
         "x": 20,
-        "y": 1,
+        "y": 12,
         "w": 4,
         "h": 6
-      }
+      },
+      "description": "[무엇] 지금 실행 중인 Job 수입니다.\n\n[보는 법] 스케줄 시간대에 1이 되었다가 끝나면 0으로 돌아옵니다. 스케줄과 무관하게 계속 1이면 멈춘 Job일 수 있습니다.\n\n[범위] 🟢 0~1 / 🟠 2시간 넘게 실행 중 → [ALERT] 메일"
     },
     {
       "type": "state-timeline",
@@ -310,13 +327,14 @@
         "mergeValues": true,
         "rowHeight": 0.8
       },
-      "id": 6,
+      "id": 7,
       "gridPos": {
         "x": 0,
-        "y": 7,
+        "y": 18,
         "w": 24,
         "h": 7
-      }
+      },
+      "description": "[무엇] Job별 실행 시작~종료 구간을 막대로 보여줍니다.\n\n[보는 법] 매일 같은 시간대에 막대가 나타나야 정상입니다. 막대가 빠진 날은 실행되지 않은 날입니다."
     },
     {
       "type": "table",
@@ -343,7 +361,42 @@
         "defaults": {
           "unit": "s"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "실행 시간"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 1800
+                    },
+                    {
+                      "color": "red",
+                      "value": 7200
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          }
+        ]
       },
       "transformations": [
         {
@@ -367,22 +420,23 @@
           }
         }
       ],
-      "id": 7,
+      "id": 8,
       "gridPos": {
         "x": 0,
-        "y": 14,
+        "y": 25,
         "w": 24,
         "h": 5
-      }
+      },
+      "description": "[무엇] 최근 완료된 Job의 실행 시간입니다 (완료 후 1시간 동안만 표시).\n\n[보는 법] 평소 inflexer 약 12분, reviewnote 약 3분, cleanup 수 초입니다.\n\n[범위] 🟢 30분 미만 / 🟠 30분~2시간 / 🔴 2시간 초과"
     },
     {
-      "id": 8,
+      "id": 9,
       "type": "row",
       "title": "DB 적재 확인 (Cloud SQL campaign 테이블)",
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 19,
+        "y": 30,
         "w": 24,
         "h": 1
       },
@@ -391,7 +445,7 @@
     {
       "type": "stat",
       "title": "오늘(KST) 적재 건수",
-      "description": "go-scraper는 DELETE 후 INSERT로 저장하므로 created_at = 마지막 수집 시각",
+      "description": "[무엇] 오늘(KST 0시 이후) DB에 저장·갱신된 활성 캠페인 수입니다. 수집 시 기존 캠페인도 다시 저장되므로 '오늘 수집에서 확인된 캠페인 수'로 보면 됩니다.\n\n[보는 법] 00:05 inflexer 실행 전(00:00~00:17)에는 0이 정상입니다. 그 이후에도 0이면 수집이 실패한 것입니다.\n\n[범위] 🟢 1건 이상 / 🔴 0건 (00:20 이후)",
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "reviewmaps-db"
@@ -439,10 +493,10 @@
         "colorMode": "background",
         "graphMode": "none"
       },
-      "id": 9,
+      "id": 10,
       "gridPos": {
         "x": 0,
-        "y": 20,
+        "y": 31,
         "w": 5,
         "h": 5
       }
@@ -488,17 +542,18 @@
         "colorMode": "value",
         "graphMode": "none"
       },
-      "id": 10,
+      "id": 11,
       "gridPos": {
         "x": 5,
-        "y": 20,
+        "y": 31,
         "w": 5,
         "h": 5
-      }
+      },
+      "description": "[무엇] 현재 앱에 노출되는(삭제 표시되지 않은) 캠페인 수입니다.\n\n[보는 법] 급격히 줄면 cleanup이 과하게 지웠거나 수집이 멈춘 것입니다. 하루 단위 증감을 보세요."
     },
     {
       "type": "stat",
-      "title": "마지막 적재 시각",
+      "title": "마지막 적재 후 경과 시간",
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "reviewmaps-db"
@@ -509,7 +564,7 @@
             "type": "grafana-postgresql-datasource",
             "uid": "reviewmaps-db"
           },
-          "rawSql": "SELECT extract(epoch FROM max(created_at)) * 1000 AS \"마지막 적재\" FROM campaign",
+          "rawSql": "SELECT extract(epoch FROM now() - max(created_at)) AS \"경과\" FROM campaign",
           "rawQuery": true,
           "editorMode": "code",
           "format": "table",
@@ -518,13 +573,25 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "dateTimeFromNow",
+          "unit": "s",
+          "decimals": 1,
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": null
+              },
+              {
+                "color": "orange",
+                "value": 86400
+              },
+              {
+                "color": "red",
+                "value": 93600
               }
             ]
           }
@@ -539,21 +606,22 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "value",
+        "colorMode": "background",
         "graphMode": "none"
       },
-      "id": 11,
+      "id": 12,
       "gridPos": {
         "x": 10,
-        "y": 20,
+        "y": 31,
         "w": 5,
         "h": 5
-      }
+      },
+      "description": "[무엇] campaign 테이블에 가장 최근 저장이 일어난 뒤 지난 시간입니다.\n\n[보는 법] 매일 00:05~02:10 사이에 갱신됩니다.\n\n[범위] 🟢 24시간 이내 / 🟠 24~26시간 / 🔴 26시간 초과"
     },
     {
       "type": "stat",
       "title": "마감 지난 잔존 캠페인 (cleanup 검증)",
-      "description": "cleanup은 soft delete(deleted_at 설정). 05:00 cleanup 이후 0이 정상",
+      "description": "[무엇] 신청 마감일이 지났는데 아직 삭제 표시(soft delete)되지 않은 캠페인 수입니다.\n\n[보는 법] 자정이 지나면 전날 마감분이 쌓이고, 05:00 cleanup 후 0이 되어야 합니다. 00:00~05:00 사이에 값이 있는 것은 정상입니다.\n\n[범위] 🟢 0 (05:00 이후) / 🟠 1건 이상 (00:00~05:00은 정상)",
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "reviewmaps-db"
@@ -601,10 +669,10 @@
         "colorMode": "background",
         "graphMode": "none"
       },
-      "id": 12,
+      "id": 13,
       "gridPos": {
         "x": 15,
-        "y": 20,
+        "y": 31,
         "w": 9,
         "h": 5
       }
@@ -646,18 +714,19 @@
           "showLegend": false
         }
       },
-      "id": 13,
+      "id": 14,
       "gridPos": {
         "x": 0,
-        "y": 25,
+        "y": 36,
         "w": 12,
         "h": 12
-      }
+      },
+      "description": "[무엇] 오늘 저장·갱신된 캠페인을 플랫폼(체험단 사이트)별로 센 막대입니다.\n\n[보는 법] 평소 상위 플랫폼(강남맛집, 포포몬, 레뷰 등)이 빠졌다면 해당 사이트 수집에 문제가 있습니다."
     },
     {
       "type": "table",
       "title": "플랫폼별 마지막 적재 (오래된 순)",
-      "description": "마지막 적재가 1일 이상 지난 플랫폼은 수집이 중단됐거나 신규 캠페인이 없는 상태",
+      "description": "[무엇] 플랫폼별 마지막 저장 시각과 경과 시간입니다 (오래된 순).\n\n[보는 법] 운영을 종료했거나 캠페인이 없는 플랫폼은 오래 남아 있을 수 있습니다. 평소 매일 갱신되던 플랫폼이 주황/빨강으로 바뀌면 확인하세요.\n\n[범위] 🟢 26시간 이내 / 🟠 26~72시간 / 🔴 72시간 초과",
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "reviewmaps-db"
@@ -714,10 +783,10 @@
           }
         ]
       },
-      "id": 14,
+      "id": 15,
       "gridPos": {
         "x": 12,
-        "y": 25,
+        "y": 36,
         "w": 12,
         "h": 12
       }
@@ -725,7 +794,7 @@
     {
       "type": "timeseries",
       "title": "캠페인 마지막 갱신일 분포 (최근 14일)",
-      "description": "오늘 막대가 작고 과거 막대가 크면 최근 수집이 실패한 것",
+      "description": "[무엇] 활성 캠페인을 마지막으로 갱신된 날짜별로 센 막대입니다.\n\n[보는 법] 오늘 막대가 가장 커야 정상입니다. 오늘 막대가 작고 과거 막대가 크면 최근 수집이 실패한 것입니다.",
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "reviewmaps-db"
@@ -762,13 +831,27 @@
           "mode": "single"
         }
       },
-      "id": 15,
+      "id": 16,
       "gridPos": {
         "x": 0,
-        "y": 37,
+        "y": 48,
         "w": 24,
         "h": 8
       }
+    }
+  ],
+  "links": [
+    {
+      "title": "수집 서버",
+      "type": "link",
+      "url": "/d/reviewmaps-scraper",
+      "icon": "dashboard"
+    },
+    {
+      "title": "HTTP Metrics",
+      "type": "link",
+      "url": "/d/reviewmaps-http-metrics",
+      "icon": "dashboard"
     }
   ]
 }
