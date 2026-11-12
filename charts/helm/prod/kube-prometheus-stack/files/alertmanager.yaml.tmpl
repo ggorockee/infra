@@ -36,6 +36,13 @@ route:
       group_by: ["alertname", "job_name"]
       group_wait: 30s
       repeat_interval: 6h
+    # 수집 서버 키워드 알림: 키워드가 여러 개여도 스크래퍼별로 한 통에 묶어 발송
+    - receiver: email
+      matchers: ['alertname =~ "ReviewmapsScraper.*"']
+      group_by: ["alertname", "scraper"]
+      group_wait: 2m
+      group_interval: 10m
+      repeat_interval: 12h
     # 그 외 info 등급(기본 규칙의 CPUThrottlingHigh 등)은 메일 발송 안 함
     - receiver: "null"
       matchers: ['severity = "info"']

@@ -1,0 +1,1093 @@
+{
+  "uid": "reviewmaps-scraper",
+  "title": "ReviewMaps 수집 서버",
+  "tags": [
+    "reviewmaps",
+    "scraper"
+  ],
+  "timezone": "Asia/Seoul",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "refresh": "1m",
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  },
+  "links": [
+    {
+      "title": "CronJob & DB 적재",
+      "type": "link",
+      "url": "/d/reviewmaps-cronjob",
+      "icon": "dashboard"
+    },
+    {
+      "title": "HTTP Metrics",
+      "type": "link",
+      "url": "/d/reviewmaps-http-metrics",
+      "icon": "dashboard"
+    }
+  ],
+  "panels": [
+    {
+      "type": "text",
+      "title": "이 대시보드 보는 법",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 12
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### 리뷰맵 수집 서버 (go-scraper)\n\n수집 서버는 CronJob으로 하루 한 번 키워드마다 실행됩니다 (inflexer 00:05 키워드 75개, reviewnote 02:00 전체, cleanup 05:00). 실행이 끝날 때마다 결과를 Pushgateway로 보내며, 이 대시보드의 값은 **키워드별 마지막 실행 결과**입니다. 위쪽 요약에서 빨강/주황이 있으면 아래 '키워드별 결과' 표에서 해당 키워드를 찾으세요.\n\n| 차트 | 🟢 정상 | 🟠 경고 | 🔴 알람 |\n|---|---|---|---|\n| 실패 키워드 | 0 | - | 1개 이상 (15분 지속 시 [ERROR] 메일) |\n| 키워드 성공률 | 100% | 90~99% | 90% 미만 |\n| 가장 오래된 성공 | 24시간 이내 | 24~26시간 | 26시간 초과 ([ERROR] 메일) |\n| 0건 수집 키워드 | 0 | 1개 이상 ([ALERT] 메일) | - |\n| 보강(네이버 API) 에러율 | 5% 미만 | 5~20% | 20% 초과 ([ALERT] 메일) |\n| 키워드 실행 시간 | 5분 미만 | 5~15분 | 15분 초과 |\n| 전일 대비 수집량 | 50% 이상 유지 | 50% 미만으로 감소 ([ALERT] 메일) | - |\n\n**메일 알림** (woohaen88@gmail.com)\n\n- [ERROR] 키워드 실행 실패, 키워드 26시간 미성공\n- [ALERT] 0건 수집, 전일 대비 수집량 급감, 보강 에러율 20% 초과, 키워드 알림 서버 API 실패\n- [INFO] CronJob 성공 (CronJob 대시보드 참고)\n\n각 차트 제목 옆 ⓘ 에 마우스를 올리면 차트별 설명이 나옵니다."
+      },
+      "id": 1
+    },
+    {
+      "type": "row",
+      "title": "실행 상태 요약 (키워드별 마지막 실행 기준)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [],
+      "id": 2
+    },
+    {
+      "type": "stat",
+      "title": "실패 키워드 수",
+      "description": "[무엇] 마지막 실행이 실패(에러로 종료)한 키워드 개수입니다.\n\n[보는 법] 0이 아니면 아래 표에서 '성공'이 실패인 키워드를 확인하고, kubectl -n reviewmaps logs 로 해당 Job 로그를 보세요. 다음 실행에서 성공하면 자동으로 0으로 돌아옵니다.\n\n[범위] 🟢 0 / 🔴 1개 이상 → 15분 지속 시 [ERROR] 메일",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "count(reviewmaps_scraper_last_run_success{job=\"reviewmaps_scraper\"} == 0) or vector(0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "time_series",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto",
+        "orientation": "horizontal",
+        "justifyMode": "auto"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 4,
+        "h": 5
+      },
+      "id": 3
+    },
+    {
+      "type": "stat",
+      "title": "키워드 성공률",
+      "description": "[무엇] 전체 키워드 중 마지막 실행이 성공한 비율입니다.\n\n[보는 법] 100%가 정상입니다. 떨어지면 실패 키워드 수와 함께 확인하세요.\n\n[범위] 🟢 100% / 🟠 90~99% / 🔴 90% 미만",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "avg(reviewmaps_scraper_last_run_success{job=\"reviewmaps_scraper\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "time_series",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.9
+              },
+              {
+                "color": "green",
+                "value": 0.9999
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto",
+        "orientation": "horizontal",
+        "justifyMode": "auto"
+      },
+      "gridPos": {
+        "x": 4,
+        "y": 13,
+        "w": 4,
+        "h": 5
+      },
+      "id": 4
+    },
+    {
+      "type": "stat",
+      "title": "가장 오래된 성공 (스크래퍼별)",
+      "description": "[무엇] 스크래퍼별로, 마지막 성공이 가장 오래된 키워드가 성공한 뒤 얼마나 지났는지입니다.\n\n[보는 법] 하루 1회 실행이므로 보통 24시간 이내입니다. 26시간을 넘으면 그 키워드가 하루 이상 수집되지 않은 것입니다. 키워드를 설정에서 삭제한 경우에도 남아 있을 수 있습니다 (Pushgateway에서 그룹 삭제 필요).\n\n[범위] 🟢 24시간 이내 / 🟠 24~26시간 / 🔴 26시간 초과 → [ERROR] 메일",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (scraper) (time() - reviewmaps_scraper_last_success_timestamp_seconds{job=\"reviewmaps_scraper\"})",
+          "legendFormat": "{{scraper}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 86400
+              },
+              {
+                "color": "red",
+                "value": 93600
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "orientation": "horizontal",
+        "justifyMode": "auto"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 13,
+        "w": 6,
+        "h": 5
+      },
+      "id": 5
+    },
+    {
+      "type": "stat",
+      "title": "0건 수집 키워드 수",
+      "description": "[무엇] 마지막 실행에서 사이트/API로부터 캠페인을 1건도 받지 못한 키워드 개수입니다 (cleanup 제외).\n\n[보는 법] 실행은 성공했지만 결과가 0건이면 사이트 구조 변경, 차단, API 장애를 의심합니다. 지역 키워드는 보통 수십~수백 건이 나옵니다.\n\n[범위] 🟢 0 / 🟠 1개 이상 → [ALERT] 메일",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "count(reviewmaps_scraper_last_run_items{job=\"reviewmaps_scraper\", scraper!=\"cleanup\", stage=\"scraped\"} == 0) or vector(0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "time_series",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto",
+        "orientation": "horizontal",
+        "justifyMode": "auto"
+      },
+      "gridPos": {
+        "x": 14,
+        "y": 13,
+        "w": 4,
+        "h": 5
+      },
+      "id": 6
+    },
+    {
+      "type": "stat",
+      "title": "마지막 실행 수집 건수 (스크래퍼별 합계)",
+      "description": "[무엇] 스크래퍼별로 키워드마다 마지막 실행에서 받아온 캠페인 수(scraped)의 합계입니다.\n\n[보는 법] 평소 값과 비교해 크게 줄었는지 봅니다. 아래 '수집량 추이'에서 날짜별 변화를 확인하세요. (inflexer는 키워드 75개 합계, reviewnote는 전체 1회)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (scraper) (reviewmaps_scraper_last_run_items{job=\"reviewmaps_scraper\", scraper!=\"cleanup\", stage=\"scraped\"})",
+          "legendFormat": "{{scraper}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "orientation": "horizontal",
+        "justifyMode": "auto"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 13,
+        "w": 6,
+        "h": 5
+      },
+      "id": 7
+    },
+    {
+      "type": "row",
+      "title": "키워드별 결과",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 18,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [],
+      "id": 8
+    },
+    {
+      "type": "table",
+      "title": "키워드별 마지막 실행 결과",
+      "gridPos": {
+        "x": 0,
+        "y": 19,
+        "w": 24,
+        "h": 14
+      },
+      "description": "[무엇] 키워드마다 마지막 실행의 성공 여부, 수집/저장/신규 건수, 실행 시간, 네이버 API 보강 에러율, 마지막 성공 후 경과 시간입니다.\n\n[보는 법] 기본 정렬은 '성공' 오름차순이라 실패가 맨 위에 옵니다. 열 제목을 눌러 정렬을 바꿀 수 있습니다. 수집=사이트에서 받은 건수, 저장=DB에 저장한 건수(갱신+신규), 신규=처음 보는 캠페인 수.\n\n[범위] 성공: 🟢 성공 / 🔴 실패 / 수집: 🟢 1건 이상 / 🟠 0건 / 실행 시간: 🟢 5분 미만 / 🟠 5~15분 / 🔴 15분 초과 / 보강 에러율: 🟢 5% 미만 / 🟠 5~20% / 🔴 20% 초과 / 마지막 성공 후: 🟢 24시간 이내 / 🟠 24~26시간 / 🔴 26시간 초과",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (scraper, keyword) (reviewmaps_scraper_last_run_success{job=\"reviewmaps_scraper\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (scraper, keyword) (reviewmaps_scraper_last_run_items{job=\"reviewmaps_scraper\", stage=\"scraped\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (scraper, keyword) (reviewmaps_scraper_last_run_items{job=\"reviewmaps_scraper\", stage=\"saved\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (scraper, keyword) (reviewmaps_scraper_last_run_items{job=\"reviewmaps_scraper\", stage=\"new\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table",
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (scraper, keyword) (reviewmaps_scraper_last_run_duration_seconds{job=\"reviewmaps_scraper\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table",
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (scraper, keyword) ((reviewmaps_scraper_last_run_enrich{job=\"reviewmaps_scraper\", type=\"error\"} / clamp_min(reviewmaps_scraper_last_run_enrich{job=\"reviewmaps_scraper\", type=\"total\"}, 1)))",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table",
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (scraper, keyword) ((time() - reviewmaps_scraper_last_success_timestamp_seconds{job=\"reviewmaps_scraper\"}))",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table",
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (scraper, keyword) (reviewmaps_scraper_last_run_items{job=\"reviewmaps_scraper\", stage=\"deleted\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table",
+          "refId": "H"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value #A": "성공",
+              "Value #B": "수집",
+              "Value #C": "저장",
+              "Value #D": "신규",
+              "Value #E": "실행 시간",
+              "Value #F": "보강 에러율",
+              "Value #G": "마지막 성공 후",
+              "Value #H": "삭제(cleanup)",
+              "scraper": "스크래퍼",
+              "keyword": "키워드"
+            },
+            "indexByName": {
+              "scraper": 0,
+              "keyword": 1,
+              "Value #A": 2,
+              "Value #B": 3,
+              "Value #C": 4,
+              "Value #D": 5,
+              "Value #E": 6,
+              "Value #F": 7,
+              "Value #G": 8,
+              "Value #H": 9
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "성공",
+                "desc": false
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "성공"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "1": {
+                        "text": "성공",
+                        "color": "green"
+                      },
+                      "0": {
+                        "text": "실패",
+                        "color": "red"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "수집"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "orange",
+                      "value": null
+                    },
+                    {
+                      "color": "green",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "실행 시간"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 300
+                    },
+                    {
+                      "color": "red",
+                      "value": 900
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "보강 에러율"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 0.05
+                    },
+                    {
+                      "color": "red",
+                      "value": 0.2
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "마지막 성공 후"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 86400
+                    },
+                    {
+                      "color": "red",
+                      "value": 93600
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "스크래퍼"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "id": 9
+    },
+    {
+      "type": "row",
+      "title": "추이 (최근 7일)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 33,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [],
+      "id": 10
+    },
+    {
+      "type": "timeseries",
+      "title": "수집량 추이 (스크래퍼별 합계)",
+      "description": "[무엇] 스크래퍼별 키워드 수집 건수(scraped) 합계의 변화입니다. 값은 실행이 끝날 때마다 바뀌므로 하루 한 번 계단처럼 변합니다.\n\n[보는 법] 전날보다 크게 줄었다면 사이트 변경/차단 가능성이 있습니다. 키워드 단위로 50% 넘게 줄면 [ALERT] 메일이 갑니다.\n\n[범위] 🟢 전일과 비슷 / 🟠 키워드별 전일 대비 50% 미만 → [ALERT] 메일",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (scraper) (reviewmaps_scraper_last_run_items{job=\"reviewmaps_scraper\", scraper!=\"cleanup\", stage=\"scraped\"})",
+          "legendFormat": "{{scraper}}",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 34,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "id": 11
+    },
+    {
+      "type": "timeseries",
+      "title": "DB 저장/신규 추이 (스크래퍼별 합계)",
+      "description": "[무엇] DB에 저장된 건수(갱신+신규)와 처음 발견된 신규 캠페인 수의 합계 변화입니다.\n\n[보는 법] 신규가 며칠째 0이면 새 캠페인을 못 가져오고 있을 수 있습니다. 저장 건수는 수집 건수와 비슷해야 합니다 (중복 제거·좌표 없음 등으로 약간 적을 수 있음).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (scraper) (reviewmaps_scraper_last_run_items{job=\"reviewmaps_scraper\", stage=\"saved\"})",
+          "legendFormat": "{{scraper}} 저장",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (scraper) (reviewmaps_scraper_last_run_items{job=\"reviewmaps_scraper\", stage=\"new\"})",
+          "legendFormat": "{{scraper}} 신규",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "refId": "B"
+        }
+      ],
+      "gridPos": {
+        "x": 12,
+        "y": 34,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "id": 12
+    },
+    {
+      "type": "timeseries",
+      "title": "네이버 API 호출 수 / 보강 에러 (스크래퍼별 합계)",
+      "description": "[무엇] 주소·좌표 보강(Enrich) 단계에서 네이버 검색/지오코딩 API를 실제로 호출한 횟수와 에러 수입니다. 캐시에 있으면 API를 호출하지 않습니다.\n\n[보는 법] 호출 수가 갑자기 늘면 캐시가 비었거나 신규 캠페인이 많은 것입니다. 네이버 API 일일 한도에 가까워지면 에러가 늘어납니다.\n\n[범위] 보강 에러율 🟢 5% 미만 / 🟠 5~20% / 🔴 20% 초과 → [ALERT] 메일 (키워드별)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (scraper) (reviewmaps_scraper_last_run_enrich{job=\"reviewmaps_scraper\", type=\"api_call\"})",
+          "legendFormat": "{{scraper}} API 호출",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (scraper) (reviewmaps_scraper_last_run_enrich{job=\"reviewmaps_scraper\", type=\"error\"})",
+          "legendFormat": "{{scraper}} 에러",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (scraper) (reviewmaps_scraper_last_run_enrich{job=\"reviewmaps_scraper\", type=\"cache_hit\"})",
+          "legendFormat": "{{scraper}} 캐시 적중",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "refId": "C"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 42,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "id": 13
+    },
+    {
+      "type": "timeseries",
+      "title": "실행 시간 (스크래퍼별 합계)",
+      "description": "[무엇] 스크래퍼별 키워드 실행 시간의 합계입니다. inflexer는 키워드 75개를 순서대로 실행한 총 시간에 가깝습니다.\n\n[보는 법] 평소보다 크게 늘면 사이트 응답 지연이나 네이버 API 지연입니다. CronJob 전체가 2시간을 넘으면 [ALERT] 메일이 갑니다 (CronJob 대시보드).\n\n[범위] 🟢 30분 미만 / 🟠 30분~2시간 / 🔴 2시간 초과",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (scraper) (reviewmaps_scraper_last_run_duration_seconds{job=\"reviewmaps_scraper\"})",
+          "legendFormat": "{{scraper}}",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "x": 12,
+        "y": 42,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1800
+              },
+              {
+                "color": "red",
+                "value": 7200
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "id": 14
+    }
+  ]
+}

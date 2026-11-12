@@ -21,6 +21,8 @@
   <table cellpadding="6" cellspacing="0" style="border-collapse: collapse; width: 100%; max-width: 720px; margin-bottom: 16px; font-size: 14px;">
     {{ if .Annotations.summary }}<tr><td style="width: 110px; color: #616161; border-bottom: 1px solid #eee;">요약</td><td style="border-bottom: 1px solid #eee;">{{ .Annotations.summary }}</td></tr>{{ end }}
     {{ if .Annotations.description }}<tr><td style="color: #616161; border-bottom: 1px solid #eee;">내용</td><td style="border-bottom: 1px solid #eee;">{{ .Annotations.description }}</td></tr>{{ end }}
+    {{ if .Labels.scraper }}<tr><td style="color: #616161; border-bottom: 1px solid #eee;">스크래퍼</td><td style="border-bottom: 1px solid #eee;">{{ .Labels.scraper }}</td></tr>{{ end }}
+    {{ if .Labels.keyword }}<tr><td style="color: #616161; border-bottom: 1px solid #eee;">키워드</td><td style="border-bottom: 1px solid #eee;">{{ .Labels.keyword }}</td></tr>{{ end }}
     {{ if .Labels.owner_name }}<tr><td style="color: #616161; border-bottom: 1px solid #eee;">CronJob</td><td style="border-bottom: 1px solid #eee;">{{ .Labels.owner_name }}</td></tr>{{ end }}
     {{ if .Labels.job_name }}<tr><td style="color: #616161; border-bottom: 1px solid #eee;">Job</td><td style="border-bottom: 1px solid #eee;">{{ .Labels.job_name }}</td></tr>{{ end }}
     {{ if .Labels.namespace }}<tr><td style="color: #616161; border-bottom: 1px solid #eee;">네임스페이스</td><td style="border-bottom: 1px solid #eee;">{{ .Labels.namespace }}</td></tr>{{ end }}
@@ -30,7 +32,9 @@
   </table>
   {{ end }}
   <div style="font-size: 13px;">
-    <a href="https://monitoring.ggorockee.com/d/reviewmaps-cronjob" style="color: #1565c0;">리뷰맵 대시보드 열기</a>
+    대시보드: <a href="https://monitoring.ggorockee.com/d/reviewmaps-scraper" style="color: #1565c0;">수집 서버</a> ·
+    <a href="https://monitoring.ggorockee.com/d/reviewmaps-cronjob" style="color: #1565c0;">CronJob &amp; DB 적재</a> ·
+    <a href="https://monitoring.ggorockee.com/d/reviewmaps-http-metrics" style="color: #1565c0;">API 서버</a>
   </div>
 </body>
 </html>
