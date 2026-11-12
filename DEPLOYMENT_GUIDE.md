@@ -422,7 +422,7 @@ kubectl apply -f charts/helm/prod/reviewmaps/values.yaml
 배포 후 다음 메트릭을 지속적으로 모니터링합니다:
 
 ### 1. Grafana 대시보드
-- URL: `https://grafana.ggorockee.com`
+- URL: `https://monitoring.ggorockee.com` (Istio VirtualService `grafana-vs`, Prometheus는 외부 노출 없음)
 - 확인 항목:
   - Pod CPU/Memory 사용률
   - Database 연결 수

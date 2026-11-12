@@ -205,7 +205,7 @@ DB 적재 0건 알림은 Prometheus로 SQL을 평가할 수 없으므로 2단계
 | cleanup 동작 | 물리 삭제가 아니라 soft delete(`deleted_at` 설정). 대시보드 쿼리는 모두 `deleted_at IS NULL` 조건 사용 |
 | 기존 Alertmanager 설정 버그 | 이전 values-override의 `$SMTP_HOST` 등 환경변수 치환은 Alertmanager가 지원하지 않아 동작하지 않았음 → ESO 템플릿 방식으로 교체 |
 | 기존 HTTP 대시보드 | `reviewmaps-dashboard.json`은 서버 `/metrics` 미구현(500)으로 데이터 없음. 유지하되 서버 메트릭 구현 시 사용 |
-| Google OAuth | OAuth 클라이언트의 승인된 리디렉션 URI에 `https://monitoring.ggorockee.com/login/generic_oauth` 추가 필요 (Google Cloud Console에서 수동) |
+| Google OAuth | 기존 클라이언트(`937024223104-...`)가 삭제된 상태(`deleted_client`)로 확인되어 `yanggo-514212`에 새 웹 클라이언트 생성. Grafana·ArgoCD Dex 공용, 리디렉션 URI 2개 등록 |
 
 ## 9. 작업 체크리스트
 
@@ -227,7 +227,7 @@ DB 적재 0건 알림은 Prometheus로 SQL을 평가할 수 없으므로 2단계
 - [x] 알림 규칙 3종 추가
 
 ### Phase 4: 반영 및 검증
-- [ ] Google OAuth 리디렉션 URI 추가 (수동)
+- [x] Google OAuth 클라이언트 신규 생성 및 Secret Manager 반영 (v3, v1은 롤백용 보존)
 - [x] PR 생성 → 머지
 - [x] ApplicationSet 수동 apply
 - [x] Application Synced/Healthy 확인
@@ -245,4 +245,15 @@ DB 적재 0건 알림은 Prometheus로 SQL을 평가할 수 없으므로 2단계
 | 리뷰맵 CronJob 메트릭 | 3종 수집, 알림 규칙 3종 정상 로드 |
 | 외부 접근 | `monitoring.ggorockee.com` 정상, `prom.ggorockee.com` 404 |
 | GMP | 비활성화 완료, Terraform 코드에 반영 |
-| 남은 수동 작업 | Google OAuth 리디렉션 URI 등록 (`https://monitoring.ggorockee.com/login/generic_oauth`) |
+| Google OAuth | 새 클라이언트 반영, Grafana·ArgoCD 로그인 화면 정상 연결 |
+
+### 후속 조치 (2026-11-13)
+
+| 항목 | 내용 |
+|------|------|
+| OAuth 클라이언트 | `yanggo-514212` 웹 클라이언트 신규, 리디렉션 URI: `monitoring.ggorockee.com/login/generic_oauth`, `argocd.ggorockee.com/api/dex/callback` |
+| Secret Manager | `prod-monitoring-smtp-credentials`, `prod-argocd-dex-credentials` v3 (키 형식: `google.clientId` 평면 키 유지) |
+| 로컬 보관 | `.secrets/oauth-client_yanggo-514212_monitoring-argocd.json` (gitignore, PR #1121) |
+| ArgoCD RBAC | `argocd-rbac-policy` ExternalSecret 비활성화, `policy.csv`에 관리자 3명 직접 지정 (PR #1122, helm rev 2) |
+| 동의 화면 | Testing 상태 → Audience의 Test users에 등록된 계정만 로그인 가능 |
+
