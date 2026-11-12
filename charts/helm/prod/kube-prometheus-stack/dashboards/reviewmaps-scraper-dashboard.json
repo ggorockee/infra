@@ -7,7 +7,7 @@
   ],
   "timezone": "Asia/Seoul",
   "schemaVersion": 39,
-  "version": 4,
+  "version": 5,
   "editable": true,
   "refresh": "1m",
   "time": {
@@ -36,18 +36,32 @@
   ],
   "panels": [
     {
-      "type": "text",
-      "title": "이 대시보드 보는 법",
+      "type": "row",
+      "title": "📖 이 대시보드 보는 법 — 정상/경고/알람 범위표 (펼치기)",
+      "collapsed": true,
       "gridPos": {
         "x": 0,
         "y": 0,
         "w": 24,
-        "h": 12
+        "h": 1
       },
-      "options": {
-        "mode": "markdown",
-        "content": "### 리뷰맵 수집 서버 (go-scraper)\n\n수집 서버는 CronJob으로 하루 한 번 키워드마다 실행됩니다 (inflexer 00:05 키워드 75개, reviewnote 02:00 전체, cleanup 05:00). 실행이 끝날 때마다 결과를 Pushgateway로 보내며, 이 대시보드의 값은 **키워드별 마지막 실행 결과**입니다. 위쪽 요약에서 빨강/주황이 있으면 아래 '키워드별 결과' 표에서 해당 키워드를 찾으세요.\n\n| 차트 | 🟢 정상 | 🟠 경고 | 🔴 알람 |\n|---|---|---|---|\n| 지금 수집 중인 키워드 (경과) | 5분 미만 | 5~15분 | 15분 초과 |\n| 실패 키워드 | 0 | - | 1개 이상 (15분 지속 시 [ERROR] 메일) |\n| 키워드 성공률 | 100% | 90~99% | 90% 미만 |\n| 가장 오래된 성공 | 24시간 이내 | 24~26시간 | 26시간 초과 ([ERROR] 메일) |\n| 0건 수집 키워드 | 0 | 1개 이상 ([ALERT] 메일) | - |\n| 보강(네이버 API) 에러율 | 5% 미만 | 5~20% | 20% 초과 ([ALERT] 메일) |\n| 키워드 실행 시간 | 5분 미만 | 5~15분 | 15분 초과 |\n| 전일 대비 수집량 | 50% 이상 유지 | 50% 미만으로 감소 ([ALERT] 메일) | - |\n\n**메일 알림** (woohaen88@gmail.com)\n\n- [ERROR] 키워드 실행 실패, 키워드 26시간 미성공\n- [ALERT] 0건 수집, 전일 대비 수집량 급감, 보강 에러율 20% 초과, 키워드 알림 서버 API 실패\n- [INFO] CronJob 성공 (CronJob 대시보드 참고)\n\n각 차트 제목 옆 ⓘ 에 마우스를 올리면 차트별 설명이 나옵니다."
-      },
+      "panels": [
+        {
+          "type": "text",
+          "title": "이 대시보드 보는 법",
+          "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 12
+          },
+          "options": {
+            "mode": "markdown",
+            "content": "### 리뷰맵 수집 서버 (go-scraper)\n\n수집 서버는 CronJob으로 하루 한 번 키워드마다 실행됩니다 (inflexer 00:05 키워드 81개, reviewnote 02:00 전체, cleanup 05:00). 실행이 끝날 때마다 결과를 Pushgateway로 보내며, 이 대시보드의 값은 **키워드별 마지막 실행 결과**입니다. 위쪽 요약에서 빨강/주황이 있으면 아래 '키워드별 결과' 표에서 해당 키워드를 찾으세요.\n\n| 차트 | 🟢 정상 | 🟠 경고 | 🔴 알람 |\n|---|---|---|---|\n| 지금 수집 중인 키워드 (경과) | 5분 미만 | 5~15분 | 15분 초과 |\n| 실패 키워드 | 0 | - | 1개 이상 (15분 지속 시 [ERROR] 메일) |\n| 키워드 성공률 | 100% | 90~99% | 90% 미만 |\n| 가장 오래된 성공 | 24시간 이내 | 24~26시간 | 26시간 초과 ([ERROR] 메일) |\n| 0건 수집 키워드 | 0 | 1개 이상 ([ALERT] 메일) | - |\n| 보강(네이버 API) 에러율 | 5% 미만 | 5~20% | 20% 초과 ([ALERT] 메일) |\n| 키워드 실행 시간 | 5분 미만 | 5~15분 | 15분 초과 |\n| 전일 대비 수집량 | 50% 이상 유지 | 50% 미만으로 감소 ([ALERT] 메일) | - |\n\n**메일 알림** (woohaen88@gmail.com)\n\n- [ERROR] 키워드 실행 실패, 키워드 26시간 미성공\n- [ALERT] 0건 수집, 전일 대비 수집량 급감, 보강 에러율 20% 초과, 키워드 알림 서버 API 실패\n- [INFO] CronJob 성공 (CronJob 대시보드 참고)\n\n각 차트 제목 옆 ⓘ 에 마우스를 올리면 차트별 설명이 나옵니다."
+          },
+          "id": 19
+        }
+      ],
       "id": 1
     },
     {
@@ -56,7 +70,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 12,
+        "y": 1,
         "w": 24,
         "h": 1
       },
@@ -82,7 +96,7 @@
           "range": false,
           "format": "time_series",
           "legendFormat": "{{name}}  ·  {{jobname}}",
-          "expr": "label_replace(label_replace(max by (owner_name, job_name) (((time() - kube_job_status_start_time{namespace=\"reviewmaps\"}) and on (namespace, job_name) (kube_job_status_active{namespace=\"reviewmaps\"} > 0)) * on (namespace, job_name) group_left (owner_name) max by (namespace, job_name, owner_name) (kube_job_owner{namespace=\"reviewmaps\", owner_kind=\"CronJob\"})), \"name\", \"$1\", \"owner_name\", \"reviewmaps-go-(?:cron-)?(.*)\"), \"jobname\", \"$1\", \"job_name\", \"reviewmaps-go-(?:cron-)?(.*)\")"
+          "expr": "label_replace(label_replace(max by (owner_name, job_name) (((time() - kube_job_status_start_time{namespace=\"reviewmaps\"}) and on (namespace, job_name) (kube_job_status_active{namespace=\"reviewmaps\"} > 0)) * on (namespace, job_name) group_left (owner_name) max by (namespace, job_name, owner_name) (kube_job_owner{namespace=\"reviewmaps\", owner_kind=\"CronJob\"})), \"name\", \"$1\", \"owner_name\", \"reviewmaps-go-(?:cron-)?(.*)\"), \"jobname\", \"$1\", \"job_name\", \"(?:reviewmaps-go-(?:cron-)?)?(.*)\")"
         }
       ],
       "fieldConfig": {
@@ -132,7 +146,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 13,
+        "y": 2,
         "w": 9,
         "h": 6
       },
@@ -207,7 +221,7 @@
       },
       "gridPos": {
         "x": 9,
-        "y": 13,
+        "y": 2,
         "w": 8,
         "h": 6
       },
@@ -295,7 +309,7 @@
       },
       "gridPos": {
         "x": 17,
-        "y": 13,
+        "y": 2,
         "w": 7,
         "h": 6
       },
@@ -307,7 +321,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 19,
+        "y": 8,
         "w": 24,
         "h": 1
       },
@@ -374,9 +388,9 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 20,
+        "y": 9,
         "w": 4,
-        "h": 5
+        "h": 7
       },
       "id": 7
     },
@@ -445,9 +459,9 @@
       },
       "gridPos": {
         "x": 4,
-        "y": 20,
+        "y": 9,
         "w": 4,
-        "h": 5
+        "h": 7
       },
       "id": 8
     },
@@ -520,9 +534,9 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 20,
+        "y": 9,
         "w": 6,
-        "h": 5
+        "h": 7
       },
       "id": 9
     },
@@ -586,9 +600,9 @@
       },
       "gridPos": {
         "x": 14,
-        "y": 20,
+        "y": 9,
         "w": 4,
-        "h": 5
+        "h": 7
       },
       "id": 10
     },
@@ -652,9 +666,9 @@
       },
       "gridPos": {
         "x": 18,
-        "y": 20,
+        "y": 9,
         "w": 6,
-        "h": 5
+        "h": 7
       },
       "id": 11
     },
@@ -664,7 +678,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 25,
+        "y": 16,
         "w": 24,
         "h": 1
       },
@@ -676,7 +690,7 @@
       "title": "키워드별 마지막 실행 결과",
       "gridPos": {
         "x": 0,
-        "y": 26,
+        "y": 17,
         "w": 24,
         "h": 14
       },
@@ -1053,7 +1067,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 40,
+        "y": 31,
         "w": 24,
         "h": 1
       },
@@ -1084,7 +1098,7 @@
       ],
       "gridPos": {
         "x": 0,
-        "y": 41,
+        "y": 32,
         "w": 12,
         "h": 8
       },
@@ -1154,7 +1168,7 @@
       ],
       "gridPos": {
         "x": 12,
-        "y": 41,
+        "y": 32,
         "w": 12,
         "h": 8
       },
@@ -1236,7 +1250,7 @@
       ],
       "gridPos": {
         "x": 0,
-        "y": 49,
+        "y": 40,
         "w": 12,
         "h": 8
       },
@@ -1294,7 +1308,7 @@
       ],
       "gridPos": {
         "x": 12,
-        "y": 49,
+        "y": 40,
         "w": 12,
         "h": 8
       },
