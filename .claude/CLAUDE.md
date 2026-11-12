@@ -459,7 +459,19 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | ReviewMaps 수집 서버 | `reviewmaps-scraper` | 지금 수집 중인 Job·키워드·진행률, go-scraper 키워드별 마지막 실행 결과 (Pushgateway) |
 | ReviewMaps HTTP Metrics | `reviewmaps-http-metrics` | Go API 서버 요청 수, P95, 5xx |
 
-모든 대시보드 상단에 "이 대시보드 보는 법"(🟢정상/🟠경고/🔴알람 범위표)이 있고, 차트별 ⓘ 설명이 있습니다. 차트 색상 기준값 = 알림 규칙 기준값이므로 한쪽을 바꾸면 다른 쪽도 같이 바꿉니다. 새 대시보드도 같은 형식(상단 범위표 + 차트별 [무엇]/[보는 법]/[범위])을 유지합니다.
+차트 색상 기준값 = 알림 규칙 기준값이므로 한쪽을 바꾸면 다른 쪽도 같이 바꿉니다. 대시보드를 새로 만들거나 고칠 때 아래 작성 규칙을 따릅니다 (사용자가 가독성을 직접 지적해 정한 규칙).
+
+| 규칙 | 내용 |
+|------|------|
+| 범위표 | 맨 위 접힌 행 "📖 이 대시보드 보는 법 — 정상/경고/알람 범위표 (펼치기)" 안에 text 패널로 둠 (펼친 상태로 두면 첫 화면을 가림) |
+| 차트 설명 | 모든 차트 ⓘ 에 [무엇] / [보는 법] / [범위] 3단 |
+| 첫 화면 | 지금 상황(실행 중 Job, 수집 중 키워드, 진행률) → 요약 → 상세 표 → 추이 순 |
+| 이름 표시 | 공통 접두어 제거: label_replace 정규식 `(?:reviewmaps-go-(?:cron-)?)?(.*)` (접두어 없는 이름도 매칭되도록 앞부분 선택적). 새 라벨명은 Prometheus 기본 라벨(`job` 등)과 겹치지 않게 (`name`, `jobname`) |
+| 글자 크기 | 이름+값 stat 패널은 `options.text` titleSize 22 / valueSize 40 고정 (자동이면 긴 이름 때문에 작아짐) |
+| 시간 표기 | 진행 중 경과 시간은 `dthms`(00:02:07), 긴 경과(시간 단위)는 `s` |
+| 색상 | stat 배경은 `background_solid` (그라데이션은 글자 대비가 약함) |
+| 빈 값 | `noValue`에 상황 문구 ("실행 중인 Job 없음" 등), 실행 중인데 값이 없을 수 있는 쿼리는 `or (0 * ...)`로 0 보장 |
+| 검증 | 머지 후 실제 화면 캡처로 확인 (Playwright, 관리자 비밀번호는 브라우저에 입력하지 않고 로컬 프록시가 인증 헤더 주입) |
 
 ### 알림 (Alertmanager → 메일)
 
@@ -500,7 +512,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | 서버 /metrics | Fiber 라벨 문자열은 반드시 복사(`strings.Clone`) — zero-copy 버퍼 재사용으로 라벨 손상 시 /metrics 500 |
 | GORM AutoMigrate | 운영 비활성 (`DB_AUTO_MIGRATE` 기본 false). Django 제약 이름 불일치 + go-scraper 소유 테이블 변경 위험. 스키마는 `server/migrations/*.sql` |
 | DB 직접 조회 | 운영 DB 쓰기 금지. 확인은 Grafana `ReviewMaps-DB` 데이터소스 또는 읽기 전용 임시 Pod (`SET default_transaction_read_only = on`) |
-| 수동 실행 | `kubectl -n reviewmaps create job --from=cronjob/<이름> <job이름>` |
+| 수동 실행 | `kubectl -n reviewmaps create job --from=cronjob/<이름> <job이름>`. 수동 Job은 CronJob "마지막 성공 시각"에 반영되지 않음 (Pushgateway 지표에는 반영) |
 
 ### Secret / 인증
 
@@ -547,6 +559,9 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | infra | #1131, #1132 | Pushgateway, 수집 서버 대시보드·전 대시보드 범위/설명·알림 규칙 |
 | infra | #1135, #1136 | 실행 중 Job 이름·경과 시간, 지금 수집 중인 키워드·진행률 패널 |
 | infra | #1138 | 응답 지연 알림에서 내부 배치 API 제외 (수집 시간대 오탐) |
+| infra | #1139 | CLAUDE.md 운영 현황 정리 |
+| infra | #1140 | 수집 진행률이 첫 키워드 처리 중 비어 보이던 문제 |
+| infra | #1141, #1142 | 대시보드 가독성 개선 (짧은 이름, 글자 크기, hh:mm:ss, 단색, 범위표 접기, 패널 높이) |
 | reviewmaps | #275 | 서버 /metrics 500 수정 |
 | reviewmaps | #276 | GORM AutoMigrate 운영 비활성화 |
 | reviewmaps | #277 | go-scraper Pushgateway push |
