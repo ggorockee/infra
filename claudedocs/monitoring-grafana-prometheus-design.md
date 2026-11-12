@@ -161,17 +161,50 @@ GKE는 컨트롤 플레인 컴포넌트에 접근할 수 없으므로 수집 실
 | 알림 | 조건 | 심각도 |
 |------|------|--------|
 | ReviewmapsCronJobNotSucceeded | 마지막 성공 후 26시간 초과 | critical |
-| ReviewmapsJobFailed | `kube_job_status_failed{namespace="reviewmaps"} > 0` 이 10분 지속 | warning |
+| ReviewmapsJobFailed | Job 최종 실패 1분 지속 (CronJob명 표시) | critical (초기 warning에서 상향) |
+| ReviewmapsJobSucceeded | Job 성공 (Job당 메일 1통, 해제 메일 없음) | info |
 | ReviewmapsJobRunningTooLong | 활성 Job 실행 시간 2시간 초과 | warning |
 
-DB 적재 0건 알림은 Prometheus로 SQL을 평가할 수 없으므로 2단계에서 Grafana Alerting으로 추가합니다.
+DB 적재 0건 알림은 Prometheus로 SQL을 평가할 수 없어 미구현. 대신 수집 서버의 0건 수집·수집량 급감 알림(6.6)으로 대체합니다. 전체 알림 목록은 `.claude/CLAUDE.md` "운영 현황 > 알림" 참고.
 
 ### 6.5 이 스택으로 해결되지 않는 것
 
 | 한계 | 영향 | 보완 |
 |------|------|------|
 | GKE 워크로드 로그 비활성 + Job TTL 1시간 | 실패 원인 로그가 1시간 후 사라짐 | `failedJobsHistoryLimit: 3`이라 실패 Job은 TTL 전까지 남음. 필요 시 `ttlSecondsAfterFinished` 연장 |
-| 키워드별 수집 건수 | 알 수 없음 (otel-collector 제거) | DB 일별 집계로 대체 |
+| 키워드별 수집 건수 | ~~알 수 없음 (otel-collector 제거)~~ | 6.6 Pushgateway로 해결 |
+
+### 6.6 수집 서버 모니터링 (Pushgateway, 2026-11-13 추가)
+
+go-scraper는 CronJob에서 키워드마다 프로세스를 띄워 수 초~수 분 만에 끝나므로 Prometheus가 pull로 수집할 수 없습니다. 실행 결과를 Pushgateway에 push하고 Prometheus가 Pushgateway를 수집합니다.
+
+| 구성 | 내용 |
+|------|------|
+| Pushgateway | `charts/helm/prod/prometheus-pushgateway` (3.11.2), ApplicationSet `infra-monitoring-prod`, PVC 1Gi로 재시작 시 보존, ServiceMonitor honorLabels |
+| push 주소 | go-scraper ConfigMap `PUSHGATEWAY_URL=http://prometheus-pushgateway.monitoring.svc.cluster.local:9091` |
+| push 시점 | 키워드 시작 시 running=1, 종료 시 결과 + running=0 (성공·실패 모두) |
+| grouping | `job=reviewmaps_scraper`, `scraper`, `keyword` (`@base64` 인코딩) |
+| 코드 | reviewmaps `go-scraper/internal/runstats` |
+
+| 메트릭 | 내용 |
+|--------|------|
+| `reviewmaps_scraper_running` | 1=실행 중, 0=종료 |
+| `reviewmaps_scraper_run_started_timestamp_seconds` | 키워드 시작 시각 |
+| `reviewmaps_scraper_last_run_success` | 마지막 실행 1=성공, 0=실패 |
+| `reviewmaps_scraper_last_success_timestamp_seconds` | 마지막 성공 시각 (실패 시 갱신 안 함) |
+| `reviewmaps_scraper_last_run_duration_seconds` | 소요 시간 |
+| `reviewmaps_scraper_last_run_items{stage}` | scraped / parsed / saved / updated / new / deleted |
+| `reviewmaps_scraper_last_run_enrich{type}` | total / cache_hit / api_call / geocode / skipped / error |
+| `reviewmaps_scraper_last_run_alerts_created` | 생성된 키워드 알림 수 |
+| `reviewmaps_scraper_last_run_server_api_error` | 키워드 알림 서버 API 실패 여부 |
+
+| 확인된 함정 | 대응 |
+|-------------|------|
+| client_golang push가 공백을 `+`로 보내 Pushgateway에 `서울+강남`으로 저장 | grouping 값을 `@base64`로 직접 인코딩 |
+| 실패 push가 이전 성공 시각을 덮어쓸 위험 | POST(같은 이름 메트릭만 교체) + 실패 시 last_success 미전송 |
+| 키워드를 설정에서 빼면 그룹이 남아 KeywordStale 계속 발생 | Pushgateway에서 해당 그룹 DELETE |
+
+대시보드 "ReviewMaps 수집 서버"(`reviewmaps-scraper`)와 알림 6종(ReviewmapsScraper*)은 `.claude/CLAUDE.md` "운영 현황" 참고.
 
 ## 7. 제거 대상
 
@@ -256,4 +289,6 @@ DB 적재 0건 알림은 Prometheus로 SQL을 평가할 수 없으므로 2단계
 | 로컬 보관 | `.secrets/oauth-client_yanggo-514212_monitoring-argocd.json` (gitignore, PR #1121) |
 | ArgoCD RBAC | `argocd-rbac-policy` ExternalSecret 비활성화, `policy.csv`에 관리자 3명 직접 지정 (PR #1122, helm rev 2) |
 | 동의 화면 | Testing 상태 → Audience의 Test users에 등록된 계정만 로그인 가능 |
-
+| 수집 서버 모니터링 | Pushgateway + go-scraper push (infra #1131, reviewmaps #277, #279), 대시보드·알림 (infra #1132, #1135, #1136) |
+| 발견·수정한 운영 버그 | 서버 /metrics 500 (reviewmaps #275), AutoMigrate 위험 DDL (#276), cleanup 기준일 UTC 오류로 만료 캠페인 하루 더 노출 (#278), 알림 메일 스팸 분류 (infra #1130), 응답 지연 알림 오탐 (#1138) |
+| 대시보드 가독성 | 범위표 접기, 짧은 이름, 글자 크기 고정, hh:mm:ss (infra #1141, #1142). 작성 규칙은 `.claude/CLAUDE.md` "Grafana 대시보드" |
