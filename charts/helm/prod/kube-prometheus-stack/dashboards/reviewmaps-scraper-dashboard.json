@@ -7,7 +7,7 @@
   ],
   "timezone": "Asia/Seoul",
   "schemaVersion": 39,
-  "version": 3,
+  "version": 4,
   "editable": true,
   "refresh": "1m",
   "time": {
@@ -81,14 +81,13 @@
           "instant": true,
           "range": false,
           "format": "time_series",
-          "legendFormat": "{{owner_name}} · {{job_name}}",
-          "expr": "max by (owner_name, job_name) (((time() - kube_job_status_start_time{namespace=\"reviewmaps\"}) and on (namespace, job_name) (kube_job_status_active{namespace=\"reviewmaps\"} > 0)) * on (namespace, job_name) group_left (owner_name) max by (namespace, job_name, owner_name) (kube_job_owner{namespace=\"reviewmaps\", owner_kind=\"CronJob\"}))"
+          "legendFormat": "{{name}}  ·  {{jobname}}",
+          "expr": "label_replace(label_replace(max by (owner_name, job_name) (((time() - kube_job_status_start_time{namespace=\"reviewmaps\"}) and on (namespace, job_name) (kube_job_status_active{namespace=\"reviewmaps\"} > 0)) * on (namespace, job_name) group_left (owner_name) max by (namespace, job_name, owner_name) (kube_job_owner{namespace=\"reviewmaps\", owner_kind=\"CronJob\"})), \"name\", \"$1\", \"owner_name\", \"reviewmaps-go-(?:cron-)?(.*)\"), \"jobname\", \"$1\", \"job_name\", \"reviewmaps-go-(?:cron-)?(.*)\")"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
-          "decimals": 0,
+          "unit": "dthms",
           "noValue": "실행 중인 Job 없음",
           "color": {
             "mode": "thresholds"
@@ -121,11 +120,15 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "background_solid",
         "graphMode": "none",
         "textMode": "value_and_name",
         "orientation": "horizontal",
-        "justifyMode": "auto"
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
       },
       "gridPos": {
         "x": 0,
@@ -159,8 +162,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
-          "decimals": 0,
+          "unit": "dthms",
           "noValue": "수집 중인 키워드 없음",
           "color": {
             "mode": "thresholds"
@@ -193,11 +195,15 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "background_solid",
         "graphMode": "none",
         "textMode": "value_and_name",
         "orientation": "horizontal",
-        "justifyMode": "auto"
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
       },
       "gridPos": {
         "x": 9,
@@ -281,7 +287,11 @@
         "graphMode": "none",
         "textMode": "value_and_name",
         "orientation": "horizontal",
-        "justifyMode": "auto"
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
       },
       "gridPos": {
         "x": 17,
@@ -356,7 +366,7 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "background_solid",
         "graphMode": "none",
         "textMode": "auto",
         "orientation": "horizontal",
@@ -427,7 +437,7 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "background_solid",
         "graphMode": "none",
         "textMode": "auto",
         "orientation": "horizontal",
@@ -498,11 +508,15 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "background_solid",
         "graphMode": "none",
         "textMode": "value_and_name",
         "orientation": "horizontal",
-        "justifyMode": "auto"
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
       },
       "gridPos": {
         "x": 8,
@@ -564,7 +578,7 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "background_solid",
         "graphMode": "none",
         "textMode": "auto",
         "orientation": "horizontal",
@@ -630,7 +644,11 @@
         "graphMode": "none",
         "textMode": "value_and_name",
         "orientation": "horizontal",
-        "justifyMode": "auto"
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
       },
       "gridPos": {
         "x": 18,
