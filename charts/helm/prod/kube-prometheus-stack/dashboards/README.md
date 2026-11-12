@@ -18,12 +18,28 @@ Prometheus 메트릭 모니터링을 위한 Grafana 대시보드 JSON 파일입�
 - HTTP Status Codes: HTTP 상태 코드별 요청 수
 - Endpoint Summary: 엔드포인트별 RPS 및 P95 지연시간 요약
 
+### ReviewMaps CronJob & DB 적재
+- 파일: `reviewmaps-cronjob-dashboard.json`
+- UID: `reviewmaps-cronjob`
+- 데이터소스: Prometheus(kube-state-metrics), ReviewMaps-DB(Cloud SQL PostgreSQL)
+
+**포함된 패널**:
+- CronJob별 마지막 성공 후 경과 시간, 다음 실행 예정, 실패/실행 중 Job 수
+- Job 실행 구간 타임라인, 최근 Job 실행 시간
+- 오늘(KST) 적재 건수, 활성 캠페인 수, 마지막 적재 시각
+- 마감 지난 잔존 캠페인 수 (cleanup soft delete 검증)
+- 오늘 플랫폼별 적재 건수, 플랫폼별 마지막 적재 시각, 최근 14일 갱신일 분포
+
 ### Ojeomneo HTTP Metrics
 - 파일: `ojeomneo-dashboard.json`
 - UID: `ojeomneo-http-metrics`
 - 메트릭 Prefix: `ojeomneo_`
 
 **포함된 패널**: ReviewMaps와 동일
+
+## 자동 배포
+
+이 디렉터리의 JSON은 `templates/grafana/configmap-custom-dashboards.yaml`이 ConfigMap으로 만들고 Grafana sidecar가 자동 로드합니다. 아래 수동 Import는 로컬 테스트용입니다.
 
 ## Grafana 대시보드 Import 방법
 

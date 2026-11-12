@@ -1,107 +1,280 @@
-alertmanager:
+# kube-prometheus-stack prod override
+# - 차트: charts/helm/prod/kube-prometheus-stack (93.2.2, values.yaml은 upstream 원본 유지)
+# - 적용: argocd_yaml/prod-applicationsets-prom-grafana.yaml 의 multi-source ($values)
+# - 설계: claudedocs/monitoring-grafana-prometheus-design.md
+
+#########################################################################
+# [커스텀] Secret Manager 동기화 (templates/custom-externalsecrets.yaml)
+#########################################################################
+customExternalSecretStore: gcpsm-secret-store
+
+customExternalSecrets:
+  # Grafana Google OAuth + 관리자 계정
+  grafana-oauth-secret:
+    gcpSecretName: prod-monitoring-smtp-credentials
+    data:
+      client_id: google.clientId
+      client_secret: google.clientSecret
+      admin_password: password
+    staticData:
+      admin_user: woohaen88
+
+  # Grafana → Cloud SQL(리뷰맵) 조회용 접속 정보 (envFromSecrets로 주입)
+  grafana-reviewmaps-db:
+    gcpSecretName: prod-reviewmaps-db-credentials
+    data:
+      REVIEWMAPS_DB_HOST: POSTGRES_HOST
+      REVIEWMAPS_DB_PORT: POSTGRES_PORT
+      REVIEWMAPS_DB_USER: POSTGRES_USER
+      REVIEWMAPS_DB_PASSWORD: POSTGRES_PASSWORD
+      REVIEWMAPS_DB_NAME: POSTGRES_DB
+
+  # Alertmanager 설정 전체 (SMTP 값이 Alertmanager 설정 파일에 직접 들어가야 하므로 ESO 템플릿으로 생성)
+  alertmanager-custom-config:
+    gcpSecretName: prod-monitoring-smtp-credentials
+    mergePolicy: Replace
+    data:
+      EMAIL_HOST: EMAIL_HOST
+      EMAIL_PORT: EMAIL_PORT
+      EMAIL_HOST_USER: EMAIL_HOST_USER
+      EMAIL_HOST_PASSWORD: EMAIL_HOST_PASSWORD
+      DEFAULT_FROM_EMAIL: DEFAULT_FROM_EMAIL
+      admin_emails: admin.emails
+    templateFiles:
+      alertmanager.yaml: files/alertmanager.yaml.tmpl
+
+#########################################################################
+# GKE에서 접근 불가한 컨트롤 플레인 대상 비활성화
+#########################################################################
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeProxy:
   enabled: false
 
+defaultRules:
+  rules:
+    etcd: false
+    kubeControllerManager: false
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+    kubeProxy: false
+
+#########################################################################
+# Grafana
+#########################################################################
 grafana:
-  grafana.ini:
-    plugins:
-      allow_loading_unsigned_plugins: yesoreyeram-boomtable-panel
-    server:
-      root_url: "https://grafana.ggorockee.org"
-      serve_from_sub_path: false
-  plugins:
-    - grafana-polystat-panel
-    - yesoreyeram-boomtable-panel
   enabled: true
-  initChownData:
-    enabled: false
+  deploymentStrategy:
+    type: Recreate  # RWO PVC 사용
+
+  admin:
+    existingSecret: grafana-oauth-secret
+    userKey: admin_user
+    passwordKey: admin_password
 
   persistence:
-    type: pvc
     enabled: true
-    sidecar:
-      dashboards:
-        enabled: true
-        label: grafana_dashboard
-
-    storageClassName: openebs-hostpath
-    ## (Optional) Use this to bind the claim to an existing PersistentVolume (PV) by name.
-    volumeName: ""
+    type: pvc
+    storageClassName: gcp-standard-rwo-retain
     accessModes:
       - ReadWriteOnce
-    size: 10Gi
-    # annotations: {}
-    finalizers:
-      - kubernetes.io/pvc-protection
+    size: 5Gi
 
-prometheus:
-  enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
 
   service:
-    enabled: true
-    annotations: {}
-    labels: {}
-    clusterIP: ""
-    ipDualStack:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+
+  grafana.ini:
+    server:
+      domain: monitoring.ggorockee.com
+      root_url: "https://monitoring.ggorockee.com"
+      serve_from_sub_path: false
+    date_formats:
+      default_timezone: Asia/Seoul
+    users:
+      default_theme: dark
+    auth.generic_oauth:
+      enabled: true
+      name: Google
+      allow_sign_up: true
+      client_id: $__file{/etc/secrets/auth/client_id}
+      client_secret: $__file{/etc/secrets/auth/client_secret}
+      scopes: openid email profile
+      auth_url: https://accounts.google.com/o/oauth2/v2/auth
+      token_url: https://oauth2.googleapis.com/token
+      api_url: https://openidconnect.googleapis.com/v1/userinfo
+      allowed_domains: gmail.com
+      allow_assign_grafana_admin: true
+      role_attribute_path: "(email == 'woohaen88@gmail.com' || email == 'woohalabs@gmail.com' || email == 'ggorockee@gmail.com') && 'Admin' || 'Viewer'"
+    auth.anonymous:
       enabled: false
-      ipFamilies: ["IPv6", "IPv4"]
-      ipFamilyPolicy: "PreferDualStack"
-    port: 9090
-    targetPort: 9090
-    reloaderWebPort: 8080
-    externalIPs: []
-    nodePort: 30090
-    loadBalancerIP: ""
-    loadBalancerSourceRanges: []
-    externalTrafficPolicy: Cluster
-    type: ClusterIP
 
-    additionalPorts: []
-    # additionalPorts:
-    # - name: oauth-proxy
-    #   port: 8081
-    #   targetPort: 8081
-    # - name: oauth-metrics
-    #   port: 8082
-    #   targetPort: 8082
+  extraSecretMounts:
+    - name: auth-generic-oauth-secret
+      secretName: grafana-oauth-secret
+      defaultMode: 0440
+      mountPath: /etc/secrets/auth
+      readOnly: true
 
-  servicePerReplica:
+  envFromSecrets:
+    - name: grafana-reviewmaps-db
+
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: ALL
+    datasources:
+      enabled: true
+      defaultDatasourceEnabled: true
+
+  additionalDataSources:
+    - name: ReviewMaps-DB
+      uid: reviewmaps-db
+      type: grafana-postgresql-datasource
+      access: proxy
+      url: "${REVIEWMAPS_DB_HOST}:${REVIEWMAPS_DB_PORT}"
+      user: "${REVIEWMAPS_DB_USER}"
+      secureJsonData:
+        password: "${REVIEWMAPS_DB_PASSWORD}"
+      jsonData:
+        database: "${REVIEWMAPS_DB_NAME}"
+        sslmode: disable
+        postgresVersion: 1500
+        timescaledb: false
+        maxOpenConns: 2
+        maxIdleConns: 1
+      editable: false
+
+#########################################################################
+# Prometheus (외부 노출 없음, Grafana에서만 조회)
+#########################################################################
+prometheus:
+  enabled: true
+  ingress:
     enabled: false
-    annotations: {}
-    port: 9090
-    targetPort: 9090
-    nodePort: 30091
-    loadBalancerSourceRanges: []
-    externalTrafficPolicy: Cluster
-    type: ClusterIP
-
   prometheusSpec:
-    # remoteWrite:
-    #   - url: https://prometheus-prod-49-prod-ap-northeast-0.grafana.net/api/prom/push
-    #     basicAuth:
-    #       username:
-    #         name: grafana-cloud-secret
-    #         key: username
-    #       password:
-    #         name: grafana-cloud-secret
-    #         key: password
-    persistentVolumeClaimRetentionPolicy: {}
-    serviceMonitorSelectorNilUsesHelmValues: false
-    podMonitorSelectorNilUsesHelmValues: false
-    # serviceMonitorNamespaceSelector:
-    #   any: true
-    # # podMonitorNamespaceSelector도 동일하게 설정하여 PodMonitor도 모든 네임스페이스에서 스캔하도록 합니다.
-    # podMonitorNamespaceSelector:
-    #   any: true
-    retention: 30d
-    resources: {}
+    retention: 15d
+    retentionSize: "18GB"
+    scrapeInterval: 30s
+    evaluationInterval: 30s
+    resources:
+      requests:
+        cpu: 200m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 3Gi
     storageSpec:
       volumeClaimTemplate:
         spec:
-          storageClassName: openebs-hostpath
-          accessModes: ["ReadWriteOnce"]
+          storageClassName: gcp-standard-rwo-retain
+          accessModes:
+            - ReadWriteOnce
           resources:
             requests:
-              storage: 50Gi
+              storage: 20Gi
+    # 모든 네임스페이스의 ServiceMonitor/PodMonitor/PrometheusRule 수집
+    podMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
 
-kubelet:
+#########################################################################
+# Alertmanager (이메일 알림, 설정은 alertmanager-custom-config Secret 사용)
+#########################################################################
+alertmanager:
   enabled: true
+  alertmanagerSpec:
+    useExistingSecret: true
+    configSecret: alertmanager-custom-config
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gcp-standard-rwo-retain
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 2Gi
+
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+prometheusOperator:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+#########################################################################
+# 리뷰맵 CronJob 알림 규칙
+#########################################################################
+additionalPrometheusRulesMap:
+  reviewmaps-cronjob:
+    groups:
+      - name: reviewmaps.cronjob
+        rules:
+          - alert: ReviewmapsCronJobNotSucceeded
+            expr: time() - kube_cronjob_status_last_successful_time{namespace="reviewmaps"} > 26 * 3600
+            for: 10m
+            labels:
+              severity: critical
+            annotations:
+              summary: "리뷰맵 CronJob {{ $labels.cronjob }} 26시간 이상 성공 기록 없음"
+              description: "마지막 성공 후 {{ $value | humanizeDuration }} 경과. kubectl -n reviewmaps get jobs 로 실패 Job과 로그를 확인하세요."
+          - alert: ReviewmapsJobFailed
+            expr: sum by (namespace, job_name) (kube_job_status_failed{namespace="reviewmaps"}) > 0
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "리뷰맵 Job {{ $labels.job_name }} 실패"
+              description: "backoffLimit 초과로 Job이 실패했습니다. Job TTL(1시간) 전에 kubectl -n reviewmaps logs job/{{ $labels.job_name }} 으로 로그를 확인하세요."
+          - alert: ReviewmapsJobRunningTooLong
+            expr: (time() - kube_job_status_start_time{namespace="reviewmaps"}) > 7200 and on (namespace, job_name) (kube_job_status_active{namespace="reviewmaps"} > 0)
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "리뷰맵 Job {{ $labels.job_name }} 2시간 이상 실행 중"
+              description: "스크래핑 대상 사이트 응답 지연 또는 hang 가능성이 있습니다."

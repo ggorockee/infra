@@ -1,0 +1,9 @@
+env: prod
+revision: main
+repoURL: https://github.com/ggorockee/infra.git
+chartName: kube-prometheus-stack
+# Helm 릴리스명 = 서비스명 접두사 (Istio VirtualService가 kube-prometheus-stack-grafana를 가리킴)
+appName: kube-prometheus-stack
+namespace: monitoring
+# override: charts/argocd/applicationsets/valuefiles/prod/kube-prometheus-stack/values.yaml
+valuesDir: kube-prometheus-stack

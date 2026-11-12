@@ -242,12 +242,12 @@ virtualServices:
               host: reviewmaps-web
               port: 3000
 
-  # Grafana (Monitoring)
+  # Grafana (Monitoring) - monitoring.ggorockee.com
   - name: grafana-vs
     namespace: monitoring
     enabled: true
     hosts:
-      - "grafana.ggorockee.com"
+      - "monitoring.ggorockee.com"
     http:
       - route:
           - destination:
@@ -257,7 +257,7 @@ virtualServices:
   # Prometheus (Monitoring)
   - name: prometheus-vs
     namespace: monitoring
-    enabled: true
+    enabled: false  # Prometheus는 인증이 없어 외부 노출 금지 (Grafana로만 접근)
     hosts:
       - "prom.ggorockee.com"
     http:
