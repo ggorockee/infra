@@ -1,0 +1,28 @@
+# prometheus-pushgateway prod override
+# - 차트: charts/helm/prod/prometheus-pushgateway (3.11.2, values.yaml은 upstream 원본 유지)
+# - 용도: 리뷰맵 go-scraper(CronJob)가 키워드별 실행 결과를 push → Prometheus 수집
+# - 접근: 클러스터 내부 전용 http://prometheus-pushgateway.monitoring.svc:9091 (외부 노출 없음)
+
+# kube-prometheus-stack Prometheus가 수집 (honorLabels로 push 시 라벨 유지)
+serviceMonitor:
+  enabled: true
+  namespace: monitoring
+  honorLabels: true
+  interval: 30s
+
+# Pod 재시작 시에도 키워드별 마지막 실행 결과 유지 (없으면 재시작 후 "26시간 미성공" 오탐)
+persistentVolume:
+  enabled: true
+  storageClass: gcp-standard-rwo-retain
+  size: 1Gi
+extraArgs:
+  - --persistence.file=/data/pushgateway.data
+  - --persistence.interval=1m
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
