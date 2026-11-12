@@ -456,7 +456,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | 대시보드 | UID | 내용 |
 |----------|-----|------|
 | ReviewMaps CronJob & DB 적재 (Home) | `reviewmaps-cronjob` | CronJob 성공/실패, Cloud SQL campaign 적재 건수 |
-| ReviewMaps 수집 서버 | `reviewmaps-scraper` | go-scraper 키워드별 마지막 실행 결과 (Pushgateway) |
+| ReviewMaps 수집 서버 | `reviewmaps-scraper` | 지금 수집 중인 Job·키워드·진행률, go-scraper 키워드별 마지막 실행 결과 (Pushgateway) |
 | ReviewMaps HTTP Metrics | `reviewmaps-http-metrics` | Go API 서버 요청 수, P95, 5xx |
 
 모든 대시보드 상단에 "이 대시보드 보는 법"(🟢정상/🟠경고/🔴알람 범위표)이 있고, 차트별 ⓘ 설명이 있습니다. 차트 색상 기준값 = 알림 규칙 기준값이므로 한쪽을 바꾸면 다른 쪽도 같이 바꿉니다. 새 대시보드도 같은 형식(상단 범위표 + 차트별 [무엇]/[보는 법]/[범위])을 유지합니다.
@@ -483,7 +483,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | ReviewmapsScraperEnrichErrorsHigh | 네이버 API 보강 에러율 20% 초과 | ALERT |
 | ReviewmapsScraperServerAPIError | 키워드 알림 서버 API 실패 | ALERT |
 | ReviewmapsServerHighErrorRate | API 5xx 5% 초과 10분 | ERROR |
-| ReviewmapsServerSlow | API P95 1초 초과 15분 (헬스체크 제외) | ALERT |
+| ReviewmapsServerSlow | API P95 1초 초과 15분 (헬스체크, `/v1/internal/*` 내부 배치 제외) | ALERT |
 | ReviewmapsServerDown | API 서버 메트릭 수집 불가 5분 | ERROR |
 
 수집 서버 알림은 스크래퍼별로 묶어 한 통으로 발송합니다. 키워드를 설정에서 빼면 Pushgateway에 이전 그룹이 남아 KeywordStale이 계속 발생하므로, Pushgateway에서 해당 그룹을 삭제합니다 (`DELETE /metrics/job/reviewmaps_scraper/scraper@base64/<..>/keyword@base64/<..>`).
@@ -492,11 +492,11 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 
 | 항목 | 내용 |
 |------|------|
-| CronJob (KST) | inflexer 00:05 (키워드 75개, 약 12분), reviewnote 02:00 (약 3분), cleanup 05:00 (수 초) |
+| CronJob (KST) | inflexer 00:05 (키워드 81개, 약 12분), reviewnote 02:00 (약 2~3분), cleanup 05:00 (수 초) |
 | 저장 방식 | go-scraper는 DELETE 후 INSERT → `created_at` = 마지막 수집 시각 |
 | cleanup | 물리 삭제가 아니라 soft delete (`deleted_at`). DB 조회 시 항상 `deleted_at IS NULL` 조건 |
 | cleanup 기준일 | KST 자정 (`cleanup.StartOfDay`). `time.Truncate(24h)`는 UTC 기준이라 사용 금지 |
-| 수집 메트릭 | go-scraper가 키워드 실행 종료 시 `PUSHGATEWAY_URL`로 push (`internal/runstats`), grouping 값은 `@base64` 인코딩 (client_golang 기본 인코딩은 공백이 `+`로 저장됨) |
+| 수집 메트릭 | go-scraper가 키워드 시작 시 running=1, 종료 시 결과+running=0을 `PUSHGATEWAY_URL`로 push (`internal/runstats`). grouping 값은 `@base64` 인코딩 (client_golang 기본 인코딩은 공백이 `+`로 저장됨) |
 | 서버 /metrics | Fiber 라벨 문자열은 반드시 복사(`strings.Clone`) — zero-copy 버퍼 재사용으로 라벨 손상 시 /metrics 500 |
 | GORM AutoMigrate | 운영 비활성 (`DB_AUTO_MIGRATE` 기본 false). Django 제약 이름 불일치 + go-scraper 소유 테이블 변경 위험. 스키마는 `server/migrations/*.sql` |
 | DB 직접 조회 | 운영 DB 쓰기 금지. 확인은 Grafana `ReviewMaps-DB` 데이터소스 또는 읽기 전용 임시 Pod (`SET default_transaction_read_only = on`) |
@@ -521,6 +521,18 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | gcloud get/list/describe/read | 자유 |
 | gcloud create/update/put/delete (Secret 버전 추가, 클러스터 설정 변경 포함) | 실행 직전 개발자 승인 필수 |
 
+### 검증 기준값 (2026-11-13 수동 실행)
+
+평소 값과 비교할 때 참고합니다.
+
+| 항목 | 값 |
+|------|-----|
+| inflexer | 키워드 81개 전부 성공, 수집 13,359 / 저장 13,038 / 신규 115, 키워드당 최대 약 17초 |
+| reviewnote | 수집 1,600 / 저장 1,591, 약 131초 |
+| cleanup | 4,259건 soft delete (기준일 수정 첫 실행), 약 3초 |
+| 네이버 API (보강) | inflexer 호출 425 / 에러 0, reviewnote 호출 65 / 에러 0 |
+| 내부 배치 API | `/v1/internal/process-campaign-alerts` P95 약 0.9초 (정상) |
+
 ### 2026-11-13 작업 이력 (PR)
 
 | 레포 | PR | 내용 |
@@ -533,10 +545,13 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | infra | #1125, #1128, #1130 | CronJob 성공/실패 메일, 메일 템플릿·수신자, From 주소 수정 |
 | infra | #1127 | 서버 ServiceMonitor |
 | infra | #1131, #1132 | Pushgateway, 수집 서버 대시보드·전 대시보드 범위/설명·알림 규칙 |
+| infra | #1135, #1136 | 실행 중 Job 이름·경과 시간, 지금 수집 중인 키워드·진행률 패널 |
+| infra | #1138 | 응답 지연 알림에서 내부 배치 API 제외 (수집 시간대 오탐) |
 | reviewmaps | #275 | 서버 /metrics 500 수정 |
 | reviewmaps | #276 | GORM AutoMigrate 운영 비활성화 |
 | reviewmaps | #277 | go-scraper Pushgateway push |
-| reviewmaps | #278 | cleanup KST 자정 기준일 수정 |
+| reviewmaps | #278 | cleanup KST 자정 기준일 수정 (11/12 마감 4,259건 하루 더 노출되던 문제) |
+| reviewmaps | #279 | go-scraper 키워드 시작 시 running 표시 push |
 
 ## 주의사항
 
