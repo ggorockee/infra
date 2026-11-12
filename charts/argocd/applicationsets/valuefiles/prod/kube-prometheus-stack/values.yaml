@@ -265,14 +265,38 @@ additionalPrometheusRulesMap:
             annotations:
               summary: "리뷰맵 CronJob {{ $labels.cronjob }} 26시간 이상 성공 기록 없음"
               description: "마지막 성공 후 {{ $value | humanizeDuration }} 경과. kubectl -n reviewmaps get jobs 로 실패 Job과 로그를 확인하세요."
+          # Job 실패 → 이메일 (warning)
           - alert: ReviewmapsJobFailed
-            expr: sum by (namespace, job_name) (kube_job_status_failed{namespace="reviewmaps"}) > 0
-            for: 5m
+            expr: |
+              max by (namespace, job_name, owner_name) (
+                (kube_job_status_failed{namespace="reviewmaps"} > 0)
+                * on (namespace, job_name) group_left (owner_name)
+                kube_job_owner{namespace="reviewmaps", owner_kind="CronJob"}
+              )
+            for: 1m
             labels:
               severity: warning
             annotations:
-              summary: "리뷰맵 Job {{ $labels.job_name }} 실패"
-              description: "backoffLimit 초과로 Job이 실패했습니다. Job TTL(1시간) 전에 kubectl -n reviewmaps logs job/{{ $labels.job_name }} 으로 로그를 확인하세요."
+              summary: "❌ 리뷰맵 CronJob {{ $labels.owner_name }} 실패"
+              description: "Job {{ $labels.job_name }} 이 backoffLimit을 초과해 실패했습니다. Job TTL(1시간) 전에 kubectl -n reviewmaps logs job/{{ $labels.job_name }} 으로 로그를 확인하세요. 대시보드: https://monitoring.ggorockee.com/d/reviewmaps-cronjob"
+          # Job 성공 → 이메일 (info, Job 1개당 1회, resolved 메일 없음)
+          - alert: ReviewmapsJobSucceeded
+            expr: |
+              max by (namespace, job_name, owner_name) (
+                (
+                  kube_job_status_completion_time{namespace="reviewmaps"}
+                  - kube_job_status_start_time{namespace="reviewmaps"}
+                )
+                * on (namespace, job_name) group_left (owner_name)
+                kube_job_owner{namespace="reviewmaps", owner_kind="CronJob"}
+                and on (namespace, job_name) (kube_job_status_succeeded{namespace="reviewmaps"} > 0)
+                and on (namespace, job_name) ((time() - kube_job_status_completion_time{namespace="reviewmaps"}) < 3000)
+              )
+            labels:
+              severity: info
+            annotations:
+              summary: "✅ 리뷰맵 CronJob {{ $labels.owner_name }} 성공"
+              description: "Job {{ $labels.job_name }} 이 정상 완료되었습니다 (실행 시간 {{ $value | humanizeDuration }}). DB 적재 건수는 대시보드에서 확인하세요: https://monitoring.ggorockee.com/d/reviewmaps-cronjob"
           - alert: ReviewmapsJobRunningTooLong
             expr: (time() - kube_job_status_start_time{namespace="reviewmaps"}) > 7200 and on (namespace, job_name) (kube_job_status_active{namespace="reviewmaps"} > 0)
             for: 5m
