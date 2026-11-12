@@ -39,7 +39,6 @@ customExternalSecrets:
       EMAIL_HOST_USER: EMAIL_HOST_USER
       EMAIL_HOST_PASSWORD: EMAIL_HOST_PASSWORD
       DEFAULT_FROM_EMAIL: DEFAULT_FROM_EMAIL
-      admin_emails: admin.emails
     templateFiles:
       alertmanager.yaml: files/alertmanager.yaml.tmpl
 
@@ -205,6 +204,10 @@ alertmanager:
   alertmanagerSpec:
     useExistingSecret: true
     configSecret: alertmanager-custom-config
+    # 이메일 제목/본문 템플릿 (templates/custom-alertmanager-templates.yaml)
+    # → /etc/alertmanager/configmaps/alertmanager-email-templates/ 에 마운트
+    configMaps:
+      - alertmanager-email-templates
     resources:
       requests:
         cpu: 50m
@@ -275,7 +278,7 @@ additionalPrometheusRulesMap:
               )
             for: 1m
             labels:
-              severity: warning
+              severity: critical  # 메일 제목 [ERROR]
             annotations:
               summary: "❌ 리뷰맵 CronJob {{ $labels.owner_name }} 실패"
               description: "Job {{ $labels.job_name }} 이 backoffLimit을 초과해 실패했습니다. Job TTL(1시간) 전에 kubectl -n reviewmaps logs job/{{ $labels.job_name }} 으로 로그를 확인하세요. 대시보드: https://monitoring.ggorockee.com/d/reviewmaps-cronjob"
