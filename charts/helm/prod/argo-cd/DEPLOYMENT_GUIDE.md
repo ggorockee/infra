@@ -287,6 +287,8 @@ kubectl exec -n argocd -it deploy/argocd-dex-server -- \
 
 ### 3. RBAC 권한 문제
 
+> 2026-11-13부터 관리자 목록은 ExternalSecret이 아니라 `values.yaml`의 `configs.rbac.policy.csv`에서 직접 관리합니다 (ESO v0.9는 ConfigMap에 쓸 수 없어 `argocd-rbac-policy`가 동기화 실패했음). 변경 후 `helm upgrade argocd ./charts/helm/prod/argo-cd -n argocd`로 반영합니다.
+
 **증상**: 로그인 성공하지만 "permission denied"
 
 **해결**:

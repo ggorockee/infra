@@ -1,3 +1,5 @@
+> ⚠️ 2026-11-13 기준 이 문서는 구버전입니다. 현재 구성은 `claudedocs/monitoring-grafana-prometheus-design.md` 참고 (Grafana: `monitoring.ggorockee.com`, `prom.ggorockee.com` 비활성화)
+
 # 모니터링 스택 설정 완료 요약
 
 최종 업데이트: 2025-12-17
