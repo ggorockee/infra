@@ -1,40 +1,52 @@
+# 모니터링 ApplicationSet (Grafana + Prometheus)
+# - generator: charts/argocd/configurations/prod/monitoring-*-cfg.yaml (앱 1개 = cfg 파일 1개)
+# - 차트 기본값: charts/helm/{env}/{chartName}/values.yaml (upstream 원본)
+# - prod override: charts/argocd/applicationsets/valuefiles/{env}/{valuesDir}/values.yaml ($values ref)
+# - 반영: kubectl apply -f argocd_yaml/prod-applicationsets-prom-grafana.yaml (ApplicationSet은 GitOps 대상 아님)
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: infra-monitoring-prod
   namespace: argocd
 spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
   generators:
   - git:
       repoURL: https://github.com/ggorockee/infra.git
       revision: main
       files:
-      - path: "charts/argocd/configurations/prod/monitoring-prom-grafana-cfg.yaml"
-  
+      - path: "charts/argocd/configurations/prod/monitoring-*-cfg.yaml"
+
   template:
     metadata:
-      name: '{{appName}}'
+      name: '{{ .appName }}'
     spec:
       project: default
-      source:
-        repoURL: '{{repoURL}}'
-        targetRevision: '{{revision}}'
-        path: 'charts/helm/{{env}}/{{chartName}}'
+      sources:
+      - repoURL: '{{ .repoURL }}'
+        targetRevision: '{{ .revision }}'
+        path: 'charts/helm/{{ .env }}/{{ .chartName }}'
         helm:
+          releaseName: '{{ .appName }}'
           valueFiles:
           - values.yaml
-          - values-override.yaml
+          - '$values/charts/argocd/applicationsets/valuefiles/{{ .env }}/{{ .valuesDir }}/values.yaml'
+      - repoURL: '{{ .repoURL }}'
+        targetRevision: '{{ .revision }}'
+        ref: values
       destination:
         server: https://kubernetes.default.svc
-        namespace: '{{namespace}}'
+        namespace: '{{ .namespace }}'
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
         syncOptions:
         - CreateNamespace=true
+        # Prometheus Operator CRD가 커서 client-side apply annotation 한도(256KB) 초과
         - ServerSideApply=true
-      # Prometheus Operator가 관리하는 리소스의 status 차이 무시
+      # Operator가 갱신하는 status 차이 무시
       ignoreDifferences:
       - group: monitoring.coreos.com
         kind: Alertmanager
