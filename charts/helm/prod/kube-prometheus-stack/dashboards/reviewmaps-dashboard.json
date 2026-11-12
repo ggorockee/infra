@@ -36,18 +36,32 @@
   "liveNow": false,
   "panels": [
     {
-      "type": "text",
-      "title": "이 대시보드 보는 법",
+      "type": "row",
+      "title": "📖 이 대시보드 보는 법 — 정상/경고/알람 범위표 (펼치기)",
+      "collapsed": true,
       "gridPos": {
         "x": 0,
         "y": 0,
         "w": 24,
-        "h": 9
+        "h": 1
       },
-      "options": {
-        "mode": "markdown",
-        "content": "### 리뷰맵 API 서버 (HTTP)\n\n앱이 호출하는 Go API 서버(reviewmaps-server)의 요청 수, 응답 시간, 오류율입니다. 서버 Pod의 /metrics를 30초마다 수집합니다.\n\n| 차트 | 🟢 정상 | 🟠 경고 | 🔴 알람 |\n|---|---|---|---|\n| 응답 시간 P95 (헬스체크·/v1/internal 제외) | 0.5초 미만 | 0.5~1초 | 1초 초과 ([ALERT] 메일) |\n| 5xx 오류율 | 1% 미만 | 1~5% | 5% 초과 ([ERROR] 메일) |\n| 활성 연결 | 50 미만 | 50~100 | 100 초과 |\n| 서버 수집 대상 | up | - | down 5분 ([ERROR] 메일) |\n\n**메일 알림** (woohaen88@gmail.com)\n\n- [ERROR] 5xx 오류율 5% 초과 10분, API 서버 수집 불가 5분\n- [ALERT] P95 응답 시간 1초 초과 15분\n\n각 차트 제목 옆 ⓘ 에 마우스를 올리면 차트별 설명이 나옵니다."
-      },
+      "panels": [
+        {
+          "type": "text",
+          "title": "이 대시보드 보는 법",
+          "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 9
+          },
+          "options": {
+            "mode": "markdown",
+            "content": "### 리뷰맵 API 서버 (HTTP)\n\n앱이 호출하는 Go API 서버(reviewmaps-server)의 요청 수, 응답 시간, 오류율입니다. 서버 Pod의 /metrics를 30초마다 수집합니다.\n\n| 차트 | 🟢 정상 | 🟠 경고 | 🔴 알람 |\n|---|---|---|---|\n| 응답 시간 P95 (헬스체크·/v1/internal 제외) | 0.5초 미만 | 0.5~1초 | 1초 초과 ([ALERT] 메일) |\n| 5xx 오류율 | 1% 미만 | 1~5% | 5% 초과 ([ERROR] 메일) |\n| 활성 연결 | 50 미만 | 50~100 | 100 초과 |\n| 서버 수집 대상 | up | - | down 5분 ([ERROR] 메일) |\n\n**메일 알림** (woohaen88@gmail.com)\n\n- [ERROR] 5xx 오류율 5% 초과 10분, API 서버 수집 불가 5분\n- [ALERT] P95 응답 시간 1초 초과 15분\n\n각 차트 제목 옆 ⓘ 에 마우스를 올리면 차트별 설명이 나옵니다."
+          },
+          "id": 9
+        }
+      ],
       "id": 1
     },
     {
@@ -108,7 +122,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 9
+        "y": 1
       },
       "id": 2,
       "options": {
@@ -211,7 +225,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 9
+        "y": 1
       },
       "id": 3,
       "options": {
@@ -310,7 +324,7 @@
         "h": 8,
         "w": 6,
         "x": 0,
-        "y": 17
+        "y": 9
       },
       "id": 4,
       "options": {
@@ -380,7 +394,7 @@
         "h": 8,
         "w": 6,
         "x": 6,
-        "y": 17
+        "y": 9
       },
       "id": 5,
       "options": {
@@ -472,7 +486,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 17
+        "y": 9
       },
       "id": 6,
       "options": {
@@ -640,7 +654,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 25
+        "y": 17
       },
       "id": 7,
       "options": {
@@ -762,7 +776,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 25
+        "y": 17
       },
       "id": 8,
       "options": {
@@ -859,6 +873,6 @@
   "timezone": "Asia/Seoul",
   "title": "ReviewMaps HTTP Metrics",
   "uid": "reviewmaps-http-metrics",
-  "version": 3,
+  "version": 4,
   "weekStart": ""
 }
