@@ -7,7 +7,7 @@
   ],
   "timezone": "Asia/Seoul",
   "schemaVersion": 39,
-  "version": 3,
+  "version": 4,
   "editable": true,
   "refresh": "5m",
   "time": {
@@ -231,7 +231,8 @@
     },
     {
       "type": "stat",
-      "title": "실행 중 Job (CronJob / 경과 시간)",
+      "title": "실행 중 Job (CronJob · Job / 경과 시간)",
+      "description": "[무엇] 지금 실행 중인 Job 이름과 그 Job을 만든 CronJob, 시작 후 경과 시간입니다. 수동 실행(kubectl create job --from=cronjob)도 원래 CronJob 이름으로 표시됩니다.\n\n[보는 법] 스케줄 시간대(00:05 inflexer, 02:00 reviewnote, 05:00 cleanup)에 나타났다가 끝나면 '실행 중인 Job 없음'으로 바뀝니다.\n\n[범위] 🔵 30분 미만 / 🟠 30분~2시간 / 🔴 2시간 초과 → [ALERT] 메일",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -246,8 +247,8 @@
           "instant": true,
           "range": false,
           "format": "time_series",
-          "legendFormat": "{{owner_name}}",
-          "expr": "max by (owner_name) (((time() - kube_job_status_start_time{namespace=\"reviewmaps\"}) and on (namespace, job_name) (kube_job_status_active{namespace=\"reviewmaps\"} > 0)) * on (namespace, job_name) group_left (owner_name) max by (namespace, job_name, owner_name) (kube_job_owner{namespace=\"reviewmaps\", owner_kind=\"CronJob\"}))"
+          "legendFormat": "{{owner_name}} · {{job_name}}",
+          "expr": "max by (owner_name, job_name) (((time() - kube_job_status_start_time{namespace=\"reviewmaps\"}) and on (namespace, job_name) (kube_job_status_active{namespace=\"reviewmaps\"} > 0)) * on (namespace, job_name) group_left (owner_name) max by (namespace, job_name, owner_name) (kube_job_owner{namespace=\"reviewmaps\", owner_kind=\"CronJob\"}))"
         }
       ],
       "fieldConfig": {
@@ -289,7 +290,8 @@
         "colorMode": "background",
         "graphMode": "none",
         "textMode": "value_and_name",
-        "orientation": "horizontal"
+        "orientation": "horizontal",
+        "justifyMode": "auto"
       },
       "id": 6,
       "gridPos": {
@@ -297,8 +299,7 @@
         "y": 12,
         "w": 7,
         "h": 6
-      },
-      "description": "[무엇] 지금 실행 중인 Job을 CronJob 이름과 시작 후 경과 시간으로 보여줍니다. 수동 실행(kubectl create job --from=cronjob)도 원래 CronJob 이름으로 표시됩니다.\n\n[보는 법] 스케줄 시간대(00:05 inflexer, 02:00 reviewnote, 05:00 cleanup)에 나타났다가 끝나면 '실행 중인 Job 없음'으로 바뀝니다. 키워드별 진행 결과는 수집 서버 대시보드의 '키워드별 마지막 실행 결과'에서 실행 중에도 실시간으로 채워집니다.\n\n[범위] 🔵 30분 미만 / 🟠 30분~2시간 / 🔴 2시간 초과 → [ALERT] 메일"
+      }
     },
     {
       "type": "state-timeline",
