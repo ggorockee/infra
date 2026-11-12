@@ -1,0 +1,9 @@
+env: prod
+revision: main
+repoURL: https://github.com/ggorockee/infra.git
+chartName: prometheus-pushgateway
+# Helm 릴리스명 = Service 이름 (go-scraper PUSHGATEWAY_URL이 prometheus-pushgateway.monitoring.svc를 가리킴)
+appName: prometheus-pushgateway
+namespace: monitoring
+# override: charts/argocd/applicationsets/valuefiles/prod/prometheus-pushgateway/values.yaml
+valuesDir: prometheus-pushgateway
