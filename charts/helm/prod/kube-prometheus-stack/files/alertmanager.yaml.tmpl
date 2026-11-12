@@ -20,6 +20,20 @@ route:
     # kube-prometheus-stack 기본 규칙의 상시 발생 알림은 버림
     - receiver: "null"
       matchers: ['alertname =~ "Watchdog|InfoInhibitor"']
+    # 리뷰맵 CronJob 성공/실패: Job마다 개별 메일 (job_name 기준 그룹)
+    - receiver: email-noresolve
+      matchers: ['alertname = "ReviewmapsJobSucceeded"']
+      group_by: ["alertname", "job_name"]
+      group_wait: 30s
+      repeat_interval: 24h
+    - receiver: email
+      matchers: ['alertname = "ReviewmapsJobFailed"']
+      group_by: ["alertname", "job_name"]
+      group_wait: 30s
+      repeat_interval: 6h
+    # 그 외 info 등급(기본 규칙의 CPUThrottlingHigh 등)은 메일 발송 안 함
+    - receiver: "null"
+      matchers: ['severity = "info"']
     - receiver: email
       matchers: ['severity = "critical"']
       repeat_interval: 4h
@@ -35,3 +49,8 @@ receivers:
     email_configs:
       - to: "{{ .admin_emails }}"
         send_resolved: true
+  # 성공 알림용: Job TTL로 알림이 사라질 때 "RESOLVED" 메일을 보내지 않음
+  - name: email-noresolve
+    email_configs:
+      - to: "{{ .admin_emails }}"
+        send_resolved: false
