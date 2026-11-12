@@ -351,9 +351,9 @@ server:
 
   # Prometheus Metrics 설정
   metrics:
-    enabled: false  # Disabled - /metrics endpoint not implemented yet
+    enabled: true  # Go 서버 /metrics (reviewmaps_http_*), 라벨 손상 500 버그 수정 후 활성화 (reviewmaps#275)
     serviceMonitor:
-      enabled: false  # Disabled - prevents 500 errors from Prometheus scraping
+      enabled: true  # kube-prometheus-stack이 모든 네임스페이스 ServiceMonitor 수집
       interval: 30s
       scrapeTimeout: 10s
     # Gauge 메트릭 수집 CronJob 설정 (APScheduler로 대체됨)
