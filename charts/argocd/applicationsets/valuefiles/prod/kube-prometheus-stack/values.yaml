@@ -104,6 +104,9 @@ grafana:
       serve_from_sub_path: false
     date_formats:
       default_timezone: Asia/Seoul
+    dashboards:
+      # 로그인 직후 Home 화면에 리뷰맵 CronJob 대시보드 표시 (sidecar가 /tmp/dashboards에 저장)
+      default_home_dashboard_path: /tmp/dashboards/reviewmaps-cronjob-dashboard.json
     users:
       default_theme: dark
     auth.generic_oauth:
