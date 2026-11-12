@@ -1,0 +1,17 @@
+{{- /*
+  [커스텀] Alertmanager 이메일 템플릿 ConfigMap
+  files/alertmanager-email.tmpl 내용을 그대로 담는다 (.Files.Get이므로 Helm이 내부 템플릿 문법을 해석하지 않음).
+  upstream 차트에는 없는 파일. 차트 업그레이드 시 함께 보존할 것.
+*/ -}}
+{{- if .Values.alertmanager.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-email-templates
+  namespace: {{ include "kube-prometheus-stack.namespace" . }}
+  labels:
+    {{- include "kube-prometheus-stack.labels" . | nindent 4 }}
+data:
+  email.tmpl: |
+    {{- .Files.Get "files/alertmanager-email.tmpl" | nindent 4 }}
+{{- end }}

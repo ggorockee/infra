@@ -1,0 +1,37 @@
+{{/*
+  [커스텀] Alertmanager 이메일 템플릿 (ConfigMap alertmanager-email-templates로 마운트)
+  - 기본 템플릿 email.default.subject / email.default.html 을 재정의하여 제목·본문을 한글로 단순화
+  - 제목 접두어: [ERROR]=critical, [ALERT]=warning, [INFO]=info, [RESOLVED]=해제
+*/}}
+
+{{ define "custom.tag" }}{{ if eq .Status "resolved" }}[RESOLVED]{{ else if eq .CommonLabels.severity "critical" }}[ERROR]{{ else if eq .CommonLabels.severity "warning" }}[ALERT]{{ else }}[INFO]{{ end }}{{ end }}
+
+{{ define "custom.color" }}{{ if eq .Status "resolved" }}#2e7d32{{ else if eq .CommonLabels.severity "critical" }}#c62828{{ else if eq .CommonLabels.severity "warning" }}#ef6c00{{ else }}#1565c0{{ end }}{{ end }}
+
+{{ define "email.default.subject" }}{{ template "custom.tag" . }} {{ with index .Alerts 0 }}{{ if .Annotations.summary }}{{ .Annotations.summary }}{{ else }}{{ .Labels.alertname }}{{ end }}{{ end }}{{ if gt (len .Alerts) 1 }} (총 {{ len .Alerts }}건){{ end }}{{ end }}
+
+{{ define "email.default.html" }}<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #212121; margin: 0; padding: 16px;">
+  <div style="border-left: 6px solid {{ template "custom.color" . }}; padding: 4px 0 4px 12px; margin-bottom: 16px;">
+    <div style="font-size: 18px; font-weight: bold;">{{ template "email.default.subject" . }}</div>
+  </div>
+  {{ range .Alerts }}
+  <table cellpadding="6" cellspacing="0" style="border-collapse: collapse; width: 100%; max-width: 720px; margin-bottom: 16px; font-size: 14px;">
+    {{ if .Annotations.summary }}<tr><td style="width: 110px; color: #616161; border-bottom: 1px solid #eee;">요약</td><td style="border-bottom: 1px solid #eee;">{{ .Annotations.summary }}</td></tr>{{ end }}
+    {{ if .Annotations.description }}<tr><td style="color: #616161; border-bottom: 1px solid #eee;">내용</td><td style="border-bottom: 1px solid #eee;">{{ .Annotations.description }}</td></tr>{{ end }}
+    {{ if .Labels.owner_name }}<tr><td style="color: #616161; border-bottom: 1px solid #eee;">CronJob</td><td style="border-bottom: 1px solid #eee;">{{ .Labels.owner_name }}</td></tr>{{ end }}
+    {{ if .Labels.job_name }}<tr><td style="color: #616161; border-bottom: 1px solid #eee;">Job</td><td style="border-bottom: 1px solid #eee;">{{ .Labels.job_name }}</td></tr>{{ end }}
+    {{ if .Labels.namespace }}<tr><td style="color: #616161; border-bottom: 1px solid #eee;">네임스페이스</td><td style="border-bottom: 1px solid #eee;">{{ .Labels.namespace }}</td></tr>{{ end }}
+    <tr><td style="color: #616161; border-bottom: 1px solid #eee;">알림 이름</td><td style="border-bottom: 1px solid #eee;">{{ .Labels.alertname }}</td></tr>
+    <tr><td style="color: #616161; border-bottom: 1px solid #eee;">발생 시각</td><td style="border-bottom: 1px solid #eee;">{{ .StartsAt | tz "Asia/Seoul" | date "2006-01-02 15:04:05 KST" }}</td></tr>
+    {{ if eq .Status "resolved" }}<tr><td style="color: #616161; border-bottom: 1px solid #eee;">해제 시각</td><td style="border-bottom: 1px solid #eee;">{{ .EndsAt | tz "Asia/Seoul" | date "2006-01-02 15:04:05 KST" }}</td></tr>{{ end }}
+  </table>
+  {{ end }}
+  <div style="font-size: 13px;">
+    <a href="https://monitoring.ggorockee.com/d/reviewmaps-cronjob" style="color: #1565c0;">리뷰맵 대시보드 열기</a>
+  </div>
+</body>
+</html>
+{{ end }}
