@@ -63,8 +63,10 @@ Prometheus 지표 이름은 `stackdriver_cloudsql_database_cloudsql_googleapis_c
 | database/disk/read_ops_count, write_ops_count | `disk_read_ops_count`, `disk_write_ops_count` | 디스크 읽기·쓰기 횟수 |
 | database/postgresql/transaction_id_utilization | `postgresql_transaction_id_utilization` | 트랜잭션 ID 소진율 (wraparound 위험) |
 | database/up | `up` | 인스턴스 가동 여부 |
+| database/uptime (prefix `up`에 함께 일치) | `uptime` | 가동 시간 |
+| database/disk/bytes_used_by_data_type (prefix `disk/bytes_used`에 함께 일치) | `disk_bytes_used_by_data_type` | 데이터 종류별 디스크 사용량 (data, wal, tmp 등 6개 시계열) |
 
-수집 지표를 늘리려면 override `stackdriver.metrics.prefixes`에 추가한다. 늘린 만큼 API 비용(반환 시계열 수)도 늘어난다.
+prefix는 앞부분 일치라서 `up`은 `uptime`, `disk/bytes_used`는 `disk/bytes_used_by_data_type`까지 함께 가져온다. 수집 지표를 늘리려면 override `stackdriver.metrics.prefixes`에 추가한다. 늘린 만큼 API 비용(반환 시계열 수)도 늘어난다.
 
 ## 6. 정상 범위와 알림
 
@@ -89,11 +91,11 @@ Prometheus 지표 이름은 `stackdriver_cloudsql_database_cloudsql_googleapis_c
 | 항목 | 내용 |
 |------|------|
 | 과금 기준 | Cloud Monitoring 읽기 API, 2025-10-02부터 **반환 시계열 수** 기준. 월 100만 개 무료, 초과 시 100만 개당 $0.50 |
-| 예상 사용량 | 인스턴스 1개 기준 시계열 약 10~12개 × 2분 간격(월 21,600회) ≈ 월 22만~26만 개 |
+| 실측 사용량 | 수집 1회당 시계열 17개 (2026-11-13 확인) × 2분 간격(월 21,600회) ≈ **월 약 37만 개** |
 | 예상 비용 | $0 (무료 범위 안) |
 | 서비스 계정·IAM | 무료 |
 | exporter Pod | requests CPU 10m, 메모리 32Mi (노드 예약률 영향 거의 없음) |
-| 주의 | Cloud SQL 인스턴스를 늘리거나 prefixes를 추가하면 비례해서 증가. 월 100만 개를 넘기려면 지금의 약 4배가 필요 |
+| 주의 | Cloud SQL 인스턴스를 늘리거나 prefixes를 추가하면 비례해서 증가. 월 100만 개를 넘기려면 지금의 약 2.7배가 필요 (인스턴스 3개 이상이면 수집 간격 5분으로 조정 검토) |
 
 참고: Google Cloud Observability 가격 (https://cloud.google.com/products/observability/pricing), 무료 사용량 한도 (https://docs.cloud.google.com/free/docs/free-cloud-features).
 
@@ -130,8 +132,21 @@ Prometheus 지표 이름은 `stackdriver_cloudsql_database_cloudsql_googleapis_c
 - [x] 알림 규칙 `database.cloudsql` 7개, 억제 규칙, PostgresStorageHigh 대체
 - [x] 대시보드 "Cloud SQL 인스턴스 자원" 패널, 범위표
 - [x] TERRAFORM_RESOURCES.md, CLAUDE.md 갱신
-- [ ] PR Terraform plan 결과 확인 (리소스 3개 추가)
-- [ ] 머지 후 Terraform apply 성공 확인
-- [ ] exporter 수집 확인 (지표 이름·값이 기준선과 일치)
-- [ ] CloudSQLMetricsMissing 해소 확인
-- [ ] 실제 반환 시계열 수로 비용 재확인
+- [x] PR Terraform plan 결과 확인 (#1150, Plan: 3 to add, 0 to change, 0 to destroy)
+- [x] 머지 후 Terraform apply 성공 확인 (Apply complete! Resources: 3 added)
+- [x] exporter 수집 확인 (지표 이름·값이 기준선과 일치)
+- [x] CloudSQLMetricsMissing 해소 확인
+- [x] 실제 반환 시계열 수로 비용 재확인 (수집 1회 17개, 월 약 37만 개, 무료 범위)
+- [x] 대시보드 화면 확인 (Playwright 캡처)
+
+## 11. 배포 검증 결과 (2026-11-13)
+
+| 항목 | 결과 |
+|------|------|
+| Terraform | PR #1150 plan 3개 추가 → 머지 후 apply 3개 추가 (10:04:36 UTC) |
+| GSA | `monitoring-reader-prod` 생성, IAM 정책 멤버 `yanggo-514212.svc.id.goog[monitoring/prometheus-stackdriver-exporter]` |
+| Workload Identity 전파 | apply 전후 첫 2회 수집은 권한 오류(바인딩 없음) → apply 약 1분 30초 후부터 성공. 새로 만들 때는 이 정도 지연이 정상 |
+| ArgoCD | prometheus-stackdriver-exporter, kube-prometheus-stack 모두 Synced/Healthy |
+| 수집 값 | CPU 10.2%, 메모리 50.6% (1.82GB 중), 디스크 3.57% (0.75GB / 20.96GB), 트랜잭션 ID 0.0035%, up 1 → 기준선과 일치 |
+| Prometheus | 수집 대상 up (수집 시간 약 0.23초), CloudSQLMetricsMissing 해소, Cloud SQL 알림 발생 없음 |
+| 대시보드 | "Cloud SQL 인스턴스 자원" CPU 11% / 메모리 51% / 디스크 4% 표시, 추이 차트 정상 |
