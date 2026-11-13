@@ -1,0 +1,33 @@
+# prometheus-postgres-exporter prod override
+# - 차트: charts/helm/prod/prometheus-postgres-exporter (8.2.5, values.yaml은 upstream 원본 유지)
+# - 대상: Cloud SQL prod-woohalabs-cloudsql (POSTGRES_15, db-g1-small, max_connections 100, 디스크 20GB 자동 확장)
+#         DB 2개(reviewmaps, ojeomneo)가 같은 인스턴스 → pg_stat_database로 둘 다 수집
+# - 접속 계정: 리뷰맵 계정 재사용 (Secret grafana-reviewmaps-db, kube-prometheus-stack의 ExternalSecret이 생성)
+#   exporter는 pg_stat_* 조회(SELECT)만 수행
+# - 알림: kube-prometheus-stack override의 database.postgres 그룹
+
+config:
+  datasource:
+    # Cloud SQL 사설 IP (Secret의 POSTGRES_HOST와 같은 값, 인스턴스를 바꾸면 함께 수정)
+    host: "172.29.0.3"
+    port: "5432"
+    database: reviewmaps
+    sslmode: disable
+    userSecret:
+      name: grafana-reviewmaps-db
+      key: REVIEWMAPS_DB_USER
+    passwordSecret:
+      name: grafana-reviewmaps-db
+      key: REVIEWMAPS_DB_PASSWORD
+
+serviceMonitor:
+  enabled: true
+  interval: 30s
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi

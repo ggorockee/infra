@@ -535,7 +535,8 @@ prometheus:
 
   servicemonitor:
     # Create a ServiceMonitor to add cert-manager to Prometheus.
-    enabled: false
+    # [prod] 인증서 Ready 상태·만료 시각 수집 (알림: kube-prometheus-stack platform.certmanager)
+    enabled: true
 
     # The namespace that the service monitor should live in, defaults
     # to the cert-manager namespace.

@@ -1,0 +1,3163 @@
+{
+  "uid": "cluster-overview",
+  "title": "클러스터 전체 현황",
+  "tags": [
+    "cluster",
+    "overview"
+  ],
+  "timezone": "Asia/Seoul",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "refresh": "1m",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  },
+  "links": [
+    {
+      "title": "ReviewMaps CronJob & DB 적재",
+      "type": "link",
+      "url": "/d/reviewmaps-cronjob",
+      "icon": "dashboard"
+    },
+    {
+      "title": "ReviewMaps 수집 서버",
+      "type": "link",
+      "url": "/d/reviewmaps-scraper",
+      "icon": "dashboard"
+    },
+    {
+      "title": "ReviewMaps HTTP Metrics",
+      "type": "link",
+      "url": "/d/reviewmaps-http-metrics",
+      "icon": "dashboard"
+    }
+  ],
+  "panels": [
+    {
+      "type": "row",
+      "id": 2,
+      "title": "📖 이 대시보드 보는 법 — 정상/경고/알람 범위표 (펼치기)",
+      "collapsed": true,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [
+        {
+          "type": "text",
+          "id": 1,
+          "title": "이 대시보드 보는 법",
+          "gridPos": {
+            "x": 0,
+            "y": 1,
+            "w": 24,
+            "h": 20
+          },
+          "options": {
+            "mode": "markdown",
+            "content": "### 클러스터 전체 현황 (woohalabs-prod-gke)\n\n\"모니터링할 수 없는 것은 관리할 수 없다.\" 클러스터에서 돌아가는 모든 서비스(리뷰맵, 오점너, yangobot, woohalabs app-ads, ArgoCD, 모니터링, Istio, cert-manager, External Secrets, Cloud SQL, Redis)를 한 화면에서 봅니다. 위에서부터 **지금 상황 → 노드·용량 → 워크로드 → 서비스 트래픽 → 외부 접속 → 플랫폼 → DB** 순서입니다. 빨강/주황이 보이면 해당 행으로 내려가 원인을 찾으세요.\n\n| 항목 | 🟢 정상 | 🟠 경고 ([WARN] 메일) | 🔴 알람 ([ERROR]/[CRITICAL] 메일) |\n|---|---|---|---|\n| Ready 노드 | 2대 | - | 2대 미만 [CRITICAL] |\n| 노드 CPU | 5~50% | 50~80% (80% 15분 → [WARN]) | - |\n| 노드 메모리 | 20~60% | 60~80% (80% 15분 → [WARN]) | 95% 초과 [CRITICAL] |\n| 노드 디스크 | 60% 미만 | 60~80% (80% 30분 → [WARN]) | - |\n| 클러스터 CPU/메모리 예약률 | 75% 미만 | 75~85% (85% → [WARN]) | - |\n| 사용 불가 Deployment/StatefulSet | 0 | - | 1개 이상 3분 [CRITICAL] |\n| 컨테이너 재시작 (1시간) | 0회 | 1회 [INFO], 3회 이상 [WARN] | OOMKilled [ERROR] |\n| 메모리 limit 대비 | 70% 미만 | 70~90% (90% 15분 → [WARN]) | - |\n| PVC 사용률 | 70% 미만 | 70~85% (85% 30분 → [WARN]) | - |\n| 외부 접속 검사 | 성공 | - | 3분 실패 [CRITICAL] |\n| 외부 접속 시간 | 0.5초 미만 | 0.5~2초 (2초 10분 → [WARN]) | - |\n| HTTPS 인증서 남은 일수 | 30~90일 | 7~21일 [WARN] | 7일 미만 [CRITICAL] |\n| 서비스 5xx 비율 | 1% 미만 | 1~5% | 5% 초과 10분 [ERROR] |\n| 서비스 응답 P95 | 300ms 미만 | 300ms~1초 (1초 15분 → [WARN]) | - |\n| 트래픽 (어제 같은 시각 대비) | 50~200% | 30% 미만 또는 5배 초과 [WARN] | - |\n| ArgoCD 앱 | 전부 Synced·Healthy | OutOfSync 30분 [WARN] | Degraded·sync 실패 [ERROR] |\n| ExternalSecret 동기화 실패 | 0 | - | 1개 이상 10분 [ERROR] |\n| DB 접속 | 성공 | - | 실패 2분 [CRITICAL] |\n| DB 연결 수 (최대 100) | 50 미만 | 50~80 (80 → [WARN]) | - |\n| DB 캐시 적중률 | 99% 이상 | 90~99% | 90% 미만 [INFO] |\n\n**메일 등급** (woohaen88@gmail.com): [CRITICAL] 서비스 중단·즉시 조치 / [ERROR] 기능 실패·조치 필요 / [WARN] 정상 범위 벗어남 / [INFO] 참고용 (현재 INFO까지 전부 발송). 해제되면 [RESOLVED] 메일 (INFO는 해제 메일 없음).\n\n**4xx 비율은 알림 없음**: 봇이 없는 경로를 많이 요청해서(리뷰맵 웹 4xx 약 60%) 알림 기준으로 쓰지 않고 표에서만 봅니다. 서비스 이름 `unknown`은 어떤 도메인에도 매칭되지 않는 요청(IP로 직접 들어오는 스캐너)입니다.\n\n각 차트 제목 옆 ⓘ 에 마우스를 올리면 차트별 설명이 나옵니다."
+          }
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "id": 3,
+      "title": "지금 상황",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 1,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "id": 4,
+      "title": "발생 중 알림 (등급별)",
+      "description": "[무엇] 지금 발생(firing) 중인 Prometheus 알림 수를 등급별로 셉니다. 메일 제목의 [CRITICAL]/[ERROR]/[WARN]/[INFO]와 같습니다.\n\n[보는 법] 0이 아닌 칸이 있으면 오른쪽 '발생 중 알림 목록'에서 알림 이름과 대상을 확인하세요.\n\n[범위] CRITICAL·ERROR 🟢 0 / 🔴 1 이상, WARN 🟢 0 / 🟠 1 이상, INFO 🟢 0 / 🔵 1 이상",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "count(ALERTS{alertstate=\"firing\", severity=\"critical\", alertname!~\"Watchdog|InfoInhibitor\"}) or vector(0)",
+          "legendFormat": "CRITICAL",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "count(ALERTS{alertstate=\"firing\", severity=\"error\", alertname!~\"Watchdog|InfoInhibitor\"}) or vector(0)",
+          "legendFormat": "ERROR",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "C",
+          "expr": "count(ALERTS{alertstate=\"firing\", severity=\"warning\", alertname!~\"Watchdog|InfoInhibitor\"}) or vector(0)",
+          "legendFormat": "WARN",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "D",
+          "expr": "count(ALERTS{alertstate=\"firing\", severity=\"info\", alertname!~\"Watchdog|InfoInhibitor\"}) or vector(0)",
+          "legendFormat": "INFO",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "WARN"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "INFO"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "blue",
+                      "value": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 2,
+        "w": 6,
+        "h": 9
+      }
+    },
+    {
+      "type": "table",
+      "id": 5,
+      "title": "발생 중 알림 목록",
+      "description": "[무엇] 지금 발생 중인 알림 이름·등급·대상입니다 (Watchdog 등 상시 알림 제외).\n\n[보는 법] 등급 순(CRITICAL → INFO)으로 정렬됩니다. 같은 내용의 메일이 woohaen88@gmail.com으로 발송됩니다.\n\n[범위] 🟢 목록 비어 있음 / 그 외 알림 등급에 따름",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "max by (alertname, severity, namespace, target, pod, deployment, name, instance) (ALERTS{alertstate=\"firing\", alertname!~\"Watchdog|InfoInhibitor\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true
+            },
+            "indexByName": {
+              "severity": 0,
+              "alertname": 1,
+              "namespace": 2,
+              "target": 3,
+              "name": 4,
+              "deployment": 5,
+              "pod": 6,
+              "instance": 7
+            },
+            "renameByName": {
+              "severity": "등급",
+              "alertname": "알림",
+              "namespace": "네임스페이스",
+              "target": "검사 대상",
+              "name": "이름",
+              "deployment": "Deployment",
+              "pod": "Pod",
+              "instance": "인스턴스"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "발생 중인 알림 없음",
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "등급"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "critical": {
+                        "text": "CRITICAL",
+                        "color": "dark-red",
+                        "index": 0
+                      },
+                      "error": {
+                        "text": "ERROR",
+                        "color": "red",
+                        "index": 1
+                      },
+                      "warning": {
+                        "text": "WARN",
+                        "color": "orange",
+                        "index": 2
+                      },
+                      "info": {
+                        "text": "INFO",
+                        "color": "blue",
+                        "index": 3
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "md",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "등급",
+            "desc": false
+          }
+        ]
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 2,
+        "w": 18,
+        "h": 9
+      }
+    },
+    {
+      "type": "stat",
+      "id": 6,
+      "title": "서비스 접속 상태 (외부 URL · 내부 Redis)",
+      "description": "[무엇] blackbox exporter가 30초마다 실제 사용자 경로(DNS → Istio → 앱)로 각 서비스에 접속해 본 결과입니다. 내부 Redis는 PING 응답으로 검사합니다.\n\n[보는 법] 모두 '정상'이어야 합니다. '접속 불가'가 3분 이어지면 [CRITICAL] 메일이 갑니다. 여러 개가 동시에 실패하면 Istio gateway나 DNS 문제입니다.\n\n[범위] 🟢 정상 / 🔴 접속 불가 (3분 지속 → [CRITICAL])",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "max by (target) (probe_success)",
+          "legendFormat": "{{target}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "검사 결과 없음 (blackbox exporter 확인)",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "정상",
+                  "index": 0
+                },
+                "0": {
+                  "text": "접속 불가",
+                  "index": 1
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "orientation": "vertical",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 16,
+          "valueSize": 22
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 11,
+        "w": 24,
+        "h": 7
+      }
+    },
+    {
+      "type": "row",
+      "id": 7,
+      "title": "노드 · 클러스터 용량",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 18,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "id": 8,
+      "title": "Ready 노드",
+      "description": "[무엇] Ready 상태인 노드 수입니다 (e2-highmem-2 × 2).\n\n[보는 법] 평소 2대입니다. GKE 업그레이드 중에는 잠시 3대가 됩니다. 1대가 되면 남은 노드로 모든 Pod를 감당하지 못합니다.\n\n[범위] 🟢 2대 이상 / 🔴 2대 미만 → [CRITICAL]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "count(kube_node_status_condition{condition=\"Ready\", status=\"true\"} == 1)",
+          "legendFormat": "Ready 노드",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 2
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 19,
+        "w": 4,
+        "h": 6
+      }
+    },
+    {
+      "type": "stat",
+      "id": 9,
+      "title": "노드 CPU 사용률",
+      "description": "[무엇] 노드별 CPU 사용률(5분 평균)입니다. 노드 이름은 끝 4자리만 표시합니다.\n\n[보는 법] 평소 10% 안팎입니다. 수집 CronJob 시간(00:05, 02:00)에 잠깐 오를 수 있습니다.\n\n[범위] 🟢 50% 미만 / 🟠 50~80% / 🔴 80% 초과 15분 → [WARN]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "label_replace(100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m]))) * on (instance) group_left (nodename) node_uname_info, \"name\", \"$1\", \"nodename\", \".*-([a-z0-9]+)$\")",
+          "legendFormat": "{{name}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
+      },
+      "gridPos": {
+        "x": 4,
+        "y": 19,
+        "w": 5,
+        "h": 6
+      }
+    },
+    {
+      "type": "stat",
+      "id": 10,
+      "title": "노드 메모리 사용률",
+      "description": "[무엇] 노드별 메모리 사용률(사용 가능 메모리 기준)입니다.\n\n[보는 법] 평소 30% 안팎입니다. 95%를 넘으면 Pod가 강제 종료됩니다.\n\n[범위] 🟢 60% 미만 / 🟠 60~80% / 🔴 80% 초과 15분 → [WARN], 95% 초과 → [CRITICAL]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "label_replace(100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * on (instance) group_left (nodename) node_uname_info, \"name\", \"$1\", \"nodename\", \".*-([a-z0-9]+)$\")",
+          "legendFormat": "{{name}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 60
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
+      },
+      "gridPos": {
+        "x": 9,
+        "y": 19,
+        "w": 5,
+        "h": 6
+      }
+    },
+    {
+      "type": "stat",
+      "id": 11,
+      "title": "노드 디스크 사용률",
+      "description": "[무엇] 노드 데이터 디스크(/mnt/stateful_partition: 컨테이너 이미지·로그·emptyDir) 사용률입니다. OS 영역(/)은 읽기 전용이라 제외합니다.\n\n[보는 법] 85%부터 kubelet이 이미지를 지우고, 90%부터 Pod를 내쫓습니다.\n\n[범위] 🟢 60% 미만 / 🟠 60~80% / 🔴 80% 초과 30분 → [WARN]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "label_replace(100 * (1 - node_filesystem_avail_bytes{mountpoint=\"/mnt/stateful_partition\"} / node_filesystem_size_bytes{mountpoint=\"/mnt/stateful_partition\"}) * on (instance) group_left (nodename) node_uname_info, \"name\", \"$1\", \"nodename\", \".*-([a-z0-9]+)$\")",
+          "legendFormat": "{{name}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 60
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
+      },
+      "gridPos": {
+        "x": 14,
+        "y": 19,
+        "w": 5,
+        "h": 6
+      }
+    },
+    {
+      "type": "stat",
+      "id": 12,
+      "title": "클러스터 예약률 (requests)",
+      "description": "[무엇] 모든 Pod의 CPU/메모리 requests 합계 ÷ 노드 할당 가능량입니다. 실제 사용량이 아니라 '예약된 자리'입니다.\n\n[보는 법] 85%를 넘으면 새 Pod·배포 중 새 버전 Pod가 Pending에 걸릴 수 있습니다. CPU는 평소 약 64%입니다.\n\n[범위] 🟢 75% 미만 / 🟠 75~85% / 🔴 85% 초과 15분 → [WARN]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "100 * sum(namespace_cpu:kube_pod_container_resource_requests:sum) / sum(kube_node_status_allocatable{resource=\"cpu\"})",
+          "legendFormat": "CPU",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "100 * sum(namespace_memory:kube_pod_container_resource_requests:sum) / sum(kube_node_status_allocatable{resource=\"memory\"})",
+          "legendFormat": "메모리",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 75
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
+      },
+      "gridPos": {
+        "x": 19,
+        "y": 19,
+        "w": 5,
+        "h": 6
+      }
+    },
+    {
+      "type": "row",
+      "id": 13,
+      "title": "워크로드 (모든 네임스페이스)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 25,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "id": 14,
+      "title": "사용 불가 워크로드",
+      "description": "[무엇] 원하는 replicas가 1 이상인데 사용 가능한 Pod가 0개인 Deployment/StatefulSet 수입니다. 그 서비스는 지금 중단된 상태입니다.\n\n[보는 법] 0이어야 합니다. 1 이상이면 아래 '발생 중 알림 목록'의 WorkloadUnavailable에서 이름을 확인하세요.\n\n[범위] 🟢 0 / 🔴 1 이상 (3분 지속 → [CRITICAL])",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "count((kube_deployment_status_replicas_available == 0) and on (namespace, deployment) (kube_deployment_spec_replicas > 0)) or vector(0)",
+          "legendFormat": "Deployment",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "count((kube_statefulset_status_replicas_ready == 0) and on (namespace, statefulset) (kube_statefulset_replicas > 0)) or vector(0)",
+          "legendFormat": "StatefulSet",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 26,
+        "w": 6,
+        "h": 6
+      }
+    },
+    {
+      "type": "stat",
+      "id": 15,
+      "title": "비정상 Pod",
+      "description": "[무엇] Pending(배치 대기)·Failed·Unknown 상태 Pod 수입니다. 완료된 CronJob Pod(Succeeded)는 제외합니다.\n\n[보는 법] 배포 직후 몇 초 Pending은 정상입니다. 오래 남아 있으면 자원 부족(Pending)이나 앱 오류(Failed)입니다.\n\n[범위] 🟢 0 / 🟠 1 이상 (15분 지속 → [WARN] KubePodNotReady)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum(kube_pod_status_phase{phase=~\"Pending|Failed|Unknown\"}) or vector(0)",
+          "legendFormat": "비정상 Pod",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 26,
+        "w": 4,
+        "h": 6
+      }
+    },
+    {
+      "type": "stat",
+      "id": 16,
+      "title": "컨테이너 재시작 (최근 1시간)",
+      "description": "[무엇] 최근 1시간 동안 모든 컨테이너 재시작 횟수 합계입니다.\n\n[보는 법] 0이 정상입니다. 1회는 [INFO], 한 컨테이너가 3회 이상이면 [WARN] 메일입니다. 오른쪽 표에서 어느 컨테이너인지 확인하세요.\n\n[범위] 🟢 0 / 🟠 1~2회 / 🔴 3회 이상",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "round(sum(increase(kube_pod_container_status_restarts_total[1h]))) or vector(0)",
+          "legendFormat": "재시작",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
+      },
+      "gridPos": {
+        "x": 10,
+        "y": 26,
+        "w": 4,
+        "h": 6
+      }
+    },
+    {
+      "type": "table",
+      "id": 17,
+      "title": "재시작한 컨테이너 (최근 24시간)",
+      "description": "[무엇] 최근 24시간 안에 재시작한 컨테이너와 횟수입니다.\n\n[보는 법] 같은 컨테이너가 반복되면 kubectl -n <네임스페이스> logs <pod> -c <컨테이너> --previous 로 직전 로그를 확인하세요.\n\n[범위] 🟢 목록 비어 있음 / 🟠 1~2회 / 🔴 3회 이상",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "round(max by (namespace, pod, container) (increase(kube_pod_container_status_restarts_total[24h]))) > 0",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "namespace": "네임스페이스",
+              "pod": "Pod",
+              "container": "컨테이너",
+              "Value": "재시작 횟수"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "재시작 없음",
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "재시작 횟수"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 1
+                    },
+                    {
+                      "color": "red",
+                      "value": 3
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "md",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "재시작 횟수",
+            "desc": true
+          }
+        ]
+      },
+      "gridPos": {
+        "x": 14,
+        "y": 26,
+        "w": 10,
+        "h": 6
+      }
+    },
+    {
+      "type": "bargauge",
+      "id": 18,
+      "title": "메모리 limit 대비 사용률 (상위 12개)",
+      "description": "[무엇] 컨테이너 메모리 사용량(working set) ÷ 메모리 limit 입니다. 100%가 되면 OOMKilled로 강제 종료됩니다.\n\n[보는 법] 90%를 넘는 컨테이너는 limit을 올리거나 메모리 누수를 확인하세요. limit이 없는 컨테이너는 표시되지 않습니다.\n\n[범위] 🟢 70% 미만 / 🟠 70~90% / 🔴 90% 초과 15분 → [WARN]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "topk(12, 100 * max by (namespace, container) (container_memory_working_set_bytes{container!=\"\", image!=\"\"}) / on (namespace, container) max by (namespace, container) (kube_pod_container_resource_limits{resource=\"memory\"}))",
+          "legendFormat": "{{namespace}} / {{container}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          },
+          "min": 0,
+          "max": 100,
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "namePlacement": "left",
+        "sizing": "auto",
+        "text": {
+          "titleSize": 16,
+          "valueSize": 18
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 32,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "type": "bargauge",
+      "id": 19,
+      "title": "디스크(PVC) 사용률",
+      "description": "[무엇] 영구 디스크(PVC)별 사용률입니다. Prometheus(지표 15일 보관), Grafana, Alertmanager, Pushgateway, Redis가 사용합니다.\n\n[보는 법] Prometheus는 보관 용량 16GB(약 75%)에서 오래된 데이터부터 지우므로 75% 근처에서 멈추는 게 정상입니다.\n\n[범위] 🟢 70% 미만 / 🟠 70~85% / 🔴 85% 초과 30분 → [WARN]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "label_replace(100 * max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes), \"pvc\", \"$1\", \"persistentvolumeclaim\", \"(?:.*-db-)?(.*)\")",
+          "legendFormat": "{{namespace}} / {{pvc}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "min": 0,
+          "max": 100,
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "namePlacement": "left",
+        "sizing": "auto",
+        "text": {
+          "titleSize": 16,
+          "valueSize": 18
+        }
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 32,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "type": "row",
+      "id": 20,
+      "title": "서비스 트래픽 (Istio gateway — 외부에서 들어오는 모든 요청)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 41,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "type": "table",
+      "id": 21,
+      "title": "서비스별 요청 현황 (최근 5분)",
+      "description": "[무엇] 외부에서 Istio gateway를 거쳐 들어온 요청을 서비스별로 집계했습니다. 앱에 /metrics가 없어도(웹, 관리자, yangobot) 여기서 볼 수 있습니다. 접속 검사(blackbox) 요청도 포함되어 서비스마다 초당 약 0.03건이 기본으로 잡힙니다.\n\n[보는 법] 5xx 비율이 오르면 서버 오류, P95가 오르면 느려진 것입니다. 4xx는 봇이 없는 경로를 요청한 것이 대부분이라 참고만 합니다.\n\n[범위] 5xx 🟢 1% 미만 / 🟠 1~5% / 🔴 5% 초과 10분 → [ERROR], P95 🟢 300ms 미만 / 🟠 300ms~1초 / 🔴 1초 초과 15분 → [WARN]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload=\"istio-ingressgateway\", destination_service_name!=\"unknown\"}[5m]))",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "100 * sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload=\"istio-ingressgateway\", destination_service_name!=\"unknown\", response_code=~\"5..\"}[5m])) / sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload=\"istio-ingressgateway\", destination_service_name!=\"unknown\"}[5m]))",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "C",
+          "expr": "100 * sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload=\"istio-ingressgateway\", destination_service_name!=\"unknown\", response_code=~\"4..\"}[5m])) / sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload=\"istio-ingressgateway\", destination_service_name!=\"unknown\"}[5m]))",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "D",
+          "expr": "histogram_quantile(0.95, sum by (destination_service_namespace, destination_service_name, le) (rate(istio_request_duration_milliseconds_bucket{source_workload=\"istio-ingressgateway\", destination_service_name!=\"unknown\"}[5m])))",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "destination_service_namespace": "네임스페이스",
+              "destination_service_name": "서비스",
+              "Value #A": "초당 요청",
+              "Value #B": "5xx 비율",
+              "Value #C": "4xx 비율 (참고)",
+              "Value #D": "P95 응답 시간"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "요청 없음",
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "초당 요청"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "reqps"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "5xx 비율"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 1
+                    },
+                    {
+                      "color": "red",
+                      "value": 5
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "4xx 비율 (참고)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "P95 응답 시간"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 300
+                    },
+                    {
+                      "color": "red",
+                      "value": 1000
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "md",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "초당 요청",
+            "desc": true
+          }
+        ]
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 42,
+        "w": 24,
+        "h": 9
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 22,
+      "title": "서비스별 초당 요청 수",
+      "description": "[무엇] 서비스별 외부 요청 수 추이입니다.\n\n[보는 법] 어제 같은 시각보다 30% 미만으로 줄거나(접속 장애 의심) 5배 넘게 늘면(봇·공격 의심) [WARN] 메일이 갑니다.\n\n[범위] 🟢 어제 대비 50~200% / 🟠 30% 미만 또는 5배 초과 → [WARN]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (destination_service_name) (rate(istio_requests_total{source_workload=\"istio-ingressgateway\", destination_service_name!=\"unknown\"}[5m]))",
+          "legendFormat": "{{destination_service_name}}",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 5,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 51,
+        "w": 8,
+        "h": 8
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 23,
+      "title": "서비스별 5xx 비율",
+      "description": "[무엇] 서비스별 서버 오류(5xx) 비율 추이입니다. 분모가 작은 서비스는 한두 건으로도 크게 튈 수 있습니다.\n\n[보는 법] 알림은 10분간 5건 이상이면서 5% 초과일 때만 보냅니다.\n\n[범위] 🟢 1% 미만 / 🟠 1~5% / 🔴 5% 초과 10분 → [ERROR]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "100 * sum by (destination_service_name) (rate(istio_requests_total{source_workload=\"istio-ingressgateway\", destination_service_name!=\"unknown\", response_code=~\"5..\"}[5m])) / sum by (destination_service_name) (rate(istio_requests_total{source_workload=\"istio-ingressgateway\", destination_service_name!=\"unknown\"}[5m]))",
+          "legendFormat": "{{destination_service_name}}",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 5,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 51,
+        "w": 8,
+        "h": 8
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 24,
+      "title": "서비스별 응답 시간 P95",
+      "description": "[무엇] 서비스별 응답 시간 95번째 백분위(요청 95%가 이 시간 안에 끝남)입니다. ArgoCD·Grafana는 실시간 스트림 요청이 있어 높게 나오는 것이 정상입니다.\n\n[보는 법] 앱 서비스가 1초를 넘는 상태가 15분 이어지면 [WARN] 메일이 갑니다.\n\n[범위] 🟢 300ms 미만 / 🟠 300ms~1초 / 🔴 1초 초과 15분 → [WARN]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (destination_service_name, le) (rate(istio_request_duration_milliseconds_bucket{source_workload=\"istio-ingressgateway\", destination_service_name!=\"unknown\", destination_service_namespace=~\"reviewmaps|ojeomneo|lostark|woohalabs-app-ads\"}[5m])))",
+          "legendFormat": "{{destination_service_name}}",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 5,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 300
+              },
+              {
+                "color": "red",
+                "value": 1000
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 51,
+        "w": 8,
+        "h": 8
+      }
+    },
+    {
+      "type": "row",
+      "id": 25,
+      "title": "외부 접속 상세 (blackbox)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 59,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "type": "bargauge",
+      "id": 26,
+      "title": "접속 시간 (DNS + TLS + 응답)",
+      "description": "[무엇] blackbox exporter가 각 URL에 접속해 응답을 받기까지 걸린 시간입니다 (리다이렉트 포함).\n\n[보는 법] 평소 0.03~0.5초입니다. 2초를 넘는 상태가 10분 이어지면 [WARN] 메일이 갑니다.\n\n[범위] 🟢 0.5초 미만 / 🟠 0.5~2초 / 🔴 2초 초과 10분 → [WARN]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "max by (target) (probe_duration_seconds{kind=\"external\"})",
+          "legendFormat": "{{target}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.5
+              },
+              {
+                "color": "red",
+                "value": 2
+              }
+            ]
+          },
+          "min": 0,
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "namePlacement": "left",
+        "sizing": "auto",
+        "text": {
+          "titleSize": 16,
+          "valueSize": 18
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 60,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "type": "bargauge",
+      "id": 27,
+      "title": "HTTPS 인증서 남은 일수",
+      "description": "[무엇] 각 URL이 실제로 내려주는 인증서의 만료까지 남은 일수입니다 (Let's Encrypt 90일, cert-manager가 30일 남았을 때 자동 갱신).\n\n[보는 법] 30일 아래로 내려갔다가 다시 90일로 올라가는 톱니 모양이 정상입니다. 21일 미만이면 자동 갱신이 실패하고 있는 것입니다.\n\n[범위] 🟢 21일 이상 / 🟠 7~21일 → [WARN] / 🔴 7일 미만 → [CRITICAL]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "min by (target) ((probe_ssl_earliest_cert_expiry - time()) / 86400)",
+          "legendFormat": "{{target}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "d",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 7
+              },
+              {
+                "color": "green",
+                "value": 21
+              }
+            ]
+          },
+          "min": 0,
+          "max": 90,
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "namePlacement": "left",
+        "sizing": "auto",
+        "text": {
+          "titleSize": 16,
+          "valueSize": 18
+        }
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 60,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "type": "row",
+      "id": 28,
+      "title": "플랫폼 (ArgoCD · cert-manager · External Secrets · Istio)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 69,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "id": 29,
+      "title": "ArgoCD 앱 상태",
+      "description": "[무엇] ArgoCD가 관리하는 앱 중 Git과 다른(OutOfSync) 앱 수와 Healthy가 아닌(Degraded/Missing 등) 앱 수입니다.\n\n[보는 법] 배포 직후 잠깐 OutOfSync/Progressing은 정상입니다. 오른쪽 표에서 어떤 앱인지 확인하세요.\n\n[범위] 🟢 0 / 🟠 OutOfSync 30분 → [WARN] / 🔴 Degraded 15분·sync 실패 → [ERROR]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "count(argocd_app_info{sync_status!=\"Synced\"}) or vector(0)",
+          "legendFormat": "OutOfSync",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "count(argocd_app_info{health_status!~\"Healthy|Progressing|Suspended\"}) or vector(0)",
+          "legendFormat": "Unhealthy",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Unhealthy"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 70,
+        "w": 5,
+        "h": 7
+      }
+    },
+    {
+      "type": "table",
+      "id": 30,
+      "title": "ArgoCD 앱 목록",
+      "description": "[무엇] ArgoCD 앱별 Sync/Health 상태입니다.\n\n[보는 법] 모두 Synced · Healthy 여야 합니다.\n\n[범위] 🟢 Synced·Healthy / 🟠 OutOfSync·Progressing / 🔴 Degraded·Missing",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "max by (name, dest_namespace, sync_status, health_status) (argocd_app_info)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true
+            },
+            "indexByName": {
+              "name": 0,
+              "dest_namespace": 1,
+              "sync_status": 2,
+              "health_status": 3
+            },
+            "renameByName": {
+              "name": "앱",
+              "dest_namespace": "네임스페이스",
+              "sync_status": "Sync",
+              "health_status": "Health"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "ArgoCD 지표 없음",
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Sync"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Synced": {
+                        "color": "green",
+                        "index": 0
+                      },
+                      "OutOfSync": {
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "Unknown": {
+                        "color": "red",
+                        "index": 2
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Health"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Healthy": {
+                        "color": "green",
+                        "index": 0
+                      },
+                      "Progressing": {
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "Degraded": {
+                        "color": "red",
+                        "index": 2
+                      },
+                      "Missing": {
+                        "color": "red",
+                        "index": 3
+                      },
+                      "Unknown": {
+                        "color": "red",
+                        "index": 4
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "md",
+        "footer": {
+          "show": false
+        }
+      },
+      "gridPos": {
+        "x": 5,
+        "y": 70,
+        "w": 9,
+        "h": 7
+      }
+    },
+    {
+      "type": "stat",
+      "id": 31,
+      "title": "인증서 · Secret · Istio",
+      "description": "[무엇] cert-manager Certificate 중 Ready가 아닌 수, GSM → Secret 동기화 실패한 ExternalSecret 수, 최근 1시간 Istio가 거부한 라우팅 설정 수입니다.\n\n[보는 법] 모두 0이어야 합니다. Secret 동기화 실패가 있으면 새로 뜨는 Pod가 CreateContainerConfigError로 시작하지 못합니다.\n\n[범위] 🟢 0 / 🔴 1 이상 (인증서 15분·Secret 10분 → [ERROR], Istio 거부 → [WARN])",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "count(certmanager_certificate_ready_status{condition=\"False\"} == 1) or vector(0)",
+          "legendFormat": "인증서 Not Ready",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "count(externalsecret_status_condition{condition=\"Ready\", status=\"False\"} == 1) or vector(0)",
+          "legendFormat": "Secret 동기화 실패",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "C",
+          "expr": "round(sum(increase(pilot_total_xds_rejects[1h]))) or vector(0)",
+          "legendFormat": "Istio 설정 거부 (1시간)",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 18,
+          "valueSize": 34
+        }
+      },
+      "gridPos": {
+        "x": 14,
+        "y": 70,
+        "w": 10,
+        "h": 7
+      }
+    },
+    {
+      "type": "row",
+      "id": 32,
+      "title": "데이터베이스 (Cloud SQL prod-woohalabs-cloudsql · Redis)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 77,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "id": 33,
+      "title": "Cloud SQL 접속",
+      "description": "[무엇] postgres-exporter가 Cloud SQL(POSTGRES_15, db-g1-small)에 접속되는지입니다. 리뷰맵·오점너 DB가 같은 인스턴스에 있습니다.\n\n[보는 법] '접속 불가'면 두 서비스 API가 모두 실패합니다. GCP 콘솔에서 인스턴스 상태(유지보수, 재시작)를 확인하세요.\n\n[범위] 🟢 정상 / 🔴 접속 불가 2분 → [CRITICAL]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "max(pg_up)",
+          "legendFormat": "Cloud SQL",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "지표 없음 (exporter 확인)",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "정상",
+                  "index": 0
+                },
+                "0": {
+                  "text": "접속 불가",
+                  "index": 1
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 78,
+        "w": 4,
+        "h": 7
+      }
+    },
+    {
+      "type": "stat",
+      "id": 34,
+      "title": "DB 연결 수 (최대 100)",
+      "description": "[무엇] Cloud SQL에 열려 있는 연결 수입니다 (DB별, max_connections 100). 앱 커넥션 풀 + exporter + Grafana 조회 연결입니다.\n\n[보는 법] 합계가 80을 넘으면 [WARN], 100에 도달하면 새 연결이 거부되어 API가 실패합니다.\n\n[범위] 🟢 합계 50 미만 / 🟠 50~80 / 🔴 80 초과 10분 → [WARN]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (datname) (pg_stat_database_numbackends{datname=~\"reviewmaps|ojeomneo\"})",
+          "legendFormat": "{{datname}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "sum(pg_stat_database_numbackends)",
+          "legendFormat": "합계",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
+      },
+      "gridPos": {
+        "x": 4,
+        "y": 78,
+        "w": 7,
+        "h": 7
+      }
+    },
+    {
+      "type": "stat",
+      "id": 35,
+      "title": "DB 크기",
+      "description": "[무엇] DB별 데이터 크기입니다 (디스크 20GB, 자동 확장 켜짐).\n\n[보는 법] 합계 14GB(70%)를 넘으면 [WARN]. 디스크가 자동으로 늘어나면 줄일 수 없고 비용이 증가합니다.\n\n[범위] 🟢 합계 10GB 미만 / 🟠 10~14GB / 🔴 14GB 초과 → [WARN]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "max by (datname) (pg_database_size_bytes{datname=~\"reviewmaps|ojeomneo\"})",
+          "legendFormat": "{{datname}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 10000000000.0
+              },
+              {
+                "color": "red",
+                "value": 14000000000.0
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
+      },
+      "gridPos": {
+        "x": 11,
+        "y": 78,
+        "w": 6,
+        "h": 7
+      }
+    },
+    {
+      "type": "stat",
+      "id": 36,
+      "title": "DB 캐시 적중률 (30분)",
+      "description": "[무엇] 읽은 데이터 블록 중 메모리(shared_buffers)에서 바로 찾은 비율입니다.\n\n[보는 법] 99% 이상이 정상입니다. 떨어지면 인덱스 누락이나 메모리 부족 신호입니다.\n\n[범위] 🟢 99% 이상 / 🟠 90~99% / 🔴 90% 미만 → [INFO]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "100 * sum by (datname) (rate(pg_stat_database_blks_hit{datname=~\"reviewmaps|ojeomneo\"}[30m])) / (sum by (datname) (rate(pg_stat_database_blks_hit{datname=~\"reviewmaps|ojeomneo\"}[30m])) + sum by (datname) (rate(pg_stat_database_blks_read{datname=~\"reviewmaps|ojeomneo\"}[30m])))",
+          "legendFormat": "{{datname}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 90
+              },
+              {
+                "color": "green",
+                "value": 99
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
+      },
+      "gridPos": {
+        "x": 17,
+        "y": 78,
+        "w": 7,
+        "h": 7
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 37,
+      "title": "DB 연결 수 추이",
+      "description": "[무엇] DB별 연결 수 추이입니다.\n\n[보는 법] 수집 CronJob 시간(00:05, 02:00)에 늘어나는 것이 정상입니다. 계속 증가만 하면 연결 누수입니다.\n\n[범위] 🟢 합계 50 미만 / 🟠 50~80 / 🔴 80 초과 → [WARN]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (datname) (pg_stat_database_numbackends{datname=~\"reviewmaps|ojeomneo\"})",
+          "legendFormat": "{{datname}}",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 5,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 85,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 38,
+      "title": "DB 초당 트랜잭션 (commit / rollback)",
+      "description": "[무엇] DB별 초당 커밋·롤백 수입니다.\n\n[보는 법] 롤백이 커밋보다 눈에 띄게 많으면 앱 오류(쿼리 실패)가 반복되고 있는 것입니다.\n\n[범위] 🟢 롤백이 커밋의 5% 미만",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (datname) (rate(pg_stat_database_xact_commit{datname=~\"reviewmaps|ojeomneo\"}[5m]))",
+          "legendFormat": "{{datname}} commit",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "sum by (datname) (rate(pg_stat_database_xact_rollback{datname=~\"reviewmaps|ojeomneo\"}[5m]))",
+          "legendFormat": "{{datname}} rollback",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 5,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 85,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "type": "row",
+      "id": 39,
+      "title": "자원 사용 추이",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 93,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "id": 40,
+      "title": "노드 CPU 사용률",
+      "description": "[무엇] 노드별 CPU 사용률 추이입니다.\n\n[보는 법] 수집 CronJob 시간에 잠깐 오르는 것은 정상입니다.\n\n[범위] 🟢 50% 미만 / 🟠 50~80% / 🔴 80% 초과 15분 → [WARN]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "label_replace(100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m]))) * on (instance) group_left (nodename) node_uname_info, \"name\", \"$1\", \"nodename\", \".*-([a-z0-9]+)$\")",
+          "legendFormat": "{{name}}",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 5,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "max": 100
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 94,
+        "w": 8,
+        "h": 8
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 41,
+      "title": "노드 메모리 사용률",
+      "description": "[무엇] 노드별 메모리 사용률 추이입니다.\n\n[보는 법] 계속 오르기만 하면 어떤 Pod의 메모리 누수입니다.\n\n[범위] 🟢 60% 미만 / 🟠 60~80% / 🔴 80% 초과 15분 → [WARN], 95% → [CRITICAL]",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "label_replace(100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * on (instance) group_left (nodename) node_uname_info, \"name\", \"$1\", \"nodename\", \".*-([a-z0-9]+)$\")",
+          "legendFormat": "{{name}}",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 5,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 60
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "max": 100
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 94,
+        "w": 8,
+        "h": 8
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 42,
+      "title": "네임스페이스별 메모리 사용량",
+      "description": "[무엇] 네임스페이스별 컨테이너 메모리 사용량(working set) 합계입니다.\n\n[보는 법] 어느 서비스가 자원을 많이 쓰는지 비교합니다.\n\n[범위] 노드 메모리 사용률 기준을 따름",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (namespace) (container_memory_working_set_bytes{container!=\"\", image!=\"\"})",
+          "legendFormat": "{{namespace}}",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 5,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 94,
+        "w": 8,
+        "h": 8
+      }
+    }
+  ]
+}

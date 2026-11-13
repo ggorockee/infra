@@ -1,0 +1,9 @@
+env: prod
+revision: main
+repoURL: https://github.com/ggorockee/infra.git
+chartName: prometheus-postgres-exporter
+# Cloud SQL(prod-woohalabs-cloudsql) 상태: 접속 가능 여부, 연결 수, DB 크기, deadlock, 캐시 적중률
+appName: prometheus-postgres-exporter
+namespace: monitoring
+# override: charts/argocd/applicationsets/valuefiles/prod/prometheus-postgres-exporter/values.yaml
+valuesDir: prometheus-postgres-exporter

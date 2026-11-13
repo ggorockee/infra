@@ -30,6 +30,20 @@ Prometheus 메트릭 모니터링을 위한 Grafana 대시보드 JSON 파일입�
 - 마감 지난 잔존 캠페인 수 (cleanup soft delete 검증)
 - 오늘 플랫폼별 적재 건수, 플랫폼별 마지막 적재 시각, 최근 14일 갱신일 분포
 
+### 클러스터 전체 현황
+- 파일: `cluster-overview-dashboard.json`
+- UID: `cluster-overview`
+- 데이터소스: Prometheus (node-exporter, kube-state-metrics, Istio gateway, blackbox exporter, postgres-exporter, ArgoCD, cert-manager, External Secrets)
+
+**포함된 패널**:
+- 발생 중 알림 (등급별 수, 목록), 서비스 접속 상태 (외부 URL 12개 · 내부 Redis 3개)
+- 노드 CPU/메모리/디스크, 클러스터 requests 예약률
+- 사용 불가 워크로드, 비정상 Pod, 컨테이너 재시작, 메모리 limit 대비 사용률, PVC 사용률
+- 서비스별 요청 수·5xx·4xx·P95 (Istio gateway)
+- 접속 시간, HTTPS 인증서 남은 일수
+- ArgoCD 앱 상태, 인증서/ExternalSecret/Istio 설정 오류
+- Cloud SQL 접속·연결 수·DB 크기·캐시 적중률·트랜잭션
+
 ### Ojeomneo HTTP Metrics
 - 파일: `ojeomneo-dashboard.json`
 - UID: `ojeomneo-http-metrics`

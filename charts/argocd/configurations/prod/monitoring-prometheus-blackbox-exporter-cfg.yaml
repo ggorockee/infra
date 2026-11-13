@@ -1,0 +1,9 @@
+env: prod
+revision: main
+repoURL: https://github.com/ggorockee/infra.git
+chartName: prometheus-blackbox-exporter
+# 외부 URL·내부 Redis 접속 검사 (probe_success, probe_duration_seconds, probe_ssl_earliest_cert_expiry)
+appName: prometheus-blackbox-exporter
+namespace: monitoring
+# override: charts/argocd/applicationsets/valuefiles/prod/prometheus-blackbox-exporter/values.yaml
+valuesDir: prometheus-blackbox-exporter

@@ -292,3 +292,121 @@ go-scraper는 CronJob에서 키워드마다 프로세스를 띄워 수 초~수 �
 | 수집 서버 모니터링 | Pushgateway + go-scraper push (infra #1131, reviewmaps #277, #279), 대시보드·알림 (infra #1132, #1135, #1136) |
 | 발견·수정한 운영 버그 | 서버 /metrics 500 (reviewmaps #275), AutoMigrate 위험 DDL (#276), cleanup 기준일 UTC 오류로 만료 캠페인 하루 더 노출 (#278), 알림 메일 스팸 분류 (infra #1130), 응답 지연 알림 오탐 (#1138) |
 | 대시보드 가독성 | 범위표 접기, 짧은 이름, 글자 크기 고정, hh:mm:ss (infra #1141, #1142). 작성 규칙은 `.claude/CLAUDE.md` "Grafana 대시보드" |
+
+## 10. 클러스터 전체 모니터링 (2026-11-13 추가)
+
+원칙: "모니터링할 수 없는 것은 관리할 수 없다." 클러스터에서 돌아가는 모든 서비스에 대해 (1) 살아 있는가 (2) 정상 범위 안에서 동작하는가 (3) 벗어나면 메일이 오는가를 보장한다.
+
+### 10.1 서비스별 감시 방법
+
+앱에 /metrics가 없는 서비스도 Istio gateway 지표(외부 요청)와 blackbox 접속 검사로 감시한다.
+
+| 서비스 | 살아 있는가 | 동작 지표 |
+|--------|------------|-----------|
+| 리뷰맵 API (reviewmaps-server) | blackbox `reviewmaps-api`, 앱 /metrics `up` | 앱 지표(요청·5xx·P95), Istio |
+| 리뷰맵 웹/관리자 | blackbox `reviewmaps-web(-www)`, `reviewmaps-admin` | Istio (요청·5xx·P95) |
+| 리뷰맵 CronJob·수집 서버 | kube-state-metrics, Pushgateway | 기존 reviewmaps.* 규칙 |
+| 오점너 API (ojeomneo-server) | blackbox `ojeomneo-api`, 앱 /ojeomneo/metrics `up` | 앱 지표(DB 풀 포함), Istio |
+| 오점너 웹/관리자 | blackbox `ojeomneo-web`, `ojeomneo-admin` | Istio |
+| 오점너 Redis | blackbox PING `ojeomneo-redis` | redis-exporter (메모리, 거부 연결) |
+| yangobot / yangobot Redis | blackbox `yangobot` (/healthz), PING `yangobot-redis` | Istio, 컨테이너 자원 |
+| woohalabs app-ads.txt | blackbox `woohalabs-app-ads(-www)` | Istio |
+| ArgoCD | blackbox `argocd`, PING `argocd-redis` | argocd_app_info, sync 결과 (PodMonitor) |
+| Grafana | blackbox `grafana` | 기본 ServiceMonitor |
+| Istio | Deployment 가용성 | istiod xDS 거부, gateway 요청 지표 |
+| cert-manager | Deployment 가용성 | Certificate Ready·갱신 시각, 실제 인증서 만료일(blackbox) |
+| External Secrets | Deployment 가용성 | ExternalSecret Ready 상태 |
+| Cloud SQL (reviewmaps, ojeomneo DB) | postgres-exporter `pg_up` | 연결 수, DB 크기, deadlock, 긴 트랜잭션, 캐시 적중률 |
+| 노드·클러스터 | kube-state-metrics 노드 Ready | node-exporter CPU/메모리/디스크, requests 예약률 |
+| 모든 워크로드 (kube-system 포함) | Deployment/StatefulSet 가용 Pod 0개 | 재시작, OOMKilled, 시작 실패, 메모리 limit 대비, PVC |
+
+### 10.2 추가 구성요소
+
+| 구성요소 | 위치 | 비고 |
+|----------|------|------|
+| blackbox exporter 11.21.3 | 차트 `charts/helm/prod/prometheus-blackbox-exporter`, override `valuefiles/prod/prometheus-blackbox-exporter/values.yaml` | 외부 URL 12개 + 내부 Redis 3개, 30~60초 간격. 검사 대상 추가는 override `serviceMonitor.targets` |
+| postgres-exporter 8.2.5 | 차트 `charts/helm/prod/prometheus-postgres-exporter`, override `valuefiles/prod/prometheus-postgres-exporter/values.yaml` | 접속 계정은 Secret `grafana-reviewmaps-db` 재사용 |
+| 추가 ServiceMonitor | kube-prometheus-stack override `prometheus.additionalServiceMonitors` | istiod, ojeomneo-server, ojeomneo-redis |
+| 추가 PodMonitor | kube-prometheus-stack override `prometheus.additionalPodMonitors` | ArgoCD 전체, External Secrets, Istio ingress gateway (서비스 요청 지표만 keep) |
+| cert-manager ServiceMonitor | `charts/helm/prod/cert-manager/values.yaml` `prometheus.servicemonitor.enabled` | |
+| 대시보드 | `dashboards/cluster-overview-dashboard.json` (uid `cluster-overview`) | 범위표 = 아래 10.4 |
+
+### 10.3 메일 등급
+
+| 제목 | severity | 의미 | 반복 발송 | 해제 메일 |
+|------|----------|------|-----------|-----------|
+| [CRITICAL] | critical | 서비스 중단 또는 중단 직전, 즉시 조치 | 2시간 | 있음 |
+| [ERROR] | error | 기능 실패, 조치 필요 | 6시간 | 있음 |
+| [WARN] | warning | 정상 범위 벗어남, 추이 확인 | 12시간 | 있음 |
+| [INFO] | info | 참고용 (재시작 1회, 배포 완료, Job 성공) | 24시간 | 없음 |
+
+- 초기 단계라 INFO까지 전부 발송한다. 줄일 때는 `files/alertmanager.yaml.tmpl`에서 info 라우트의 receiver를 `"null"`로 바꾸고, 그다음 warning 라우트를 바꾼다.
+- 같은 알림의 상위 등급이 발생 중이면 하위 등급은 억제한다 (critical → error/warning/info, error → warning/info). 접속 불가 시 응답 지연, 재시작 반복 시 재시작 1회, Deployment 중단 시 replicas 불일치도 억제한다.
+- 기존 리뷰맵 규칙: Job 실패·26시간 미성공·키워드 실패·5xx는 error([ERROR] 유지), 서버 다운은 critical([CRITICAL])로 변경. 기존 warning은 제목만 [ALERT] → [WARN].
+- 기본 규칙 중 NodeMemoryHighUtilization, NodeCPUHighUsage는 커스텀 규칙으로 대체해 비활성화.
+
+### 10.4 지표별 정상 범위와 알림 기준
+
+| 영역 | 지표 | 🟢 정상 | 알림 (조건 → 등급) |
+|------|------|---------|-------------------|
+| 노드 | Ready 노드 수 | 2대 | 2대 미만 5분 → CRITICAL |
+| 노드 | CPU 사용률 | 5~50% (평소 약 10%) | 80% 초과 15분 → WARN |
+| 노드 | 메모리 사용률 | 20~60% (평소 약 30%) | 80% 초과 15분 → WARN, 95% 초과 5분 → CRITICAL |
+| 노드 | 데이터 디스크 (/mnt/stateful_partition) | 60% 미만 | 80% 초과 30분 → WARN |
+| 용량 | CPU requests 예약률 | 75% 미만 (현재 약 64%) | 85% 초과 15분 → WARN |
+| 용량 | 메모리 requests 예약률 | 75% 미만 (현재 약 22%) | 85% 초과 15분 → WARN |
+| 용량 | 배치 불가 Pod | 0 | 5분 → ERROR |
+| 워크로드 | 가용 Pod 0개 Deployment/StatefulSet | 0 | 3분 → CRITICAL |
+| 워크로드 | 컨테이너 재시작 | 0회 | 10분 내 1회 → INFO, 1시간 3회 → WARN |
+| 워크로드 | OOMKilled | 0회 | 발생 → ERROR |
+| 워크로드 | ImagePull/CreateContainerConfig 실패 | 0 | 5분 → ERROR |
+| 워크로드 | 메모리 limit 대비 사용 | 70% 미만 | 90% 초과 15분 → WARN |
+| 스토리지 | PVC 사용률 | 70% 미만 (Prometheus 최대 약 75%) | 85% 초과 30분 → WARN |
+| 접속 | 외부 URL / Redis PING | 항상 성공 | 3분 실패 → CRITICAL |
+| 접속 | 접속 시간 | 0.5초 미만 (평소 0.03~0.5초) | 2초 초과 10분 → WARN |
+| 접속 | HTTPS 인증서 남은 일수 | 30~90일 | 21일 미만 → WARN, 7일 미만 → CRITICAL |
+| 트래픽 | 서비스 5xx 비율 | 1% 미만 | 5% 초과 + 10분 5건 이상 → ERROR |
+| 트래픽 | 서비스 P95 (앱 네임스페이스) | 300ms 미만 | 1초 초과 15분 → WARN |
+| 트래픽 | 요청 수 (어제 같은 시각 대비) | 50~200% | 30% 미만 30분 → WARN, 5배 초과 15분 → WARN |
+| 트래픽 | 4xx 비율 | 알림 없음 (봇 요청이 많아 대시보드 참고만) | - |
+| ArgoCD | 앱 Sync | 전부 Synced | OutOfSync 30분 → WARN |
+| ArgoCD | 앱 Health | 전부 Healthy | Degraded/Missing 15분 → ERROR |
+| ArgoCD | sync 결과 | 성공 | 실패 → ERROR, 성공 → INFO (배포 완료 메일) |
+| 인증서 | cert-manager Certificate | 전부 Ready | Not Ready 15분 → ERROR, 갱신 예정일 하루 경과 → WARN |
+| Secret | ExternalSecret | 전부 SecretSynced | Ready=False 10분 → ERROR |
+| Istio | xDS 설정 거부 | 0건 | 발생 → WARN |
+| DNS | CoreDNS SERVFAIL 비율 | 1% 미만 | 5% 초과 10분 → WARN |
+| DB | Cloud SQL 접속 (pg_up) | 성공 | 실패 2분 → CRITICAL, exporter 지표 없음 10분 → ERROR |
+| DB | 연결 수 (max 100) | 50 미만 | 80% 초과 10분 → WARN |
+| DB | deadlock | 0건 | 발생 → WARN |
+| DB | 가장 긴 트랜잭션 | 1분 미만 | 10분 초과 5분 → WARN |
+| DB | 캐시 적중률 | 99% 이상 | 90% 미만 30분 → INFO |
+| DB | 데이터 크기 (디스크 20GB) | 10GB 미만 | 14GB 초과 → WARN |
+| Redis | 거부 연결 / maxmemory 대비 | 0건 / 70% 미만 | 거부 발생 → WARN, 90% 초과 15분 → WARN |
+| 오점너 | API 서버 /metrics 수집 | 성공 | 5분 실패 → CRITICAL |
+| 오점너 | DB 커넥션 풀 사용률 | 50% 미만 | 90% 초과 10분 → WARN |
+| 모니터링 | blackbox 지표 | 수집됨 | 10분 없음 → ERROR |
+
+### 10.5 이번 범위에서 다루지 못한 것
+
+| 항목 | 이유 / 필요한 작업 |
+|------|-------------------|
+| Cloud SQL CPU·메모리·디스크 실사용량 | GCP Cloud Monitoring 지표 → Grafana에 Google Cloud Monitoring 데이터소스 + 서비스 계정 IAM(monitoring.viewer) 필요. gcloud 쓰기 작업이라 승인 후 진행 |
+| 알림 시스템 자체 장애 감지 | Prometheus/Alertmanager가 죽으면 메일이 안 옴. Watchdog 알림을 외부 dead man's switch(예: healthchecks.io)로 보내야 감지 가능 |
+| ojeomneo 외 앱 내부 지표 | 리뷰맵 웹·관리자, 오점너 웹·관리자, yangobot은 /metrics가 없어 외부 요청 지표와 접속 검사로만 감시 |
+| yangobot·argocd Redis 상세 지표 | exporter sidecar를 붙이면 Redis Pod가 재시작되고 yangobot Redis는 persistence가 꺼져 있어 데이터가 사라짐 → PING 검사로 대체 |
+
+### 10.6 작업 체크리스트
+
+- [x] 수집 대상 조사 (현재 수집 중 / 누락 서비스, 앱별 /metrics 여부, 헬스체크 경로)
+- [x] 기준값 측정 (노드 CPU 약 10%, 메모리 약 30%, CPU 예약률 약 64%, 서비스별 응답 코드 분포)
+- [x] blackbox exporter, postgres-exporter 차트 추가
+- [x] ArgoCD·ESO·Istio·ojeomneo·cert-manager 수집 설정
+- [x] 클러스터 전체 알림 규칙 추가, 기존 리뷰맵 규칙 등급 조정
+- [x] Alertmanager 등급별 라우팅 (INFO까지 발송), 메일 제목 [CRITICAL]/[ERROR]/[WARN]/[INFO]
+- [x] 클러스터 전체 현황 대시보드
+- [ ] 머지 후 ArgoCD Synced/Healthy 확인
+- [ ] 새 수집 대상 전부 up 확인
+- [ ] 배포 직후 발생하는 알림 확인 및 오탐 조정
+- [ ] 테스트 메일 4등급 수신 확인
+- [ ] 대시보드 화면 확인

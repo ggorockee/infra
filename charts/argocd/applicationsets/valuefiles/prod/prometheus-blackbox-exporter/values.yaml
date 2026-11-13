@@ -1,0 +1,103 @@
+# prometheus-blackbox-exporter prod override
+# - 차트: charts/helm/prod/prometheus-blackbox-exporter (11.21.3, values.yaml은 upstream 원본 유지)
+# - 용도: 사용자가 실제로 접속하는 경로(DNS → Istio gateway → 앱)를 30초마다 검사
+#         앱에 /metrics가 없어도 "접속되는가 / 얼마나 빠른가 / 인증서 며칠 남았나"를 감시
+# - 알림: kube-prometheus-stack override의 services.availability 그룹
+# - 검사 대상 추가: 아래 serviceMonitor.targets 에 한 줄 추가 (name은 메일·대시보드 표시 이름)
+
+config:
+  modules:
+    # 2xx 응답만 성공 (리다이렉트는 따라감)
+    http_2xx:
+      prober: http
+      timeout: 10s
+      http:
+        valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+        valid_status_codes: []  # 기본값 = 2xx
+        follow_redirects: true
+        preferred_ip_protocol: ip4
+        fail_if_not_ssl: true
+    # Redis PING → +PONG (비밀번호가 걸린 argocd-redis는 -NOAUTH 응답도 "살아 있음"으로 판단)
+    redis_ping:
+      prober: tcp
+      timeout: 5s
+      tcp:
+        preferred_ip_protocol: ip4
+        query_response:
+          - send: "PING\r\n"
+          - expect: "^(\\+PONG|-NOAUTH)"
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 64Mi
+
+serviceMonitor:
+  selfMonitor:
+    enabled: true
+  enabled: true
+  defaults:
+    interval: 30s
+    scrapeTimeout: 15s
+    module: http_2xx
+  targets:
+    # ---------- 리뷰맵 ----------
+    - name: reviewmaps-api
+      url: https://api.review-maps.com/v1/healthz
+      additionalMetricsRelabels: {app: reviewmaps, kind: external}
+    - name: reviewmaps-web
+      url: https://review-maps.com/
+      additionalMetricsRelabels: {app: reviewmaps, kind: external}
+    - name: reviewmaps-web-www
+      url: https://www.review-maps.com/
+      additionalMetricsRelabels: {app: reviewmaps, kind: external}
+    - name: reviewmaps-admin
+      url: https://admin.review-maps.com/login/
+      additionalMetricsRelabels: {app: reviewmaps, kind: external}
+    # ---------- 오점너 ----------
+    - name: ojeomneo-api
+      url: https://api.woohalabs.com/ojeomneo/v1/healthcheck/live
+      additionalMetricsRelabels: {app: ojeomneo, kind: external}
+    - name: ojeomneo-web
+      url: https://woohalabs.com/ojeomneo
+      additionalMetricsRelabels: {app: ojeomneo, kind: external}
+    - name: ojeomneo-admin
+      url: https://admin.woohalabs.com/ojeomneo/v1/healthcheck/live/
+      additionalMetricsRelabels: {app: ojeomneo, kind: external}
+    # ---------- woohalabs app-ads.txt (광고 인증 파일, 없으면 광고 수익 중단) ----------
+    - name: woohalabs-app-ads
+      url: https://woohalabs.com/app-ads.txt
+      additionalMetricsRelabels: {app: woohalabs-app-ads, kind: external}
+    - name: woohalabs-app-ads-www
+      url: https://www.woohalabs.com/app-ads.txt
+      additionalMetricsRelabels: {app: woohalabs-app-ads, kind: external}
+    # ---------- yangobot ----------
+    - name: yangobot
+      url: https://yangobot.ggorockee.com/healthz
+      additionalMetricsRelabels: {app: yangobot, kind: external}
+    # ---------- 운영 도구 ----------
+    - name: argocd
+      url: https://argocd.ggorockee.com/healthz
+      additionalMetricsRelabels: {app: argocd, kind: external}
+    - name: grafana
+      url: https://monitoring.ggorockee.com/api/health
+      additionalMetricsRelabels: {app: monitoring, kind: external}
+    # ---------- 내부 Redis (PING) ----------
+    - name: ojeomneo-redis
+      url: ojeomneo-redis-master.ojeomneo.svc.cluster.local:6379
+      module: redis_ping
+      interval: 60s
+      additionalMetricsRelabels: {app: ojeomneo, kind: internal}
+    - name: yangobot-redis
+      url: yangobot-redis.lostark.svc.cluster.local:6379
+      module: redis_ping
+      interval: 60s
+      additionalMetricsRelabels: {app: yangobot, kind: internal}
+    - name: argocd-redis
+      url: argocd-redis.argocd.svc.cluster.local:6379
+      module: redis_ping
+      interval: 60s
+      additionalMetricsRelabels: {app: argocd, kind: internal}

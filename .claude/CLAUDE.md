@@ -179,7 +179,7 @@ infra/
 - **GitOps**: ArgoCD
 - **Package Management**: Helm
 - **Service Mesh**: Istio
-- **Monitoring**: kube-prometheus-stack (Prometheus, Grafana, Alertmanager) + Prometheus Pushgateway — Loki, fluent-bit, otel-collector, SigNoz는 2026-11-13 제거됨 (아래 "운영 현황" 참고)
+- **Monitoring**: kube-prometheus-stack (Prometheus, Grafana, Alertmanager) + Prometheus Pushgateway + blackbox exporter + postgres-exporter — Loki, fluent-bit, otel-collector, SigNoz는 2026-11-13 제거됨 (아래 "운영 현황" 참고)
 
 ## Git 워크플로우 규칙
 
@@ -435,6 +435,9 @@ feat: Cloud SQL 모듈 추가
 |----------|------|------|
 | kube-prometheus-stack 93.2.2 | 차트 `charts/helm/prod/kube-prometheus-stack`, override `valuefiles/prod/kube-prometheus-stack/values.yaml` | Prometheus 15일 보관, Alertmanager, Grafana, kube-state-metrics |
 | Prometheus Pushgateway 3.11.2 | 차트 `charts/helm/prod/prometheus-pushgateway`, override `valuefiles/prod/prometheus-pushgateway/values.yaml` | go-scraper 실행 결과 수신, PVC로 재시작 시 보존 |
+| blackbox exporter 11.21.3 | 차트 `charts/helm/prod/prometheus-blackbox-exporter`, override `valuefiles/prod/prometheus-blackbox-exporter/values.yaml` | 외부 URL 12개(2xx) + 내부 Redis 3개(PING) 접속 검사, 인증서 만료일. 대상 추가는 override `serviceMonitor.targets` |
+| postgres-exporter 8.2.5 | 차트 `charts/helm/prod/prometheus-postgres-exporter`, override `valuefiles/prod/prometheus-postgres-exporter/values.yaml` | Cloud SQL `prod-woohalabs-cloudsql`(172.29.0.3, max_connections 100, 디스크 20GB 자동 확장). 계정은 Secret `grafana-reviewmaps-db` 재사용 |
+| 추가 수집 대상 | kube-prometheus-stack override `prometheus.additionalServiceMonitors` / `additionalPodMonitors`, cert-manager 차트 values | istiod, Istio ingress gateway(서비스별 요청·응답 코드·지연), ArgoCD, External Secrets, ojeomneo-server(`/ojeomneo/metrics`), ojeomneo Redis, cert-manager |
 | Grafana | `https://monitoring.ggorockee.com` (Istio VS `grafana-vs`) | Google OAuth + 관리자 `woohaen88` (비밀번호는 GSM `prod-monitoring-smtp-credentials.password`) |
 | Prometheus / Alertmanager | 외부 노출 없음 | 필요 시 `kubectl -n monitoring port-forward` |
 | GKE Managed Prometheus | 비활성화 (Terraform `managed_prometheus.enabled=false`) | 다시 켜지 않도록 주의 |
@@ -455,6 +458,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 
 | 대시보드 | UID | 내용 |
 |----------|-----|------|
+| 클러스터 전체 현황 | `cluster-overview` | 발생 중 알림, 서비스 접속 상태, 노드·용량, 워크로드, 서비스별 트래픽(Istio), 인증서, ArgoCD, Secret, Cloud SQL |
 | ReviewMaps CronJob & DB 적재 (Home) | `reviewmaps-cronjob` | CronJob 성공/실패, Cloud SQL campaign 적재 건수 |
 | ReviewMaps 수집 서버 | `reviewmaps-scraper` | 지금 수집 중인 Job·키워드·진행률, go-scraper 키워드별 마지막 실행 결과 (Pushgateway) |
 | ReviewMaps HTTP Metrics | `reviewmaps-http-metrics` | Go API 서버 요청 수, P95, 5xx |
@@ -478,25 +482,43 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | 항목 | 값 |
 |------|-----|
 | 수신자 | `woohaen88@gmail.com` (`files/alertmanager.yaml.tmpl`에 고정) |
-| 발신 | GSM의 SMTP 계정(Gmail) 그대로 사용, 표시 이름 "ReviewMaps 알림" — `noreply@woohalabs.com`은 SPF(Zoho만 허용) 실패로 스팸 처리되므로 쓰지 않음 |
-| 제목 접두어 | `[ERROR]` critical, `[ALERT]` warning, `[INFO]` info, `[RESOLVED]` 해제 |
-| 기본 규칙 info 알림 | 메일 미발송 (CPUThrottlingHigh 등) |
+| 발신 | GSM의 SMTP 계정(Gmail) 그대로 사용, 표시 이름 "woohalabs 모니터링" — `noreply@woohalabs.com`은 SPF(Zoho만 허용) 실패로 스팸 처리되므로 쓰지 않음 |
+| 제목 접두어 | `[CRITICAL]` critical(서비스 중단), `[ERROR]` error(기능 실패), `[WARN]` warning(정상 범위 벗어남), `[INFO]` info(참고), `[RESOLVED]` 해제 |
+| 발송 범위 | 초기 단계라 INFO까지 전부 발송 (INFO는 해제 메일 없음). 줄일 때는 `files/alertmanager.yaml.tmpl`의 info 라우트 → warning 라우트 순으로 receiver를 `"null"`로 변경 |
+| 반복 발송 | CRITICAL 2시간, ERROR 6시간, WARN 12시간, INFO 24시간 |
+| 정상 범위·알림 기준 전체 | `claudedocs/monitoring-grafana-prometheus-design.md` 10.4, 대시보드 `cluster-overview` 범위표 |
 
 | 알림 | 조건 | 등급 |
 |------|------|------|
 | ReviewmapsJobSucceeded | CronJob Job 성공 (Job당 1통, 해제 메일 없음) | INFO |
 | ReviewmapsJobFailed | Job 최종 실패 | ERROR |
 | ReviewmapsCronJobNotSucceeded | CronJob 26시간 미성공 | ERROR |
-| ReviewmapsJobRunningTooLong | Job 2시간 초과 실행 | ALERT |
+| ReviewmapsJobRunningTooLong | Job 2시간 초과 실행 | WARN |
 | ReviewmapsScraperKeywordFailed | 키워드 실행 실패 15분 | ERROR |
 | ReviewmapsScraperKeywordStale | 키워드 26시간 미성공 | ERROR |
-| ReviewmapsScraperZeroItems | 성공했지만 0건 수집 | ALERT |
-| ReviewmapsScraperItemsDropped | 전일 대비 50% 미만 (전일 20건 이상) | ALERT |
-| ReviewmapsScraperEnrichErrorsHigh | 네이버 API 보강 에러율 20% 초과 | ALERT |
-| ReviewmapsScraperServerAPIError | 키워드 알림 서버 API 실패 | ALERT |
+| ReviewmapsScraperZeroItems | 성공했지만 0건 수집 | WARN |
+| ReviewmapsScraperItemsDropped | 전일 대비 50% 미만 (전일 20건 이상) | WARN |
+| ReviewmapsScraperEnrichErrorsHigh | 네이버 API 보강 에러율 20% 초과 | WARN |
+| ReviewmapsScraperServerAPIError | 키워드 알림 서버 API 실패 | WARN |
 | ReviewmapsServerHighErrorRate | API 5xx 5% 초과 10분 | ERROR |
-| ReviewmapsServerSlow | API P95 1초 초과 15분 (헬스체크, `/v1/internal/*` 내부 배치 제외) | ALERT |
-| ReviewmapsServerDown | API 서버 메트릭 수집 불가 5분 | ERROR |
+| ReviewmapsServerSlow | API P95 1초 초과 15분 (헬스체크, `/v1/internal/*` 내부 배치 제외) | WARN |
+| ReviewmapsServerDown | API 서버 메트릭 수집 불가 5분 | CRITICAL |
+
+클러스터 전체 규칙 (kube-prometheus-stack override, 그룹 이름 기준):
+
+| 그룹 | 주요 알림 (등급) |
+|------|-----------------|
+| cluster.nodes | Ready 노드 2대 미만 (CRITICAL), CPU 80% (WARN), 메모리 80% (WARN) / 95% (CRITICAL), 데이터 디스크 80% (WARN) |
+| cluster.capacity | CPU/메모리 requests 예약률 85% (WARN), 배치 불가 Pod (ERROR) |
+| cluster.workloads | 가용 Pod 0개 Deployment/StatefulSet (CRITICAL), 재시작 1회 (INFO) / 1시간 3회 (WARN), OOMKilled·시작 실패 (ERROR), 메모리 limit 90% (WARN) |
+| cluster.storage | PVC 85% (WARN) |
+| services.availability | 접속 검사 실패 3분 (CRITICAL), 접속 2초 초과 (WARN), 인증서 21일 미만 (WARN) / 7일 미만 (CRITICAL) |
+| services.traffic | 5xx 5% 초과 (ERROR), P95 1초 초과 (WARN), 트래픽 어제 대비 30% 미만 / 5배 초과 (WARN) |
+| platform.* | ArgoCD OutOfSync (WARN) / Degraded·sync 실패 (ERROR) / 배포 완료 (INFO), 인증서 Not Ready (ERROR), ExternalSecret 실패 (ERROR), Istio 설정 거부 (WARN), DNS SERVFAIL (WARN) |
+| database.* | Cloud SQL 접속 불가 (CRITICAL), 연결 80% (WARN), deadlock·긴 트랜잭션·데이터 14GB (WARN), 캐시 적중률 90% 미만 (INFO), Redis 거부·메모리 (WARN) |
+| apps.ojeomneo | API 서버 수집 불가 (CRITICAL), DB 풀 90% (WARN) |
+
+기본 규칙 중 NodeMemoryHighUtilization, NodeCPUHighUsage는 위 cluster.nodes로 대체해 비활성화했습니다. Istio 지표의 `destination_service_name="unknown"`은 어떤 도메인에도 매칭되지 않는 요청(IP 직접 접근 스캐너)이고, 4xx 비율은 봇 요청이 많아 알림 없이 대시보드에서만 봅니다.
 
 수집 서버 알림은 스크래퍼별로 묶어 한 통으로 발송합니다. 키워드를 설정에서 빼면 Pushgateway에 이전 그룹이 남아 KeywordStale이 계속 발생하므로, Pushgateway에서 해당 그룹을 삭제합니다 (`DELETE /metrics/job/reviewmaps_scraper/scraper@base64/<..>/keyword@base64/<..>`).
 
