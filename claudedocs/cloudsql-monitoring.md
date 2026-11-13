@@ -20,7 +20,7 @@ postgres-exporter는 DB **내부** 상태(접속 가능 여부, 연결 수, DB �
 | 디스크 | 20GB (실제 20.96GB), 자동 확장 켜짐 |
 | max_connections | 100 |
 | 사설 IP | 172.29.0.3 |
-| DB | reviewmaps, ojeomneo (그 외 hotsao에 연결 1~2개 확인됨, 아래 9장) |
+| DB | reviewmaps, ojeomneo (hotsao DB도 있으나 사용하지 않음, 아래 9장) |
 
 ## 3. 아키텍처
 
@@ -120,7 +120,7 @@ prefix는 앞부분 일치라서 `up`은 `uptime`, `disk/bytes_used`는 `disk/by
 | Workload Identity 동작 확인 | `kubectl -n monitoring get sa prometheus-stackdriver-exporter -o yaml` 어노테이션, `gcloud iam service-accounts get-iam-policy monitoring-reader-prod@yanggo-514212.iam.gserviceaccount.com` |
 | 값이 GCP 콘솔과 다름 | 2~5분 지연은 정상. 콘솔은 1분 단위, exporter는 최근 5분 중 마지막 값 |
 | 비용 확인 | GCP 콘솔 결제 → Cloud Monitoring → "Monitoring API Read" SKU |
-| hotsao DB 연결 | 기준선 조회 중 `hotsao` DB에 연결 1~2개가 계속 열려 있음 확인. 클러스터에 hotsao 앱은 배포되어 있지 않으므로 어디서 연결하는지 확인 필요 (Grafana ReviewMaps-DB 데이터소스로 `pg_stat_activity`의 client_addr 조회) |
+| hotsao DB 연결 | `hotsao` DB에 연결 1~2개가 열려 있으나 사용하지 않는 DB로 확인 대상 아님 (2026-11-13 개발자 확인). 알림 규칙은 reviewmaps·ojeomneo만 대상 |
 
 ## 10. 작업 체크리스트
 
