@@ -352,7 +352,7 @@ go-scraper는 CronJob에서 키워드마다 프로세스를 띄워 수 초~수 �
 | 노드 | Ready 노드 수 | 2대 | 2대 미만 5분 → CRITICAL |
 | 노드 | CPU 사용률 | 5~50% (평소 약 10%) | 80% 초과 15분 → WARN |
 | 노드 | 메모리 사용률 | 20~60% (평소 약 30%) | 80% 초과 15분 → WARN, 95% 초과 5분 → CRITICAL |
-| 노드 | 데이터 디스크 (/mnt/stateful_partition) | 60% 미만 | 80% 초과 30분 → WARN |
+| 노드 | 데이터 디스크 (/mnt/stateful_partition) | 75% 미만 (평소 55~72%, 컨테이너 이미지) | 80% 초과 30분 → WARN |
 | 용량 | CPU requests 예약률 | 75% 미만 (현재 약 64%) | 85% 초과 15분 → WARN |
 | 용량 | 메모리 requests 예약률 | 75% 미만 (현재 약 22%) | 85% 초과 15분 → WARN |
 | 용량 | 배치 불가 Pod | 0 | 5분 → ERROR |
@@ -360,7 +360,7 @@ go-scraper는 CronJob에서 키워드마다 프로세스를 띄워 수 초~수 �
 | 워크로드 | 컨테이너 재시작 | 0회 | 10분 내 1회 → INFO, 1시간 3회 → WARN |
 | 워크로드 | OOMKilled | 0회 | 발생 → ERROR |
 | 워크로드 | ImagePull/CreateContainerConfig 실패 | 0 | 5분 → ERROR |
-| 워크로드 | 메모리 limit 대비 사용 | 70% 미만 | 90% 초과 15분 → WARN |
+| 워크로드 | 메모리 limit 대비 사용 (kube-system·gke-managed 제외) | 70% 미만 | 90% 초과 15분 → WARN |
 | 스토리지 | PVC 사용률 | 70% 미만 (Prometheus 최대 약 75%) | 85% 초과 30분 → WARN |
 | 접속 | 외부 URL / Redis PING | 항상 성공 | 3분 실패 → CRITICAL |
 | 접속 | 접속 시간 | 0.5초 미만 (평소 0.03~0.5초) | 2초 초과 10분 → WARN |
