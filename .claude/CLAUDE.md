@@ -437,6 +437,7 @@ feat: Cloud SQL 모듈 추가
 | Prometheus Pushgateway 3.11.2 | 차트 `charts/helm/prod/prometheus-pushgateway`, override `valuefiles/prod/prometheus-pushgateway/values.yaml` | go-scraper 실행 결과 수신, PVC로 재시작 시 보존 |
 | blackbox exporter 11.21.3 | 차트 `charts/helm/prod/prometheus-blackbox-exporter`, override `valuefiles/prod/prometheus-blackbox-exporter/values.yaml` | 외부 URL 12개(2xx) + 내부 Redis 3개(PING) 접속 검사, 인증서 만료일. 대상 추가는 override `serviceMonitor.targets` |
 | postgres-exporter 8.2.5 | 차트 `charts/helm/prod/prometheus-postgres-exporter`, override `valuefiles/prod/prometheus-postgres-exporter/values.yaml` | Cloud SQL `prod-woohalabs-cloudsql`(172.29.0.3, max_connections 100, 디스크 20GB 자동 확장). 계정은 Secret `grafana-reviewmaps-db` 재사용 |
+| stackdriver-exporter 5.2.2 | 차트 `charts/helm/prod/prometheus-stackdriver-exporter`, override `valuefiles/prod/prometheus-stackdriver-exporter/values.yaml` | Cloud SQL CPU·메모리·디스크 (Cloud Monitoring → Prometheus, 2분 간격·2~5분 지연). Workload Identity: KSA `monitoring/prometheus-stackdriver-exporter` → GSA `monitoring-reader-prod` (`roles/monitoring.viewer`, Terraform `modules/monitoring`). 문서 `claudedocs/cloudsql-monitoring.md` |
 | 추가 수집 대상 | kube-prometheus-stack override `prometheus.additionalServiceMonitors` / `additionalPodMonitors`, cert-manager 차트 values | istiod, Istio ingress gateway(서비스별 요청·응답 코드·지연), ArgoCD, External Secrets, ojeomneo-server(`/ojeomneo/metrics`), ojeomneo Redis, cert-manager |
 | Grafana | `https://monitoring.ggorockee.com` (Istio VS `grafana-vs`) | Google OAuth + 관리자 `woohaen88` (비밀번호는 GSM `prod-monitoring-smtp-credentials.password`) |
 | Prometheus / Alertmanager | 외부 노출 없음 | 필요 시 `kubectl -n monitoring port-forward` |
@@ -517,7 +518,8 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | services.availability | 접속 검사 실패 3분 (CRITICAL), 접속 2초 초과 (WARN), 인증서 21일 미만 (WARN) / 7일 미만 (CRITICAL) |
 | services.traffic | 5xx 5% 초과 (ERROR), P95 1초 초과 (WARN), 트래픽 어제 대비 30% 미만 / 5배 초과 (WARN) |
 | platform.* | ArgoCD OutOfSync (WARN) / Degraded·sync 실패 (ERROR) / 배포 완료 (INFO), 인증서 Not Ready (ERROR), ExternalSecret 실패 (ERROR), Istio 설정 거부 (WARN), DNS SERVFAIL (WARN) |
-| database.* | Cloud SQL 접속 불가 (CRITICAL), 연결 80% (WARN), deadlock·긴 트랜잭션·데이터 14GB (WARN), 캐시 적중률 90% 미만 (INFO), Redis 거부·메모리 (WARN) |
+| database.* | Cloud SQL 접속 불가 (CRITICAL), 연결 80% (WARN), deadlock·긴 트랜잭션 (WARN), 캐시 적중률 90% 미만 (INFO), Redis 거부·메모리 (WARN) |
+| database.cloudsql | Cloud SQL CPU 80% (WARN), 메모리 80% (WARN) / 95% (CRITICAL), 디스크 80% (WARN), 디스크 자동 확장 (INFO), 트랜잭션 ID 50% (WARN), 지표 수집 안 됨 (ERROR) |
 | apps.ojeomneo | API 서버 수집 불가 (CRITICAL), DB 풀 90% (WARN) |
 
 기본 규칙 중 NodeMemoryHighUtilization, NodeCPUHighUsage는 위 cluster.nodes로 대체해 비활성화했습니다. Istio 지표의 `destination_service_name="unknown"`은 어떤 도메인에도 매칭되지 않는 요청(IP 직접 접근 스캐너)이고, 4xx 비율은 봇 요청이 많아 알림 없이 대시보드에서만 봅니다.

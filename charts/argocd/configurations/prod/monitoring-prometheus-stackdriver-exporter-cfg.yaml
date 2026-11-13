@@ -1,0 +1,10 @@
+env: prod
+revision: main
+repoURL: https://github.com/ggorockee/infra.git
+chartName: prometheus-stackdriver-exporter
+# Cloud Monitoring → Prometheus (Cloud SQL CPU·메모리·디스크 등 GCP 관리형 지표)
+# 릴리스명 = KSA 이름 (Terraform modules/monitoring 의 Workload Identity 바인딩 대상)
+appName: prometheus-stackdriver-exporter
+namespace: monitoring
+# override: charts/argocd/applicationsets/valuefiles/prod/prometheus-stackdriver-exporter/values.yaml
+valuesDir: prometheus-stackdriver-exporter

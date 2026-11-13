@@ -91,6 +91,10 @@ inhibit_rules:
   - source_matchers: ['alertname = "NodeMemoryUsageCritical"']
     target_matchers: ['alertname = "NodeMemoryUsageHigh"']
     equal: ["instance"]
+  # Cloud SQL 메모리 95%(CRITICAL)이면 80%(WARN) 생략
+  - source_matchers: ['alertname = "CloudSQLMemoryCritical"']
+    target_matchers: ['alertname = "CloudSQLMemoryHigh"']
+    equal: ["database_id"]
   # 인증서 7일(CRITICAL)이면 21일(WARN) 생략
   - source_matchers: ['alertname = "TLSCertExpiringCritical"']
     target_matchers: ['alertname = "TLSCertExpiringSoon"']

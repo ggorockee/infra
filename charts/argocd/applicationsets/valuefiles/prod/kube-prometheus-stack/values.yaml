@@ -902,14 +902,66 @@ additionalPrometheusRulesMap:
             annotations:
               summary: "DB 캐시 적중률 {{ $value | humanizePercentage }}: {{ $labels.datname }}"
               description: "읽기의 10% 이상이 디스크에서 일어납니다. 인덱스 누락이나 메모리(db-g1-small, shared_buffers 256MB) 부족 신호입니다. 정상: 99% 이상."
-          - alert: PostgresStorageHigh
-            expr: sum(pg_database_size_bytes) > 14e9
+      # Cloud SQL 인스턴스 자원 (Cloud Monitoring → prometheus-stackdriver-exporter, 2분 간격·수 분 지연)
+      # 인스턴스: prod-woohalabs-cloudsql (db-g1-small, 메모리 1.7GB, 디스크 20GB 자동 확장)
+      # 문서: claudedocs/cloudsql-monitoring.md
+      - name: database.cloudsql
+        rules:
+          - alert: CloudSQLCPUHigh
+            expr: max by (database_id) (stackdriver_cloudsql_database_cloudsql_googleapis_com_database_cpu_utilization) > 0.8
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Cloud SQL CPU {{ $value | humanizePercentage }}"
+              description: "Cloud SQL CPU 사용률이 15분간 80%를 넘었습니다. db-g1-small은 공유 코어라 계속 높으면 쿼리가 느려집니다. 느린 쿼리(수집 DELETE/INSERT, API 검색)를 확인하세요. 정상: 50% 미만 (평소 11~48%, 수집 시간대에 높음)."
+          - alert: CloudSQLMemoryHigh
+            expr: max by (database_id) (stackdriver_cloudsql_database_cloudsql_googleapis_com_database_memory_utilization) > 0.8
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Cloud SQL 메모리 {{ $value | humanizePercentage }}"
+              description: "Cloud SQL 메모리 사용률이 15분간 80%를 넘었습니다 (전체 1.7GB). 연결 수 증가나 큰 쿼리가 원인입니다. 정상: 65% 미만 (평소 51~55%)."
+          - alert: CloudSQLMemoryCritical
+            expr: max by (database_id) (stackdriver_cloudsql_database_cloudsql_googleapis_com_database_memory_utilization) > 0.95
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Cloud SQL 메모리 고갈 직전 {{ $value | humanizePercentage }}"
+              description: "메모리가 95%를 넘었습니다. PostgreSQL 프로세스가 OOM으로 재시작되면 리뷰맵·오점너 API가 모두 끊깁니다. 연결을 줄이거나 인스턴스 등급 상향(db-custom)을 검토하세요. 정상: 65% 미만."
+          - alert: CloudSQLDiskHigh
+            expr: max by (database_id) (stackdriver_cloudsql_database_cloudsql_googleapis_com_database_disk_utilization) > 0.8
+            for: 30m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Cloud SQL 디스크 {{ $value | humanizePercentage }}"
+              description: "디스크 사용률이 80%를 넘었습니다. 자동 확장이 켜져 있어 장애는 아니지만, 늘어난 디스크는 줄일 수 없고 비용이 계속 증가합니다. soft delete된 캠페인 정리·VACUUM을 검토하세요. 정상: 50% 미만 (평소 약 4%, 20GB 중 0.75GB)."
+          - alert: CloudSQLDiskAutoResized
+            expr: max by (database_id) (stackdriver_cloudsql_database_cloudsql_googleapis_com_database_disk_quota) > max by (database_id) (max_over_time(stackdriver_cloudsql_database_cloudsql_googleapis_com_database_disk_quota[1h] offset 1h))
+            labels:
+              severity: info
+            annotations:
+              summary: "Cloud SQL 디스크 자동 확장됨 ({{ $value | humanize1024 }}B)"
+              description: "디스크가 가득 차 Cloud SQL이 용량을 자동으로 늘렸습니다. 디스크는 줄일 수 없고 월 비용이 늘어납니다. 원인(데이터 증가, WAL, 임시 파일)을 확인하세요."
+          - alert: CloudSQLTransactionIDWraparound
+            expr: max by (database_id) (stackdriver_cloudsql_database_cloudsql_googleapis_com_database_postgresql_transaction_id_utilization) > 0.5
             for: 1h
             labels:
               severity: warning
             annotations:
-              summary: "DB 데이터 크기 {{ $value | humanize1024 }}B (디스크 20GB)"
-              description: "DB 데이터가 디스크 20GB의 70%(14GB)를 넘었습니다. 자동 확장이 켜져 있어 장애는 아니지만 디스크가 늘어나면 줄일 수 없고 비용이 증가합니다. soft delete된 캠페인 정리를 검토하세요. 정상: 10GB 미만."
+              summary: "Cloud SQL 트랜잭션 ID 사용률 {{ $value | humanizePercentage }}"
+              description: "트랜잭션 ID가 절반 이상 소진되었습니다. 100%에 가까워지면 PostgreSQL이 쓰기를 멈춥니다. autovacuum이 막혀 있는지(긴 트랜잭션) 확인하세요. 정상: 10% 미만 (평소 0.003%)."
+          - alert: CloudSQLMetricsMissing
+            expr: absent(stackdriver_cloudsql_database_cloudsql_googleapis_com_database_cpu_utilization)
+            for: 20m
+            labels:
+              severity: error
+            annotations:
+              summary: "Cloud SQL 자원 지표 수집 안 됨 (stackdriver-exporter 장애)"
+              description: "20분간 Cloud Monitoring 지표가 들어오지 않았습니다. Cloud SQL CPU·메모리·디스크를 감시할 수 없는 상태입니다. kubectl -n monitoring logs deploy/prometheus-stackdriver-exporter 에서 권한(PermissionDenied)·Workload Identity 오류를 확인하세요."
       - name: database.redis
         rules:
           - alert: RedisRejectedConnections

@@ -34,3 +34,8 @@ output "gke_cluster_endpoint" {
 #   description = "Cloud DNS Name Servers"
 #   value       = module.dns.name_servers
 # }
+
+output "monitoring_reader_email" {
+  description = "Cloud Monitoring 읽기 전용 GSA (prometheus-stackdriver-exporter)"
+  value       = module.monitoring.monitoring_reader_email
+}
