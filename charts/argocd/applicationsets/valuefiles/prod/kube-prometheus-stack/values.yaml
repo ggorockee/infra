@@ -325,8 +325,9 @@ prometheus-node-exporter:
       cpu: 20m
       memory: 32Mi
     limits:
-      # 100m에서 수집 순간 CPU 쓰로틀링 45~50% (CPUThrottlingHigh 상시 발생) → 상향
-      cpu: 250m
+      # 평균 사용량은 2m이지만 수집 순간에 몰려 100m에서 쓰로틀링 45~50%, 250m에서도 27%
+      # (CPUThrottlingHigh 기준 25%) → 500m. requests는 그대로라 노드 예약률 영향 없음
+      cpu: 500m
       memory: 64Mi
 
 prometheusOperator:
