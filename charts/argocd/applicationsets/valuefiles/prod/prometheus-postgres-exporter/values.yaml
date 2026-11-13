@@ -29,5 +29,6 @@ resources:
     cpu: 10m
     memory: 32Mi
   limits:
-    cpu: 100m
+    # 수집 순간 쿼리가 몰려 100m에서 CPUThrottlingHigh(25%) 발생 → 300m
+    cpu: 300m
     memory: 128Mi

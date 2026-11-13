@@ -487,6 +487,8 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | 발송 범위 | 초기 단계라 INFO까지 전부 발송 (INFO는 해제 메일 없음). 줄일 때는 `files/alertmanager.yaml.tmpl`의 info 라우트 → warning 라우트 순으로 receiver를 `"null"`로 변경 |
 | 반복 발송 | CRITICAL 2시간, ERROR 6시간, WARN 12시간, INFO 24시간 |
 | 정상 범위·알림 기준 전체 | `claudedocs/monitoring-grafana-prometheus-design.md` 10.4, 대시보드 `cluster-overview` 범위표 |
+| Istio 지표 주의 | `istio_*`는 ingress gateway에서만 수집하고 `source_*` 라벨은 labeldrop → 쿼리에 `source_workload` 조건을 쓰면 결과가 비어 알림이 영원히 안 울림 |
+| 테스트 메일 | Alertmanager API(`/api/v2/alerts`)에 테스트 알림 POST. 같은 alertname·namespace면 상위 등급이 하위 등급을 억제하므로 등급마다 이름을 다르게 |
 
 | 알림 | 조건 | 등급 |
 |------|------|------|
@@ -587,6 +589,8 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | infra | #1140 | 수집 진행률이 첫 키워드 처리 중 비어 보이던 문제 |
 | infra | #1141, #1142 | 대시보드 가독성 개선 (짧은 이름, 글자 크기, hh:mm:ss, 단색, 범위표 접기, 패널 높이) |
 | infra | #1144 | ArgoCD Google 로그인 실패 수정 (Dex `hostedDomains: gmail.com` 제거) |
+| infra | #1146 | 클러스터 전체 모니터링 (blackbox, postgres-exporter, Istio·ArgoCD·ESO·cert-manager·오점너 수집, 규칙 약 50개, 4단계 메일, 클러스터 전체 현황 대시보드) |
+| infra | #1147, #1148 | 후속 수정 (Istio 필터 source_* labeldrop 충돌, CPU 계산, 디스크 범위, 비율 0 표시) |
 | reviewmaps | #275 | 서버 /metrics 500 수정 |
 | reviewmaps | #276 | GORM AutoMigrate 운영 비활성화 |
 | reviewmaps | #277 | go-scraper Pushgateway push |

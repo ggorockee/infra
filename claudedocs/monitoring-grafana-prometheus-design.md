@@ -405,8 +405,9 @@ go-scraper는 CronJob에서 키워드마다 프로세스를 띄워 수 초~수 �
 - [x] 클러스터 전체 알림 규칙 추가, 기존 리뷰맵 규칙 등급 조정
 - [x] Alertmanager 등급별 라우팅 (INFO까지 발송), 메일 제목 [CRITICAL]/[ERROR]/[WARN]/[INFO]
 - [x] 클러스터 전체 현황 대시보드
-- [ ] 머지 후 ArgoCD Synced/Healthy 확인
-- [ ] 새 수집 대상 전부 up 확인
-- [ ] 배포 직후 발생하는 알림 확인 및 오탐 조정
-- [ ] 테스트 메일 4등급 수신 확인
-- [ ] 대시보드 화면 확인
+- [x] 머지 후 ArgoCD Synced/Healthy 확인 (#1146, 전체 앱 Synced/Healthy)
+- [x] 새 수집 대상 전부 up 확인 (53개 up, 접속 검사 15개 성공)
+- [x] 배포 직후 발생하는 알림 확인 및 오탐 조정 (#1147 Istio 필터·CPU 계산·디스크 범위·GKE 관리 컴포넌트 제외, #1148 비율 0 표시, exporter CPU limit 상향)
+- [x] 테스트 메일 4등급 발송 (Alertmanager 발송 실패 0건, 수신은 메일함에서 확인)
+- [x] 대시보드 화면 확인 (Playwright 캡처)
+- [ ] 오점너 Redis exporter CPU 쓰로틀링 (limit 50m): ojeomneo 차트 `redis.metrics.resources` 상향 필요, 변경 시 Redis Pod 재시작되므로 개발자 확인 후 진행
