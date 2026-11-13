@@ -593,6 +593,8 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | infra | #1144 | ArgoCD Google 로그인 실패 수정 (Dex `hostedDomains: gmail.com` 제거) |
 | infra | #1146 | 클러스터 전체 모니터링 (blackbox, postgres-exporter, Istio·ArgoCD·ESO·cert-manager·오점너 수집, 규칙 약 50개, 4단계 메일, 클러스터 전체 현황 대시보드) |
 | infra | #1147, #1148 | 후속 수정 (Istio 필터 source_* labeldrop 충돌, CPU 계산, 디스크 범위, 비율 0 표시) |
+| infra | #1149 | exporter CPU limit 상향 (CPUThrottlingHigh), 문서 마무리 |
+| infra | #1150, #1151 | Cloud SQL 인스턴스 자원 모니터링 (Terraform `modules/monitoring` GSA + Workload Identity, stackdriver-exporter, 알림 `database.cloudsql`), 검증 결과 문서 |
 | reviewmaps | #275 | 서버 /metrics 500 수정 |
 | reviewmaps | #276 | GORM AutoMigrate 운영 비활성화 |
 | reviewmaps | #277 | go-scraper Pushgateway push |
