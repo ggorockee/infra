@@ -519,7 +519,7 @@ additionalPrometheusRulesMap:
               summary: "Ready 노드 {{ $value }}대 (정상 2대)"
               description: "Ready 상태 노드가 2대 미만입니다. 남은 노드로 모든 Pod를 감당하지 못해 서비스가 중단될 수 있습니다. 정상: 2대 (GKE 업그레이드 중에는 일시적으로 3대). kubectl get nodes 로 확인하세요."
           - alert: NodeCPUUsageHigh
-            expr: 100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))) > 80
+            expr: 100 * (1 - avg by (instance) (max by (instance, cpu) (rate(node_cpu_seconds_total{mode="idle"}[5m])))) > 80
             for: 15m
             labels:
               severity: warning
@@ -549,7 +549,7 @@ additionalPrometheusRulesMap:
               severity: warning
             annotations:
               summary: "노드 디스크 사용률 {{ $value | printf \"%.0f\" }}% ({{ $labels.instance }})"
-              description: "노드 데이터 디스크(/mnt/stateful_partition, 컨테이너 이미지·로그·emptyDir)가 80%를 넘었습니다. 85%부터 kubelet이 이미지 정리, 90%부터 Pod eviction이 일어납니다. 정상: 60% 미만."
+              description: "노드 데이터 디스크(/mnt/stateful_partition, 컨테이너 이미지·로그·emptyDir)가 80%를 넘었습니다. 85%부터 kubelet이 이미지 정리, 90%부터 Pod eviction이 일어납니다. 정상: 75% 미만 (평소 55~72%, 컨테이너 이미지가 대부분)."
 
   # 클러스터 용량 (requests 기준 — 새 Pod 배치 가능 여부)
   cluster-capacity:
@@ -639,14 +639,14 @@ additionalPrometheusRulesMap:
               description: "ImagePull 계열은 이미지 태그·레지스트리 문제, CreateContainerConfigError는 참조하는 Secret/ConfigMap 누락(ExternalSecret 동기화 실패 등)입니다. 정상: 0개."
           - alert: ContainerMemoryNearLimit
             expr: |
-              max by (namespace, pod, container) (container_memory_working_set_bytes{container!="", image!=""})
+              max by (namespace, pod, container) (container_memory_working_set_bytes{container!="", image!="", namespace!~"kube-system|gke-managed-.*"})
               / on (namespace, pod, container) max by (namespace, pod, container) (kube_pod_container_resource_limits{resource="memory"}) > 0.9
             for: 15m
             labels:
               severity: warning
             annotations:
               summary: "메모리 limit의 {{ $value | humanizePercentage }} 사용: {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }})"
-              description: "15분간 메모리 limit의 90% 이상을 쓰고 있습니다. 곧 OOMKilled 될 수 있습니다. 정상: limit의 70% 미만."
+              description: "15분간 메모리 limit의 90% 이상을 쓰고 있습니다. 곧 OOMKilled 될 수 있습니다. GKE 관리 컴포넌트(kube-system, gke-managed-*)는 limit을 바꿀 수 없어 제외합니다. 정상: limit의 70% 미만."
 
   # 스토리지 (PVC)
   cluster-storage:
@@ -711,6 +711,7 @@ additionalPrometheusRulesMap:
   # 서비스 트래픽 (Istio ingress gateway — 외부 요청 전체)
   # reviewmaps-server는 앱 자체 지표 규칙(reviewmaps.server)이 있으므로 제외
   # destination_service_name="unknown" = 어떤 도메인에도 매칭되지 않는 요청(IP 직접 접근 스캐너)
+  # istio_* 지표는 ingress gateway에서만 수집하므로 source_* 라벨은 labeldrop 됨 (필터에 쓰지 말 것)
   services-traffic:
     groups:
       - name: services.traffic
@@ -718,10 +719,10 @@ additionalPrometheusRulesMap:
           - alert: ServiceHigh5xxRate
             expr: |
               (
-                sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload="istio-ingressgateway", destination_service_name!~"unknown|reviewmaps-server", response_code=~"5.."}[5m]))
-                / sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload="istio-ingressgateway", destination_service_name!~"unknown|reviewmaps-server"}[5m]))
+                sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!~"unknown|reviewmaps-server", response_code=~"5.."}[5m]))
+                / sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!~"unknown|reviewmaps-server"}[5m]))
               ) > 0.05
-              and sum by (destination_service_namespace, destination_service_name) (increase(istio_requests_total{source_workload="istio-ingressgateway", destination_service_name!~"unknown|reviewmaps-server", response_code=~"5.."}[10m])) >= 5
+              and sum by (destination_service_namespace, destination_service_name) (increase(istio_requests_total{destination_service_name!~"unknown|reviewmaps-server", response_code=~"5.."}[10m])) >= 5
             for: 10m
             labels:
               severity: error
@@ -730,8 +731,8 @@ additionalPrometheusRulesMap:
               description: "외부 요청 중 5% 이상이 서버 오류(5xx)입니다 (10분간 5건 이상일 때만). 503 + response_flags UH/UF는 Pod 없음/연결 실패입니다. 정상: 1% 미만."
           - alert: ServiceLatencyHigh
             expr: |
-              histogram_quantile(0.95, sum by (destination_service_namespace, destination_service_name, le) (rate(istio_request_duration_milliseconds_bucket{source_workload="istio-ingressgateway", destination_service_namespace=~"reviewmaps|ojeomneo|lostark|woohalabs-app-ads", destination_service_name!="reviewmaps-server"}[5m]))) > 1000
-              and sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload="istio-ingressgateway"}[5m])) > 0.05
+              histogram_quantile(0.95, sum by (destination_service_namespace, destination_service_name, le) (rate(istio_request_duration_milliseconds_bucket{destination_service_namespace=~"reviewmaps|ojeomneo|lostark|woohalabs-app-ads", destination_service_name!="reviewmaps-server"}[5m]))) > 1000
+              and sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total[5m])) > 0.05
             for: 15m
             labels:
               severity: warning
@@ -740,9 +741,9 @@ additionalPrometheusRulesMap:
               description: "외부 요청 95%가 1초 안에 끝나지 않습니다 (분당 3건 이상일 때만 판단). ArgoCD·Grafana는 실시간 스트림 요청이 길어 제외. 정상: P95 300ms 미만."
           - alert: ServiceTrafficDropped
             expr: |
-              sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload="istio-ingressgateway", destination_service_name!="unknown"}[30m]))
-                < 0.3 * sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload="istio-ingressgateway", destination_service_name!="unknown"}[30m] offset 1d))
-              and sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload="istio-ingressgateway", destination_service_name!="unknown"}[30m] offset 1d)) > 0.2
+              sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!="unknown"}[30m]))
+                < 0.3 * sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!="unknown"}[30m] offset 1d))
+              and sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!="unknown"}[30m] offset 1d)) > 0.2
             for: 30m
             labels:
               severity: warning
@@ -751,9 +752,9 @@ additionalPrometheusRulesMap:
               description: "최근 30분 요청 수가 어제 같은 시각의 30% 미만입니다 (어제 초당 0.2건 이상인 서비스만). DNS·라우팅·앱 배포 문제로 사용자가 접속하지 못하고 있을 수 있습니다. 정상: 어제 대비 50~200%."
           - alert: ServiceTrafficSpike
             expr: |
-              sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload="istio-ingressgateway", destination_service_name!="unknown"}[15m]))
-                > 5 * sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload="istio-ingressgateway", destination_service_name!="unknown"}[15m] offset 1d))
-              and sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload="istio-ingressgateway", destination_service_name!="unknown"}[15m])) > 1
+              sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!="unknown"}[15m]))
+                > 5 * sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!="unknown"}[15m] offset 1d))
+              and sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!="unknown"}[15m])) > 1
             for: 15m
             labels:
               severity: warning
