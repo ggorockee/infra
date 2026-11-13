@@ -1,6 +1,6 @@
 # GCP Terraform 리소스 현황
 
-**최종 업데이트**: 2026-11-13 (GKE Managed Prometheus 비활성화)
+**최종 업데이트**: 2026-11-13 (Cloud Monitoring 읽기 전용 서비스 계정 추가)
 **프로젝트**: infra-480802
 **리전**: asia-northeast3 (서울)
 
@@ -37,6 +37,16 @@
 - Network: woohalabs-prod-vpc
 - Subnet: woohalabs-prod-private-subnet
 
+### ✅ 모니터링 IAM (3개 리소스, `module.monitoring`)
+
+| 리소스 유형 | 이름 | 상태 | 설명 |
+|------------|------|------|------|
+| Service Account | `monitoring-reader-prod@yanggo-514212.iam.gserviceaccount.com` | 🟢 Active | Cloud Monitoring 지표 읽기 전용 계정 |
+| Project IAM Member | `roles/monitoring.viewer` → monitoring-reader-prod | 🟢 Active | 지표 조회만 가능 (쓰기·설정 변경 불가) |
+| Service Account IAM Member | `roles/iam.workloadIdentityUser` → `yanggo-514212.svc.id.goog[monitoring/prometheus-stackdriver-exporter]` | 🟢 Active | Workload Identity (키 파일 없음) |
+
+**용도**: Cloud SQL CPU·메모리·디스크 사용률을 prometheus-stackdriver-exporter가 읽어 Prometheus 알림·대시보드에 사용. 상세는 `claudedocs/cloudsql-monitoring.md`.
+
 ---
 
 ## 🔄 Phase 2 예정 리소스 (미배포)
@@ -66,6 +76,18 @@
 ---
 
 ## 📈 리소스 히스토리
+
+### 2026-11-13: Cloud Monitoring 읽기 전용 서비스 계정 추가
+
+**배포된 리소스**: 3개 (`module.monitoring`, 신규 모듈 `modules/monitoring`)
+
+**변경 내역**:
+- GSA `monitoring-reader-prod` 생성
+- `roles/monitoring.viewer` 프로젝트 권한 부여
+- Workload Identity 바인딩: KSA `monitoring/prometheus-stackdriver-exporter`
+- 출력 `monitoring_reader_email` 추가
+
+**비용 영향**: 서비스 계정·IAM은 무료. Cloud Monitoring 읽기 API는 반환 시계열 월 100만 개까지 무료 (예상 약 26만 개/월 → $0)
 
 ### 2026-11-13: GKE Managed Prometheus 비활성화
 
@@ -162,6 +184,9 @@ network_name = "woohalabs-prod-vpc"
 
 ✅ module.gke
    - GKE Autopilot Cluster
+
+✅ module.monitoring (2026-11-13)
+   - Cloud Monitoring 읽기 전용 GSA, monitoring.viewer, Workload Identity
 ```
 
 ### 비활성화된 모듈 (Phase 2)

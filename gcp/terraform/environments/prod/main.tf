@@ -120,6 +120,18 @@ module "external_secrets" {
   depends_on = [module.gke]
 }
 
+# Cloud Monitoring 읽기 전용 계정 (Cloud SQL CPU·메모리·디스크 → Prometheus)
+# 사용처: monitoring/prometheus-stackdriver-exporter (Workload Identity)
+# 문서: claudedocs/cloudsql-monitoring.md
+module "monitoring" {
+  source = "../../modules/monitoring"
+
+  project_id  = var.project_id
+  environment = var.environment
+
+  depends_on = [module.gke]
+}
+
 # Phase 3: ArgoCD deployment
 # NOTE: ArgoCD is now managed by Helm/ArgoCD itself, not by Terraform
 # The resources have been removed from Terraform state but remain in the cluster

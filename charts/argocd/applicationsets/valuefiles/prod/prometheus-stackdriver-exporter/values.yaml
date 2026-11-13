@@ -1,0 +1,55 @@
+# prometheus-stackdriver-exporter prod override
+# - 차트: charts/helm/prod/prometheus-stackdriver-exporter (5.2.2, values.yaml은 upstream 원본 유지)
+# - 용도: Cloud SQL(prod-woohalabs-cloudsql)의 CPU·메모리·디스크 실사용량을 Cloud Monitoring API에서 읽어
+#         Prometheus 지표로 노출 → 기존 알림(메일)·대시보드에서 그대로 사용
+#         (postgres-exporter는 DB 내부 상태만 보고, 인스턴스 자원 사용량은 GCP만 알 수 있음)
+# - 인증: 키 파일 없이 Workload Identity
+#         KSA monitoring/prometheus-stackdriver-exporter → GSA monitoring-reader-prod (roles/monitoring.viewer, 읽기 전용)
+#         GSA·권한·바인딩은 Terraform gcp/terraform/modules/monitoring
+# - 비용: Cloud Monitoring 읽기 API는 반환 시계열 수 기준, 월 100만 개 무료 (claudedocs/cloudsql-monitoring.md 비용 항목)
+# - 문서: claudedocs/cloudsql-monitoring.md
+
+stackdriver:
+  projectIds:
+    - yanggo-514212
+  metrics:
+    # 수집할 Cloud Monitoring 지표 (prefix 일치). 늘리면 API 비용(반환 시계열 수)도 늘어남
+    prefixes:
+      - cloudsql.googleapis.com/database/cpu/utilization
+      - cloudsql.googleapis.com/database/memory/utilization
+      - cloudsql.googleapis.com/database/memory/quota
+      - cloudsql.googleapis.com/database/disk/utilization
+      - cloudsql.googleapis.com/database/disk/bytes_used
+      - cloudsql.googleapis.com/database/disk/quota
+      - cloudsql.googleapis.com/database/disk/read_ops_count
+      - cloudsql.googleapis.com/database/disk/write_ops_count
+      - cloudsql.googleapis.com/database/postgresql/transaction_id_utilization
+      - cloudsql.googleapis.com/database/up
+    # Cloud SQL 지표는 60초 간격으로 기록되고 최대 수 분 늦게 보이므로 최근 5분 중 마지막 값을 읽음
+    interval: 5m
+    offset: 0s
+    # 서술자(metric descriptor) 목록 조회를 10분간 캐시 (API 호출 감소)
+    descriptorCacheTTL: 10m
+
+serviceAccount:
+  create: true
+  name: prometheus-stackdriver-exporter
+  annotations:
+    iam.gke.io/gcp-service-account: monitoring-reader-prod@yanggo-514212.iam.gserviceaccount.com
+
+serviceMonitor:
+  enabled: true
+  namespace: monitoring
+  # 2분마다 수집 (Cloud SQL 지표 갱신 주기 60초 + 지연). 시계열 약 12개 × 21,600회/월 ≈ 26만 → 무료 범위
+  interval: 2m
+  scrapeTimeout: 60s
+  honorLabels: true
+  honorTimestamps: true
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
