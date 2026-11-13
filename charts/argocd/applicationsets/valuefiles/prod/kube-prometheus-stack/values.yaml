@@ -60,6 +60,10 @@ defaultRules:
     kubeSchedulerAlerting: false
     kubeSchedulerRecording: false
     kubeProxy: false
+  # 커스텀 규칙(cluster.nodes)으로 대체: 기준값을 대시보드와 맞추고 등급을 세분화
+  disabled:
+    NodeMemoryHighUtilization: true  # → NodeMemoryUsageHigh(80%, WARN) / NodeMemoryUsageCritical(95%, CRITICAL)
+    NodeCPUHighUsage: true           # → NodeCPUUsageHigh(80%, WARN)
 
 #########################################################################
 # Grafana
@@ -170,7 +174,7 @@ prometheus:
     enabled: false
   prometheusSpec:
     retention: 15d
-    retentionSize: "18GB"
+    retentionSize: "16GB"  # 20Gi(21.4GB)의 75% — PVC 사용률 알림(85%)에 걸리지 않도록
     scrapeInterval: 30s
     evaluationInterval: 30s
     resources:
@@ -194,6 +198,88 @@ prometheus:
     serviceMonitorSelectorNilUsesHelmValues: false
     ruleSelectorNilUsesHelmValues: false
     probeSelectorNilUsesHelmValues: false
+
+  ###################################################################
+  # 추가 수집 대상 (앱 차트를 건드리지 않고 여기서 일괄 관리)
+  # - blackbox(외부 접속 검사), postgres-exporter는 각 차트의 ServiceMonitor 사용
+  # - cert-manager는 charts/helm/prod/cert-manager/values.yaml 의 servicemonitor 사용
+  ###################################################################
+  additionalServiceMonitors:
+    # Istio 컨트롤 플레인 (설정 배포 오류, xDS 푸시)
+    - name: istiod
+      namespaceSelector:
+        matchNames: [istio-system]
+      selector:
+        matchLabels:
+          app: istiod
+      endpoints:
+        - port: http-monitoring
+          interval: 60s
+    # 오점너 API 서버 (Go Fiber, /ojeomneo/metrics)
+    - name: ojeomneo-server
+      namespaceSelector:
+        matchNames: [ojeomneo]
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: ojeomneo
+          app.kubernetes.io/name: server
+      endpoints:
+        - port: fiber
+          path: /ojeomneo/metrics
+          interval: 30s
+    # 오점너 Redis (bitnami redis-exporter sidecar)
+    - name: ojeomneo-redis
+      namespaceSelector:
+        matchNames: [ojeomneo]
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: ojeomneo
+          app.kubernetes.io/component: metrics
+      endpoints:
+        - port: http-metrics
+          interval: 30s
+
+  additionalPodMonitors:
+    # ArgoCD 전 컴포넌트 (모든 Pod에 metrics 이름의 포트가 있음)
+    - name: argocd
+      namespaceSelector:
+        matchNames: [argocd]
+      selector:
+        matchLabels:
+          app.kubernetes.io/part-of: argocd
+      podMetricsEndpoints:
+        - port: metrics
+          interval: 30s
+    # External Secrets Operator (GSM → Secret 동기화)
+    - name: external-secrets
+      namespaceSelector:
+        matchNames: [external-secrets-system]
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: external-secrets
+      podMetricsEndpoints:
+        - port: metrics
+          interval: 60s
+    # Istio ingress gateway: 외부에서 들어오는 모든 요청의 서비스별 요청 수·응답 코드·응답 시간
+    # 앱에 /metrics가 없어도(ojeomneo-web, yangobot 등) 여기서 HTTP 지표를 얻는다
+    - name: istio-ingressgateway
+      namespaceSelector:
+        matchNames: [istio-system]
+      selector:
+        matchLabels:
+          app: istio-ingressgateway
+      podMetricsEndpoints:
+        - port: http-envoy-prom
+          path: /stats/prometheus
+          interval: 30s
+          metricRelabelings:
+            # 서비스 단위 요청 지표만 보관 (envoy 내부 지표 수천 개 제외)
+            - sourceLabels: [__name__]
+              regex: "istio_requests_total|istio_request_duration_milliseconds_(bucket|sum|count)|envoy_server_live|envoy_server_uptime"
+              action: keep
+            # 게이트웨이에서는 항상 같은 값인 라벨 제거
+            - regex: "source_.*|destination_cluster|destination_principal|connection_security_policy"
+              action: labeldrop
 
 #########################################################################
 # Alertmanager (이메일 알림, 설정은 alertmanager-custom-config Secret 사용)
@@ -239,7 +325,8 @@ prometheus-node-exporter:
       cpu: 20m
       memory: 32Mi
     limits:
-      cpu: 100m
+      # 100m에서 수집 순간 CPU 쓰로틀링 45~50% (CPUThrottlingHigh 상시 발생) → 상향
+      cpu: 250m
       memory: 64Mi
 
 prometheusOperator:
@@ -263,11 +350,11 @@ additionalPrometheusRulesMap:
             expr: time() - kube_cronjob_status_last_successful_time{namespace="reviewmaps"} > 26 * 3600
             for: 10m
             labels:
-              severity: critical
+              severity: error
             annotations:
               summary: "리뷰맵 CronJob {{ $labels.cronjob }} 26시간 이상 성공 기록 없음"
               description: "마지막 성공 후 {{ $value | humanizeDuration }} 경과. kubectl -n reviewmaps get jobs 로 실패 Job과 로그를 확인하세요."
-          # Job 실패 → 이메일 (warning)
+          # Job 실패 → 이메일 [ERROR]
           - alert: ReviewmapsJobFailed
             expr: |
               max by (namespace, job_name, owner_name) (
@@ -277,7 +364,7 @@ additionalPrometheusRulesMap:
               )
             for: 1m
             labels:
-              severity: critical  # 메일 제목 [ERROR]
+              severity: error
             annotations:
               summary: "❌ 리뷰맵 CronJob {{ $labels.owner_name }} 실패"
               description: "Job {{ $labels.job_name }} 이 backoffLimit을 초과해 실패했습니다. Job TTL(1시간) 전에 kubectl -n reviewmaps logs job/{{ $labels.job_name }} 으로 로그를 확인하세요. 대시보드: https://monitoring.ggorockee.com/d/reviewmaps-cronjob"
@@ -318,7 +405,7 @@ additionalPrometheusRulesMap:
             expr: reviewmaps_scraper_last_run_success{job="reviewmaps_scraper"} == 0
             for: 15m
             labels:
-              severity: critical
+              severity: error
             annotations:
               summary: "❌ 수집 실패: {{ $labels.scraper }} / {{ $labels.keyword }}"
               description: "키워드 '{{ $labels.keyword }}' 마지막 실행이 에러로 끝났습니다. CronJob 재시도 후에도 15분간 성공하지 못했습니다. 수집 서버 대시보드: https://monitoring.ggorockee.com/d/reviewmaps-scraper"
@@ -326,7 +413,7 @@ additionalPrometheusRulesMap:
             expr: (time() - reviewmaps_scraper_last_success_timestamp_seconds{job="reviewmaps_scraper"}) > 26 * 3600
             for: 10m
             labels:
-              severity: critical
+              severity: error
             annotations:
               summary: "❌ 26시간 넘게 수집 안 됨: {{ $labels.scraper }} / {{ $labels.keyword }}"
               description: "마지막 성공 후 {{ $value | humanizeDuration }} 경과. 키워드를 설정에서 뺀 경우라면 Pushgateway에서 해당 그룹을 삭제하세요."
@@ -382,7 +469,7 @@ additionalPrometheusRulesMap:
                 / sum(rate(reviewmaps_http_requests_total[5m])) > 0.05
             for: 10m
             labels:
-              severity: critical
+              severity: error
             annotations:
               summary: "❌ API 서버 5xx 오류율 {{ $value | humanizePercentage }}"
               description: "최근 5분 요청 중 5% 이상이 서버 오류입니다. HTTP 대시보드: https://monitoring.ggorockee.com/d/reviewmaps-http-metrics"
@@ -406,3 +493,459 @@ additionalPrometheusRulesMap:
               summary: "❌ API 서버 메트릭 수집 불가 (서버 다운 가능성)"
               description: "Prometheus가 5분간 reviewmaps-server /metrics를 수집하지 못했습니다. kubectl -n reviewmaps get pods 로 확인하세요."
 
+
+  #########################################################################
+  # 클러스터 전체 알림 규칙 (2026-11-13 추가)
+  # - 등급: info=[INFO] / warning=[WARN] / error=[ERROR] / critical=[CRITICAL]
+  #   · INFO     참고용, 조치 불필요 (재시작 1회, 배포 완료 등)
+  #   · WARN     정상 범위를 벗어남, 추이 확인
+  #   · ERROR    기능 실패, 조치 필요
+  #   · CRITICAL 서비스 중단 또는 중단 직전, 즉시 조치
+  # - 모든 description에 "정상" 범위를 적는다. 대시보드 "클러스터 전체 현황"(uid cluster-overview)
+  #   색상 기준과 같은 값이므로 한쪽을 바꾸면 다른 쪽도 같이 바꾼다.
+  #########################################################################
+
+  # 노드 (node-exporter, kube-state-metrics)
+  cluster-nodes:
+    groups:
+      - name: cluster.nodes
+        rules:
+          - alert: ClusterNodeCountLow
+            expr: count(kube_node_status_condition{condition="Ready", status="true"} == 1) < 2
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Ready 노드 {{ $value }}대 (정상 2대)"
+              description: "Ready 상태 노드가 2대 미만입니다. 남은 노드로 모든 Pod를 감당하지 못해 서비스가 중단될 수 있습니다. 정상: 2대 (GKE 업그레이드 중에는 일시적으로 3대). kubectl get nodes 로 확인하세요."
+          - alert: NodeCPUUsageHigh
+            expr: 100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))) > 80
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "노드 CPU 사용률 {{ $value | printf \"%.0f\" }}% ({{ $labels.instance }})"
+              description: "15분간 노드 CPU 사용률이 80%를 넘었습니다. 정상: 5~50% (평소 약 10%). kubectl top pods -A --sort-by=cpu 로 원인 Pod를 확인하세요."
+          - alert: NodeMemoryUsageHigh
+            expr: 100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 80
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "노드 메모리 사용률 {{ $value | printf \"%.0f\" }}% ({{ $labels.instance }})"
+              description: "15분간 노드 메모리 사용률이 80%를 넘었습니다. 정상: 20~60% (평소 약 30%). 95%를 넘으면 OOM으로 Pod가 강제 종료될 수 있습니다."
+          - alert: NodeMemoryUsageCritical
+            expr: 100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 95
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "노드 메모리 고갈 직전 {{ $value | printf \"%.0f\" }}% ({{ $labels.instance }})"
+              description: "노드 메모리 사용률이 95%를 넘었습니다. 커널 OOM Killer나 kubelet eviction으로 Pod가 종료됩니다. 정상: 20~60%."
+          - alert: NodeDiskUsageHigh
+            expr: 100 * (1 - node_filesystem_avail_bytes{mountpoint="/mnt/stateful_partition"} / node_filesystem_size_bytes{mountpoint="/mnt/stateful_partition"}) > 80
+            for: 30m
+            labels:
+              severity: warning
+            annotations:
+              summary: "노드 디스크 사용률 {{ $value | printf \"%.0f\" }}% ({{ $labels.instance }})"
+              description: "노드 데이터 디스크(/mnt/stateful_partition, 컨테이너 이미지·로그·emptyDir)가 80%를 넘었습니다. 85%부터 kubelet이 이미지 정리, 90%부터 Pod eviction이 일어납니다. 정상: 60% 미만."
+
+  # 클러스터 용량 (requests 기준 — 새 Pod 배치 가능 여부)
+  cluster-capacity:
+    groups:
+      - name: cluster.capacity
+        rules:
+          - alert: ClusterCPURequestsHigh
+            expr: sum(namespace_cpu:kube_pod_container_resource_requests:sum) / sum(kube_node_status_allocatable{resource="cpu"}) > 0.85
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "클러스터 CPU 예약률 {{ $value | humanizePercentage }}"
+              description: "Pod CPU requests 합계가 노드 할당 가능량의 85%를 넘었습니다. 새 Pod나 배포 중 새 버전 Pod가 Pending에 걸릴 수 있습니다. 정상: 75% 미만 (현재 약 64%)."
+          - alert: ClusterMemoryRequestsHigh
+            expr: sum(namespace_memory:kube_pod_container_resource_requests:sum) / sum(kube_node_status_allocatable{resource="memory"}) > 0.85
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "클러스터 메모리 예약률 {{ $value | humanizePercentage }}"
+              description: "Pod 메모리 requests 합계가 노드 할당 가능량의 85%를 넘었습니다. 정상: 75% 미만 (현재 약 22%)."
+          - alert: ClusterPodUnschedulable
+            expr: max by (namespace, pod) (kube_pod_status_unschedulable) > 0
+            for: 5m
+            labels:
+              severity: error
+            annotations:
+              summary: "Pod 배치 불가: {{ $labels.namespace }}/{{ $labels.pod }}"
+              description: "자원 부족 또는 노드 조건 불일치로 5분간 어떤 노드에도 배치되지 못했습니다. kubectl -n {{ $labels.namespace }} describe pod {{ $labels.pod }} 의 Events를 확인하세요. 정상: 0개."
+
+  # 워크로드 (Deployment / StatefulSet / 컨테이너) — 모든 네임스페이스
+  cluster-workloads:
+    groups:
+      - name: cluster.workloads
+        rules:
+          - alert: WorkloadUnavailable
+            expr: |
+              (kube_deployment_status_replicas_available == 0)
+              and on (namespace, deployment) (kube_deployment_spec_replicas > 0)
+            for: 3m
+            labels:
+              severity: critical
+            annotations:
+              summary: "서비스 중단: Deployment {{ $labels.namespace }}/{{ $labels.deployment }} 사용 가능 Pod 0개"
+              description: "3분간 사용 가능한 Pod가 하나도 없습니다. kubectl -n {{ $labels.namespace }} get pods 로 상태를 확인하세요. 정상: 사용 가능 Pod = 원하는 replicas."
+          - alert: StatefulSetUnavailable
+            expr: |
+              (kube_statefulset_status_replicas_ready == 0)
+              and on (namespace, statefulset) (kube_statefulset_replicas > 0)
+            for: 3m
+            labels:
+              severity: critical
+            annotations:
+              summary: "서비스 중단: StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} Ready Pod 0개"
+              description: "3분간 Ready Pod가 하나도 없습니다 (Redis, Prometheus 등). 정상: Ready Pod = 원하는 replicas."
+          - alert: ContainerRestarted
+            expr: max by (namespace, pod, container) (increase(kube_pod_container_status_restarts_total[10m])) > 0
+            labels:
+              severity: info
+            annotations:
+              summary: "컨테이너 재시작: {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }})"
+              description: "최근 10분 안에 컨테이너가 재시작했습니다. 1회는 참고용입니다. kubectl -n {{ $labels.namespace }} logs {{ $labels.pod }} -c {{ $labels.container }} --previous 로 직전 로그를 확인할 수 있습니다. 정상: 0회."
+          - alert: ContainerRestartsFrequent
+            expr: max by (namespace, pod, container) (increase(kube_pod_container_status_restarts_total[1h])) >= 3
+            labels:
+              severity: warning
+            annotations:
+              summary: "컨테이너 1시간 {{ $value | printf \"%.0f\" }}회 재시작: {{ $labels.namespace }}/{{ $labels.pod }}"
+              description: "1시간 동안 3회 이상 재시작했습니다. 메모리 부족, liveness probe 실패, 의존 서비스 장애를 확인하세요. 정상: 0회."
+          - alert: ContainerOOMKilled
+            expr: |
+              max by (namespace, pod, container) (kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1)
+              and on (namespace, pod, container) (max by (namespace, pod, container) (increase(kube_pod_container_status_restarts_total[15m])) > 0)
+            labels:
+              severity: error
+            annotations:
+              summary: "메모리 초과로 강제 종료(OOMKilled): {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }})"
+              description: "컨테이너가 메모리 limit을 넘어 종료되었습니다. 메모리 limit 상향 또는 메모리 누수를 확인하세요. 정상: 0회."
+          - alert: ContainerStartFailed
+            expr: max by (namespace, pod, container, reason) (kube_pod_container_status_waiting_reason{reason=~"ImagePullBackOff|ErrImagePull|CreateContainerConfigError|CreateContainerError|InvalidImageName"}) == 1
+            for: 5m
+            labels:
+              severity: error
+            annotations:
+              summary: "컨테이너 시작 실패 ({{ $labels.reason }}): {{ $labels.namespace }}/{{ $labels.pod }}"
+              description: "ImagePull 계열은 이미지 태그·레지스트리 문제, CreateContainerConfigError는 참조하는 Secret/ConfigMap 누락(ExternalSecret 동기화 실패 등)입니다. 정상: 0개."
+          - alert: ContainerMemoryNearLimit
+            expr: |
+              max by (namespace, pod, container) (container_memory_working_set_bytes{container!="", image!=""})
+              / on (namespace, pod, container) max by (namespace, pod, container) (kube_pod_container_resource_limits{resource="memory"}) > 0.9
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "메모리 limit의 {{ $value | humanizePercentage }} 사용: {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }})"
+              description: "15분간 메모리 limit의 90% 이상을 쓰고 있습니다. 곧 OOMKilled 될 수 있습니다. 정상: limit의 70% 미만."
+
+  # 스토리지 (PVC)
+  cluster-storage:
+    groups:
+      - name: cluster.storage
+        rules:
+          - alert: PVCUsageHigh
+            expr: max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes) > 0.85
+            for: 30m
+            labels:
+              severity: warning
+            annotations:
+              summary: "디스크(PVC) 사용률 {{ $value | humanizePercentage }}: {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }}"
+              description: "PVC 사용률이 85%를 넘었습니다. 가득 차면 Prometheus·Grafana·Redis 등이 쓰기에 실패합니다. 정상: 70% 미만 (Prometheus는 보관 용량 16GB로 최대 약 75%)."
+
+  # 외부 접속 검사 (blackbox exporter: 실제 사용자 경로 = DNS → Istio → 앱)
+  services-availability:
+    groups:
+      - name: services.availability
+        rules:
+          - alert: ServiceEndpointDown
+            expr: max by (target, instance, app, kind) (probe_success) == 0
+            for: 3m
+            labels:
+              severity: critical
+            annotations:
+              summary: "접속 불가: {{ $labels.target }}"
+              description: "{{ $labels.instance }} 접속 검사가 3분간 실패했습니다 (외부 URL은 2xx 응답, 내부 Redis는 PING 응답 기준). 정상: 항상 성공."
+          - alert: ServiceEndpointSlow
+            expr: max by (target, instance, app) (probe_duration_seconds{kind="external"}) > 2
+            for: 10m
+            labels:
+              severity: warning
+            annotations:
+              summary: "응답 지연 {{ $value | printf \"%.1f\" }}초: {{ $labels.target }}"
+              description: "{{ $labels.instance }} 접속(DNS+TLS+응답) 시간이 10분간 2초를 넘었습니다. 정상: 0.5초 미만 (평소 0.03~0.5초)."
+          - alert: TLSCertExpiringSoon
+            expr: min by (target, instance) ((probe_ssl_earliest_cert_expiry - time()) / 86400) < 21
+            for: 1h
+            labels:
+              severity: warning
+            annotations:
+              summary: "HTTPS 인증서 {{ $value | printf \"%.0f\" }}일 후 만료: {{ $labels.target }}"
+              description: "cert-manager는 만료 30일 전에 자동 갱신하므로 21일 미만이면 갱신이 실패하고 있는 것입니다. kubectl -n istio-system get certificate,certificaterequest,order 로 확인하세요. 정상: 30~90일."
+          - alert: TLSCertExpiringCritical
+            expr: min by (target, instance) ((probe_ssl_earliest_cert_expiry - time()) / 86400) < 7
+            for: 10m
+            labels:
+              severity: critical
+            annotations:
+              summary: "HTTPS 인증서 {{ $value | printf \"%.0f\" }}일 후 만료: {{ $labels.target }}"
+              description: "7일 안에 인증서가 만료되어 브라우저·앱 접속이 차단됩니다. 즉시 cert-manager 갱신 실패 원인을 확인하세요. 정상: 30~90일."
+          - alert: BlackboxProbesMissing
+            expr: absent(probe_success)
+            for: 10m
+            labels:
+              severity: error
+            annotations:
+              summary: "외부 접속 검사 결과 없음 (blackbox exporter 장애)"
+              description: "접속 검사 지표가 10분간 수집되지 않았습니다. 서비스 다운을 감지할 수 없는 상태입니다. kubectl -n monitoring get pods -l app.kubernetes.io/name=prometheus-blackbox-exporter 로 확인하세요."
+
+  # 서비스 트래픽 (Istio ingress gateway — 외부 요청 전체)
+  # reviewmaps-server는 앱 자체 지표 규칙(reviewmaps.server)이 있으므로 제외
+  # destination_service_name="unknown" = 어떤 도메인에도 매칭되지 않는 요청(IP 직접 접근 스캐너)
+  services-traffic:
+    groups:
+      - name: services.traffic
+        rules:
+          - alert: ServiceHigh5xxRate
+            expr: |
+              (
+                sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload="istio-ingressgateway", destination_service_name!~"unknown|reviewmaps-server", response_code=~"5.."}[5m]))
+                / sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload="istio-ingressgateway", destination_service_name!~"unknown|reviewmaps-server"}[5m]))
+              ) > 0.05
+              and sum by (destination_service_namespace, destination_service_name) (increase(istio_requests_total{source_workload="istio-ingressgateway", destination_service_name!~"unknown|reviewmaps-server", response_code=~"5.."}[10m])) >= 5
+            for: 10m
+            labels:
+              severity: error
+            annotations:
+              summary: "5xx 오류율 {{ $value | humanizePercentage }}: {{ $labels.destination_service_namespace }}/{{ $labels.destination_service_name }}"
+              description: "외부 요청 중 5% 이상이 서버 오류(5xx)입니다 (10분간 5건 이상일 때만). 503 + response_flags UH/UF는 Pod 없음/연결 실패입니다. 정상: 1% 미만."
+          - alert: ServiceLatencyHigh
+            expr: |
+              histogram_quantile(0.95, sum by (destination_service_namespace, destination_service_name, le) (rate(istio_request_duration_milliseconds_bucket{source_workload="istio-ingressgateway", destination_service_namespace=~"reviewmaps|ojeomneo|lostark|woohalabs-app-ads", destination_service_name!="reviewmaps-server"}[5m]))) > 1000
+              and sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload="istio-ingressgateway"}[5m])) > 0.05
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "응답 지연 P95 {{ $value | printf \"%.0f\" }}ms: {{ $labels.destination_service_namespace }}/{{ $labels.destination_service_name }}"
+              description: "외부 요청 95%가 1초 안에 끝나지 않습니다 (분당 3건 이상일 때만 판단). ArgoCD·Grafana는 실시간 스트림 요청이 길어 제외. 정상: P95 300ms 미만."
+          - alert: ServiceTrafficDropped
+            expr: |
+              sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload="istio-ingressgateway", destination_service_name!="unknown"}[30m]))
+                < 0.3 * sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload="istio-ingressgateway", destination_service_name!="unknown"}[30m] offset 1d))
+              and sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload="istio-ingressgateway", destination_service_name!="unknown"}[30m] offset 1d)) > 0.2
+            for: 30m
+            labels:
+              severity: warning
+            annotations:
+              summary: "트래픽 급감: {{ $labels.destination_service_namespace }}/{{ $labels.destination_service_name }}"
+              description: "최근 30분 요청 수가 어제 같은 시각의 30% 미만입니다 (어제 초당 0.2건 이상인 서비스만). DNS·라우팅·앱 배포 문제로 사용자가 접속하지 못하고 있을 수 있습니다. 정상: 어제 대비 50~200%."
+          - alert: ServiceTrafficSpike
+            expr: |
+              sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload="istio-ingressgateway", destination_service_name!="unknown"}[15m]))
+                > 5 * sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload="istio-ingressgateway", destination_service_name!="unknown"}[15m] offset 1d))
+              and sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{source_workload="istio-ingressgateway", destination_service_name!="unknown"}[15m])) > 1
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "트래픽 급증 (어제 대비 5배 초과): {{ $labels.destination_service_namespace }}/{{ $labels.destination_service_name }}"
+              description: "최근 15분 요청 수가 어제 같은 시각의 5배를 넘었습니다 (초당 1건 이상일 때만). 봇·크롤러·공격 또는 실제 사용자 급증입니다. 정상: 어제 대비 50~200%."
+
+  # 플랫폼 (ArgoCD, cert-manager, External Secrets, Istio, DNS)
+  platform:
+    groups:
+      - name: platform.argocd
+        rules:
+          - alert: ArgoCDAppOutOfSync
+            expr: max by (name, dest_namespace) (argocd_app_info{sync_status="OutOfSync"}) == 1
+            for: 30m
+            labels:
+              severity: warning
+            annotations:
+              summary: "ArgoCD 앱 Git과 불일치 30분: {{ $labels.name }}"
+              description: "Git(main)과 클러스터 상태가 30분간 다릅니다. 자동 sync 실패 또는 수동 변경(kubectl edit)입니다. https://argocd.ggorockee.com/applications/argocd/{{ $labels.name }} 정상: 모든 앱 Synced."
+          - alert: ArgoCDAppUnhealthy
+            expr: max by (name, dest_namespace, health_status) (argocd_app_info{health_status!~"Healthy|Progressing|Suspended"}) == 1
+            for: 15m
+            labels:
+              severity: error
+            annotations:
+              summary: "ArgoCD 앱 {{ $labels.health_status }}: {{ $labels.name }}"
+              description: "15분간 앱 상태가 {{ $labels.health_status }} 입니다 (Degraded=Pod/리소스 실패, Missing=리소스 없음). 정상: 모든 앱 Healthy."
+          - alert: ArgoCDSyncFailed
+            expr: sum by (name) (increase(argocd_app_sync_total{phase=~"Error|Failed"}[10m])) > 0
+            labels:
+              severity: error
+            annotations:
+              summary: "ArgoCD 배포(sync) 실패: {{ $labels.name }}"
+              description: "최근 10분 안에 sync가 실패했습니다. 매니페스트 오류, 권한, 웹훅 거부를 ArgoCD 화면에서 확인하세요. 정상: 0회."
+          - alert: ArgoCDAppSynced
+            expr: sum by (name) (increase(argocd_app_sync_total{phase="Succeeded"}[10m])) > 0
+            labels:
+              severity: info
+            annotations:
+              summary: "배포 완료: {{ $labels.name }}"
+              description: "ArgoCD가 Git 변경사항을 클러스터에 반영했습니다 (이미지 태그 변경 등). 참고용 알림입니다."
+      - name: platform.certmanager
+        rules:
+          - alert: CertManagerCertNotReady
+            expr: max by (name, namespace) (certmanager_certificate_ready_status{condition="False"}) == 1
+            for: 15m
+            labels:
+              severity: error
+            annotations:
+              summary: "인증서 발급/갱신 실패: {{ $labels.namespace }}/{{ $labels.name }}"
+              description: "Certificate가 15분간 Ready=False 입니다. kubectl -n {{ $labels.namespace }} describe certificate {{ $labels.name }} 로 원인(DNS01 챌린지, Let's Encrypt 한도)을 확인하세요. 정상: 모두 Ready."
+          - alert: CertManagerRenewalOverdue
+            expr: (time() - max by (name, namespace) (certmanager_certificate_renewal_timestamp_seconds)) > 86400
+            for: 1h
+            labels:
+              severity: warning
+            annotations:
+              summary: "인증서 갱신 예정일 하루 경과: {{ $labels.namespace }}/{{ $labels.name }}"
+              description: "갱신 예정 시각이 지났는데 아직 갱신되지 않았습니다. 정상: 예정 시각 직후 자동 갱신."
+      - name: platform.externalsecrets
+        rules:
+          - alert: ExternalSecretNotSynced
+            expr: max by (name, namespace) (externalsecret_status_condition{condition="Ready", status="False"}) == 1
+            for: 10m
+            labels:
+              severity: error
+            annotations:
+              summary: "Secret 동기화 실패: {{ $labels.namespace }}/{{ $labels.name }}"
+              description: "GSM → Kubernetes Secret 동기화가 10분간 실패했습니다. GSM 시크릿 이름/키 오타나 권한 문제입니다. 새로 뜨는 Pod가 CreateContainerConfigError에 걸릴 수 있습니다. kubectl -n {{ $labels.namespace }} describe externalsecret {{ $labels.name }}. 정상: 모두 SecretSynced."
+      - name: platform.istio
+        rules:
+          - alert: IstioConfigRejected
+            expr: sum(increase(pilot_total_xds_rejects[10m])) > 0
+            labels:
+              severity: warning
+            annotations:
+              summary: "Istio 설정 적용 거부 {{ $value | printf \"%.0f\" }}건"
+              description: "istiod가 보낸 라우팅 설정을 gateway가 거부했습니다. 최근 바꾼 VirtualService/Gateway를 확인하세요 (istioctl analyze). 정상: 0건."
+      - name: platform.dns
+        rules:
+          - alert: ClusterDNSErrorsHigh
+            expr: |
+              sum(rate(coredns_dns_responses_total{rcode="SERVFAIL"}[5m])) / sum(rate(coredns_dns_responses_total[5m])) > 0.05
+            for: 10m
+            labels:
+              severity: warning
+            annotations:
+              summary: "클러스터 DNS 실패율 {{ $value | humanizePercentage }}"
+              description: "클러스터 내부 DNS 응답 중 5% 이상이 SERVFAIL 입니다. 앱이 DB·외부 API 주소를 찾지 못할 수 있습니다. 정상: 1% 미만."
+
+  # 데이터베이스 (Cloud SQL prod-woohalabs-cloudsql: postgres-exporter / Redis)
+  database:
+    groups:
+      - name: database.postgres
+        rules:
+          - alert: PostgresDown
+            expr: max(pg_up) == 0
+            for: 2m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Cloud SQL 접속 불가"
+              description: "postgres-exporter가 2분간 Cloud SQL(172.29.0.3)에 접속하지 못했습니다. 리뷰맵·오점너 API가 모두 실패합니다. GCP 콘솔에서 인스턴스 상태(유지보수, 재시작)를 확인하세요. 정상: 항상 접속."
+          - alert: PostgresExporterMissing
+            expr: absent(pg_up)
+            for: 10m
+            labels:
+              severity: error
+            annotations:
+              summary: "DB 지표 수집 안 됨 (postgres-exporter 장애)"
+              description: "DB 상태를 감시할 수 없는 상태입니다. kubectl -n monitoring get pods -l app.kubernetes.io/name=prometheus-postgres-exporter 로 확인하세요."
+          - alert: PostgresConnectionsHigh
+            expr: sum(pg_stat_database_numbackends) / max(pg_settings_max_connections) > 0.8
+            for: 10m
+            labels:
+              severity: warning
+            annotations:
+              summary: "DB 연결 수 {{ $value | humanizePercentage }} (최대 100)"
+              description: "Cloud SQL 연결이 최대치의 80%를 넘었습니다. 100에 도달하면 새 연결이 거부되어 API가 실패합니다. 앱 커넥션 풀 크기나 연결 누수를 확인하세요. 정상: 50% 미만."
+          - alert: PostgresDeadlocks
+            expr: sum by (datname) (increase(pg_stat_database_deadlocks{datname=~"reviewmaps|ojeomneo"}[10m])) > 0
+            labels:
+              severity: warning
+            annotations:
+              summary: "DB 교착 상태(deadlock) {{ $value | printf \"%.0f\" }}건: {{ $labels.datname }}"
+              description: "트랜잭션끼리 서로 잠금을 기다리다 하나가 취소되었습니다. 수집(DELETE 후 INSERT)과 API 쓰기가 겹치는지 확인하세요. 정상: 0건."
+          - alert: PostgresLongTransaction
+            expr: max by (datname) (pg_stat_activity_max_tx_duration{datname=~"reviewmaps|ojeomneo"}) > 600
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "10분 넘게 열린 트랜잭션: {{ $labels.datname }} ({{ $value | humanizeDuration }})"
+              description: "오래 열린 트랜잭션은 잠금을 잡고 VACUUM을 막습니다. Grafana ReviewMaps-DB에서 pg_stat_activity를 확인하세요. 정상: 1분 미만."
+          - alert: PostgresCacheHitLow
+            expr: |
+              sum by (datname) (rate(pg_stat_database_blks_hit{datname=~"reviewmaps|ojeomneo"}[30m]))
+              / (sum by (datname) (rate(pg_stat_database_blks_hit{datname=~"reviewmaps|ojeomneo"}[30m])) + sum by (datname) (rate(pg_stat_database_blks_read{datname=~"reviewmaps|ojeomneo"}[30m]))) < 0.9
+              and sum by (datname) (rate(pg_stat_database_blks_read{datname=~"reviewmaps|ojeomneo"}[30m])) > 10
+            for: 30m
+            labels:
+              severity: info
+            annotations:
+              summary: "DB 캐시 적중률 {{ $value | humanizePercentage }}: {{ $labels.datname }}"
+              description: "읽기의 10% 이상이 디스크에서 일어납니다. 인덱스 누락이나 메모리(db-g1-small, shared_buffers 256MB) 부족 신호입니다. 정상: 99% 이상."
+          - alert: PostgresStorageHigh
+            expr: sum(pg_database_size_bytes) > 14e9
+            for: 1h
+            labels:
+              severity: warning
+            annotations:
+              summary: "DB 데이터 크기 {{ $value | humanize1024 }}B (디스크 20GB)"
+              description: "DB 데이터가 디스크 20GB의 70%(14GB)를 넘었습니다. 자동 확장이 켜져 있어 장애는 아니지만 디스크가 늘어나면 줄일 수 없고 비용이 증가합니다. soft delete된 캠페인 정리를 검토하세요. 정상: 10GB 미만."
+      - name: database.redis
+        rules:
+          - alert: RedisRejectedConnections
+            expr: sum by (namespace) (increase(redis_rejected_connections_total[10m])) > 0
+            labels:
+              severity: warning
+            annotations:
+              summary: "Redis 연결 거부 {{ $value | printf \"%.0f\" }}건: {{ $labels.namespace }}"
+              description: "maxclients 초과로 Redis가 연결을 거부했습니다. 정상: 0건."
+          - alert: RedisMemoryHigh
+            expr: max by (namespace) (redis_memory_used_bytes / redis_memory_max_bytes) > 0.9 and max by (namespace) (redis_memory_max_bytes) > 0
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Redis 메모리 {{ $value | humanizePercentage }}: {{ $labels.namespace }}"
+              description: "maxmemory의 90%를 넘었습니다. 키가 강제 삭제(eviction)되거나 쓰기가 거부됩니다. 정상: 70% 미만."
+
+  # 앱 (ojeomneo — 자체 /metrics 있음. reviewmaps는 위 reviewmaps.* 규칙)
+  apps-ojeomneo:
+    groups:
+      - name: apps.ojeomneo
+        rules:
+          - alert: OjeomneoServerDown
+            expr: |
+              sum(up{namespace="ojeomneo", service="ojeomneo-server"}) == 0
+              or absent(up{namespace="ojeomneo", service="ojeomneo-server"})
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "오점너 API 서버 메트릭 수집 불가 (서버 다운 가능성)"
+              description: "Prometheus가 5분간 ojeomneo-server /ojeomneo/metrics를 수집하지 못했습니다. kubectl -n ojeomneo get pods 로 확인하세요."
+          - alert: OjeomneoDBPoolExhausted
+            expr: max(ojeomneo_db_connection_pool_in_use / ojeomneo_db_connection_pool_size) > 0.9
+            for: 10m
+            labels:
+              severity: warning
+            annotations:
+              summary: "오점너 DB 커넥션 풀 {{ $value | humanizePercentage }} 사용"
+              description: "커넥션 풀이 거의 다 찼습니다. 느린 쿼리나 연결 반환 누락을 확인하세요. 정상: 50% 미만."

@@ -6,7 +6,7 @@
 global:
   resolve_timeout: 5m
   # From = SMTP 로그인 Gmail 계정 (noreply@woohalabs.com은 SPF가 Zoho만 허용해 Gmail 경유 시 인증 실패 → 스팸 분류)
-  smtp_from: "ReviewMaps 알림 <{{ .EMAIL_HOST_USER }}>"
+  smtp_from: "woohalabs 모니터링 <{{ .EMAIL_HOST_USER }}>"
   smtp_smarthost: "{{ .EMAIL_HOST }}:{{ .EMAIL_PORT }}"
   smtp_auth_username: "{{ .EMAIL_HOST_USER }}"
   smtp_auth_password: "{{ .EMAIL_HOST_PASSWORD }}"
@@ -43,17 +43,66 @@ route:
       group_wait: 2m
       group_interval: 10m
       repeat_interval: 12h
-    # 그 외 info 등급(기본 규칙의 CPUThrottlingHigh 등)은 메일 발송 안 함
-    - receiver: "null"
+    # 외부 접속 검사: 게이트웨이 장애 시 여러 URL이 한 번에 실패하므로 한 통으로 묶음
+    - receiver: email
+      matchers: ['alertname =~ "ServiceEndpoint.*|TLSCert.*"']
+      group_by: ["alertname"]
+      group_wait: 1m
+      repeat_interval: 4h
+    # ---------------------------------------------------------------
+    # 등급별 발송 (초기 단계: INFO까지 전부 메일)
+    # INFO 메일을 끄려면 아래 info 라우트의 receiver를 "null"로 바꾼다.
+    # WARN까지 끄려면 warning 라우트도 "null"로 바꾼다.
+    # ---------------------------------------------------------------
+    # [INFO] 참고용 — 해제(RESOLVED) 메일 없음, 같은 알림은 하루 1번
+    - receiver: email-noresolve
       matchers: ['severity = "info"']
+      group_by: ["alertname", "namespace"]
+      group_wait: 1m
+      group_interval: 10m
+      repeat_interval: 24h
+    # [WARN] 정상 범위 벗어남
+    - receiver: email
+      matchers: ['severity = "warning"']
+      repeat_interval: 12h
+    # [ERROR] 기능 실패
+    - receiver: email
+      matchers: ['severity = "error"']
+      repeat_interval: 6h
+    # [CRITICAL] 서비스 중단
     - receiver: email
       matchers: ['severity = "critical"']
-      repeat_interval: 4h
+      group_wait: 10s
+      repeat_interval: 2h
 
 inhibit_rules:
+  # 같은 알림의 상위 등급이 발생 중이면 하위 등급 메일 생략 (예: PVC 85% WARN vs 97% CRITICAL)
   - source_matchers: ['severity = "critical"']
+    target_matchers: ['severity =~ "error|warning|info"']
+    equal: ["namespace", "alertname"]
+  - source_matchers: ['severity = "error"']
     target_matchers: ['severity =~ "warning|info"']
     equal: ["namespace", "alertname"]
+  # 접속 불가(CRITICAL)이면 같은 URL의 응답 지연(WARN)은 생략
+  - source_matchers: ['alertname = "ServiceEndpointDown"']
+    target_matchers: ['alertname = "ServiceEndpointSlow"']
+    equal: ["target"]
+  # 노드 메모리 95%(CRITICAL)이면 80%(WARN) 생략
+  - source_matchers: ['alertname = "NodeMemoryUsageCritical"']
+    target_matchers: ['alertname = "NodeMemoryUsageHigh"']
+    equal: ["instance"]
+  # 인증서 7일(CRITICAL)이면 21일(WARN) 생략
+  - source_matchers: ['alertname = "TLSCertExpiringCritical"']
+    target_matchers: ['alertname = "TLSCertExpiringSoon"']
+    equal: ["target"]
+  # Deployment 전체 중단(CRITICAL)이면 replicas 불일치/Pod NotReady(WARN) 생략
+  - source_matchers: ['alertname = "WorkloadUnavailable"']
+    target_matchers: ['alertname =~ "KubeDeploymentReplicasMismatch|KubePodNotReady|KubeDeploymentRolloutStuck"']
+    equal: ["namespace"]
+  # 재시작 반복(WARN)이면 재시작 1회(INFO) 생략
+  - source_matchers: ['alertname = "ContainerRestartsFrequent"']
+    target_matchers: ['alertname = "ContainerRestarted"']
+    equal: ["namespace", "pod", "container"]
 
 receivers:
   - name: "null"
@@ -61,7 +110,7 @@ receivers:
     email_configs:
       - to: "woohaen88@gmail.com"
         send_resolved: true
-  # 성공 알림용: Job TTL로 알림이 사라질 때 "RESOLVED" 메일을 보내지 않음
+  # INFO·성공 알림용: 알림이 사라질 때 "RESOLVED" 메일을 보내지 않음
   - name: email-noresolve
     email_configs:
       - to: "woohaen88@gmail.com"

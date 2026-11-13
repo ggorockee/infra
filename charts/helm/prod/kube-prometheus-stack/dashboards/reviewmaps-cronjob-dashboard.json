@@ -43,7 +43,7 @@
           },
           "options": {
             "mode": "markdown",
-            "content": "### 리뷰맵 CronJob & DB 적재\n\n위쪽은 Kubernetes CronJob 실행 상태(성공/실패/실행 시간), 아래쪽은 Cloud SQL campaign 테이블에 실제로 데이터가 들어왔는지입니다. 키워드별 수집 결과는 'ReviewMaps 수집 서버' 대시보드에서 봅니다.\n\n| 차트 | 🟢 정상 | 🟠 경고 | 🔴 알람 |\n|---|---|---|---|\n| 마지막 성공 후 경과 | 24시간 이내 | 24~26시간 | 26시간 초과 ([ERROR] 메일) |\n| 실패 Job | 0 | - | 1개 이상 ([ERROR] 메일) |\n| Job 실행 시간 | 30분 미만 | 30분~2시간 | 2시간 초과 ([ALERT] 메일) |\n| 오늘 적재 건수 | 1건 이상 | - | 0건 (00:20 이후) |\n| 마지막 적재 후 경과 | 24시간 이내 | 24~26시간 | 26시간 초과 |\n| 마감 지난 잔존 | 0 (05:00 이후) | 1건 이상 | - |\n| 플랫폼별 마지막 적재 | 26시간 이내 | 26~72시간 | 72시간 초과 |\n\n**메일 알림** (woohaen88@gmail.com)\n\n- [INFO] CronJob 성공 (Job마다 1통)\n- [ERROR] CronJob 실패, 26시간 미성공\n- [ALERT] Job 2시간 초과 실행\n\n각 차트 제목 옆 ⓘ 에 마우스를 올리면 차트별 설명이 나옵니다."
+            "content": "### 리뷰맵 CronJob & DB 적재\n\n위쪽은 Kubernetes CronJob 실행 상태(성공/실패/실행 시간), 아래쪽은 Cloud SQL campaign 테이블에 실제로 데이터가 들어왔는지입니다. 키워드별 수집 결과는 'ReviewMaps 수집 서버' 대시보드에서 봅니다.\n\n| 차트 | 🟢 정상 | 🟠 경고 | 🔴 알람 |\n|---|---|---|---|\n| 마지막 성공 후 경과 | 24시간 이내 | 24~26시간 | 26시간 초과 ([ERROR] 메일) |\n| 실패 Job | 0 | - | 1개 이상 ([ERROR] 메일) |\n| Job 실행 시간 | 30분 미만 | 30분~2시간 | 2시간 초과 ([WARN] 메일) |\n| 오늘 적재 건수 | 1건 이상 | - | 0건 (00:20 이후) |\n| 마지막 적재 후 경과 | 24시간 이내 | 24~26시간 | 26시간 초과 |\n| 마감 지난 잔존 | 0 (05:00 이후) | 1건 이상 | - |\n| 플랫폼별 마지막 적재 | 26시간 이내 | 26~72시간 | 72시간 초과 |\n\n**메일 알림** (woohaen88@gmail.com)\n\n- [INFO] CronJob 성공 (Job마다 1통)\n- [ERROR] CronJob 실패, 26시간 미성공\n- [WARN] Job 2시간 초과 실행\n\n각 차트 제목 옆 ⓘ 에 마우스를 올리면 차트별 설명이 나옵니다."
           },
           "id": 17
         }
@@ -254,7 +254,7 @@
     {
       "type": "stat",
       "title": "실행 중 Job (CronJob · Job / 경과 시간)",
-      "description": "[무엇] 지금 실행 중인 Job 이름과 그 Job을 만든 CronJob, 시작 후 경과 시간입니다. 수동 실행(kubectl create job --from=cronjob)도 원래 CronJob 이름으로 표시됩니다.\n\n[보는 법] 스케줄 시간대(00:05 inflexer, 02:00 reviewnote, 05:00 cleanup)에 나타났다가 끝나면 '실행 중인 Job 없음'으로 바뀝니다.\n\n[범위] 🔵 30분 미만 / 🟠 30분~2시간 / 🔴 2시간 초과 → [ALERT] 메일",
+      "description": "[무엇] 지금 실행 중인 Job 이름과 그 Job을 만든 CronJob, 시작 후 경과 시간입니다. 수동 실행(kubectl create job --from=cronjob)도 원래 CronJob 이름으로 표시됩니다.\n\n[보는 법] 스케줄 시간대(00:05 inflexer, 02:00 reviewnote, 05:00 cleanup)에 나타났다가 끝나면 '실행 중인 Job 없음'으로 바뀝니다.\n\n[범위] 🔵 30분 미만 / 🟠 30분~2시간 / 🔴 2시간 초과 → [WARN] 메일",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
