@@ -524,6 +524,8 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | Google OAuth 클라이언트 | `yanggo-514212` 프로젝트 웹 클라이언트 (Grafana, ArgoCD Dex 공용). 리디렉션 URI: `monitoring.ggorockee.com/login/generic_oauth`, `argocd.ggorockee.com/api/dex/callback`. 동의 화면 Testing 상태라 Test users만 로그인 가능 |
 | 로컬 자격증명 파일 | `.secrets/` (gitignore). 예: `.secrets/oauth-client_yanggo-514212_monitoring-argocd.json` |
 | ArgoCD 관리자 | `charts/helm/prod/argo-cd/values.yaml`의 `configs.rbac.policy.csv`에 직접 지정 (ExternalSecret 방식은 ConfigMap 대상이라 동작 안 함) |
+| ArgoCD Google 로그인 (Dex) | `dex.config` google 커넥터에 `hostedDomains` 사용 금지. 개인 Gmail 계정은 ID 토큰에 `hd` 클레임이 없어 `oidc: unexpected hd claim`으로 전원 로그인 실패 (#1144에서 제거). 로그인 문제는 `kubectl -n argocd logs deploy/argocd-dex-server`로 확인 |
+| ArgoCD 접근 범위 | 도메인 제한 없음. OAuth 동의 화면 Test users만 로그인 가능, `policy.csv` 3개 계정만 admin, 나머지는 `policy.default: role:readonly`. 동의 화면을 Production으로 바꾸면 모든 Google 계정이 readonly 로그인 가능 → 막으려면 `policy.default`를 빈 값으로 |
 
 ### 권한 규칙
 
@@ -562,6 +564,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | infra | #1139 | CLAUDE.md 운영 현황 정리 |
 | infra | #1140 | 수집 진행률이 첫 키워드 처리 중 비어 보이던 문제 |
 | infra | #1141, #1142 | 대시보드 가독성 개선 (짧은 이름, 글자 크기, hh:mm:ss, 단색, 범위표 접기, 패널 높이) |
+| infra | #1144 | ArgoCD Google 로그인 실패 수정 (Dex `hostedDomains: gmail.com` 제거) |
 | reviewmaps | #275 | 서버 /metrics 500 수정 |
 | reviewmaps | #276 | GORM AutoMigrate 운영 비활성화 |
 | reviewmaps | #277 | go-scraper Pushgateway push |
