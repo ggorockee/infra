@@ -506,7 +506,7 @@ go-scraper:
   image:
     repository: ggorockee/go-scraper
     pullPolicy: IfNotPresent
-    tag: "20261114-3be8801"
+    tag: "20261114-c18577d"
 
   imagePullSecrets: []
   nameOverride: ""
