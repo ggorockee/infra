@@ -556,7 +556,7 @@ go-scraper:
     names:
       - "reviewmaps-db-credentials"
       - "naver-api-creds"
-      - "reviewmaps-api-credentials"  # SERVER_API_KEY (API_SECRET_KEY 사용)
+      - "reviewmaps-api-credentials"  # SERVER_API_KEY (INTERNAL_API_KEY 값)
 
   # CronJob 설정
   runner:
