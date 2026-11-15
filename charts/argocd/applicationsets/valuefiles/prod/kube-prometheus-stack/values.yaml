@@ -689,6 +689,7 @@ additionalPrometheusRulesMap:
 
   # 서비스 트래픽 (Istio ingress gateway — 외부 요청 전체)
   # reviewmaps-server는 앱 자체 지표 규칙(reviewmaps.server)이 있으므로 제외
+  # 트래픽 급감·급증은 관리 도구(Grafana, ArgoCD) 제외: 사람이 화면을 볼 때만 요청이 생겨 어제 대비 비교가 무의미
   # destination_service_name="unknown" = 어떤 도메인에도 매칭되지 않는 요청(IP 직접 접근 스캐너)
   # istio_* 지표는 ingress gateway에서만 수집하므로 source_* 라벨은 labeldrop 됨 (필터에 쓰지 말 것)
   services-traffic:
@@ -720,20 +721,20 @@ additionalPrometheusRulesMap:
               description: "외부 요청 95%가 1초 안에 끝나지 않습니다 (분당 3건 이상일 때만 판단). ArgoCD·Grafana는 실시간 스트림 요청이 길어 제외. 정상: P95 300ms 미만."
           - alert: ServiceTrafficDropped
             expr: |
-              sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!="unknown"}[30m]))
-                < 0.3 * sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!="unknown"}[30m] offset 1d))
-              and sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!="unknown"}[30m] offset 1d)) > 0.2
+              sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!~"unknown|kube-prometheus-stack-grafana|argocd-server"}[30m]))
+                < 0.3 * sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!~"unknown|kube-prometheus-stack-grafana|argocd-server"}[30m] offset 1d))
+              and sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!~"unknown|kube-prometheus-stack-grafana|argocd-server"}[30m] offset 1d)) > 0.2
             for: 30m
             labels:
               severity: warning
             annotations:
               summary: "트래픽 급감: {{ $labels.destination_service_namespace }}/{{ $labels.destination_service_name }}"
-              description: "최근 30분 요청 수가 어제 같은 시각의 30% 미만입니다 (어제 초당 0.2건 이상인 서비스만). DNS·라우팅·앱 배포 문제로 사용자가 접속하지 못하고 있을 수 있습니다. 정상: 어제 대비 50~200%."
+              description: "최근 30분 요청 수가 어제 같은 시각의 30% 미만입니다 (어제 초당 0.2건 이상인 서비스만, 사람이 볼 때만 요청이 생기는 Grafana·ArgoCD는 제외). DNS·라우팅·앱 배포 문제로 사용자가 접속하지 못하고 있을 수 있습니다. 정상: 어제 대비 50~200%."
           - alert: ServiceTrafficSpike
             expr: |
-              sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!="unknown"}[15m]))
-                > 5 * sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!="unknown"}[15m] offset 1d))
-              and sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!="unknown"}[15m])) > 1
+              sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!~"unknown|kube-prometheus-stack-grafana|argocd-server"}[15m]))
+                > 5 * sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!~"unknown|kube-prometheus-stack-grafana|argocd-server"}[15m] offset 1d))
+              and sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total{destination_service_name!~"unknown|kube-prometheus-stack-grafana|argocd-server"}[15m])) > 1
             for: 15m
             labels:
               severity: warning

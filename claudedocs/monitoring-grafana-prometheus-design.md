@@ -365,7 +365,7 @@ go-scraper는 CronJob에서 키워드마다 프로세스를 띄워 수 초~수 �
 | 접속 | HTTPS 인증서 남은 일수 | 30~90일 | 21일 미만 → WARN, 7일 미만 → CRITICAL |
 | 트래픽 | 서비스 5xx 비율 | 1% 미만 | 5% 초과 + 10분 5건 이상 → ERROR |
 | 트래픽 | 서비스 P95 (앱 네임스페이스) | 300ms 미만 | 1초 초과 15분 → WARN |
-| 트래픽 | 요청 수 (어제 같은 시각 대비) | 50~200% | 30% 미만 30분 → WARN, 5배 초과 15분 → WARN |
+| 트래픽 | 요청 수 (어제 같은 시각 대비, Grafana·ArgoCD 제외) | 50~200% | 30% 미만 30분 → WARN, 5배 초과 15분 → WARN |
 | 트래픽 | 4xx 비율 | 알림 없음 (봇 요청이 많아 대시보드 참고만) | - |
 | ArgoCD | 앱 Sync | 전부 Synced | OutOfSync 30분 → WARN |
 | ArgoCD | 앱 Health | 전부 Healthy | Degraded/Missing 15분 → ERROR |

@@ -516,7 +516,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | cluster.workloads | 가용 Pod 0개 Deployment/StatefulSet (CRITICAL), 재시작 1회 (INFO) / 1시간 3회 (WARN), OOMKilled·시작 실패 (ERROR), 메모리 limit 90% (WARN) |
 | cluster.storage | PVC 85% (WARN) |
 | services.availability | 접속 검사 실패 3분 (CRITICAL), 접속 2초 초과 (WARN), 인증서 21일 미만 (WARN) / 7일 미만 (CRITICAL) |
-| services.traffic | 5xx 5% 초과 (ERROR), P95 1초 초과 (WARN), 트래픽 어제 대비 30% 미만 / 5배 초과 (WARN) |
+| services.traffic | 5xx 5% 초과 (ERROR), P95 1초 초과 (WARN), 트래픽 어제 대비 30% 미만 / 5배 초과 (WARN, Grafana·ArgoCD 제외) |
 | platform.* | ArgoCD OutOfSync (WARN) / Degraded·sync 실패 (ERROR) / 배포 완료 (INFO), 인증서 Not Ready (ERROR), ExternalSecret 실패 (ERROR), Istio 설정 거부 (WARN), DNS SERVFAIL (WARN) |
 | database.* | Cloud SQL 접속 불가 (CRITICAL), 연결 80% (WARN), deadlock·긴 트랜잭션 (WARN), 캐시 적중률 90% 미만 (INFO), Redis 거부·메모리 (WARN) |
 | database.cloudsql | Cloud SQL CPU 80% (WARN), 메모리 80% (WARN) / 95% (CRITICAL), 디스크 80% (WARN), 디스크 자동 확장 (INFO), 트랜잭션 ID 50% (WARN), 지표 수집 안 됨 (ERROR) |
@@ -603,6 +603,8 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | infra | #1147, #1148 | 후속 수정 (Istio 필터 source_* labeldrop 충돌, CPU 계산, 디스크 범위, 비율 0 표시) |
 | infra | #1149 | exporter CPU limit 상향 (CPUThrottlingHigh), 문서 마무리 |
 | infra | #1161, #1162, #1163 | 오점너 서비스 중지 (모니터링 제거 → ArgoCD 앱 삭제 → VirtualService 비활성화) |
+| infra | #1165 | CPU 예약 적정화: 합계 2.33→1.77코어 (노드 1대 1.93 이내, KubeCPUOvercommit 해소), 리뷰맵 서버 limit 100m→500m (11-14 쓰로틀링 88.7%로 키워드 알림 배치 실패), 수집 서버 메일에서 Pushgateway Pod 줄 제거 |
+| infra | #1166 | 트래픽 급감·급증 알림에서 Grafana·ArgoCD 제외 (사람 사용량이라 어제 대비 비교 무의미) |
 | infra | #1150, #1151 | Cloud SQL 인스턴스 자원 모니터링 (Terraform `modules/monitoring` GSA + Workload Identity, stackdriver-exporter, 알림 `database.cloudsql`), 검증 결과 문서 |
 | reviewmaps | #275 | 서버 /metrics 500 수정 |
 | reviewmaps | #276 | GORM AutoMigrate 운영 비활성화 |
