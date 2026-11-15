@@ -25,15 +25,18 @@ service:
 env:
   COLLECT_INTERVAL: "30m"
   LOG_LEVEL: "info"
+  # Google Places 일일 과금 호출 상한 (KST 자정 초기화). 넘으면 근처 지점 검색만 잠시 꺼짐
+  PLACES_DAILY_LIMIT: "1000"
   # 비워두면 메모리 저장소. Postgres를 쓰려면 secret에 DATABASE_URL을 추가하세요.
 # GCP Secret Manager → ExternalSecret → Secret (envFrom)
-# 시크릿 이름: prod-yen-back-credentials (JSON: KOREAEXIM_API_KEY, INTERNAL_TOKEN)
+# 시크릿 이름: prod-yen-back-credentials (JSON: KOREAEXIM_API_KEY, INTERNAL_TOKEN, GOOGLE_PLACES_API_KEY)
 externalSecret:
   enabled: true
   remoteKey: prod-yen-back-credentials
   keys:
     - KOREAEXIM_API_KEY
     - INTERNAL_TOKEN
+    - GOOGLE_PLACES_API_KEY
 metrics:
   serviceMonitor:
     enabled: true # kube-prometheus-stack이 모든 네임스페이스 ServiceMonitor 수집
