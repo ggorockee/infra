@@ -44,12 +44,8 @@ Prometheus 메트릭 모니터링을 위한 Grafana 대시보드 JSON 파일입�
 - ArgoCD 앱 상태, 인증서/ExternalSecret/Istio 설정 오류
 - Cloud SQL 접속·연결 수·DB 크기·캐시 적중률·트랜잭션
 
-### Ojeomneo HTTP Metrics
-- 파일: `ojeomneo-dashboard.json`
-- UID: `ojeomneo-http-metrics`
-- 메트릭 Prefix: `ojeomneo_`
-
-**포함된 패널**: ReviewMaps와 동일
+### (삭제) Ojeomneo HTTP Metrics
+- 2026-11-15 오점너 서비스 중지로 `ojeomneo-dashboard.json` 삭제 (git 이력에 보존, `claudedocs/ojeomneo-shutdown.md`)
 
 ## 자동 배포
 
@@ -64,7 +60,6 @@ Prometheus 메트릭 모니터링을 위한 Grafana 대시보드 JSON 파일입�
 3. **Upload JSON file** 버튼 클릭
 4. 대시보드 JSON 파일 선택:
    - `reviewmaps-dashboard.json`
-   - `ojeomneo-dashboard.json`
 5. Prometheus 데이터소스 선택
 6. **Import** 버튼 클릭
 
@@ -78,11 +73,6 @@ kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80
 curl -X POST http://admin:prom-operator@localhost:3000/api/dashboards/db \
   -H "Content-Type: application/json" \
   -d @reviewmaps-dashboard.json
-
-# Ojeomneo 대시보드 Import
-curl -X POST http://admin:prom-operator@localhost:3000/api/dashboards/db \
-  -H "Content-Type: application/json" \
-  -d @ojeomneo-dashboard.json
 ```
 
 **참고**: Grafana 기본 admin 비밀번호는 Secret에서 확인:
@@ -99,7 +89,6 @@ Grafana는 ConfigMap을 통해 대시보드를 자동으로 로드할 수 있습
 # ConfigMap 생성
 kubectl create configmap grafana-dashboards \
   --from-file=reviewmaps-dashboard.json \
-  --from-file=ojeomneo-dashboard.json \
   -n monitoring
 
 # Grafana values.yaml에 다음 설정 추가:
@@ -121,43 +110,33 @@ kubectl create configmap grafana-dashboards \
 #     reviewmaps:
 #       json: |
 #         (paste reviewmaps-dashboard.json content)
-#     ojeomneo:
-#       json: |
-#         (paste ojeomneo-dashboard.json content)
 ```
 
 ## 대시보드 메트릭 설명
 
 ### Counter 메트릭
 - `reviewmaps_http_requests_total`: HTTP 요청 총 횟수 (method, path, status 라벨)
-- `ojeomneo_http_requests_total`: HTTP 요청 총 횟수 (method, path, status 라벨)
 
 ### Histogram 메트릭
 - `reviewmaps_http_request_duration_seconds`: HTTP 요청 지연시간 (method, path 라벨)
-- `ojeomneo_http_request_duration_seconds`: HTTP 요청 지연시간 (method, path 라벨)
 
 ### Gauge 메트릭
 - `reviewmaps_http_active_connections`: 현재 활성 HTTP 연결 수
-- `ojeomneo_http_active_connections`: 현재 활성 HTTP 연결 수
 
 ### Summary 메트릭
 - `reviewmaps_http_request_size_bytes`: HTTP 요청 크기 (method, path 라벨)
 - `reviewmaps_http_response_size_bytes`: HTTP 응답 크기 (method, path 라벨)
-- `ojeomneo_http_request_size_bytes`: HTTP 요청 크기 (method, path 라벨)
-- `ojeomneo_http_response_size_bytes`: HTTP 응답 크기 (method, path 라벨)
 
 ## PromQL 쿼리 예시
 
 **Request Rate (초당 요청 수)**:
 ```promql
 rate(reviewmaps_http_requests_total[5m])
-rate(ojeomneo_http_requests_total[5m])
 ```
 
 **P95 Response Time**:
 ```promql
 histogram_quantile(0.95, rate(reviewmaps_http_request_duration_seconds_bucket[5m]))
-histogram_quantile(0.95, rate(ojeomneo_http_request_duration_seconds_bucket[5m]))
 ```
 
 **Error Rate**:
@@ -165,8 +144,6 @@ histogram_quantile(0.95, rate(ojeomneo_http_request_duration_seconds_bucket[5m])
 sum(rate(reviewmaps_http_requests_total{status=~"5.."}[5m]))
   / sum(rate(reviewmaps_http_requests_total[5m]))
 
-sum(rate(ojeomneo_http_requests_total{status=~"5.."}[5m]))
-  / sum(rate(ojeomneo_http_requests_total[5m]))
 ```
 
 ## 대시보드 커스터마이징
