@@ -1,0 +1,6 @@
+apiVersion: v2
+name: yen-back
+description: 돌려받엔(yen-back) API 서버 - 한국수출입은행 환율 수집·캐시, 일본 면세 제도 상수, 앱 활동 지표
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

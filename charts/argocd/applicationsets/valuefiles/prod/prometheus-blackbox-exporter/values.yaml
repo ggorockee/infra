@@ -65,6 +65,10 @@ serviceMonitor:
     - name: woohalabs-app-ads-www
       url: https://www.woohalabs.com/app-ads.txt
       additionalMetricsRelabels: {app: woohalabs-app-ads, kind: external}
+    # ---------- 돌려받엔 (yen-back) ----------
+    - name: yen-back-api
+      url: https://yen-back.woohalabs.com/healthz
+      additionalMetricsRelabels: {app: yen-back, kind: external}
     # ---------- yangobot ----------
     - name: yangobot
       url: https://yangobot.ggorockee.com/healthz

@@ -30,6 +30,19 @@ Prometheus 메트릭 모니터링을 위한 Grafana 대시보드 JSON 파일입�
 - 마감 지난 잔존 캠페인 수 (cleanup soft delete 검증)
 - 오늘 플랫폼별 적재 건수, 플랫폼별 마지막 적재 시각, 최근 14일 갱신일 분포
 
+### 돌려받엔 (yen-back)
+- 파일: `yen-back-dashboard.json`
+- UID: `yen-back`
+- 메트릭 Prefix: `yenback_` (+ go_\*, process_\* `namespace="yen-back"`)
+
+**포함된 패널**:
+- 한눈에 보기: 서버 상태, 배포 버전, 환율 기준일 경과, 100엔 환율, 마지막 수집 성공 후 경과, 분당 요청
+- API: 경로별 요청 수, P50/P95/P99 응답 시간, 5xx 오류율, 상태 코드별 요청
+- 앱 사용 현황: 플랫폼별 요청, 앱 버전별 요청, 활동 이벤트(24시간·시간당), 거부된 이벤트
+- 환율 수집: 수집 실행 결과, 수출입은행 API 호출 수, 환율 추이
+- 런타임(접힘): 메모리, CPU, 고루틴·처리 중 요청
+- 알림 규칙: kube-prometheus-stack valuefile의 `yen-back-server` 그룹
+
 ### 클러스터 전체 현황
 - 파일: `cluster-overview-dashboard.json`
 - UID: `cluster-overview`

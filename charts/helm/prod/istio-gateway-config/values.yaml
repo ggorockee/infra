@@ -209,6 +209,18 @@ virtualServices:
               host: reviewmaps-server
               port: 3000
 
+  # 돌려받엔 API (yen-back, Go Fiber) — /metrics(9090)는 라우팅하지 않음
+  - name: yen-back-vs
+    namespace: yen-back
+    enabled: true
+    hosts:
+      - "yen-back.woohalabs.com"
+    http:
+      - route:
+          - destination:
+              host: yen-back
+              port: 8080
+
   # Ojeomneo Web (Next.js)
   - name: ojeomneo-web-vs
     namespace: ojeomneo
