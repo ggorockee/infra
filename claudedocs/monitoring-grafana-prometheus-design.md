@@ -306,9 +306,7 @@ go-scraper는 CronJob에서 키워드마다 프로세스를 띄워 수 초~수 �
 | 리뷰맵 API (reviewmaps-server) | blackbox `reviewmaps-api`, 앱 /metrics `up` | 앱 지표(요청·5xx·P95), Istio |
 | 리뷰맵 웹/관리자 | blackbox `reviewmaps-web(-www)`, `reviewmaps-admin` | Istio (요청·5xx·P95) |
 | 리뷰맵 CronJob·수집 서버 | kube-state-metrics, Pushgateway | 기존 reviewmaps.* 규칙 |
-| 오점너 API (ojeomneo-server) | blackbox `ojeomneo-api`, 앱 /ojeomneo/metrics `up` | 앱 지표(DB 풀 포함), Istio |
-| 오점너 웹/관리자 | blackbox `ojeomneo-web`, `ojeomneo-admin` | Istio |
-| 오점너 Redis | blackbox PING `ojeomneo-redis` | redis-exporter (메모리, 거부 연결) |
+| ~~오점너 API·웹·관리자·Redis~~ | 2026-11-15 서비스 중지로 감시 제거 (`claudedocs/ojeomneo-shutdown.md`) | - |
 | yangobot / yangobot Redis | blackbox `yangobot` (/healthz), PING `yangobot-redis` | Istio, 컨테이너 자원 |
 | woohalabs app-ads.txt | blackbox `woohalabs-app-ads(-www)` | Istio |
 | ArgoCD | blackbox `argocd`, PING `argocd-redis` | argocd_app_info, sync 결과 (PodMonitor) |
@@ -316,7 +314,7 @@ go-scraper는 CronJob에서 키워드마다 프로세스를 띄워 수 초~수 �
 | Istio | Deployment 가용성 | istiod xDS 거부, gateway 요청 지표 |
 | cert-manager | Deployment 가용성 | Certificate Ready·갱신 시각, 실제 인증서 만료일(blackbox) |
 | External Secrets | Deployment 가용성 | ExternalSecret Ready 상태 |
-| Cloud SQL (reviewmaps, ojeomneo DB) | postgres-exporter `pg_up` | 연결 수, DB 크기, deadlock, 긴 트랜잭션, 캐시 적중률 |
+| Cloud SQL (reviewmaps DB) | postgres-exporter `pg_up` | 연결 수, DB 크기, deadlock, 긴 트랜잭션, 캐시 적중률 |
 | 노드·클러스터 | kube-state-metrics 노드 Ready | node-exporter CPU/메모리/디스크, requests 예약률 |
 | 모든 워크로드 (kube-system 포함) | Deployment/StatefulSet 가용 Pod 0개 | 재시작, OOMKilled, 시작 실패, 메모리 limit 대비, PVC |
 
@@ -324,9 +322,9 @@ go-scraper는 CronJob에서 키워드마다 프로세스를 띄워 수 초~수 �
 
 | 구성요소 | 위치 | 비고 |
 |----------|------|------|
-| blackbox exporter 11.21.3 | 차트 `charts/helm/prod/prometheus-blackbox-exporter`, override `valuefiles/prod/prometheus-blackbox-exporter/values.yaml` | 외부 URL 12개 + 내부 Redis 3개, 30~60초 간격. 검사 대상 추가는 override `serviceMonitor.targets` |
+| blackbox exporter 11.21.3 | 차트 `charts/helm/prod/prometheus-blackbox-exporter`, override `valuefiles/prod/prometheus-blackbox-exporter/values.yaml` | 외부 URL 9개 + 내부 Redis 2개 (오점너 4개는 2026-11-15 제거), 30~60초 간격. 검사 대상 추가는 override `serviceMonitor.targets` |
 | postgres-exporter 8.2.5 | 차트 `charts/helm/prod/prometheus-postgres-exporter`, override `valuefiles/prod/prometheus-postgres-exporter/values.yaml` | 접속 계정은 Secret `grafana-reviewmaps-db` 재사용 |
-| 추가 ServiceMonitor | kube-prometheus-stack override `prometheus.additionalServiceMonitors` | istiod, ojeomneo-server, ojeomneo-redis |
+| 추가 ServiceMonitor | kube-prometheus-stack override `prometheus.additionalServiceMonitors` | istiod (ojeomneo-server·ojeomneo-redis는 2026-11-15 제거) |
 | 추가 PodMonitor | kube-prometheus-stack override `prometheus.additionalPodMonitors` | ArgoCD 전체, External Secrets, Istio ingress gateway (서비스 요청 지표만 keep) |
 | cert-manager ServiceMonitor | `charts/helm/prod/cert-manager/values.yaml` `prometheus.servicemonitor.enabled` | |
 | 대시보드 | `dashboards/cluster-overview-dashboard.json` (uid `cluster-overview`) | 범위표 = 아래 10.4 |
@@ -382,9 +380,7 @@ go-scraper는 CronJob에서 키워드마다 프로세스를 띄워 수 초~수 �
 | DB | 가장 긴 트랜잭션 | 1분 미만 | 10분 초과 5분 → WARN |
 | DB | 캐시 적중률 | 99% 이상 | 90% 미만 30분 → INFO |
 | DB | Cloud SQL CPU / 메모리 / 디스크 | 50% / 65% / 50% 미만 | 80% → WARN, 메모리 95% → CRITICAL, 자동 확장 → INFO (`claudedocs/cloudsql-monitoring.md`) |
-| Redis | 거부 연결 / maxmemory 대비 | 0건 / 70% 미만 | 거부 발생 → WARN, 90% 초과 15분 → WARN |
-| 오점너 | API 서버 /metrics 수집 | 성공 | 5분 실패 → CRITICAL |
-| 오점너 | DB 커넥션 풀 사용률 | 50% 미만 | 90% 초과 10분 → WARN |
+| Redis | 접속 (PING, yangobot·argocd) | 항상 성공 | 3분 실패 → CRITICAL (거부 연결·메모리 규칙은 오점너 exporter 전용이라 2026-11-15 제거) |
 | 모니터링 | blackbox 지표 | 수집됨 | 10분 없음 → ERROR |
 
 ### 10.5 이번 범위에서 다루지 못한 것
@@ -393,7 +389,7 @@ go-scraper는 CronJob에서 키워드마다 프로세스를 띄워 수 초~수 �
 |------|-------------------|
 | ~~Cloud SQL CPU·메모리·디스크 실사용량~~ | 2026-11-13 구현: stackdriver-exporter + Workload Identity. `claudedocs/cloudsql-monitoring.md` |
 | 알림 시스템 자체 장애 감지 | Prometheus/Alertmanager가 죽으면 메일이 안 옴. Watchdog 알림을 외부 dead man's switch(예: healthchecks.io)로 보내야 감지 가능 |
-| ojeomneo 외 앱 내부 지표 | 리뷰맵 웹·관리자, 오점너 웹·관리자, yangobot은 /metrics가 없어 외부 요청 지표와 접속 검사로만 감시 |
+| 리뷰맵 서버 외 앱 내부 지표 | 리뷰맵 웹·관리자, yangobot은 /metrics가 없어 외부 요청 지표와 접속 검사로만 감시 |
 | yangobot·argocd Redis 상세 지표 | exporter sidecar를 붙이면 Redis Pod가 재시작되고 yangobot Redis는 persistence가 꺼져 있어 데이터가 사라짐 → PING 검사로 대체 |
 
 ### 10.6 작업 체크리스트
@@ -410,4 +406,4 @@ go-scraper는 CronJob에서 키워드마다 프로세스를 띄워 수 초~수 �
 - [x] 배포 직후 발생하는 알림 확인 및 오탐 조정 (#1147 Istio 필터·CPU 계산·디스크 범위·GKE 관리 컴포넌트 제외, #1148 비율 0 표시, exporter CPU limit 상향)
 - [x] 테스트 메일 4등급 발송 (Alertmanager 발송 실패 0건, 수신은 메일함에서 확인)
 - [x] 대시보드 화면 확인 (Playwright 캡처)
-- [ ] 오점너 Redis exporter CPU 쓰로틀링 (limit 50m): ojeomneo 차트 `redis.metrics.resources` 상향 필요, 변경 시 Redis Pod 재시작되므로 개발자 확인 후 진행
+- [x] ~~오점너 Redis exporter CPU 쓰로틀링~~ → 2026-11-15 오점너 서비스 중지로 해당 없음

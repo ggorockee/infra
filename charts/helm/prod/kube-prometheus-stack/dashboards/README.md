@@ -36,7 +36,7 @@ Prometheus 메트릭 모니터링을 위한 Grafana 대시보드 JSON 파일입�
 - 데이터소스: Prometheus (node-exporter, kube-state-metrics, Istio gateway, blackbox exporter, postgres-exporter, ArgoCD, cert-manager, External Secrets)
 
 **포함된 패널**:
-- 발생 중 알림 (등급별 수, 목록), 서비스 접속 상태 (외부 URL 12개 · 내부 Redis 3개)
+- 발생 중 알림 (등급별 수, 목록), 서비스 접속 상태 (외부 URL 9개 · 내부 Redis 2개)
 - 노드 CPU/메모리/디스크, 클러스터 requests 예약률
 - 사용 불가 워크로드, 비정상 Pod, 컨테이너 재시작, 메모리 limit 대비 사용률, PVC 사용률
 - 서비스별 요청 수·5xx·4xx·P95 (Istio gateway)
