@@ -534,6 +534,22 @@ additionalPrometheusRulesMap:
             annotations:
               summary: "❌ 돌려받엔 환율 수집이 3시간째 모두 실패"
               description: "30분마다 실행되는 수집이 3시간 동안 한 번도 성공하지 못했습니다. 인증키 오류(result=3), 일일 한도 초과(result=4), 네트워크 장애 중 하나입니다. result=3이면 개인정보 보유기간(2년) 만료로 키가 파기됐을 수 있습니다(재동의 메일 확인, 파기 시 재발급 후 prod-yen-back-credentials 갱신). 수집 로그를 확인하세요."
+          - alert: YenBackPlacesLimitReached
+            expr: increase(yenback_places_requests_total{result="limited"}[15m]) > 0
+            for: 0m
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 돌려받엔 근처 지점 검색 일일 한도 도달"
+              description: "Google Places 호출이 오늘(KST) 상한 PLACES_DAILY_LIMIT에 도달해 근처 지점 검색이 자정까지 꺼졌습니다. 매장 이름 입력은 계속 됩니다. 사용량이 정상 증가라면 한도를 올리고, 비정상 호출이면 캐시·요청 패턴을 확인하세요."
+          - alert: YenBackPlacesErrors
+            expr: increase(yenback_places_upstream_calls_total{result="error"}[30m]) > 5
+            for: 10m
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 돌려받엔 Google Places 호출 오류 증가"
+              description: "근처 지점 검색의 Google Places 호출이 계속 실패합니다. API 키(prod-yen-back-credentials의 GOOGLE_PLACES_API_KEY), Places API 활성화, 결제 계정 상태를 확인하세요."
           - alert: YenBackEventsRejected
             expr: sum(rate(yenback_app_events_rejected_total[15m])) > 0.05
             for: 30m
