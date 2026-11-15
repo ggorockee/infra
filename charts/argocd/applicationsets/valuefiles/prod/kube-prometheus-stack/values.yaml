@@ -541,7 +541,7 @@ additionalPrometheusRulesMap:
               severity: warning
             annotations:
               summary: "⚠️ 돌려받엔 근처 지점 검색 일일 한도 도달"
-              description: "Google Places 호출이 오늘(KST) 상한 PLACES_DAILY_LIMIT에 도달해 근처 지점 검색이 자정까지 꺼졌습니다. 매장 이름 입력은 계속 됩니다. 사용량이 정상 증가라면 한도를 올리고, 비정상 호출이면 캐시·요청 패턴을 확인하세요."
+              description: "Google Places 호출이 오늘(KST) 상한 PLACES_DAILY_LIMIT에 도달해 근처 지점 검색이 자정까지 꺼졌습니다. 매장 이름 입력은 계속 됩니다. 상한 160은 월 무료 5,000회 안에 머물기 위한 값입니다. 올리면 초과분이 1,000회당 $32로 과금되므로 docs/api/google-places-api.md의 비용표를 보고 결정하세요. GCP 쿼터(SearchTextRequest 160/일)도 함께 올려야 합니다."
           - alert: YenBackPlacesErrors
             expr: increase(yenback_places_upstream_calls_total{result="error"}[30m]) > 5
             for: 10m

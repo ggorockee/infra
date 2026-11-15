@@ -26,7 +26,8 @@ env:
   COLLECT_INTERVAL: "30m"
   LOG_LEVEL: "info"
   # Google Places 일일 과금 호출 상한 (KST 자정 초기화). 넘으면 근처 지점 검색만 잠시 꺼짐
-  PLACES_DAILY_LIMIT: "1000"
+  # 160 x 31일 = 4,960회 < 월 무료 5,000회 (Text Search Pro). GCP 쿼터도 160/일로 이중 제한
+  PLACES_DAILY_LIMIT: "160"
   # 비워두면 메모리 저장소. Postgres를 쓰려면 secret에 DATABASE_URL을 추가하세요.
 # GCP Secret Manager → ExternalSecret → Secret (envFrom)
 # 시크릿 이름: prod-yen-back-credentials (JSON: KOREAEXIM_API_KEY, INTERNAL_TOKEN, GOOGLE_PLACES_API_KEY)
