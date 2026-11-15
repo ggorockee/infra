@@ -45,9 +45,10 @@ service:
     beta.cloud.google.com/backend-config: '{"default": "istio-ingress-backendconfig"}'
 
 # Resource limits
+# [prod] 2026-11-15: 실사용 최대 8m (7일) → request 100m에서 50m로 축소 (limit 2000m 유지로 트래픽 급증 대응)
 resources:
   requests:
-    cpu: 100m
+    cpu: 50m
     memory: 128Mi
   limits:
     cpu: 2000m

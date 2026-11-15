@@ -236,11 +236,13 @@ server:
   # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 
   resources:
+    # 2026-11-15: limit 100m에서 수집 직후 키워드 알림 처리 시 CPU 쓰로틀링 88.7% → 배치 실패
+    #             (ReviewmapsScraperServerAPIError). 평균 사용은 낮지만 순간 폭주가 있어 limit 상향
     requests:
-      cpu: 20m
+      cpu: 50m
       memory: 100Mi
     limits:
-      cpu: 100m
+      cpu: 500m
       memory: 200Mi
 
   # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/

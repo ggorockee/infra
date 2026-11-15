@@ -88,7 +88,7 @@ grafana:
 
   resources:
     requests:
-      cpu: 100m
+      cpu: 50m  # 7일 최대 32m (2026-11-15 100m에서 축소)
       memory: 256Mi
     limits:
       cpu: 500m
@@ -179,7 +179,7 @@ prometheus:
     evaluationInterval: 30s
     resources:
       requests:
-        cpu: 200m
+        cpu: 100m  # 7일 p95 42m / 최대 59m (2026-11-15 200m에서 축소)
         memory: 1Gi
       limits:
         cpu: 1000m
@@ -273,7 +273,7 @@ alertmanager:
       - alertmanager-email-templates
     resources:
       requests:
-        cpu: 50m
+        cpu: 20m  # 7일 최대 3m
         memory: 64Mi
       limits:
         cpu: 200m
@@ -291,7 +291,7 @@ alertmanager:
 kube-state-metrics:
   resources:
     requests:
-      cpu: 50m
+      cpu: 20m  # 7일 최대 5m
       memory: 64Mi
     limits:
       cpu: 200m
@@ -311,7 +311,7 @@ prometheus-node-exporter:
 prometheusOperator:
   resources:
     requests:
-      cpu: 50m
+      cpu: 30m  # 7일 최대 22m
       memory: 128Mi
     limits:
       cpu: 200m

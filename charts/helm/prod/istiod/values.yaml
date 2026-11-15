@@ -18,9 +18,10 @@ _internal_defaults_do_not_set:
   traceSampling: 1.0
 
   # Resources for a small pilot install
+  # [prod] 2026-11-15: 실사용 최대 3m (7일) → 200m에서 50m로 축소 (노드 1대 장애 대비 예약 여유 확보, KubeCPUOvercommit)
   resources:
     requests:
-      cpu: 200m
+      cpu: 50m
       memory: 512Mi
 
   # Set to `type: RuntimeDefault` to use the default profile if available.
