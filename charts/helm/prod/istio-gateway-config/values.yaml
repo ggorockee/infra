@@ -158,7 +158,7 @@ virtualServices:
   # Ojeomneo Admin
   - name: ojeomneo-admin-vs
     namespace: ojeomneo
-    enabled: true
+    enabled: false  # 2026-11-15 오점너 서비스 중지 (claudedocs/ojeomneo-shutdown.md)
     hosts:
       - "admin.woohalabs.com"
     http:
@@ -173,7 +173,7 @@ virtualServices:
   # Ojeomneo API
   - name: ojeomneo-api-vs
     namespace: ojeomneo
-    enabled: true
+    enabled: false  # 2026-11-15 오점너 서비스 중지 (claudedocs/ojeomneo-shutdown.md)
     hosts:
       - "api.woohalabs.com"
     http:
@@ -212,7 +212,7 @@ virtualServices:
   # Ojeomneo Web (Next.js)
   - name: ojeomneo-web-vs
     namespace: ojeomneo
-    enabled: true
+    enabled: false  # 2026-11-15 오점너 서비스 중지 (claudedocs/ojeomneo-shutdown.md)
     hosts:
       - "woohalabs.com"
     http:
