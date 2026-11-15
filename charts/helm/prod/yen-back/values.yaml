@@ -7,31 +7,25 @@
 # 재시작 시 첫 요청/첫 수집에서 환율을 다시 받아옵니다 (최대 수 초).
 replicaCount: 1
 revisionHistoryLimit: 2
-
 image:
   repository: ggorockee/yen-back-server
   pullPolicy: IfNotPresent
   # CI(yen-back ci-server.yml)가 main 머지 시 날짜-커밋 태그로 갱신합니다.
-  tag: "latest"
-
+  tag: "20261115-8dd1c0d"
 nameOverride: ""
 fullnameOverride: ""
-
 podLabels:
   app: "yen-back-server"
   job: "yen-back-server"
-
 service:
   type: ClusterIP
   port: 8080
   metricsPort: 9090
-
 # 비밀이 아닌 환경 변수
 env:
   COLLECT_INTERVAL: "30m"
   LOG_LEVEL: "info"
   # 비워두면 메모리 저장소. Postgres를 쓰려면 secret에 DATABASE_URL을 추가하세요.
-
 # GCP Secret Manager → ExternalSecret → Secret (envFrom)
 # 시크릿 이름: prod-yen-back-credentials (JSON: KOREAEXIM_API_KEY, INTERNAL_TOKEN)
 externalSecret:
@@ -40,13 +34,11 @@ externalSecret:
   keys:
     - KOREAEXIM_API_KEY
     - INTERNAL_TOKEN
-
 metrics:
   serviceMonitor:
-    enabled: true  # kube-prometheus-stack이 모든 네임스페이스 ServiceMonitor 수집
+    enabled: true # kube-prometheus-stack이 모든 네임스페이스 ServiceMonitor 수집
     interval: 30s
     scrapeTimeout: 10s
-
 resources:
   requests:
     cpu: 10m
@@ -54,19 +46,16 @@ resources:
   limits:
     cpu: 200m
     memory: 128Mi
-
 podSecurityContext:
   runAsNonRoot: true
   runAsUser: 65532
   seccompProfile:
     type: RuntimeDefault
-
 securityContext:
   allowPrivilegeEscalation: false
   readOnlyRootFilesystem: true
   capabilities:
     drop: ["ALL"]
-
 livenessProbe:
   httpGet:
     path: /healthz
@@ -79,7 +68,6 @@ readinessProbe:
     port: http
   initialDelaySeconds: 2
   periodSeconds: 10
-
 nodeSelector: {}
 tolerations: []
 affinity: {}
