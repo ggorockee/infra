@@ -89,7 +89,7 @@ resource "helm_release" "external_secrets" {
           memory = "256Mi"
         }
         requests = {
-          cpu    = "100m"
+          cpu    = "20m" # 2026-11-15: 7일 최대 3m → 100m에서 축소 (KubeCPUOvercommit)
           memory = "128Mi"
         }
       }
@@ -99,7 +99,7 @@ resource "helm_release" "external_secrets" {
             memory = "128Mi"
           }
           requests = {
-            cpu    = "50m"
+            cpu    = "10m" # 2026-11-15: 7일 최대 1m → 50m에서 축소
             memory = "64Mi"
           }
         }
@@ -110,7 +110,7 @@ resource "helm_release" "external_secrets" {
             memory = "128Mi"
           }
           requests = {
-            cpu    = "50m"
+            cpu    = "10m" # 2026-11-15: 7일 최대 1m → 50m에서 축소
             memory = "64Mi"
           }
         }
