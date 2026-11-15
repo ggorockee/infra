@@ -473,6 +473,77 @@ additionalPrometheusRulesMap:
               description: "Prometheus가 5분간 reviewmaps-server /metrics를 수집하지 못했습니다. kubectl -n reviewmaps get pods 로 확인하세요."
 
 
+  # 돌려받엔 API 서버(yen-back) — 대시보드 "돌려받엔 (yen-back)"와 동일 기준
+  yen-back-server:
+    groups:
+      - name: yen-back.server
+        rules:
+          - alert: YenBackServerDown
+            expr: |
+              sum(up{namespace="yen-back", service="yen-back"}) == 0
+              or absent(up{namespace="yen-back", service="yen-back"})
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "❌ 돌려받엔 서버 메트릭 수집 불가 (서버 다운 가능성)"
+              description: "Prometheus가 5분간 yen-back /metrics(9090)를 수집하지 못했습니다. kubectl -n yen-back get pods 로 확인하세요."
+          - alert: YenBackHighErrorRate
+            expr: |
+              sum(rate(yenback_http_requests_total{status=~"5.."}[5m]))
+                / sum(rate(yenback_http_requests_total[5m])) > 0.05
+              and sum(rate(yenback_http_requests_total[5m])) > 0.01
+            for: 10m
+            labels:
+              severity: error
+            annotations:
+              summary: "❌ 돌려받엔 API 5xx 오류율 {{ $value | humanizePercentage }}"
+              description: "최근 5분 요청 중 5% 이상이 서버 오류입니다. 환율이 아직 없으면 /v1/rates/latest가 503을 반환합니다(YenBackNoRates 함께 확인). 대시보드: https://monitoring.ggorockee.com/d/yen-back"
+          - alert: YenBackSlow
+            expr: |
+              histogram_quantile(0.95, sum by (le) (rate(yenback_http_request_duration_seconds_bucket{route!~"/healthz|/readyz|/internal/.*|unmatched"}[5m]))) > 1
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 돌려받엔 API 응답 지연 (P95 {{ $value | humanizeDuration }})"
+              description: "상태 확인·내부 요청을 제외한 API의 P95 응답 시간이 15분간 1초를 넘었습니다. 저장소가 비어 있을 때는 첫 요청이 수출입은행 API를 직접 호출하므로 일시적으로 느릴 수 있습니다."
+          - alert: YenBackNoRates
+            expr: yenback_rate_age_days == -1
+            for: 30m
+            labels:
+              severity: error
+            annotations:
+              summary: "❌ 돌려받엔 환율 데이터 없음"
+              description: "서버가 30분간 환율을 한 번도 받지 못했습니다. 앱은 마지막 캐시로만 동작합니다. KOREAEXIM_API_KEY 시크릿(prod-yen-back-credentials)과 수집 로그(kubectl -n yen-back logs deploy/yen-back)를 확인하세요."
+          - alert: YenBackRatesStale
+            expr: yenback_rate_age_days > 4
+            for: 1h
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 돌려받엔 환율이 {{ $value }}일 지났습니다"
+              description: "최신 환율 기준일이 4일보다 오래됐습니다. 연휴(설·추석)에는 정상일 수 있습니다. 평일이면 수출입은행 API 장애나 키 만료를 확인하세요. 정상: 0~3일."
+          - alert: YenBackCollectorFailing
+            expr: |
+              increase(yenback_collector_runs_total{status="error"}[3h]) > 0
+              and on () sum(increase(yenback_collector_runs_total{status=~"ok|empty"}[3h])) == 0
+            for: 10m
+            labels:
+              severity: error
+            annotations:
+              summary: "❌ 돌려받엔 환율 수집이 3시간째 모두 실패"
+              description: "30분마다 실행되는 수집이 3시간 동안 한 번도 성공하지 못했습니다. 인증키 오류(result=3), 일일 한도 초과(result=4), 네트워크 장애 중 하나입니다. result=3이면 개인정보 보유기간(2년) 만료로 키가 파기됐을 수 있습니다(재동의 메일 확인, 파기 시 재발급 후 prod-yen-back-credentials 갱신). 수집 로그를 확인하세요."
+          - alert: YenBackEventsRejected
+            expr: sum(rate(yenback_app_events_rejected_total[15m])) > 0.05
+            for: 30m
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 돌려받엔 앱 활동 이벤트 거부 증가"
+              description: "앱이 보낸 활동 이벤트가 계속 거부되고 있습니다. 앱(AppEvent)과 서버 허용 목록(telemetry.AllowedEvents)이 어긋났거나 비정상 요청입니다. reason 라벨을 확인하세요."
+
+
   #########################################################################
   # 클러스터 전체 알림 규칙 (2026-11-13 추가)
   # - 등급: info=[INFO] / warning=[WARN] / error=[ERROR] / critical=[CRITICAL]

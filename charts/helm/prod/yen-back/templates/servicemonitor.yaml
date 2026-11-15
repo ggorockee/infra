@@ -1,0 +1,18 @@
+{{- if .Values.metrics.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "yen-back.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "yen-back.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "yen-back.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: {{ .Values.metrics.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout }}
+{{- end }}

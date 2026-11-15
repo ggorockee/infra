@@ -1,0 +1,6 @@
+env: prod
+revision: main
+chartName: yen-back
+appName: yen-back
+repoURL: https://github.com/ggorockee/infra
+namespace: yen-back
