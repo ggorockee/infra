@@ -165,7 +165,7 @@ infra/
 │       ├── dev/              # 개발 환경
 │       │   └── fridge2fork/  # Fridge2Fork 앱
 │       └── prod/             # 프로덕션 환경
-│           ├── ojeomneo/     # Ojeomneo 앱
+│           ├── ojeomneo/     # Ojeomneo 앱 (2026-11-15 중지, 차트만 보존)
 │           └── reviewmaps/   # ReviewMaps 앱
 ├── istio-config/              # Istio 서비스 메시 설정
 ├── istio-main-gateway/        # Istio 게이트웨이
@@ -435,10 +435,10 @@ feat: Cloud SQL 모듈 추가
 |----------|------|------|
 | kube-prometheus-stack 93.2.2 | 차트 `charts/helm/prod/kube-prometheus-stack`, override `valuefiles/prod/kube-prometheus-stack/values.yaml` | Prometheus 15일 보관, Alertmanager, Grafana, kube-state-metrics |
 | Prometheus Pushgateway 3.11.2 | 차트 `charts/helm/prod/prometheus-pushgateway`, override `valuefiles/prod/prometheus-pushgateway/values.yaml` | go-scraper 실행 결과 수신, PVC로 재시작 시 보존 |
-| blackbox exporter 11.21.3 | 차트 `charts/helm/prod/prometheus-blackbox-exporter`, override `valuefiles/prod/prometheus-blackbox-exporter/values.yaml` | 외부 URL 12개(2xx) + 내부 Redis 3개(PING) 접속 검사, 인증서 만료일. 대상 추가는 override `serviceMonitor.targets` |
+| blackbox exporter 11.21.3 | 차트 `charts/helm/prod/prometheus-blackbox-exporter`, override `valuefiles/prod/prometheus-blackbox-exporter/values.yaml` | 외부 URL 9개(2xx) + 내부 Redis 2개(PING) (오점너 4개는 2026-11-15 제거) 접속 검사, 인증서 만료일. 대상 추가는 override `serviceMonitor.targets` |
 | postgres-exporter 8.2.5 | 차트 `charts/helm/prod/prometheus-postgres-exporter`, override `valuefiles/prod/prometheus-postgres-exporter/values.yaml` | Cloud SQL `prod-woohalabs-cloudsql`(172.29.0.3, max_connections 100, 디스크 20GB 자동 확장). 계정은 Secret `grafana-reviewmaps-db` 재사용 |
 | stackdriver-exporter 5.2.2 | 차트 `charts/helm/prod/prometheus-stackdriver-exporter`, override `valuefiles/prod/prometheus-stackdriver-exporter/values.yaml` | Cloud SQL CPU·메모리·디스크 (Cloud Monitoring → Prometheus, 2분 간격·2~5분 지연). Workload Identity: KSA `monitoring/prometheus-stackdriver-exporter` → GSA `monitoring-reader-prod` (`roles/monitoring.viewer`, Terraform `modules/monitoring`). 문서 `claudedocs/cloudsql-monitoring.md` |
-| 추가 수집 대상 | kube-prometheus-stack override `prometheus.additionalServiceMonitors` / `additionalPodMonitors`, cert-manager 차트 values | istiod, Istio ingress gateway(서비스별 요청·응답 코드·지연), ArgoCD, External Secrets, ojeomneo-server(`/ojeomneo/metrics`), ojeomneo Redis, cert-manager |
+| 추가 수집 대상 | kube-prometheus-stack override `prometheus.additionalServiceMonitors` / `additionalPodMonitors`, cert-manager 차트 values | istiod, Istio ingress gateway(서비스별 요청·응답 코드·지연), ArgoCD, External Secrets, cert-manager (오점너 수집은 2026-11-15 중지로 제거) |
 | Grafana | `https://monitoring.ggorockee.com` (Istio VS `grafana-vs`) | Google OAuth + 관리자 `woohaen88` (비밀번호는 GSM `prod-monitoring-smtp-credentials.password`) |
 | Prometheus / Alertmanager | 외부 노출 없음 | 필요 시 `kubectl -n monitoring port-forward` |
 | GKE Managed Prometheus | 비활성화 (Terraform `managed_prometheus.enabled=false`) | 다시 켜지 않도록 주의 |
@@ -520,7 +520,6 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | platform.* | ArgoCD OutOfSync (WARN) / Degraded·sync 실패 (ERROR) / 배포 완료 (INFO), 인증서 Not Ready (ERROR), ExternalSecret 실패 (ERROR), Istio 설정 거부 (WARN), DNS SERVFAIL (WARN) |
 | database.* | Cloud SQL 접속 불가 (CRITICAL), 연결 80% (WARN), deadlock·긴 트랜잭션 (WARN), 캐시 적중률 90% 미만 (INFO), Redis 거부·메모리 (WARN) |
 | database.cloudsql | Cloud SQL CPU 80% (WARN), 메모리 80% (WARN) / 95% (CRITICAL), 디스크 80% (WARN), 디스크 자동 확장 (INFO), 트랜잭션 ID 50% (WARN), 지표 수집 안 됨 (ERROR) |
-| apps.ojeomneo | API 서버 수집 불가 (CRITICAL), DB 풀 90% (WARN) |
 
 기본 규칙 중 NodeMemoryHighUtilization, NodeCPUHighUsage는 위 cluster.nodes로 대체해 비활성화했습니다. Istio 지표의 `destination_service_name="unknown"`은 어떤 도메인에도 매칭되지 않는 요청(IP 직접 접근 스캐너)이고, 4xx 비율은 봇 요청이 많아 알림 없이 대시보드에서만 봅니다.
 
@@ -573,6 +572,15 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | 네이버 API (보강) | inflexer 호출 425 / 에러 0, reviewnote 호출 65 / 에러 0 |
 | 내부 배치 API | `/v1/internal/process-campaign-alerts` P95 약 0.9초 (정상) |
 
+### 중지된 서비스
+
+| 서비스 | 중지일 | 상태 | 문서 |
+|--------|--------|------|------|
+| 오점너 (ojeomneo) | 2026-11-15 | ArgoCD 앱·VirtualService·모니터링 제거, Gemini 키 삭제·API 비활성화·결제 해제. 데이터 보존 (Cloud SQL `ojeomneo` DB, GSM `prod-ojeomneo-*`, Redis PVC, 차트) | `claudedocs/ojeomneo-shutdown.md` (재개 절차 포함) |
+
+- 오점너 Google 자원(Gemini `gen-lang-client-0107981418`, Firebase `ojeomneo-e7f17`)은 `woohalabs@gmail.com` 소유. 기본 gcloud 계정(woohalabs11)은 권한 없음 → `--account=woohalabs@gmail.com`
+- woohalabs.com은 app-ads.txt(woohalabs-app-ads)만 서비스, 루트(/)는 404
+
 ### 2026-11-13 작업 이력 (PR)
 
 | 레포 | PR | 내용 |
@@ -594,6 +602,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | infra | #1146 | 클러스터 전체 모니터링 (blackbox, postgres-exporter, Istio·ArgoCD·ESO·cert-manager·오점너 수집, 규칙 약 50개, 4단계 메일, 클러스터 전체 현황 대시보드) |
 | infra | #1147, #1148 | 후속 수정 (Istio 필터 source_* labeldrop 충돌, CPU 계산, 디스크 범위, 비율 0 표시) |
 | infra | #1149 | exporter CPU limit 상향 (CPUThrottlingHigh), 문서 마무리 |
+| infra | #1161, #1162, #1163 | 오점너 서비스 중지 (모니터링 제거 → ArgoCD 앱 삭제 → VirtualService 비활성화) |
 | infra | #1150, #1151 | Cloud SQL 인스턴스 자원 모니터링 (Terraform `modules/monitoring` GSA + Workload Identity, stackdriver-exporter, 알림 `database.cloudsql`), 검증 결과 문서 |
 | reviewmaps | #275 | 서버 /metrics 500 수정 |
 | reviewmaps | #276 | GORM AutoMigrate 운영 비활성화 |
