@@ -203,6 +203,7 @@ prometheus:
   # 추가 수집 대상 (앱 차트를 건드리지 않고 여기서 일괄 관리)
   # - blackbox(외부 접속 검사), postgres-exporter는 각 차트의 ServiceMonitor 사용
   # - cert-manager는 charts/helm/prod/cert-manager/values.yaml 의 servicemonitor 사용
+  # - 오점너(ojeomneo-server, ojeomneo-redis)는 2026-11-15 서비스 중지로 제거 (claudedocs/ojeomneo-shutdown.md)
   ###################################################################
   additionalServiceMonitors:
     # Istio 컨트롤 플레인 (설정 배포 오류, xDS 푸시)
@@ -215,29 +216,6 @@ prometheus:
       endpoints:
         - port: http-monitoring
           interval: 60s
-    # 오점너 API 서버 (Go Fiber, /ojeomneo/metrics)
-    - name: ojeomneo-server
-      namespaceSelector:
-        matchNames: [ojeomneo]
-      selector:
-        matchLabels:
-          app.kubernetes.io/instance: ojeomneo
-          app.kubernetes.io/name: server
-      endpoints:
-        - port: fiber
-          path: /ojeomneo/metrics
-          interval: 30s
-    # 오점너 Redis (bitnami redis-exporter sidecar)
-    - name: ojeomneo-redis
-      namespaceSelector:
-        matchNames: [ojeomneo]
-      selector:
-        matchLabels:
-          app.kubernetes.io/instance: ojeomneo
-          app.kubernetes.io/component: metrics
-      endpoints:
-        - port: http-metrics
-          interval: 30s
 
   additionalPodMonitors:
     # ArgoCD 전 컴포넌트 (모든 Pod에 metrics 이름의 포트가 있음)
@@ -261,7 +239,7 @@ prometheus:
         - port: metrics
           interval: 60s
     # Istio ingress gateway: 외부에서 들어오는 모든 요청의 서비스별 요청 수·응답 코드·응답 시간
-    # 앱에 /metrics가 없어도(ojeomneo-web, yangobot 등) 여기서 HTTP 지표를 얻는다
+    # 앱에 /metrics가 없어도(reviewmaps-web, yangobot 등) 여기서 HTTP 지표를 얻는다
     - name: istio-ingressgateway
       namespaceSelector:
         matchNames: [istio-system]
@@ -732,7 +710,7 @@ additionalPrometheusRulesMap:
               description: "외부 요청 중 5% 이상이 서버 오류(5xx)입니다 (10분간 5건 이상일 때만). 503 + response_flags UH/UF는 Pod 없음/연결 실패입니다. 정상: 1% 미만."
           - alert: ServiceLatencyHigh
             expr: |
-              histogram_quantile(0.95, sum by (destination_service_namespace, destination_service_name, le) (rate(istio_request_duration_milliseconds_bucket{destination_service_namespace=~"reviewmaps|ojeomneo|lostark|woohalabs-app-ads", destination_service_name!="reviewmaps-server"}[5m]))) > 1000
+              histogram_quantile(0.95, sum by (destination_service_namespace, destination_service_name, le) (rate(istio_request_duration_milliseconds_bucket{destination_service_namespace=~"reviewmaps|lostark|woohalabs-app-ads", destination_service_name!="reviewmaps-server"}[5m]))) > 1000
               and sum by (destination_service_namespace, destination_service_name) (rate(istio_requests_total[5m])) > 0.05
             for: 15m
             labels:
@@ -859,7 +837,7 @@ additionalPrometheusRulesMap:
               severity: critical
             annotations:
               summary: "Cloud SQL 접속 불가"
-              description: "postgres-exporter가 2분간 Cloud SQL(172.29.0.3)에 접속하지 못했습니다. 리뷰맵·오점너 API가 모두 실패합니다. GCP 콘솔에서 인스턴스 상태(유지보수, 재시작)를 확인하세요. 정상: 항상 접속."
+              description: "postgres-exporter가 2분간 Cloud SQL(172.29.0.3)에 접속하지 못했습니다. 리뷰맵 API가 실패합니다. GCP 콘솔에서 인스턴스 상태(유지보수, 재시작)를 확인하세요. 정상: 항상 접속."
           - alert: PostgresExporterMissing
             expr: absent(pg_up)
             for: 10m
@@ -877,14 +855,14 @@ additionalPrometheusRulesMap:
               summary: "DB 연결 수 {{ $value | humanizePercentage }} (최대 100)"
               description: "Cloud SQL 연결이 최대치의 80%를 넘었습니다. 100에 도달하면 새 연결이 거부되어 API가 실패합니다. 앱 커넥션 풀 크기나 연결 누수를 확인하세요. 정상: 50% 미만."
           - alert: PostgresDeadlocks
-            expr: sum by (datname) (increase(pg_stat_database_deadlocks{datname=~"reviewmaps|ojeomneo"}[10m])) > 0
+            expr: sum by (datname) (increase(pg_stat_database_deadlocks{datname="reviewmaps"}[10m])) > 0
             labels:
               severity: warning
             annotations:
               summary: "DB 교착 상태(deadlock) {{ $value | printf \"%.0f\" }}건: {{ $labels.datname }}"
               description: "트랜잭션끼리 서로 잠금을 기다리다 하나가 취소되었습니다. 수집(DELETE 후 INSERT)과 API 쓰기가 겹치는지 확인하세요. 정상: 0건."
           - alert: PostgresLongTransaction
-            expr: max by (datname) (pg_stat_activity_max_tx_duration{datname=~"reviewmaps|ojeomneo"}) > 600
+            expr: max by (datname) (pg_stat_activity_max_tx_duration{datname="reviewmaps"}) > 600
             for: 5m
             labels:
               severity: warning
@@ -893,9 +871,9 @@ additionalPrometheusRulesMap:
               description: "오래 열린 트랜잭션은 잠금을 잡고 VACUUM을 막습니다. Grafana ReviewMaps-DB에서 pg_stat_activity를 확인하세요. 정상: 1분 미만."
           - alert: PostgresCacheHitLow
             expr: |
-              sum by (datname) (rate(pg_stat_database_blks_hit{datname=~"reviewmaps|ojeomneo"}[30m]))
-              / (sum by (datname) (rate(pg_stat_database_blks_hit{datname=~"reviewmaps|ojeomneo"}[30m])) + sum by (datname) (rate(pg_stat_database_blks_read{datname=~"reviewmaps|ojeomneo"}[30m]))) < 0.9
-              and sum by (datname) (rate(pg_stat_database_blks_read{datname=~"reviewmaps|ojeomneo"}[30m])) > 10
+              sum by (datname) (rate(pg_stat_database_blks_hit{datname="reviewmaps"}[30m]))
+              / (sum by (datname) (rate(pg_stat_database_blks_hit{datname="reviewmaps"}[30m])) + sum by (datname) (rate(pg_stat_database_blks_read{datname="reviewmaps"}[30m]))) < 0.9
+              and sum by (datname) (rate(pg_stat_database_blks_read{datname="reviewmaps"}[30m])) > 10
             for: 30m
             labels:
               severity: info
@@ -930,7 +908,7 @@ additionalPrometheusRulesMap:
               severity: critical
             annotations:
               summary: "Cloud SQL 메모리 고갈 직전 {{ $value | humanizePercentage }}"
-              description: "메모리가 95%를 넘었습니다. PostgreSQL 프로세스가 OOM으로 재시작되면 리뷰맵·오점너 API가 모두 끊깁니다. 연결을 줄이거나 인스턴스 등급 상향(db-custom)을 검토하세요. 정상: 65% 미만."
+              description: "메모리가 95%를 넘었습니다. PostgreSQL 프로세스가 OOM으로 재시작되면 리뷰맵 API가 끊깁니다. 연결을 줄이거나 인스턴스 등급 상향(db-custom)을 검토하세요. 정상: 65% 미만."
           - alert: CloudSQLDiskHigh
             expr: max by (database_id) (stackdriver_cloudsql_database_cloudsql_googleapis_com_database_disk_utilization) > 0.8
             for: 30m
@@ -962,44 +940,3 @@ additionalPrometheusRulesMap:
             annotations:
               summary: "Cloud SQL 자원 지표 수집 안 됨 (stackdriver-exporter 장애)"
               description: "20분간 Cloud Monitoring 지표가 들어오지 않았습니다. Cloud SQL CPU·메모리·디스크를 감시할 수 없는 상태입니다. kubectl -n monitoring logs deploy/prometheus-stackdriver-exporter 에서 권한(PermissionDenied)·Workload Identity 오류를 확인하세요."
-      - name: database.redis
-        rules:
-          - alert: RedisRejectedConnections
-            expr: sum by (namespace) (increase(redis_rejected_connections_total[10m])) > 0
-            labels:
-              severity: warning
-            annotations:
-              summary: "Redis 연결 거부 {{ $value | printf \"%.0f\" }}건: {{ $labels.namespace }}"
-              description: "maxclients 초과로 Redis가 연결을 거부했습니다. 정상: 0건."
-          - alert: RedisMemoryHigh
-            expr: max by (namespace) (redis_memory_used_bytes / redis_memory_max_bytes) > 0.9 and max by (namespace) (redis_memory_max_bytes) > 0
-            for: 15m
-            labels:
-              severity: warning
-            annotations:
-              summary: "Redis 메모리 {{ $value | humanizePercentage }}: {{ $labels.namespace }}"
-              description: "maxmemory의 90%를 넘었습니다. 키가 강제 삭제(eviction)되거나 쓰기가 거부됩니다. 정상: 70% 미만."
-
-  # 앱 (ojeomneo — 자체 /metrics 있음. reviewmaps는 위 reviewmaps.* 규칙)
-  apps-ojeomneo:
-    groups:
-      - name: apps.ojeomneo
-        rules:
-          - alert: OjeomneoServerDown
-            expr: |
-              sum(up{namespace="ojeomneo", service="ojeomneo-server"}) == 0
-              or absent(up{namespace="ojeomneo", service="ojeomneo-server"})
-            for: 5m
-            labels:
-              severity: critical
-            annotations:
-              summary: "오점너 API 서버 메트릭 수집 불가 (서버 다운 가능성)"
-              description: "Prometheus가 5분간 ojeomneo-server /ojeomneo/metrics를 수집하지 못했습니다. kubectl -n ojeomneo get pods 로 확인하세요."
-          - alert: OjeomneoDBPoolExhausted
-            expr: max(ojeomneo_db_connection_pool_in_use / ojeomneo_db_connection_pool_size) > 0.9
-            for: 10m
-            labels:
-              severity: warning
-            annotations:
-              summary: "오점너 DB 커넥션 풀 {{ $value | humanizePercentage }} 사용"
-              description: "커넥션 풀이 거의 다 찼습니다. 느린 쿼리나 연결 반환 누락을 확인하세요. 정상: 50% 미만."

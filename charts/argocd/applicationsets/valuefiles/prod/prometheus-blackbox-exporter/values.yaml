@@ -57,17 +57,8 @@ serviceMonitor:
     - name: reviewmaps-admin
       url: https://admin.review-maps.com/login/
       additionalMetricsRelabels: {app: reviewmaps, kind: external}
-    # ---------- 오점너 ----------
-    - name: ojeomneo-api
-      url: https://api.woohalabs.com/ojeomneo/v1/healthcheck/live
-      additionalMetricsRelabels: {app: ojeomneo, kind: external}
-    - name: ojeomneo-web
-      url: https://woohalabs.com/ojeomneo
-      additionalMetricsRelabels: {app: ojeomneo, kind: external}
-    - name: ojeomneo-admin
-      url: https://admin.woohalabs.com/ojeomneo/v1/healthcheck/live/
-      additionalMetricsRelabels: {app: ojeomneo, kind: external}
     # ---------- woohalabs app-ads.txt (광고 인증 파일, 없으면 광고 수익 중단) ----------
+    # (오점너 api/web/admin/redis 검사는 2026-11-15 서비스 중지로 제거)
     - name: woohalabs-app-ads
       url: https://woohalabs.com/app-ads.txt
       additionalMetricsRelabels: {app: woohalabs-app-ads, kind: external}
@@ -86,11 +77,6 @@ serviceMonitor:
       url: https://monitoring.ggorockee.com/api/health
       additionalMetricsRelabels: {app: monitoring, kind: external}
     # ---------- 내부 Redis (PING) ----------
-    - name: ojeomneo-redis
-      url: ojeomneo-redis-master.ojeomneo.svc.cluster.local:6379
-      module: redis_ping
-      interval: 60s
-      additionalMetricsRelabels: {app: ojeomneo, kind: internal}
     - name: yangobot-redis
       url: yangobot-redis.lostark.svc.cluster.local:6379
       module: redis_ping
