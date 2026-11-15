@@ -733,7 +733,7 @@ web:
   image:
     repository: ggorockee/reviewmaps-web
     pullPolicy: IfNotPresent
-    tag: "20261110-b4c6f08"
+    tag: "20261115-a5f8736"
 
   imagePullSecrets: []
   nameOverride: ""
