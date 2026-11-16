@@ -11,7 +11,7 @@ image:
   repository: ggorockee/yen-back-server
   pullPolicy: IfNotPresent
   # CI(yen-back ci-server.yml)가 main 머지 시 날짜-커밋 태그로 갱신합니다.
-  tag: "20261115-4c2fd14"
+  tag: "20261116-601b511"
 nameOverride: ""
 fullnameOverride: ""
 podLabels:
