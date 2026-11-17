@@ -16,17 +16,128 @@
 
 다른 노드 풀 `woohalabs-prod-spot-medium`(e2-medium)은 노드가 0대라 대상에서 뺐습니다.
 
-## 2. 사용한 명령어
+## 2. 작업 절차와 명령어
 
-| 단계 | 명령어 |
+오늘 실제로 한 작업을 순서대로 정리했습니다. 공통 옵션은 아래 값을 씁니다.
+
+| 약어 | 실제 값 |
+|------|---------|
+| `<공통>` | `--cluster woohalabs-prod-gke --zone asia-northeast3-a --project yanggo-514212` |
+| `<op>` | gcloud update 실행 시 출력되는 operation ID (증설 `operation-1794913157870-...`, 원복 `operation-1794914216498-...`) |
+
+### 2.1 사전 확인 (증설 전 1회)
+
+| 순서 | 한 일 | 명령어 | 확인 결과 |
+|------|-------|--------|-----------|
+| 1 | gcloud 로그인 계정 확인 | `gcloud auth list` | `woohalabs11@gmail.com`이 이미 활성 → `gcloud auth login` 불필요 |
+| 2 | 노드 풀과 머신 유형 확인 | `gcloud container node-pools list <공통>` | spot-large e2-highmem-2 (2~3대), spot-medium 0대 |
+| 3 | 노드 교체 방식 확인 | `gcloud container node-pools describe woohalabs-prod-spot-large <공통> --format="yaml(upgradeSettings)"` | SURGE, maxSurge 1 |
+| 4 | 실제 노드 확인 | `kubectl get nodes -L node.kubernetes.io/instance-type` | e2-highmem-2 2대 |
+| 5 | drain을 막을 PDB 확인 | `kubectl get pdb -A` | `istio-ingressgateway` ALLOWED DISRUPTIONS 0 |
+| 6 | ingressgateway 복제본·HPA 확인 | `kubectl -n istio-system get deploy,hpa` | 복제본 1개, HPA 없음 |
+| 7 | 디스크(PVC) 쓰는 Pod 확인 | `kubectl get statefulset -A` | Prometheus, Alertmanager, ArgoCD controller, yangobot-redis |
+| 8 | CPU 쿼터 확인 (교체 중 노드가 1대 더 생김) | `gcloud compute regions describe asia-northeast3 --project yanggo-514212` | CPUS 100 중 4 사용, 여유 충분 |
+| 9 | 실행 중인 CronJob 확인 | `kubectl get jobs -A` + 현재 시각 확인 | 실행 중 없음, 다음 CronJob 00:05 |
+| 10 | Terraform 정의 확인 | `gcp/terraform/modules/gke/main.tf`의 `machine_type` | e2-highmem-2 (작업 후 원복하므로 수정 안 함) |
+
+### 2.2 측정 준비 (작업 시작 전에 띄워 둠)
+
+| 기록 대상 | 명령어 | 남는 정보 |
+|-----------|--------|-----------|
+| 이벤트 | `kubectl get events -A -w --watch-only` | 노드 cordon·Pod 퇴거·스케줄 실패·디스크 연결 |
+| Service endpoint | `kubectl get endpointslices -A -w --watch-only` | 서비스별 endpoint ready true/false 변화 시각 |
+| Pod | `kubectl get pods -A -w --watch-only -o wide` | Pod 생성·삭제·Ready와 배치된 노드 |
+| 노드 | `kubectl get nodes -w --watch-only -L node.kubernetes.io/instance-type` | 노드 생성·NotReady·cordon·삭제 |
+| 외부 접속 | 로컬 PC에서 URL 8개에 2초마다 `curl -s -o /dev/null -m 3 -w "%{http_code} %{time_total}" <URL>` | 시각별 응답 코드와 응답 시간 |
+
+- watch 명령은 출력에 시각이 없어서, 줄마다 KST 시각을 붙여 파일로 저장했습니다.
+- 외부 검사 URL: api.review-maps.com/v1/healthz, review-maps.com, admin.review-maps.com/login/, monitoring.ggorockee.com/api/health, argocd.ggorockee.com/healthz, yangobot.ggorockee.com/healthz, woohalabs.com/app-ads.txt, yen-back.woohalabs.com/healthz
+- 증설 때는 이 감시를 첫 번째 노드 교체가 끝난 뒤(20:05)에 띄워서 첫 구간을 놓쳤습니다. 원복 때는 시작 전에 띄웠습니다.
+
+### 2.3 머신 유형 변경 실행
+
+| 작업 | 명령어 | 시작 시각 |
+|------|--------|-----------|
+| 증설 | `gcloud container node-pools update woohalabs-prod-spot-large <공통> --machine-type e2-highmem-4 --async` | 19:59:17 |
+| 원복(축소) | `gcloud container node-pools update woohalabs-prod-spot-large <공통> --machine-type e2-highmem-2 --async` | 20:16:54 |
+
+- 바꾸는 값은 `--machine-type` 하나뿐입니다. 노드 수 설정(2~3대)은 그대로 둡니다.
+- `--async`는 작업 완료를 기다리지 않고 operation ID만 받아 바로 끝내는 옵션입니다. 변경 결과는 같고, 작업 중에 감시와 조치를 함께 하려고 붙였습니다. 빼면 끝날 때까지 터미널이 기다립니다.
+
+### 2.4 진행 확인 (작업 중 반복)
+
+| 확인 내용 | 명령어 |
+|-----------|--------|
+| 작업 상태와 진행률 | `gcloud container operations describe <op> --zone asia-northeast3-a --project yanggo-514212` (status RUNNING/DONE, progress의 NODES_DONE, NODE_PDB_DELAY_SECONDS) |
+| 노드 교체 상황 | `kubectl get nodes -L node.kubernetes.io/instance-type` (SchedulingDisabled = 비우는 중인 기존 노드) |
+| 비우는 노드에 남은 Pod | `kubectl get pods -A -o wide --field-selector spec.nodeName=<기존 노드>` |
+| PDB 막힘 여부 | `kubectl get pdb -A` |
+
+### 2.5 PDB에 막혔을 때 강제 퇴거 (증설·원복 모두)
+
+| 순서 | 한 일 | 명령어 | 시각 |
+|------|-------|--------|------|
+| 1 | 비우는 노드에 DaemonSet 말고 ingressgateway만 남은 것 확인 | 2.4의 "남은 Pod" 명령 | 증설 20:04~, 원복 20:22:27 |
+| 2 | Pending Pod 없는지 확인 | `kubectl get pods -A` (Running/Completed 아닌 것) | |
+| 3 | ingressgateway Pod 직접 삭제 (PDB 무시) | `kubectl -n istio-system delete pod <ingressgateway Pod 이름> --wait=false` | 증설 20:11:56, 원복 20:23:53 |
+| 4 | 새 Pod Ready 확인 | `kubectl -n istio-system get pods -l app=istio-ingressgateway -o wide` | 증설 20:12:05, 원복 20:24:16 |
+
+`kubectl drain`과 GKE 노드 교체는 Eviction API를 써서 PDB를 지키지만, `kubectl delete pod`는 Eviction API를 거치지 않아 PDB의 제한을 받지 않습니다. 그대로 두면 GKE가 1시간 뒤 강제로 퇴거시킵니다 (5장).
+
+### 2.6 완료 확인
+
+| 확인 내용 | 명령어 | 결과 |
+|-----------|--------|------|
+| 작업 종료와 소요 시간 | `gcloud container operations describe <op> --zone asia-northeast3-a --project yanggo-514212 --format="yaml(status,startTime,endTime,error)"` | 증설 DONE 20:12:51, 원복 DONE 20:24:40 |
+| 노드 유형과 할당 가능 자원 | `kubectl get nodes -o custom-columns=NAME:.metadata.name,TYPE:.metadata.labels.node\.kubernetes\.io/instance-type,CPU:.status.allocatable.cpu,MEM:.status.allocatable.memory` | 증설 3920m/27.7GiB, 원복 1930m/13.0GiB |
+| 노드 풀 설정 | `gcloud container node-pools describe woohalabs-prod-spot-large <공통> --format="value(config.machineType,status)"` | 바뀐 유형, RUNNING |
+| 비정상 Pod | `kubectl get pods -A` (Running/Completed 아닌 것) | 없음 (원복 직후 삭제된 노드의 DaemonSet Pod는 잠시 Pending 후 사라짐) |
+| ArgoCD 앱 상태 | `kubectl -n argocd get applications` | 전부 Synced/Healthy |
+| 노드 사용량·예약률 | `kubectl top nodes`, `kubectl describe node <노드>`의 Allocated resources | 원복 후 `cv0o` 쏠림 확인 (7.7) |
+
+### 2.7 원복 중 장애 조치 (reviewmaps-admin)
+
+| 순서 | 한 일 | 명령어 | 결과 |
+|------|-------|--------|------|
+| 1 | 재시작 원인 확인 | `kubectl -n reviewmaps describe pod <admin Pod>` | liveness 실패로 반복 재시작 |
+| 2 | 로그 확인 | `kubectl -n reviewmaps logs <admin Pod> --tail=25` | gunicorn 기동 직후 term 신호로 종료 반복 |
+| 3 | 자원·probe 설정 확인 | `kubectl -n reviewmaps get pod <admin Pod> -o yaml` (resources, livenessProbe, readinessProbe) | CPU limit 100m, liveness 약 60초 |
+| 4 | 실제 CPU 사용량 | `kubectl -n reviewmaps top pod` | 101m (limit에 붙음) |
+| 5 | Pod 삭제 → 다른 노드에 재배치 | `kubectl -n reviewmaps delete pod <admin Pod> --wait=false` | `jtbg`에 배치, 20:29:25 Ready |
+
+### 2.8 결과 분석
+
+| 분석 내용 | 사용한 것 |
+|-----------|-----------|
+| 이벤트 전체 저장 (이벤트는 약 1시간 뒤 사라지므로 바로 저장) | `kubectl get events -A --sort-by=.lastTimestamp -o wide` |
+| 이벤트 사유별 개수, 워크로드별 이동 경로 | 저장한 이벤트의 `Scheduled`(배치된 노드), `Killing`, `FailedScheduling`, `FailedAttachVolume`, `NodeShutdown` 집계 |
+| Pod별 생성·배치·Ready 시각 | `kubectl get pods -A -o json`의 `metadata.creationTimestamp`, `status.conditions`(PodScheduled, Ready) |
+| Service 공백 시간 | 2.2 EndpointSlice 기록에서 ready가 false가 된 시각 → true가 된 시각 |
+| 외부 중단 구간 | 2.2 외부 검사 기록에서 8개 중 4개 이상 동시에 실패한 시각 |
+| Prometheus 접속 | `kubectl -n monitoring port-forward svc/kube-prometheus-stack-prometheus 19090:9090` 후 `http://localhost:19090/api/v1/query`로 조회 |
+
+Prometheus에서 조회한 쿼리:
+
+| 목적 | PromQL |
 |------|--------|
-| 증설 | `gcloud container node-pools update woohalabs-prod-spot-large --cluster woohalabs-prod-gke --zone asia-northeast3-a --project yanggo-514212 --machine-type e2-highmem-4 --async` |
-| 진행 확인 | `gcloud container operations describe <operation> --zone asia-northeast3-a --project yanggo-514212` (progress의 NODES_DONE, NODE_PDB_DELAY_SECONDS) |
-| 원복(축소) | 위 증설 명령에서 `--machine-type e2-highmem-2` |
-| 노드 확인 | `kubectl get nodes -L node.kubernetes.io/instance-type` |
+| blackbox 접속 실패와 수집 공백 | `probe_success[17m]` (원시 샘플 간격이 45초를 넘으면 공백) |
+| Istio 응답 코드·플래그 | `sum by (destination_service_name,response_code,response_flags)(increase(istio_requests_total[14m]))` |
+| admin 과거 재시작 | `max by (pod)(max_over_time(kube_pod_container_status_restarts_total{namespace="reviewmaps",container="admin"}[7d]))` |
+| admin CPU 쓰로틀링 | `container_cpu_cfs_throttled_periods_total` / `container_cpu_cfs_periods_total` (admin 컨테이너, 1시간 rate) |
+| 작업 중 발생한 알림 | `max by (alertname,severity)(max_over_time(ALERTS{alertstate="firing"}[38m]))` |
 
-- 노드 풀 머신 유형은 그 자리에서 바뀌지 않습니다. GKE가 새 사양 노드를 만들고, 기존 노드를 cordon·drain한 뒤 삭제하는 방식으로 한 대씩 교체합니다. 그래서 노드 이름과 IP가 바뀌고, 노드에 있던 Pod는 모두 다시 만들어집니다.
-- Terraform `gcp/terraform/modules/gke/main.tf`의 `machine_type`은 바꾸지 않았습니다. 원복 전에 Terraform이 적용되면 e2-highmem-2로 되돌아갑니다.
+### 2.9 정리
+
+| 순서 | 한 일 | 명령어 |
+|------|-------|--------|
+| 1 | 감시·외부 검사·port-forward 종료 | 백그라운드 `kubectl ... -w`, curl 반복, `port-forward` 프로세스 종료 |
+| 2 | Terraform 정의와 실제 일치 확인 | 원복 후 실제 e2-highmem-2 = `main.tf` e2-highmem-2 → 수정 불필요 |
+
+### 참고: 머신 유형 변경이 동작하는 방식
+
+- 머신 유형은 노드 풀 설정이라 노드 한 대만 따로 바꿀 수 없습니다. 노드 풀 설정을 바꾸면 GKE가 새 유형의 노드를 만들고, 기존 노드를 cordon·drain한 뒤 삭제하는 방식으로 한 대씩 교체합니다. 그래서 노드 이름과 IP가 바뀌고, 노드에 있던 Pod는 모두 다시 만들어집니다.
+- 노드 이름 변화: 처음 `pwk6`·`slrn` → 증설 후 `cxtu`·`o68s` → 원복 후 `cv0o`·`jtbg`
+- AWS EKS 관리형 노드 그룹도 같은 원리로, 인스턴스 타입을 바꾸면 EC2 인스턴스를 새로 만들어 교체합니다.
 
 ## 3. 측정 방법
 
