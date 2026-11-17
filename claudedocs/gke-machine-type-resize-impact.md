@@ -417,3 +417,65 @@ blackbox exporter와 Prometheus가 옮겨지는 동안 접속 검사가 멈췄�
 | 주요 서비스 복제본 2개 + topologySpreadConstraints | 서비스별 1~2분 공백 제거 |
 | admin 등 limit 낮은 Pod에 startupProbe 또는 CPU limit 상향 | 동시 기동 시 재시작 반복 방지 |
 | 작업 후 쏠림 확인 | `kubectl top nodes`와 Pod 배치를 확인하고 필요하면 재분배 |
+
+## 9. 노드가 1대일 때의 진행 방식 (예상)
+
+이번 측정은 노드 2대에서 했습니다. 이 장은 같은 노드 풀이 1대일 때 어떻게 진행될지를 이번 관찰에 근거해 정리한 것으로, 1대로 직접 시험한 결과는 아닙니다. 현재 `spot-large` 풀은 자동 확장 최소값이 2대라 평소에 1대가 되지는 않습니다.
+
+### 9.1 GKE가 의도하는 순서 (SURGE, maxSurge 1, maxUnavailable 0)
+
+| 단계 | 2대일 때 | 1대일 때 |
+|------|----------|----------|
+| 1 | 새 노드 1대 추가 (총 3대) | 새 노드 1대 추가 (총 2대) |
+| 2 | 기존 노드 1대 drain → Pod는 남은 노드들로 이동 | 기존 노드 drain → Pod는 새 노드로만 이동 |
+| 3 | 기존 노드 삭제 후 다음 노드 반복 | 기존 노드 삭제 후 종료 |
+
+이 순서대로라면 1대에서도 새 노드가 먼저 준비되어 Pod가 한 번에 옮겨 갑니다.
+
+### 9.2 이번에 실제로 관찰한 순서
+
+증설과 원복 모두 GKE가 새 노드가 Ready가 되기 전에 첫 번째 기존 노드를 먼저 비웠습니다.
+
+| 작업 | 첫 노드 drain 시작 | 새 노드 Ready | 차이 |
+|------|--------------------|---------------|------|
+| 증설 | 19:59:36 | 20:00:36 | 약 1분 |
+| 원복 | 20:17:14 | 20:18:16 | 약 1분 |
+
+2대일 때는 남은 기존 노드가 Pod를 받아 줘서 서비스가 버텼습니다. 그 대신 Pod가 두 번 옮겨졌습니다 (4.2, 7.1).
+
+### 9.3 1대에서 같은 순서가 되면 예상되는 영향
+
+| 시점 | 예상되는 일 |
+|------|-------------|
+| drain 시작 ~ 새 노드 Ready (약 1분) | 옮겨 갈 노드가 없어 모든 Pod가 Pending → 모든 서비스 중단 |
+| 새 노드 Ready 직후 | 모든 Pod가 한 노드에서 동시에 기동. 이미지 받기, 디스크(PVC) 분리·연결, CPU 경합으로 Ready까지 1~3분 더 걸림 |
+| 기동 경합 | 이번 원복의 reviewmaps-admin처럼 CPU limit이 낮은 Pod는 liveness에 걸려 재시작을 반복할 수 있음 (7.4) |
+| PDB | ingressgateway는 1대일 때도 똑같이 drain을 막음 → 직접 삭제하거나 1시간 대기 (5장) |
+| 모니터링 | Prometheus, Alertmanager, blackbox exporter도 함께 내려가 그 사이 알림이 나가지 않음 |
+| 전체 | 수 분 동안 모든 서비스 중단 예상. Pod 이동은 1번이지만, 그 1번이 전체 중단이 됨 |
+
+### 9.4 2대와 1대 비교
+
+| 항목 | 2대 (실측) | 1대 (예상) |
+|------|------------|------------|
+| Pod 이동 횟수 | 첫 노드 Pod 2회, 나머지 1회 | 1회 |
+| 서비스 중단 형태 | 서비스별로 이동할 때마다 1~2분씩 끊김 | 모든 서비스가 동시에 수 분 중단 |
+| 외부 진입점 | PDB 정체 후 직접 삭제 시 9~23초 | drain 중 다른 Pod와 함께 끊기거나 PDB에 막힘 |
+| 모니터링 | 1.5~4분 공백 | 전체 중단 동안 공백, 알림 미발송 |
+| 작업 후 배치 | 한 노드에 쏠릴 수 있음 | 원래 1대라 해당 없음 |
+
+### 9.5 1대에서 권장하는 방법: 새 노드 풀 먼저 만들기 (blue/green)
+
+| 순서 | 할 일 | 명령어 |
+|------|-------|--------|
+| 1 | 새 머신 유형으로 노드 풀 생성, 노드 Ready 확인 | `gcloud container node-pools create <새 풀> <공통> --machine-type <새 유형> --num-nodes 1 --spot` (기존 풀과 디스크·라벨·oauth scope 설정을 맞춤) |
+| 2 | 기존 노드 cordon (새 Pod가 기존 노드에 배치되지 않게) | `kubectl cordon <기존 노드>` |
+| 3 | PDB 대비: ingressgateway 복제본 임시 2개 | `kubectl -n istio-system scale deploy istio-ingressgateway --replicas=2` |
+| 4 | 기존 노드 drain → 준비된 새 노드로 한 번에 이동 | `kubectl drain <기존 노드> --ignore-daemonsets --delete-emptydir-data` |
+| 5 | 서비스·ArgoCD·알림 정상 확인 | 2.6 완료 확인 명령 |
+| 6 | 기존 노드 풀 삭제, ingressgateway 복제본 원복 | `gcloud container node-pools delete <기존 풀> <공통>`, `kubectl -n istio-system scale deploy istio-ingressgateway --replicas=1` |
+| 7 | Terraform 반영 | `gcp/terraform/modules/gke/main.tf` 노드 풀 정의를 새 풀 기준으로 수정 (안 하면 다음 apply에서 되돌아감) |
+
+- 새 노드가 먼저 준비되므로 "Pod가 갈 곳이 없는 1분"이 생기지 않습니다. 각 서비스는 재기동 1번(약 1~2분)만 끊깁니다.
+- 노드 풀 생성·삭제는 gcloud 쓰기 작업이라 실행 전에 승인이 필요합니다.
+- 1대일 때의 실제 동작을 확인하려면, 테스트용 노드 풀(1대)과 테스트 Deployment를 만들어 이 문서와 같은 방법(2.2 감시, 2.3 변경)으로 측정합니다.
