@@ -26,3 +26,20 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/name: {{ include "like-zzix.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/* 관리자 콘솔(정적 SPA) — 서버 Service·ServiceMonitor 셀렉터와 겹치지 않도록 name을 따로 둔다 */}}
+{{- define "like-zzix.adminName" -}}
+{{- printf "%s-admin" (include "like-zzix.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{- define "like-zzix.adminSelectorLabels" -}}
+app.kubernetes.io/name: {{ include "like-zzix.name" . }}-admin
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{- define "like-zzix.adminLabels" -}}
+helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{ include "like-zzix.adminSelectorLabels" . }}
+app.kubernetes.io/version: {{ .Values.admin.image.tag | quote }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}

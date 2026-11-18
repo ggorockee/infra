@@ -36,6 +36,12 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "like-zzix.fullname" . }}
+            {{- if .Values.externalSecret.enabled }}
+            # optional: Secret이 아직 없으면 DB 없이 번들 프리셋으로 기동 (likezzix_db_up=0 알림으로 감지)
+            - secretRef:
+                name: {{ include "like-zzix.fullname" . }}-credentials
+                optional: true
+            {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

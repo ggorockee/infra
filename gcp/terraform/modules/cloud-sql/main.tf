@@ -33,6 +33,12 @@ data "google_secret_manager_secret_version" "reviewmaps_db_credentials" {
   project = var.project_id
 }
 
+# 라익찍스 (like-zzix) Credentials (JSON 형식, 관리자 설정 키도 함께 보관 — ESO가 같은 Secret을 Pod에 주입)
+data "google_secret_manager_secret_version" "like_zzix_credentials" {
+  secret  = "prod-like-zzix-credentials"
+  project = var.project_id
+}
+
 # JSON 파싱을 위한 로컬 변수
 locals {
   # Ojeomneo credentials
@@ -46,6 +52,12 @@ locals {
   reviewmaps_user  = nonsensitive(local.reviewmaps_creds.POSTGRES_USER)
   reviewmaps_pass  = local.reviewmaps_creds.POSTGRES_PASSWORD
   reviewmaps_db    = nonsensitive(local.reviewmaps_creds.POSTGRES_DB)
+
+  # like-zzix credentials
+  like_zzix_creds = jsondecode(data.google_secret_manager_secret_version.like_zzix_credentials.secret_data)
+  like_zzix_user  = nonsensitive(local.like_zzix_creds.POSTGRES_USER)
+  like_zzix_pass  = local.like_zzix_creds.POSTGRES_PASSWORD
+  like_zzix_db    = nonsensitive(local.like_zzix_creds.POSTGRES_DB)
 }
 
 # ============================================================
@@ -77,7 +89,7 @@ resource "google_sql_database_instance" "main" {
 
     # IP 설정 (Private IP 전용 - Cloud SQL Proxy 사용)
     ip_configuration {
-      ipv4_enabled                                  = false  # Public IP 비활성화 (보안 강화)
+      ipv4_enabled                                  = false # Public IP 비활성화 (보안 강화)
       private_network                               = var.vpc_network_id
       enable_private_path_for_google_cloud_services = true
 
@@ -182,6 +194,22 @@ resource "google_sql_database" "reviewmaps" {
   }
 }
 
+# 라익찍스 Database (관리자 콘솔 프리셋·사진·세션)
+resource "google_sql_database" "like_zzix" {
+  name     = local.like_zzix_db
+  instance = google_sql_database_instance.main.name
+  project  = var.project_id
+
+  charset   = "UTF8"
+  collation = "en_US.UTF8"
+
+  depends_on = [google_sql_database_instance.main]
+
+  lifecycle {
+    ignore_changes = [name]
+  }
+}
+
 # ============================================================
 # Database Users (Secret Manager에서 가져온 credentials 사용)
 # ============================================================
@@ -211,6 +239,20 @@ resource "google_sql_user" "reviewmaps" {
   depends_on = [google_sql_database.reviewmaps]
 
   # Prevent accidental recreation due to sensitive attribute changes
+  lifecycle {
+    ignore_changes = [name]
+  }
+}
+
+# 라익찍스 User
+resource "google_sql_user" "like_zzix" {
+  name     = local.like_zzix_user
+  instance = google_sql_database_instance.main.name
+  password = local.like_zzix_pass
+  project  = var.project_id
+
+  depends_on = [google_sql_database.like_zzix]
+
   lifecycle {
     ignore_changes = [name]
   }

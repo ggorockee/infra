@@ -73,6 +73,9 @@ serviceMonitor:
     - name: like-zzix-api
       url: https://like-zzix.woohalabs.com/healthz
       additionalMetricsRelabels: {app: like-zzix, kind: external}
+    - name: like-zzix-admin
+      url: https://like-zzix-admin.woohalabs.com/healthz
+      additionalMetricsRelabels: {app: like-zzix, kind: external}
     # ---------- yangobot ----------
     - name: yangobot
       url: https://yangobot.ggorockee.com/healthz

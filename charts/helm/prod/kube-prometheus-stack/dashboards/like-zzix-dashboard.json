@@ -60,7 +60,7 @@
           },
           "options": {
             "mode": "markdown",
-            "content": "### 라익찍스 API 서버 (like-zzix)\n\n앱이 호출하는 Go API 서버의 상태와 **앱 사용 현황(촬영 퍼널)** 입니다. 서버 Pod의 /metrics(9090 포트, 외부 비공개)를 30초마다 수집합니다. 앱 이벤트는 개인 식별 정보 없이 이벤트 이름·횟수·프리셋 이름만 집계합니다.\n\n| 차트 | 🟢 정상 | 🟡 경고 | 🔴 알람 |\n|---|---|---|---|\n| 서버 상태 | UP | - | DOWN 5분 (LikeZzixServerDown, CRITICAL) |\n| 5xx 오류율 | 1% 미만 | 1~5% | 5% 초과 10분 (LikeZzixHighErrorRate, ERROR) |\n| P95 응답 시간 | 0.1초 미만 | 1초 초과 15분 (LikeZzixSlow, WARN) | - |\n| 사진 저장 실패율 (1시간) | 5% 미만 | 5~20% | 20% 초과 15분, 시도 5회 이상 (LikeZzixPhotoSaveFailing, WARN) |\n| 카메라 사용 불가 비율 (1시간) | 5% 미만 | 5~20% | 20% 초과 15분, 실행 5회 이상 (LikeZzixCameraUnavailableHigh, WARN) |\n| 거부된 이벤트 | 0 | 지속 발생 30분 (LikeZzixEventsRejected, WARN) | - |\n| Perfect Match 전환율 | 참고 지표 (알림 없음) | - | - |\n\n- **촬영 퍼널**: 프리셋 선택 → Perfect Match(\"지금 찍으세요!\") → 저장. 전환율이 유난히 낮은 프리셋은 판정 기준이 너무 엄격하거나 레퍼런스 구도가 어려운 것입니다.\n- **앱 버전 분포**: Remote Config `android_min_version`/`ios_min_version`을 올려 강제 업데이트한 뒤 구버전 요청이 줄어드는지 확인합니다.\n- 이벤트는 앱이 30초마다 모아서 보내므로 최대 30초 늦게 보입니다. 앱 출시 전에는 개발 기기 이벤트만 있습니다.\n"
+            "content": "### 라익찍스 API 서버 (like-zzix)\n\n앱이 호출하는 Go API 서버의 상태와 **앱 사용 현황(촬영 퍼널)** 입니다. 서버 Pod의 /metrics(9090 포트, 외부 비공개)를 30초마다 수집합니다. 앱 이벤트는 개인 식별 정보 없이 이벤트 이름·횟수·프리셋 이름만 집계합니다.\n\n| 차트 | 🟢 정상 | 🟡 경고 | 🔴 알람 |\n|---|---|---|---|\n| 서버 상태 | UP | - | DOWN 5분 (LikeZzixServerDown, CRITICAL) |\n| 5xx 오류율 | 1% 미만 | 1~5% | 5% 초과 10분 (LikeZzixHighErrorRate, ERROR) |\n| P95 응답 시간 | 0.1초 미만 | 1초 초과 15분 (LikeZzixSlow, WARN) | - |\n| 사진 저장 실패율 (1시간) | 5% 미만 | 5~20% | 20% 초과 15분, 시도 5회 이상 (LikeZzixPhotoSaveFailing, WARN) |\n| 카메라 사용 불가 비율 (1시간) | 5% 미만 | 5~20% | 20% 초과 15분, 실행 5회 이상 (LikeZzixCameraUnavailableHigh, WARN) |\n| 거부된 이벤트 | 0 | 지속 발생 30분 (LikeZzixEventsRejected, WARN) | - |\n| Perfect Match 전환율 | 참고 지표 (알림 없음) | - | - |\n| DB 연결 | 연결됨 | - | 끊김 5분 (LikeZzixDatabaseDown, ERROR) |\n| 프리셋 마지막 갱신 | 1분 이내 | 10분 초과 5분 (LikeZzixCatalogStale, WARN) | - |\n| 관리자 로그인 거부 (30분) | 0~2회 | 10회 이상 (LikeZzixAdminLoginDenied, WARN) | - |\n\n- **촬영 퍼널**: 프리셋 선택 → Perfect Match(\"지금 찍으세요!\") → 저장. 전환율이 유난히 낮은 프리셋은 판정 기준이 너무 엄격하거나 레퍼런스 구도가 어려운 것입니다.\n- **앱 버전 분포**: Remote Config `android_min_version`/`ios_min_version`을 올려 강제 업데이트한 뒤 구버전 요청이 줄어드는지 확인합니다.\n- **관리자 콘솔**(https://like-zzix-admin.woohalabs.com): 프리셋은 Cloud SQL에 있고 서버가 30초마다 다시 읽습니다. DB가 끊겨도 앱은 마지막 정상 목록으로 계속 동작하며, 편집·로그인만 멈춥니다.\n- 이벤트는 앱이 30초마다 모아서 보내므로 최대 30초 늦게 보입니다. 앱 출시 전에는 개발 기기 이벤트만 있습니다.\n"
           }
         }
       ]
@@ -1524,14 +1524,639 @@
     },
     {
       "type": "row",
-      "title": "⚙️ 런타임",
-      "id": 31,
-      "collapsed": true,
+      "title": "🛠️ 관리자 콘솔 · DB",
+      "id": 28,
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
         "y": 56
+      },
+      "panels": []
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 서버가 Cloud SQL(like_zzix)에 연결되는지 (likezzix_db_up)\n[보는 법] 끊김이면 앱은 마지막 정상 프리셋으로 동작, 관리자 편집·로그인 불가. Secret like-zzix-credentials 확인\n[범위] 🟢 연결됨 / 🔴 끊김 5분 = ERROR / 미설정 = DB 없이 번들 프리셋",
+      "type": "stat",
+      "title": "DB 연결",
+      "id": 29,
+      "gridPos": {
+        "x": 0,
+        "y": 57,
+        "w": 4,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "-1": {
+                  "text": "미설정",
+                  "color": "blue"
+                },
+                "0": {
+                  "text": "끊김"
+                },
+                "1": {
+                  "text": "연결됨"
+                }
+              }
+            }
+          ],
+          "noValue": "수집 안 됨"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(likezzix_db_up)",
+          "legendFormat": "",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] /v1/presets로 앱에 내려가는 프리셋 수\n[보는 법] 관리자 콘솔에서 공개/비공개를 바꾸면 30초 안에 반영\n[범위] 참고 값 (0이면 앱은 번들 프리셋 사용)",
+      "type": "stat",
+      "title": "앱 공개 프리셋",
+      "id": 30,
+      "gridPos": {
+        "x": 4,
+        "y": 57,
+        "w": 4,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(likezzix_presets{status=\"published\"})",
+          "legendFormat": "",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 관리자 콘솔에서 저장했지만 아직 공개하지 않은 프리셋 수\n[보는 법] 공개 전 검토 대기 수\n[범위] 참고 값",
+      "type": "stat",
+      "title": "비공개(작성 중) 프리셋",
+      "id": 31,
+      "gridPos": {
+        "x": 8,
+        "y": 57,
+        "w": 4,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(likezzix_presets{status=\"draft\"}) or vector(0)",
+          "legendFormat": "",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 서버가 DB에서 프리셋 목록을 마지막으로 읽은 뒤 지난 시간 (30초 주기)\n[보는 법] 길어지면 관리자 콘솔 변경이 앱에 반영되지 않음\n[범위] 🟢 1분 이내 / 🟡 10분 초과 = WARN",
+      "type": "stat",
+      "title": "프리셋 마지막 갱신",
+      "id": 32,
+      "gridPos": {
+        "x": 12,
+        "y": 57,
+        "w": 4,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 120
+              },
+              {
+                "color": "red",
+                "value": 600
+              }
+            ]
+          },
+          "noValue": "DB 미사용",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "time() - max(likezzix_catalog_last_success_timestamp_seconds)",
+          "legendFormat": "",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 관리자 콘솔 Google 로그인 성공 횟수\n[보는 법] 누가 언제 바꿨는지는 콘솔 목록의 '최근 수정'과 서버 로그(admin change)에서 확인\n[범위] 참고 값",
+      "type": "stat",
+      "title": "관리자 로그인 성공 (24시간)",
+      "id": 33,
+      "gridPos": {
+        "x": 16,
+        "y": 57,
+        "w": 4,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(likezzix_admin_logins_total{result=\"success\"}[24h])) or vector(0)",
+          "legendFormat": "",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 허용 목록에 없는 계정·잘못된 토큰·과도한 시도로 거부된 로그인\n[보는 법] 반복되면 무단 시도 또는 GOOGLE_CLIENT_ID 설정 오류\n[범위] 🟢 0~2회 / 🟡 10회 이상 = WARN",
+      "type": "stat",
+      "title": "관리자 로그인 거부 (30분)",
+      "id": 34,
+      "gridPos": {
+        "x": 20,
+        "y": 57,
+        "w": 4,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 3
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(likezzix_admin_logins_total{result!=\"success\"}[30m])) or vector(0)",
+          "legendFormat": "",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 관리자 콘솔에서 일어난 변경 (생성·수정·삭제·공개·비공개·사진)\n[보는 법] 변경 직후 앱 프리셋이 바뀌었는지 확인\n[범위] 참고 값",
+      "type": "timeseries",
+      "title": "관리자 변경 (시간당)",
+      "id": 35,
+      "gridPos": {
+        "x": 0,
+        "y": 61,
+        "w": 8,
+        "h": 7
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (action) (increase(likezzix_admin_changes_total[1h]))",
+          "legendFormat": "{{action}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 관리자 로그인 시도 결과별 횟수\n[보는 법] not_allowed = 허용 목록 밖 계정, invalid_token = 토큰 검증 실패, rate_limited = 분당 5회 초과\n[범위] 참고 값",
+      "type": "timeseries",
+      "title": "관리자 로그인 결과 (시간당)",
+      "id": 36,
+      "gridPos": {
+        "x": 8,
+        "y": 61,
+        "w": 8,
+        "h": 7
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (result) (increase(likezzix_admin_logins_total[1h]))",
+          "legendFormat": "{{result}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] DB 작업 오류(op별)와 프리셋 갱신 실패 횟수\n[보는 법] 0이 정상. 늘면 Cloud SQL 상태·연결 수 확인\n[범위] 🟢 0",
+      "type": "timeseries",
+      "title": "DB 오류·프리셋 갱신 실패 (시간당)",
+      "id": 37,
+      "gridPos": {
+        "x": 16,
+        "y": 61,
+        "w": 8,
+        "h": 7
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (op) (increase(likezzix_db_errors_total[1h]))",
+          "legendFormat": "DB 오류 {{op}}",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(likezzix_catalog_refreshes_total{result=\"error\"}[1h]))",
+          "legendFormat": "프리셋 갱신 실패",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "⚙️ 런타임",
+      "id": 41,
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 68
       },
       "panels": [
         {
@@ -1542,10 +2167,10 @@
           "description": "[무엇] 서버 프로세스 상주 메모리\n[보는 법] limit 128Mi에 가까워지면 OOMKilled 위험\n[범위] 🟢 64Mi 미만 / 🟡 115Mi(90%) 이상 = 클러스터 공통 WARN",
           "type": "timeseries",
           "title": "메모리 (RSS)",
-          "id": 28,
+          "id": 38,
           "gridPos": {
             "x": 0,
-            "y": 57,
+            "y": 69,
             "w": 8,
             "h": 7
           },
@@ -1599,10 +2224,10 @@
           "description": "[무엇] 서버 프로세스 CPU 사용량 (코어)\n[보는 법] limit 200m 근처에서 지속되면 쓰로틀링\n[범위] 🟢 0.05코어 미만",
           "type": "timeseries",
           "title": "CPU",
-          "id": 29,
+          "id": 39,
           "gridPos": {
             "x": 8,
-            "y": 57,
+            "y": 69,
             "w": 8,
             "h": 7
           },
@@ -1656,10 +2281,10 @@
           "description": "[무엇] Go 고루틴 수와 동시에 처리 중인 요청 수\n[보는 법] 계속 증가하면 누수\n[범위] 🟢 고루틴 수십 개 수준",
           "type": "timeseries",
           "title": "고루틴 / 처리 중 요청",
-          "id": 30,
+          "id": 40,
           "gridPos": {
             "x": 16,
-            "y": 57,
+            "y": 69,
             "w": 8,
             "h": 7
           },

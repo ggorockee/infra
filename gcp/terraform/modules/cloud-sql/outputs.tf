@@ -34,3 +34,13 @@ output "reviewmaps_user_name" {
   description = "ReviewMaps database user name"
   value       = google_sql_user.reviewmaps.name
 }
+
+output "like_zzix_database_name" {
+  description = "like-zzix database name"
+  value       = google_sql_database.like_zzix.name
+}
+
+output "like_zzix_user_name" {
+  description = "like-zzix database user name"
+  value       = google_sql_user.like_zzix.name
+}
