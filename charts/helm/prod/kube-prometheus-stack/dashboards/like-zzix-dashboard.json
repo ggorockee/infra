@@ -154,7 +154,9 @@
           },
           "expr": "sum(up{namespace=\"like-zzix\", service=\"like-zzix\"})",
           "legendFormat": "",
-          "refId": "A"
+          "refId": "A",
+          "instant": true,
+          "range": false
         }
       ]
     },
@@ -217,7 +219,9 @@
           },
           "expr": "max by (version) (likezzix_build_info)",
           "legendFormat": "{{version}}",
-          "refId": "A"
+          "refId": "A",
+          "instant": true,
+          "range": false
         }
       ]
     },
@@ -280,7 +284,9 @@
           },
           "expr": "sum(rate(likezzix_http_requests_total{route!~\"/healthz|/readyz\"}[5m])) * 60 or vector(0)",
           "legendFormat": "",
-          "refId": "A"
+          "refId": "A",
+          "instant": true,
+          "range": false
         }
       ]
     },
@@ -343,7 +349,9 @@
           },
           "expr": "sum(increase(likezzix_app_events_total{event=\"app_open\"}[24h])) or vector(0)",
           "legendFormat": "",
-          "refId": "A"
+          "refId": "A",
+          "instant": true,
+          "range": false
         }
       ]
     },
@@ -406,7 +414,9 @@
           },
           "expr": "sum(increase(likezzix_app_events_total{event=\"perfect_match\"}[24h])) or vector(0)",
           "legendFormat": "",
-          "refId": "A"
+          "refId": "A",
+          "instant": true,
+          "range": false
         }
       ]
     },
@@ -469,7 +479,9 @@
           },
           "expr": "sum(increase(likezzix_app_events_total{event=\"photo_saved\"}[24h])) or vector(0)",
           "legendFormat": "",
-          "refId": "A"
+          "refId": "A",
+          "instant": true,
+          "range": false
         }
       ]
     },
@@ -791,7 +803,9 @@
                 "value": 0.2
               }
             ]
-          }
+          },
+          "min": 0,
+          "max": 1
         },
         "overrides": []
       },
@@ -868,7 +882,9 @@
                 "value": 0.2
               }
             ]
-          }
+          },
+          "min": 0,
+          "max": 1
         },
         "overrides": []
       },
@@ -1407,7 +1423,9 @@
                 "value": 0.05
               }
             ]
-          }
+          },
+          "min": 0,
+          "max": 1
         },
         "overrides": []
       },
