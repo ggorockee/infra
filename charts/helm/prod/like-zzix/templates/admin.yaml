@@ -1,0 +1,74 @@
+{{- if .Values.admin.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "like-zzix.adminName" . }}
+  labels:
+    {{- include "like-zzix.adminLabels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.admin.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      {{- include "like-zzix.adminSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "like-zzix.adminLabels" . | nindent 8 }}
+        app: "like-zzix-admin"
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: admin
+          image: "{{ .Values.admin.image.repository }}:{{ .Values.admin.image.tag }}"
+          imagePullPolicy: {{ .Values.admin.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: {{ .Values.admin.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.admin.resources | nindent 12 }}
+          volumeMounts:
+            # nginx 임시 파일·pid (루트 파일시스템은 읽기 전용)
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "like-zzix.adminName" . }}
+  labels:
+    {{- include "like-zzix.adminLabels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: {{ .Values.admin.port }}
+      targetPort: http
+      protocol: TCP
+  selector:
+    {{- include "like-zzix.adminSelectorLabels" . | nindent 4 }}
+{{- end }}

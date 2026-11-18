@@ -422,6 +422,7 @@ feat: Cloud SQL 모듈 추가
 | 앱/인프라 차트 | ApplicationSet이 `charts/argocd/configurations/prod/*-cfg.yaml` 파일마다 Application 생성 | main 머지 시 자동 sync |
 | 리뷰맵 이미지 | reviewmaps 레포 main 머지 → CI가 이미지 빌드 → infra에 태그 PR 생성·자동 머지 | infra `charts/helm/prod/reviewmaps/values.yaml` 태그만 바뀜 |
 | 라익찍스 이미지 | like-zzix 레포 main 머지 → CI(`ci-server.yml`)가 `ggorockee/like-zzix-server` 빌드 → infra 태그 PR 생성·자동 머지 | infra `charts/helm/prod/like-zzix/values.yaml` 태그만 바뀜. like-zzix 레포에 DOCKERHUB_USERNAME/DOCKERHUB_TOKEN/INFRA_GITHUB_TOKEN 시크릿 필요 |
+| 라익찍스 관리자 콘솔 이미지 | like-zzix 레포 main 머지(`admin/**`) → CI(`ci-admin.yml`)가 `ggorockee/like-zzix-admin` 빌드 → infra 태그 PR(`admin.image.tag`) 자동 머지 | https://like-zzix-admin.woohalabs.com. 로그인은 Google(yanggo-514212 웹 클라이언트, 승인된 JS 출처에 콘솔 주소 등록 필요) + GSM `prod-like-zzix-credentials`의 ADMIN_EMAILS. 같은 GSM 키로 Terraform이 Cloud SQL DB·사용자 `like_zzix`를 만듦 |
 
 | ApplicationSet | generator 파일 패턴 | values |
 |----------------|--------------------|--------|
@@ -464,7 +465,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | ReviewMaps CronJob & DB 적재 (Home) | `reviewmaps-cronjob` | CronJob 성공/실패, Cloud SQL campaign 적재 건수 |
 | ReviewMaps 수집 서버 | `reviewmaps-scraper` | 지금 수집 중인 Job·키워드·진행률, go-scraper 키워드별 마지막 실행 결과 (Pushgateway) |
 | ReviewMaps HTTP Metrics | `reviewmaps-http-metrics` | Go API 서버 요청 수, P95, 5xx |
-| 라익찍스 (like-zzix) | `like-zzix` | API 서버 상태, 촬영 퍼널(프리셋 선택 → Perfect Match → 저장), 앱 버전 분포·업데이트 반응, 저장 실패·카메라 사용 불가 비율 |
+| 라익찍스 (like-zzix) | `like-zzix` | API 서버 상태, 촬영 퍼널(프리셋 선택 → Perfect Match → 저장), 앱 버전 분포·업데이트 반응, 저장 실패·카메라 사용 불가 비율, 관리자 콘솔·DB 연결·프리셋 갱신 |
 
 차트 색상 기준값 = 알림 규칙 기준값이므로 한쪽을 바꾸면 다른 쪽도 같이 바꿉니다. 대시보드를 새로 만들거나 고칠 때 아래 작성 규칙을 따릅니다 (사용자가 가독성을 직접 지적해 정한 규칙).
 

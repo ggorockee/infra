@@ -4,7 +4,8 @@
 # 대시보드: https://monitoring.ggorockee.com/d/like-zzix · 알림 그룹: like-zzix.server / like-zzix.app
 #########################################################################
 
-# 프리셋은 이미지에 포함(embed)되고 지표는 Prometheus가 수집하므로 상태 없는 1개로 운영합니다.
+# 프리셋은 Cloud SQL(관리자 콘솔에서 편집)에서 30초마다 다시 읽고, DB 장애 시 마지막 정상본·번들본으로 응답합니다.
+# 관리자 세션도 DB에 있으므로 여러 개로 늘려도 됩니다.
 replicaCount: 1
 revisionHistoryLimit: 2
 image:
@@ -21,9 +22,24 @@ service:
   type: ClusterIP
   port: 8080
   metricsPort: 9090
-# 비밀이 아닌 환경 변수 (시크릿 없음)
+# 비밀이 아닌 환경 변수
 env:
   LOG_LEVEL: "info"
+  # 관리자 콘솔 주소 (CORS 허용 출처)
+  ADMIN_ORIGIN: "https://like-zzix-admin.woohalabs.com"
+# 비밀 환경 변수: GSM prod-like-zzix-credentials (JSON) → ESO → Secret like-zzix-credentials
+# ADMIN_EMAILS(관리자 이메일 목록)·GOOGLE_CLIENT_ID도 공개 저장소에 두지 않으려고 같은 Secret에 보관합니다.
+externalSecret:
+  enabled: true
+  remoteKey: prod-like-zzix-credentials
+  keys:
+    - POSTGRES_HOST
+    - POSTGRES_PORT
+    - POSTGRES_USER
+    - POSTGRES_PASSWORD
+    - POSTGRES_DB
+    - ADMIN_EMAILS
+    - GOOGLE_CLIENT_ID
 metrics:
   serviceMonitor:
     enabled: true # kube-prometheus-stack이 모든 네임스페이스 ServiceMonitor 수집
@@ -61,3 +77,24 @@ readinessProbe:
 nodeSelector: {}
 tolerations: []
 affinity: {}
+
+#########################################################################
+# 관리자 콘솔 (Nuxt 정적 SPA + nginx) — https://like-zzix-admin.woohalabs.com
+# 소스: like-zzix admin/ · API는 같은 서버의 /admin/v1 (Google 로그인 + ADMIN_EMAILS)
+#########################################################################
+admin:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: ggorockee/like-zzix-admin
+    pullPolicy: IfNotPresent
+    # CI(like-zzix ci-admin.yml)가 main 머지 시 갱신합니다.
+    tag: "latest"
+  port: 8080
+  resources:
+    requests:
+      cpu: 5m
+      memory: 16Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi

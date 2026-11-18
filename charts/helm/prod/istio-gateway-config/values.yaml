@@ -233,6 +233,18 @@ virtualServices:
               host: like-zzix
               port: 8080
 
+  # 라익찍스 관리자 콘솔 (Nuxt 정적 SPA, Google 로그인 + 관리자 이메일 허용 목록은 API 서버가 검사)
+  - name: like-zzix-admin-vs
+    namespace: like-zzix
+    enabled: true
+    hosts:
+      - "like-zzix-admin.woohalabs.com"
+    http:
+      - route:
+          - destination:
+              host: like-zzix-admin
+              port: 8080
+
   # Ojeomneo Web (Next.js)
   - name: ojeomneo-web-vs
     namespace: ojeomneo
