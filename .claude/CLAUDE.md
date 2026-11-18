@@ -421,6 +421,7 @@ feat: Cloud SQL 모듈 추가
 | ApplicationSet | `argocd_yaml/*.yaml` | GitOps 대상 아님 → 머지 후 `kubectl apply -f argocd_yaml/<파일>` 직접 실행 |
 | 앱/인프라 차트 | ApplicationSet이 `charts/argocd/configurations/prod/*-cfg.yaml` 파일마다 Application 생성 | main 머지 시 자동 sync |
 | 리뷰맵 이미지 | reviewmaps 레포 main 머지 → CI가 이미지 빌드 → infra에 태그 PR 생성·자동 머지 | infra `charts/helm/prod/reviewmaps/values.yaml` 태그만 바뀜 |
+| 라익찍스 이미지 | like-zzix 레포 main 머지 → CI(`ci-server.yml`)가 `ggorockee/like-zzix-server` 빌드 → infra 태그 PR 생성·자동 머지 | infra `charts/helm/prod/like-zzix/values.yaml` 태그만 바뀜. like-zzix 레포에 DOCKERHUB_USERNAME/DOCKERHUB_TOKEN/INFRA_GITHUB_TOKEN 시크릿 필요 |
 
 | ApplicationSet | generator 파일 패턴 | values |
 |----------------|--------------------|--------|
@@ -463,6 +464,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | ReviewMaps CronJob & DB 적재 (Home) | `reviewmaps-cronjob` | CronJob 성공/실패, Cloud SQL campaign 적재 건수 |
 | ReviewMaps 수집 서버 | `reviewmaps-scraper` | 지금 수집 중인 Job·키워드·진행률, go-scraper 키워드별 마지막 실행 결과 (Pushgateway) |
 | ReviewMaps HTTP Metrics | `reviewmaps-http-metrics` | Go API 서버 요청 수, P95, 5xx |
+| 라익찍스 (like-zzix) | `like-zzix` | API 서버 상태, 촬영 퍼널(프리셋 선택 → Perfect Match → 저장), 앱 버전 분포·업데이트 반응, 저장 실패·카메라 사용 불가 비율 |
 
 차트 색상 기준값 = 알림 규칙 기준값이므로 한쪽을 바꾸면 다른 쪽도 같이 바꿉니다. 대시보드를 새로 만들거나 고칠 때 아래 작성 규칙을 따릅니다 (사용자가 가독성을 직접 지적해 정한 규칙).
 
@@ -506,6 +508,12 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | ReviewmapsServerHighErrorRate | API 5xx 5% 초과 10분 | ERROR |
 | ReviewmapsServerSlow | API P95 1초 초과 15분 (헬스체크, `/v1/internal/*` 내부 배치 제외) | WARN |
 | ReviewmapsServerDown | API 서버 메트릭 수집 불가 5분 | CRITICAL |
+| LikeZzixServerDown | 라익찍스 API 메트릭 수집 불가 5분 | CRITICAL |
+| LikeZzixHighErrorRate | 라익찍스 API 5xx 5% 초과 10분 | ERROR |
+| LikeZzixSlow | 라익찍스 API P95 1초 초과 15분 | WARN |
+| LikeZzixEventsRejected | 앱 이벤트 거부 지속 30분 (앱·서버 허용 목록 불일치) | WARN |
+| LikeZzixPhotoSaveFailing | 1시간 사진 저장 실패율 20% 초과 (시도 5회 이상) | WARN |
+| LikeZzixCameraUnavailableHigh | 1시간 카메라 사용 불가 비율 20% 초과 (실행 5회 이상) | WARN |
 
 클러스터 전체 규칙 (kube-prometheus-stack override, 그룹 이름 기준):
 

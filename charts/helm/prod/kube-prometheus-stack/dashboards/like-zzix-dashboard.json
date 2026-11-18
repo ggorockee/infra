@@ -1,0 +1,1692 @@
+{
+  "uid": "like-zzix",
+  "title": "라익찍스 (like-zzix)",
+  "tags": [
+    "like-zzix",
+    "라익찍스",
+    "api",
+    "app"
+  ],
+  "timezone": "browser",
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "version": 1,
+  "editable": true,
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row",
+      "title": "📖 이 대시보드 보는 법 — 정상/경고/알람 범위표 (펼치기)",
+      "id": 2,
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "panels": [
+        {
+          "type": "text",
+          "title": "이 대시보드 보는 법",
+          "id": 1,
+          "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 14
+          },
+          "options": {
+            "mode": "markdown",
+            "content": "### 라익찍스 API 서버 (like-zzix)\n\n앱이 호출하는 Go API 서버의 상태와 **앱 사용 현황(촬영 퍼널)** 입니다. 서버 Pod의 /metrics(9090 포트, 외부 비공개)를 30초마다 수집합니다. 앱 이벤트는 개인 식별 정보 없이 이벤트 이름·횟수·프리셋 이름만 집계합니다.\n\n| 차트 | 🟢 정상 | 🟡 경고 | 🔴 알람 |\n|---|---|---|---|\n| 서버 상태 | UP | - | DOWN 5분 (LikeZzixServerDown, CRITICAL) |\n| 5xx 오류율 | 1% 미만 | 1~5% | 5% 초과 10분 (LikeZzixHighErrorRate, ERROR) |\n| P95 응답 시간 | 0.1초 미만 | 1초 초과 15분 (LikeZzixSlow, WARN) | - |\n| 사진 저장 실패율 (1시간) | 5% 미만 | 5~20% | 20% 초과 15분, 시도 5회 이상 (LikeZzixPhotoSaveFailing, WARN) |\n| 카메라 사용 불가 비율 (1시간) | 5% 미만 | 5~20% | 20% 초과 15분, 실행 5회 이상 (LikeZzixCameraUnavailableHigh, WARN) |\n| 거부된 이벤트 | 0 | 지속 발생 30분 (LikeZzixEventsRejected, WARN) | - |\n| Perfect Match 전환율 | 참고 지표 (알림 없음) | - | - |\n\n- **촬영 퍼널**: 프리셋 선택 → Perfect Match(\"지금 찍으세요!\") → 저장. 전환율이 유난히 낮은 프리셋은 판정 기준이 너무 엄격하거나 레퍼런스 구도가 어려운 것입니다.\n- **앱 버전 분포**: Remote Config `android_min_version`/`ios_min_version`을 올려 강제 업데이트한 뒤 구버전 요청이 줄어드는지 확인합니다.\n- 이벤트는 앱이 30초마다 모아서 보내므로 최대 30초 늦게 보입니다. 앱 출시 전에는 개발 기기 이벤트만 있습니다.\n"
+          }
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "🩺 한눈에 보기",
+      "id": 3,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "panels": []
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] Prometheus가 서버 /metrics를 수집할 수 있는지 (up)\n[보는 법] DOWN이면 Pod가 없거나 기동 실패. kubectl -n like-zzix get pods\n[범위] UP 정상 / DOWN 5분 = CRITICAL",
+      "type": "stat",
+      "title": "서버 상태",
+      "id": 4,
+      "gridPos": {
+        "x": 0,
+        "y": 2,
+        "w": 4,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "DOWN"
+                },
+                "1": {
+                  "text": "UP"
+                }
+              }
+            }
+          ],
+          "noValue": "DOWN (수집 안 됨)"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(up{namespace=\"like-zzix\", service=\"like-zzix\"})",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 실행 중인 서버 이미지 태그 (likezzix_build_info)\n[보는 법] 배포 직후 새 태그로 바뀌었는지 확인\n[범위] 참고 값",
+      "type": "stat",
+      "title": "배포 버전",
+      "id": 5,
+      "gridPos": {
+        "x": 4,
+        "y": 2,
+        "w": 4,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "noValue": "버전 정보 없음"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (version) (likezzix_build_info)",
+          "legendFormat": "{{version}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 최근 5분 평균 분당 요청 수 (상태 확인 제외)\n[보는 법] 앱 출시 전에는 0에 가까운 것이 정상\n[범위] 참고 값",
+      "type": "stat",
+      "title": "분당 API 요청",
+      "id": 6,
+      "gridPos": {
+        "x": 8,
+        "y": 2,
+        "w": 4,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "reqpm",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(rate(likezzix_http_requests_total{route!~\"/healthz|/readyz\"}[5m])) * 60 or vector(0)",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 앱이 스플래시를 지나 카메라 화면에 들어간 횟수\n[보는 법] 일별 사용량의 기준값\n[범위] 참고 값",
+      "type": "stat",
+      "title": "앱 실행 (24시간)",
+      "id": 7,
+      "gridPos": {
+        "x": 12,
+        "y": 2,
+        "w": 4,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(likezzix_app_events_total{event=\"app_open\"}[24h])) or vector(0)",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] \"지금 찍으세요!\"가 뜬 횟수 (포즈·각도 일치 0.3초 유지)\n[보는 법] 앱 실행 대비 너무 적으면 판정 기준이 엄격한 것\n[범위] 참고 값",
+      "type": "stat",
+      "title": "Perfect Match (24시간)",
+      "id": 8,
+      "gridPos": {
+        "x": 16,
+        "y": 2,
+        "w": 4,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(likezzix_app_events_total{event=\"perfect_match\"}[24h])) or vector(0)",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 촬영 후 갤러리 저장 성공 횟수\n[보는 법] 앱의 핵심 결과물 수\n[범위] 참고 값",
+      "type": "stat",
+      "title": "저장된 사진 (24시간)",
+      "id": 9,
+      "gridPos": {
+        "x": 20,
+        "y": 2,
+        "w": 4,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(likezzix_app_events_total{event=\"photo_saved\"}[24h])) or vector(0)",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "📸 촬영 퍼널 (프리셋 선택 → Perfect Match → 저장)",
+      "id": 10,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "panels": []
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 프리셋을 고른 횟수\n[보는 법] 인기 프리셋 확인. 0인 프리셋은 노출·썸네일 개선 대상\n[범위] 참고 값",
+      "type": "bargauge",
+      "title": "프리셋별 선택 (24시간)",
+      "id": 11,
+      "gridPos": {
+        "x": 0,
+        "y": 7,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlYlRd"
+          },
+          "decimals": 0,
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "showUnfilled": true,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sort_desc(sum by (preset) (increase(likezzix_preset_events_total{event=\"preset_selected\"}[24h])))",
+          "legendFormat": "{{preset}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 선택 대비 Perfect Match 비율 (선택이 있었던 프리셋만)\n[보는 법] 유난히 낮은 프리셋은 레퍼런스 구도가 어렵거나 판정 기준(10%/13%)이 엄격한 것\n[범위] 참고 지표 (알림 없음)",
+      "type": "bargauge",
+      "title": "프리셋별 Perfect Match 전환율 (24시간)",
+      "id": 12,
+      "gridPos": {
+        "x": 8,
+        "y": 7,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": null,
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.2
+              },
+              {
+                "color": "green",
+                "value": 0.5
+              }
+            ]
+          },
+          "noValue": "선택된 프리셋 없음"
+        },
+        "overrides": []
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "showUnfilled": true,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sort_desc(sum by (preset) (increase(likezzix_preset_events_total{event=\"perfect_match\"}[24h])) / (sum by (preset) (increase(likezzix_preset_events_total{event=\"preset_selected\"}[24h])) > 0))",
+          "legendFormat": "{{preset}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 프리셋을 고른 상태에서 저장한 사진 수\n[보는 법] 실제 결과물로 이어진 프리셋\n[범위] 참고 값",
+      "type": "bargauge",
+      "title": "프리셋별 저장 (24시간)",
+      "id": 13,
+      "gridPos": {
+        "x": 16,
+        "y": 7,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlYlRd"
+          },
+          "decimals": 0,
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "showUnfilled": true,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sort_desc(sum by (preset) (increase(likezzix_preset_events_total{event=\"photo_saved\"}[24h])))",
+          "legendFormat": "{{preset}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 시간당 프리셋 선택 / Perfect Match / 저장 횟수\n[보는 법] 세 선의 간격이 벌어지면 해당 단계에서 이탈\n[범위] 참고 값",
+      "type": "timeseries",
+      "title": "퍼널 추이 (시간당)",
+      "id": 14,
+      "gridPos": {
+        "x": 0,
+        "y": 15,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(likezzix_app_events_total{event=\"preset_selected\"}[1h]))",
+          "legendFormat": "프리셋 선택",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(likezzix_app_events_total{event=\"perfect_match\"}[1h]))",
+          "legendFormat": "Perfect Match",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(likezzix_app_events_total{event=\"photo_saved\"}[1h]))",
+          "legendFormat": "저장",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 저장 시도 중 실패 비율 (권한 거부 포함)\n[보는 법] 올라가면 저장 권한 거부 또는 기기 저장 공간 문제. 앱 로그·Crashlytics 확인\n[범위] 🟢 5% 미만 / 🟡 5~20% / 🔴 20% 초과 15분(시도 5회 이상) = WARN",
+      "type": "timeseries",
+      "title": "사진 저장 실패율 (1시간)",
+      "id": 15,
+      "gridPos": {
+        "x": 8,
+        "y": 15,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "percentunit",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.05
+              },
+              {
+                "color": "red",
+                "value": 0.2
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(likezzix_app_events_total{event=\"photo_save_failed\"}[1h])) / clamp_min(sum(increase(likezzix_app_events_total{event=~\"photo_saved|photo_save_failed\"}[1h])), 1)",
+          "legendFormat": "실패율",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 앱 실행 중 카메라를 열지 못한 비율 (권한 거부·기기 오류)\n[보는 법] 특정 앱 버전 배포 후 오르면 카메라 초기화 회귀\n[범위] 🟢 5% 미만 / 🟡 5~20% / 🔴 20% 초과 15분(실행 5회 이상) = WARN",
+      "type": "timeseries",
+      "title": "카메라 사용 불가 비율 (1시간)",
+      "id": 16,
+      "gridPos": {
+        "x": 16,
+        "y": 15,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "percentunit",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.05
+              },
+              {
+                "color": "red",
+                "value": 0.2
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(likezzix_app_events_total{event=\"camera_unavailable\"}[1h])) / clamp_min(sum(increase(likezzix_app_events_total{event=\"app_open\"}[1h])), 1)",
+          "legendFormat": "사용 불가 비율",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "📱 앱 사용 현황",
+      "id": 17,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "panels": []
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] X-App-Platform 헤더 기준 요청 수. none = 앱이 아닌 요청\n[보는 법] iOS/Android 비중 확인\n[범위] 참고 값",
+      "type": "timeseries",
+      "title": "플랫폼별 앱 요청 (분당)",
+      "id": 18,
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "reqpm",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (platform) (rate(likezzix_app_requests_total[5m])) * 60",
+          "legendFormat": "{{platform}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] X-App-Version 헤더 기준 요청 수\n[보는 법] 강제 업데이트(Remote Config min 버전) 후 구버전이 줄어드는지 확인\n[범위] 참고 값",
+      "type": "bargauge",
+      "title": "앱 버전별 요청 (24시간)",
+      "id": 19,
+      "gridPos": {
+        "x": 8,
+        "y": 24,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlYlRd"
+          },
+          "decimals": 0,
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "noValue": "앱 요청 없음"
+        },
+        "overrides": []
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "showUnfilled": true,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sort_desc(sum by (app_version) (increase(likezzix_app_requests_total{platform=~\"ios|android\"}[24h])))",
+          "legendFormat": "{{app_version}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 업데이트 팝업 노출과 반응 (선택/강제 노출, 업데이트, 나중에)\n[보는 법] Remote Config 최신 버전을 올린 뒤 업데이트 클릭 비율 확인\n[범위] 참고 값",
+      "type": "bargauge",
+      "title": "업데이트 안내 반응 (24시간)",
+      "id": 20,
+      "gridPos": {
+        "x": 16,
+        "y": 24,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlYlRd"
+          },
+          "decimals": 0,
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "showUnfilled": true,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (event) (increase(likezzix_app_events_total{event=~\"update_prompt_shown|force_update_shown|update_accepted|update_dismissed\"}[24h]))",
+          "legendFormat": "{{event}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 이벤트별 시간당 횟수\n[보는 법] 출시·업데이트 직후 변화 확인\n[범위] 참고 값",
+      "type": "timeseries",
+      "title": "활동 이벤트 추이 (시간당)",
+      "id": 21,
+      "gridPos": {
+        "x": 0,
+        "y": 32,
+        "w": 16,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (event) (increase(likezzix_app_events_total[1h]))",
+          "legendFormat": "{{event}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 허용 목록에 없는 이름, 잘못된 횟수, 형식 오류로 거부된 이벤트\n[보는 법] 앱(AppEvent)과 서버(telemetry.AllowedEvents) 목록이 어긋나면 발생\n[범위] 🟢 0 / 🟡 지속 30분 = WARN",
+      "type": "timeseries",
+      "title": "거부된 이벤트 (분당)",
+      "id": 22,
+      "gridPos": {
+        "x": 16,
+        "y": 32,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (reason) (rate(likezzix_app_events_rejected_total[5m])) * 60",
+          "legendFormat": "{{reason}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "🌐 API",
+      "id": 23,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
+      "panels": []
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 라우트 패턴별 요청 수. unmatched = 존재하지 않는 경로(스캐너 등)\n[보는 법] /v1/presets(앱 시작), /v1/events(30초마다) 비중 확인\n[범위] 참고 값",
+      "type": "timeseries",
+      "title": "경로별 요청 수 (분당)",
+      "id": 24,
+      "gridPos": {
+        "x": 0,
+        "y": 41,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "reqpm",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (route) (rate(likezzix_http_requests_total{route!~\"/healthz|/readyz\"}[5m])) * 60",
+          "legendFormat": "{{route}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 상태 확인·존재하지 않는 경로 제외 응답 시간\n[보는 법] 프리셋은 메모리에서 바로 응답하므로 수 ms가 정상\n[범위] 🟢 0.1초 미만 / 🟡 P95 1초 초과 15분 = WARN",
+      "type": "timeseries",
+      "title": "응답 시간 (P50 / P95 / P99)",
+      "id": 25,
+      "gridPos": {
+        "x": 12,
+        "y": 41,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.5, sum by (le) (rate(likezzix_http_request_duration_seconds_bucket{route!~\"/healthz|/readyz|unmatched\"}[5m])))",
+          "legendFormat": "P50",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(likezzix_http_request_duration_seconds_bucket{route!~\"/healthz|/readyz|unmatched\"}[5m])))",
+          "legendFormat": "P95",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(likezzix_http_request_duration_seconds_bucket{route!~\"/healthz|/readyz|unmatched\"}[5m])))",
+          "legendFormat": "P99",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 전체 요청 중 5xx 비율\n[보는 법] 서버 오류. 로그는 kubectl -n like-zzix logs deploy/like-zzix\n[범위] 🟢 1% 미만 / 🟡 1~5% / 🔴 5% 초과 10분 = ERROR",
+      "type": "timeseries",
+      "title": "5xx 오류율",
+      "id": 26,
+      "gridPos": {
+        "x": 0,
+        "y": 49,
+        "w": 12,
+        "h": 7
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "percentunit",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.01
+              },
+              {
+                "color": "red",
+                "value": 0.05
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(rate(likezzix_http_requests_total{status=~\"5..\"}[5m])) / clamp_min(sum(rate(likezzix_http_requests_total[5m])), 1e-9)",
+          "legendFormat": "5xx 비율",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 응답 상태 코드별 요청 수\n[보는 법] 304 = 프리셋 ETag 캐시 적중(정상), 404 대부분은 스캐너\n[범위] 참고 값",
+      "type": "timeseries",
+      "title": "상태 코드별 요청 (분당)",
+      "id": 27,
+      "gridPos": {
+        "x": 12,
+        "y": 49,
+        "w": 12,
+        "h": 7
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "reqpm",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (status) (rate(likezzix_http_requests_total[5m])) * 60",
+          "legendFormat": "{{status}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "⚙️ 런타임",
+      "id": 31,
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 56
+      },
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "[무엇] 서버 프로세스 상주 메모리\n[보는 법] limit 128Mi에 가까워지면 OOMKilled 위험\n[범위] 🟢 64Mi 미만 / 🟡 115Mi(90%) 이상 = 클러스터 공통 WARN",
+          "type": "timeseries",
+          "title": "메모리 (RSS)",
+          "id": 28,
+          "gridPos": {
+            "x": 0,
+            "y": 57,
+            "w": 8,
+            "h": 7
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "unit": "bytes",
+              "custom": {
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right"
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "sum(process_resident_memory_bytes{namespace=\"like-zzix\"})",
+              "legendFormat": "RSS",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "[무엇] 서버 프로세스 CPU 사용량 (코어)\n[보는 법] limit 200m 근처에서 지속되면 쓰로틀링\n[범위] 🟢 0.05코어 미만",
+          "type": "timeseries",
+          "title": "CPU",
+          "id": 29,
+          "gridPos": {
+            "x": 8,
+            "y": 57,
+            "w": 8,
+            "h": 7
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "unit": "short",
+              "custom": {
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right"
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "sum(rate(process_cpu_seconds_total{namespace=\"like-zzix\"}[5m]))",
+              "legendFormat": "CPU",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "[무엇] Go 고루틴 수와 동시에 처리 중인 요청 수\n[보는 법] 계속 증가하면 누수\n[범위] 🟢 고루틴 수십 개 수준",
+          "type": "timeseries",
+          "title": "고루틴 / 처리 중 요청",
+          "id": 30,
+          "gridPos": {
+            "x": 16,
+            "y": 57,
+            "w": 8,
+            "h": 7
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "unit": "short",
+              "custom": {
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right"
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "sum(go_goroutines{namespace=\"like-zzix\"})",
+              "legendFormat": "고루틴",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "sum(likezzix_http_requests_in_flight)",
+              "legendFormat": "처리 중 요청",
+              "refId": "B"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

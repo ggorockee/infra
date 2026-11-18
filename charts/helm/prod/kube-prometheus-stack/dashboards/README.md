@@ -43,6 +43,20 @@ Prometheus 메트릭 모니터링을 위한 Grafana 대시보드 JSON 파일입�
 - 런타임(접힘): 메모리, CPU, 고루틴·처리 중 요청
 - 알림 규칙: kube-prometheus-stack valuefile의 `yen-back-server` 그룹
 
+### 라익찍스 (like-zzix)
+- 파일: `like-zzix-dashboard.json`
+- UID: `like-zzix`
+- 메트릭 Prefix: `likezzix_` (+ go_\*, process_\* `namespace="like-zzix"`)
+
+**포함된 패널**:
+- 한눈에 보기: 서버 상태, 배포 버전, 분당 요청, 앱 실행·Perfect Match·저장 사진(24시간)
+- 촬영 퍼널: 프리셋별 선택·Perfect Match 전환율·저장, 퍼널 추이, 사진 저장 실패율, 카메라 사용 불가 비율
+- 앱 사용 현황: 플랫폼별 요청, 앱 버전별 요청(강제 업데이트 후 구버전 잔존 확인), 업데이트 안내 반응, 이벤트 추이, 거부된 이벤트
+- API: 경로별 요청 수, P50/P95/P99 응답 시간, 5xx 오류율, 상태 코드별 요청
+- 런타임(접힘): 메모리, CPU, 고루틴·처리 중 요청
+- 모든 차트 설명은 [무엇]/[보는 법]/[범위] 3단, 색상 기준 = 알림 기준
+- 알림 규칙: kube-prometheus-stack valuefile의 `like-zzix-server` 그룹 (`like-zzix.server`, `like-zzix.app`)
+
 ### 클러스터 전체 현황
 - 파일: `cluster-overview-dashboard.json`
 - UID: `cluster-overview`

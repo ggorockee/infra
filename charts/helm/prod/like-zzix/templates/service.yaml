@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "like-zzix.fullname" . }}
+  labels:
+    {{- include "like-zzix.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+    # /metrics 전용 포트. VirtualService는 http 포트만 라우팅하므로 외부에 노출되지 않습니다.
+    - name: metrics
+      port: {{ .Values.service.metricsPort }}
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    {{- include "like-zzix.selectorLabels" . | nindent 4 }}
