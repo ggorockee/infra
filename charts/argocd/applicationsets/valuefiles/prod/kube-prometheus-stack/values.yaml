@@ -111,8 +111,6 @@ grafana:
       default_home_dashboard_path: /tmp/dashboards/reviewmaps-cronjob-dashboard.json
     users:
       default_theme: dark
-      # 콘솔 기본 언어 한국어 (개인 설정이 "기본값"인 사용자에게 적용, 개인 설정에서 변경 가능)
-      default_language: ko-KR
     auth.generic_oauth:
       enabled: true
       name: Google
