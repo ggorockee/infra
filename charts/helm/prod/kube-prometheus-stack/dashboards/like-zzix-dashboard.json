@@ -552,7 +552,9 @@
           },
           "expr": "sort_desc(sum by (preset) (increase(likezzix_preset_events_total{event=\"preset_selected\"}[24h])))",
           "legendFormat": "{{preset}}",
-          "refId": "A"
+          "refId": "A",
+          "instant": true,
+          "range": false
         }
       ]
     },
@@ -619,7 +621,9 @@
           },
           "expr": "sort_desc(sum by (preset) (increase(likezzix_preset_events_total{event=\"perfect_match\"}[24h])) / (sum by (preset) (increase(likezzix_preset_events_total{event=\"preset_selected\"}[24h])) > 0))",
           "legendFormat": "{{preset}}",
-          "refId": "A"
+          "refId": "A",
+          "instant": true,
+          "range": false
         }
       ]
     },
@@ -677,7 +681,9 @@
           },
           "expr": "sort_desc(sum by (preset) (increase(likezzix_preset_events_total{event=\"photo_saved\"}[24h])))",
           "legendFormat": "{{preset}}",
-          "refId": "A"
+          "refId": "A",
+          "instant": true,
+          "range": false
         }
       ]
     },
@@ -1039,7 +1045,9 @@
           },
           "expr": "sort_desc(sum by (app_version) (increase(likezzix_app_requests_total{platform=~\"ios|android\"}[24h])))",
           "legendFormat": "{{app_version}}",
-          "refId": "A"
+          "refId": "A",
+          "instant": true,
+          "range": false
         }
       ]
     },
@@ -1097,7 +1105,9 @@
           },
           "expr": "sum by (event) (increase(likezzix_app_events_total{event=~\"update_prompt_shown|force_update_shown|update_accepted|update_dismissed\"}[24h]))",
           "legendFormat": "{{event}}",
-          "refId": "A"
+          "refId": "A",
+          "instant": true,
+          "range": false
         }
       ]
     },
