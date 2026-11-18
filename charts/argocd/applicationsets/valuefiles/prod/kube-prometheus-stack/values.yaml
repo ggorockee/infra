@@ -559,6 +559,74 @@ additionalPrometheusRulesMap:
               summary: "⚠️ 돌려받엔 앱 활동 이벤트 거부 증가"
               description: "앱이 보낸 활동 이벤트가 계속 거부되고 있습니다. 앱(AppEvent)과 서버 허용 목록(telemetry.AllowedEvents)이 어긋났거나 비정상 요청입니다. reason 라벨을 확인하세요."
 
+  # 라익찍스 API 서버(like-zzix) — 대시보드 "라익찍스 (like-zzix)"(uid like-zzix)와 동일 기준
+  like-zzix-server:
+    groups:
+      - name: like-zzix.server
+        rules:
+          - alert: LikeZzixServerDown
+            expr: |
+              sum(up{namespace="like-zzix", service="like-zzix"}) == 0
+              or absent(up{namespace="like-zzix", service="like-zzix"})
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "❌ 라익찍스 서버 메트릭 수집 불가 (서버 다운 가능성)"
+              description: "Prometheus가 5분간 like-zzix /metrics(9090)를 수집하지 못했습니다. 앱은 번들 프리셋으로 계속 동작하지만 사용 지표가 쌓이지 않습니다. kubectl -n like-zzix get pods 로 확인하세요. 정상: UP."
+          - alert: LikeZzixHighErrorRate
+            expr: |
+              sum(rate(likezzix_http_requests_total{status=~"5.."}[5m]))
+                / sum(rate(likezzix_http_requests_total[5m])) > 0.05
+              and sum(rate(likezzix_http_requests_total[5m])) > 0.01
+            for: 10m
+            labels:
+              severity: error
+            annotations:
+              summary: "❌ 라익찍스 API 5xx 오류율 {{ $value | humanizePercentage }}"
+              description: "최근 5분 요청 중 5% 이상이 서버 오류입니다. kubectl -n like-zzix logs deploy/like-zzix 로 확인하세요. 정상: 1% 미만. 대시보드: https://monitoring.ggorockee.com/d/like-zzix"
+          - alert: LikeZzixSlow
+            expr: |
+              histogram_quantile(0.95, sum by (le) (rate(likezzix_http_request_duration_seconds_bucket{route!~"/healthz|/readyz|unmatched"}[5m]))) > 1
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 라익찍스 API 응답 지연 (P95 {{ $value | humanizeDuration }})"
+              description: "상태 확인을 제외한 API의 P95 응답 시간이 15분간 1초를 넘었습니다. 프리셋은 메모리에서 바로 응답하므로 CPU 쓰로틀링·노드 부하를 확인하세요. 정상: 0.1초 미만."
+          - alert: LikeZzixEventsRejected
+            expr: sum(rate(likezzix_app_events_rejected_total[15m])) > 0.05
+            for: 30m
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 라익찍스 앱 이벤트 거부 증가"
+              description: "앱이 보낸 사용 이벤트가 계속 거부되고 있습니다. 앱(AppEvent)과 서버 허용 목록(telemetry.AllowedEvents)이 어긋났거나 비정상 요청입니다. reason 라벨을 확인하세요. 정상: 0."
+      - name: like-zzix.app
+        rules:
+          - alert: LikeZzixPhotoSaveFailing
+            expr: |
+              sum(increase(likezzix_app_events_total{event="photo_save_failed"}[1h]))
+                / sum(increase(likezzix_app_events_total{event=~"photo_saved|photo_save_failed"}[1h])) > 0.2
+              and sum(increase(likezzix_app_events_total{event=~"photo_saved|photo_save_failed"}[1h])) >= 5
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 라익찍스 사진 저장 실패율 {{ $value | humanizePercentage }}"
+              description: "최근 1시간 저장 시도 중 20% 이상이 실패했습니다(시도 5회 이상). 사진 저장 권한 거부 또는 특정 앱 버전·OS의 저장 오류입니다. Crashlytics와 대시보드 '앱 버전별 요청'을 함께 확인하세요. 정상: 5% 미만."
+          - alert: LikeZzixCameraUnavailableHigh
+            expr: |
+              sum(increase(likezzix_app_events_total{event="camera_unavailable"}[1h]))
+                / sum(increase(likezzix_app_events_total{event="app_open"}[1h])) > 0.2
+              and sum(increase(likezzix_app_events_total{event="app_open"}[1h])) >= 5
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 라익찍스 카메라 사용 불가 비율 {{ $value | humanizePercentage }}"
+              description: "최근 1시간 앱 실행 중 20% 이상이 카메라를 열지 못했습니다(실행 5회 이상). 새 앱 버전 배포 직후라면 카메라 초기화 회귀를 의심하세요. 정상: 5% 미만."
+
 
   #########################################################################
   # 클러스터 전체 알림 규칙 (2026-11-13 추가)

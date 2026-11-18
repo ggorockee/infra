@@ -1,0 +1,6 @@
+env: prod
+revision: main
+chartName: like-zzix
+appName: like-zzix
+repoURL: https://github.com/ggorockee/infra
+namespace: like-zzix

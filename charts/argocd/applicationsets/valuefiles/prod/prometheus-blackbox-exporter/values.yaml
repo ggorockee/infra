@@ -69,6 +69,10 @@ serviceMonitor:
     - name: yen-back-api
       url: https://yen-back.woohalabs.com/healthz
       additionalMetricsRelabels: {app: yen-back, kind: external}
+    # ---------- 라익찍스 (like-zzix) ----------
+    - name: like-zzix-api
+      url: https://like-zzix.woohalabs.com/healthz
+      additionalMetricsRelabels: {app: like-zzix, kind: external}
     # ---------- yangobot ----------
     - name: yangobot
       url: https://yangobot.ggorockee.com/healthz

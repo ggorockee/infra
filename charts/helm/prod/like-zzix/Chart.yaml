@@ -1,0 +1,6 @@
+apiVersion: v2
+name: like-zzix
+description: 라익찍스(like-zzix) API 서버 - 구도 프리셋 제공, 앱 사용 지표(촬영 퍼널·버전 분포) 수집
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

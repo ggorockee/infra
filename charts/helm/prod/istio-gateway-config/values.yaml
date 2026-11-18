@@ -221,6 +221,18 @@ virtualServices:
               host: yen-back
               port: 8080
 
+  # 라익찍스 API (like-zzix, Go Fiber) — /metrics(9090)는 라우팅하지 않음
+  - name: like-zzix-vs
+    namespace: like-zzix
+    enabled: true
+    hosts:
+      - "like-zzix.woohalabs.com"
+    http:
+      - route:
+          - destination:
+              host: like-zzix
+              port: 8080
+
   # Ojeomneo Web (Next.js)
   - name: ojeomneo-web-vs
     namespace: ojeomneo

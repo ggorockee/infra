@@ -1,0 +1,63 @@
+#########################################################################
+# 라익찍스 (like-zzix) API 서버
+# 소스: https://github.com/ggorockee/like-zzix (server/)
+# 대시보드: https://monitoring.ggorockee.com/d/like-zzix · 알림 그룹: like-zzix.server / like-zzix.app
+#########################################################################
+
+# 프리셋은 이미지에 포함(embed)되고 지표는 Prometheus가 수집하므로 상태 없는 1개로 운영합니다.
+replicaCount: 1
+revisionHistoryLimit: 2
+image:
+  repository: ggorockee/like-zzix-server
+  pullPolicy: IfNotPresent
+  # CI(like-zzix ci-server.yml)가 main 머지 시 날짜-커밋 태그로 갱신합니다.
+  tag: "20261118-9949f5e"
+nameOverride: ""
+fullnameOverride: ""
+podLabels:
+  app: "like-zzix-server"
+  job: "like-zzix-server"
+service:
+  type: ClusterIP
+  port: 8080
+  metricsPort: 9090
+# 비밀이 아닌 환경 변수 (시크릿 없음)
+env:
+  LOG_LEVEL: "info"
+metrics:
+  serviceMonitor:
+    enabled: true # kube-prometheus-stack이 모든 네임스페이스 ServiceMonitor 수집
+    interval: 30s
+    scrapeTimeout: 10s
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 15
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: http
+  initialDelaySeconds: 2
+  periodSeconds: 10
+nodeSelector: {}
+tolerations: []
+affinity: {}
