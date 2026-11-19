@@ -29,6 +29,7 @@ env:
   ADMIN_ORIGIN: "https://like-zzix-admin.woohalabs.com"
 # 비밀 환경 변수: GSM prod-like-zzix-credentials (JSON) → ESO → Secret like-zzix-credentials
 # ADMIN_EMAILS(관리자 이메일 목록)·GOOGLE_CLIENT_ID도 공개 저장소에 두지 않으려고 같은 Secret에 보관합니다.
+# ADMIN_LOGIN_ID·ADMIN_PASSWORD_HASH(bcrypt): Google 로그인을 못 쓸 때의 예비 아이디/비밀번호 계정
 externalSecret:
   enabled: true
   remoteKey: prod-like-zzix-credentials
@@ -40,6 +41,8 @@ externalSecret:
     - POSTGRES_DB
     - ADMIN_EMAILS
     - GOOGLE_CLIENT_ID
+    - ADMIN_LOGIN_ID
+    - ADMIN_PASSWORD_HASH
 metrics:
   serviceMonitor:
     enabled: true # kube-prometheus-stack이 모든 네임스페이스 ServiceMonitor 수집
