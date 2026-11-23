@@ -12,7 +12,7 @@ image:
   repository: ggorockee/like-zzix-server
   pullPolicy: IfNotPresent
   # CI(like-zzix ci-server.yml)가 main 머지 시 날짜-커밋 태그로 갱신합니다.
-  tag: "20261123-448821a"
+  tag: "20261123-78fd259"
 nameOverride: ""
 fullnameOverride: ""
 podLabels:
