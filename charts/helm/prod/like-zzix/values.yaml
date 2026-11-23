@@ -91,7 +91,7 @@ admin:
     repository: ggorockee/like-zzix-admin
     pullPolicy: IfNotPresent
     # CI(like-zzix ci-admin.yml)가 main 머지 시 갱신합니다.
-    tag: "20261123-229f11a"
+    tag: "20261123-78fd259"
   port: 8080
   resources:
     requests:
