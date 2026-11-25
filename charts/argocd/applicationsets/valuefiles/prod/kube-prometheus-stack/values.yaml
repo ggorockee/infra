@@ -762,14 +762,15 @@ additionalPrometheusRulesMap:
             annotations:
               summary: "❌ {{ $labels.app }} {{ $labels.platform }} AdMob 승인 상태가 준비됨에서 벗어남"
               description: "하루 전까지 준비됨이던 앱이 검토 중 또는 조치 필요로 바뀌어 광고 게재가 제한됩니다. AdMob 앱 목록과 정책 센터를 확인하세요. 정상: 준비됨(3)."
-          - alert: AdmobActionRequired
-            expr: app_admob_approval == 1 and on (app, platform) app_store_expected == 1
+          # 콘솔이 앱 인증을 요구해도 API는 검토 중(2)으로 돌려주는 경우가 있어 준비됨(3)이 아니면 모두 본다
+          - alert: AdmobNotApproved
+            expr: app_admob_approval < 3 and on (app, platform) app_store_expected == 1
             for: 24h
             labels:
               severity: warning
             annotations:
-              summary: "⚠️ {{ $labels.app }} {{ $labels.platform }} AdMob 앱 승인에 조치 필요"
-              description: "스토어에 공개된 앱인데 AdMob이 하루 넘게 조치를 요구합니다(앱 인증, 스토어 연결). 이 동안 광고 게재가 제한됩니다. 정상: 준비됨."
+              summary: "⚠️ {{ $labels.app }} {{ $labels.platform }} AdMob 미승인 (광고 게재 제한)"
+              description: "스토어에 공개된 앱인데 하루 넘게 준비됨이 아닙니다. AdMob 앱 목록에서 앱 인증(Verify app)이나 스토어 연결을 요구하는지 확인하세요. 이 동안 광고 게재가 제한됩니다. 정상: 준비됨."
           - alert: AdmobMatchRateLow
             expr: |
               sum by (app, platform) (app_admob_matched{window="7d"})
