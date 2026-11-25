@@ -30,9 +30,11 @@ nginxConfig: |
     listen 80;
     server_name _;
 
-    location /app-ads.txt {
+    # add_header Content-Type을 쓰면 mime.types가 넣은 값과 합쳐져 "text/plain,text/plain"이 되므로 쓰지 않음
+    location = /app-ads.txt {
       alias /usr/share/nginx/html/app-ads.txt;
-      add_header Content-Type text/plain;
+      types { }
+      default_type text/plain;
     }
 
     location / {
