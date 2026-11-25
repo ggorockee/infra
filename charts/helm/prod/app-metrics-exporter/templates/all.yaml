@@ -1,6 +1,6 @@
 {{- $name := .Release.Name }}
 {{- $labels := printf "app.kubernetes.io/name: %s\napp.kubernetes.io/instance: %s" .Chart.Name $name }}
-{{- $config := dict "apps" .Values.apps "port" .Values.port "intervals" .Values.intervals }}
+{{- $config := dict "apps" .Values.apps "port" .Values.port "intervals" .Values.intervals "admobPublisher" .Values.admob.publisher }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -54,6 +54,8 @@ spec:
           env:
             - name: CONFIG_PATH
               value: /app/config.json
+            - name: ADMOB_OAUTH_PATH
+              value: /secrets/admob/oauth.json
           ports:
             - name: metrics
               containerPort: {{ .Values.port }}
@@ -76,10 +78,18 @@ spec:
           volumeMounts:
             - name: app
               mountPath: /app
+            - name: admob-oauth
+              mountPath: /secrets/admob
+              readOnly: true
       volumes:
         - name: app
           configMap:
             name: {{ $name }}
+        # 사람 계정 토큰이라 Git·GSM에 두지 않고 scripts/admob-oauth-setup.py로 직접 만든다. 없으면 AdMob만 건너뜀
+        - name: admob-oauth
+          secret:
+            secretName: {{ .Values.admob.oauthSecret }}
+            optional: true
 ---
 apiVersion: v1
 kind: Service

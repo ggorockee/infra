@@ -55,6 +55,25 @@ class RemoteConfigTest(unittest.TestCase):
         self.assertEqual(values, {"show": 1, "gap": 3.0})
 
 
+class AdmobTest(unittest.TestCase):
+    def test_dates_end_yesterday_and_do_not_overlap(self):
+        today = exporter.datetime(2026, 12, 3).date()
+        self.assertEqual(exporter.admob_dates("7d", today), {
+            "startDate": {"year": 2026, "month": 11, "day": 26}, "endDate": {"year": 2026, "month": 12, "day": 2}})
+        self.assertEqual(exporter.admob_dates("prev7d", today)["endDate"], {"year": 2026, "month": 11, "day": 25})
+
+    def test_rows_to_samples(self):
+        rows = [{
+            "dimensionValues": {"APP": {"value": "a~1"}, "AD_UNIT": {"value": "a/1", "displayLabel": "배너"}},
+            "metricValues": {"AD_REQUESTS": {"integerValue": "12"}, "ESTIMATED_EARNINGS": {"microsValue": "80000"}},
+        }, {"dimensionValues": {"APP": {"value": "unknown"}}, "metricValues": {}}]
+        samples = {s[0]: s for s in exporter.admob_samples(rows, {"a~1": ("리뷰맵", "ios")}, "7d")}
+        self.assertEqual(samples["app_admob_requests"][1]["ad_unit"], "배너")
+        self.assertEqual(samples["app_admob_requests"][2], 12)
+        self.assertAlmostEqual(samples["app_admob_earnings_usd"][2], 0.08)
+        self.assertEqual(samples["app_admob_impressions"][2], 0)
+
+
 class RenderTest(unittest.TestCase):
     def test_escapes_labels(self):
         self.assertIn('v="a\\"b\\\\c\\n"', exporter.render([("m", {"v": 'a"b\\c\n'}, 1)]))

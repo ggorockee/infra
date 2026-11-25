@@ -673,15 +673,15 @@ additionalPrometheusRulesMap:
               description: "10분간 앱·광고·스토어 지표를 수집하지 못했습니다. 이 동안 앱 관련 알림이 울리지 않습니다. kubectl -n monitoring logs deploy/app-metrics-exporter 로 확인하세요. 정상: UP."
           - alert: AppMetricsCollectStale
             expr: |
-              time() - app_metrics_last_success_timestamp_seconds{source="ga4"} > 4 * 3600
-              or time() - app_metrics_last_success_timestamp_seconds{source!="ga4"} > 3600
+              time() - app_metrics_last_success_timestamp_seconds{source=~"ga4|admob"} > 4 * 3600
+              or time() - app_metrics_last_success_timestamp_seconds{source!~"ga4|admob"} > 3600
               or (app_metrics_collect_ok == 0 unless app_metrics_last_success_timestamp_seconds)
             for: 30m
             labels:
               severity: warning
             annotations:
               summary: "⚠️ {{ $labels.app }} {{ $labels.source }} 지표가 갱신되지 않음"
-              description: "대시보드에 오래된 값이 보이고 있습니다. GA4 뷰어 권한, Remote Config 권한(roles/cloudconfig.viewer), API 활성화를 확인하세요. 정상: ga4 1시간, 그 밖 10분 주기."
+              description: "대시보드에 오래된 값이 보이고 있습니다. GA4 뷰어 권한, Remote Config 권한(roles/cloudconfig.viewer), API 활성화를 확인하세요. source가 admob이면 로그인 토큰이 만료·취소된 것이므로 scripts/admob-oauth-setup.py를 다시 실행하세요. 정상: ga4·admob 1시간, 그 밖 10분 주기."
       - name: app.release
         rules:
           - alert: AppForceUpdateLockout
@@ -754,6 +754,34 @@ additionalPrometheusRulesMap:
             annotations:
               summary: "❌ {{ $labels.app }} app-ads.txt 이상"
               description: "{{ $labels.url }} 이 200, Content-Type text/plain, AdMob 게시자 줄을 모두 만족하지 않습니다. 방치하면 광고 게재가 제한됩니다. 정상: 1."
+          - alert: AdmobApprovalLost
+            expr: app_admob_approval < 3 and app_admob_approval offset 1d == 3
+            for: 1h
+            labels:
+              severity: error
+            annotations:
+              summary: "❌ {{ $labels.app }} {{ $labels.platform }} AdMob 승인 상태가 준비됨에서 벗어남"
+              description: "하루 전까지 준비됨이던 앱이 검토 중 또는 조치 필요로 바뀌어 광고 게재가 제한됩니다. AdMob 앱 목록과 정책 센터를 확인하세요. 정상: 준비됨(3)."
+          - alert: AdmobActionRequired
+            expr: app_admob_approval == 1 and on (app, platform) app_store_expected == 1
+            for: 24h
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ {{ $labels.app }} {{ $labels.platform }} AdMob 앱 승인에 조치 필요"
+              description: "스토어에 공개된 앱인데 AdMob이 하루 넘게 조치를 요구합니다(앱 인증, 스토어 연결). 이 동안 광고 게재가 제한됩니다. 정상: 준비됨."
+          - alert: AdmobMatchRateLow
+            expr: |
+              sum by (app, platform) (app_admob_matched{window="7d"})
+                / sum by (app, platform) (app_admob_requests{window="7d"}) < 0.5
+              and sum by (app, platform) (app_admob_requests{window="7d"}) >= 20
+              and on (app, platform) app_admob_approval == 3
+            for: 2h
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ {{ $labels.app }} {{ $labels.platform }} AdMob 매칭률 {{ $value | humanizePercentage }} (7일)"
+              description: "승인된 앱의 광고 요청 중 절반 이상에 광고가 채워지지 않았습니다. 차단 설정, 하한 단가, 정책 센터를 확인하세요. 정상: 80% 이상, 경고: 50~80%, 조치: 50% 미만."
           - alert: AdImpressionsZero
             expr: |
               sum by (app, platform) (app_ad_impressions{window="1d", ad_unit="전체"}) == 0

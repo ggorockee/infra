@@ -88,11 +88,11 @@
             "x": 0,
             "y": 1,
             "w": 24,
-            "h": 22
+            "h": 24
           },
           "options": {
             "mode": "markdown",
-            "content": "### 세 앱(리뷰맵·돌려받엔·라익찍스)의 사용자, 품질, 광고 수입, 광고비, 버전, 스토어 상태\n\n**모니터링되지 않는 것은 관리할 수 없다.** 위에서 아래로 '지금 문제 → 최근 7일 요약 → 광고 → 유입 → 버전 → 추이' 순서로 봅니다.\n\n| 차트 | 🟢 정상 | 🟡 경고 | 🔴 조치 | 알림 (등급) | 조치 방법 |\n|---|---|---|---|---|---|\n| 스토어 공개 | 공개 | 공개됐는데 목록 미갱신 | 공개여야 하는데 안 보임 30분 | AppStoreListingMissing (CRITICAL) | 스토어 콘솔의 정책 위반·판매 중지 확인 |\n| 강제 업데이트 최소 버전 | 스토어 버전 이하 | - | 스토어 버전보다 높음 10분 | AppForceUpdateLockout (CRITICAL) | Remote Config min_version을 즉시 내림 |\n| app-ads.txt | 정상 | - | 이상 1시간 | AppAdsTxtInvalid (ERROR) | 서버 응답·Content-Type·게시자 줄 확인 |\n| 어제 광고 노출 | 1회 이상 | - | 사용자 5명 이상인데 0회 | AdImpressionsZero (ERROR) | AdMob 앱 승인, 정책 센터, 광고 스위치 확인 |\n| 비정상 종료 없는 사용자 (7일) | 95% 이상 (목표 99%) | 85~95% | 85% 미만 | AppCrashFreeLow (WARN) / AppCrashFreeCritical (ERROR) | Crashlytics 상위 문제 수정, 핫픽스 |\n| 앱 오프닝 광고 표시율 (7일) | 60% 이상 | 40~60% | 40% 미만 | AppOpenAdShowRateLow (WARN) | 로드 시점과 표시 조건 확인 |\n| 광고 수입 (이전 7일 대비) | 80% 이상 | 50~80% | 50% 미만 | AdRevenueDropped (WARN) | 사용자 감소인지 1인당 수입 감소인지 구분 |\n| Google Ads 비용 대비 설치 | 신규 1명당 $1 이하 | $1~2 | $2 초과, 또는 $3 넘게 쓰고 설치 0 | AdsSpendWithoutInstalls (WARN) | 전환 연결·대상 확인, 필요하면 중지 |\n| 최근 7일 신규 사용자 | 35명 이상 | 7~35명 | 7명 미만 | 없음 (대시보드만) | 광고·스토어 문구·블로그 유입 점검 |\n| 세션당 광고 수입 (7일) | $0.010 이상 | $0.005~0.010 | $0.005 미만 | 없음 (대시보드만) | 광고 단위별 eCPM·노출 수 확인 |\n| Remote Config 선택 업데이트 기준 | 스토어 버전 이상 | 하루 넘게 낮음 | - | AppRemoteConfigLatestBehind (INFO) | latest_version을 올림 |\n| Remote Config 변경 | - | - | - | AppRemoteConfigChanged (INFO) | 의도한 변경인지 확인 |\n| 지표 수집 | 최근 성공 | GA4 4시간, 그 밖 1시간 초과 | 수집기 중단 10분 | AppMetricsCollectStale (WARN) / AppMetricsExporterDown (ERROR) | app-metrics-exporter 로그, 권한 확인 |\n\n- 등급: CRITICAL 서비스 중단(즉시), ERROR 기능 실패(당일 조치), WARN 정상 범위 벗어남(추이 확인), INFO 참고.\n- **GA4는 하루 단위로 집계되고 최대 48시간 동안 값이 바뀔 수 있습니다.** 그래서 '어제까지'의 값만 씁니다.\n- 사용자가 적어 비율이 크게 흔들립니다. 알림은 최소 건수 조건을 함께 봅니다.\n- AdMob 앱 승인 상태(검토 필요/준비됨), 정책 센터, 지급 정보는 API가 없어 콘솔에서 확인해야 합니다.\n- 라익찍스는 App Store 심사 통과 뒤 GA4를 연결합니다. 그 전에는 자체 서버 이벤트만 봅니다."
+            "content": "### 세 앱(리뷰맵·돌려받엔·라익찍스)의 사용자, 품질, 광고 수입, 광고비, 버전, 스토어 상태\n\n**모니터링되지 않는 것은 관리할 수 없다.** 위에서 아래로 '지금 문제 → 최근 7일 요약 → 광고 → 유입 → 버전 → 추이' 순서로 봅니다.\n\n| 차트 | 🟢 정상 | 🟡 경고 | 🔴 조치 | 알림 (등급) | 조치 방법 |\n|---|---|---|---|---|---|\n| 스토어 공개 | 공개 | 공개됐는데 목록 미갱신 | 공개여야 하는데 안 보임 30분 | AppStoreListingMissing (CRITICAL) | 스토어 콘솔의 정책 위반·판매 중지 확인 |\n| 강제 업데이트 최소 버전 | 스토어 버전 이하 | - | 스토어 버전보다 높음 10분 | AppForceUpdateLockout (CRITICAL) | Remote Config min_version을 즉시 내림 |\n| app-ads.txt | 정상 | - | 이상 1시간 | AppAdsTxtInvalid (ERROR) | 서버 응답·Content-Type·게시자 줄 확인 |\n| AdMob 앱 승인 | 준비됨 | 검토 중, 공개 앱이 조치 필요 24시간 | 준비됨에서 벗어남 1시간 | AdmobActionRequired (WARN) / AdmobApprovalLost (ERROR) | AdMob 앱 목록의 앱 인증·스토어 연결, 정책 센터 |\n| AdMob 매칭률 (7일) | 80% 이상 | 50~80% | 50% 미만 | AdmobMatchRateLow (WARN) | 차단 설정, 하한 단가, 정책 센터 |\n| 어제 광고 노출 | 1회 이상 | - | 사용자 5명 이상인데 0회 | AdImpressionsZero (ERROR) | AdMob 앱 승인, 정책 센터, 광고 스위치 확인 |\n| 비정상 종료 없는 사용자 (7일) | 95% 이상 (목표 99%) | 85~95% | 85% 미만 | AppCrashFreeLow (WARN) / AppCrashFreeCritical (ERROR) | Crashlytics 상위 문제 수정, 핫픽스 |\n| 앱 오프닝 광고 표시율 (7일) | 60% 이상 | 40~60% | 40% 미만 | AppOpenAdShowRateLow (WARN) | 로드 시점과 표시 조건 확인 |\n| 광고 수입 (이전 7일 대비) | 80% 이상 | 50~80% | 50% 미만 | AdRevenueDropped (WARN) | 사용자 감소인지 1인당 수입 감소인지 구분 |\n| Google Ads 비용 대비 설치 | 신규 1명당 $1 이하 | $1~2 | $2 초과, 또는 $3 넘게 쓰고 설치 0 | AdsSpendWithoutInstalls (WARN) | 전환 연결·대상 확인, 필요하면 중지 |\n| 최근 7일 신규 사용자 | 35명 이상 | 7~35명 | 7명 미만 | 없음 (대시보드만) | 광고·스토어 문구·블로그 유입 점검 |\n| 세션당 광고 수입 (7일) | $0.010 이상 | $0.005~0.010 | $0.005 미만 | 없음 (대시보드만) | 광고 단위별 eCPM·노출 수 확인 |\n| Remote Config 선택 업데이트 기준 | 스토어 버전 이상 | 하루 넘게 낮음 | - | AppRemoteConfigLatestBehind (INFO) | latest_version을 올림 |\n| Remote Config 변경 | - | - | - | AppRemoteConfigChanged (INFO) | 의도한 변경인지 확인 |\n| 지표 수집 | 최근 성공 | GA4 4시간, 그 밖 1시간 초과 | 수집기 중단 10분 | AppMetricsCollectStale (WARN) / AppMetricsExporterDown (ERROR) | app-metrics-exporter 로그, 권한 확인 |\n\n- 등급: CRITICAL 서비스 중단(즉시), ERROR 기능 실패(당일 조치), WARN 정상 범위 벗어남(추이 확인), INFO 참고.\n- **GA4는 하루 단위로 집계되고 최대 48시간 동안 값이 바뀔 수 있습니다.** 그래서 '어제까지'의 값만 씁니다.\n- 사용자가 적어 비율이 크게 흔들립니다. 알림은 최소 건수 조건을 함께 봅니다.\n- AdMob 정책 센터와 지급 정보는 API가 없어 콘솔에서 확인해야 합니다. AdMob 패널이 '토큰 설정 필요'면 scripts/admob-oauth-setup.py를 실행합니다.\n- 라익찍스는 App Store 심사 통과 뒤 GA4를 연결합니다. 그 전에는 자체 서버 이벤트만 봅니다."
           }
         }
       ]
@@ -125,7 +125,7 @@
             "uid": "prometheus"
           },
           "refId": "A",
-          "expr": "count(ALERTS{severity=~\"critical|error\", alertstate=\"firing\", alertname=~\"App(Metrics|ForceUpdate|Store|RemoteConfig|CrashFree|AdsTxt|OpenAd).*|AdImpressionsZero|AdRevenueDropped|AdsSpendWithoutInstalls\"}) or vector(0)",
+          "expr": "count(ALERTS{severity=~\"critical|error\", alertstate=\"firing\", alertname=~\"App(Metrics|ForceUpdate|Store|RemoteConfig|CrashFree|AdsTxt|OpenAd).*|Admob.*|AdImpressionsZero|AdRevenueDropped|AdsSpendWithoutInstalls\"}) or vector(0)",
           "legendFormat": "CRITICAL·ERROR",
           "instant": true,
           "range": false,
@@ -137,7 +137,7 @@
             "uid": "prometheus"
           },
           "refId": "B",
-          "expr": "count(ALERTS{severity=\"warning\", alertstate=\"firing\", alertname=~\"App(Metrics|ForceUpdate|Store|RemoteConfig|CrashFree|AdsTxt|OpenAd).*|AdImpressionsZero|AdRevenueDropped|AdsSpendWithoutInstalls\"}) or vector(0)",
+          "expr": "count(ALERTS{severity=\"warning\", alertstate=\"firing\", alertname=~\"App(Metrics|ForceUpdate|Store|RemoteConfig|CrashFree|AdsTxt|OpenAd).*|Admob.*|AdImpressionsZero|AdRevenueDropped|AdsSpendWithoutInstalls\"}) or vector(0)",
           "legendFormat": "WARN",
           "instant": true,
           "range": false,
@@ -235,7 +235,7 @@
             "uid": "prometheus"
           },
           "refId": "A",
-          "expr": "max by (severity, alertname, app, platform) (ALERTS{alertstate=\"firing\", alertname=~\"App(Metrics|ForceUpdate|Store|RemoteConfig|CrashFree|AdsTxt|OpenAd).*|AdImpressionsZero|AdRevenueDropped|AdsSpendWithoutInstalls\"})",
+          "expr": "max by (severity, alertname, app, platform) (ALERTS{alertstate=\"firing\", alertname=~\"App(Metrics|ForceUpdate|Store|RemoteConfig|CrashFree|AdsTxt|OpenAd).*|Admob.*|AdImpressionsZero|AdRevenueDropped|AdsSpendWithoutInstalls\"})",
           "legendFormat": "",
           "instant": true,
           "range": false,
@@ -1852,13 +1852,501 @@
     },
     {
       "type": "row",
+      "id": 36,
+      "title": "AdMob 승인 · 게재 (AdMob API)",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "x": 0,
+        "y": 44,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "stat",
+      "title": "AdMob 앱 승인 상태",
+      "description": "[무엇] AdMob이 앱에 광고를 게재할 수 있다고 승인했는지입니다.\n\n[보는 법] 조치 필요는 스토어 연결이나 앱 인증이 안 된 상태로 광고 게재가 제한됩니다. 스토어에 없는 앱은 조치 필요가 정상입니다.\n\n[범위] 🟢 준비됨 / 🟡 검토 중 / 🟠 조치 필요 (공개 앱이 24시간이면 WARN, 준비됨에서 벗어나면 ERROR)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "app_admob_approval",
+          "legendFormat": "{{app}} {{platform}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "AdMob 토큰 설정 필요",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "3": {
+                  "text": "준비됨",
+                  "color": "green",
+                  "index": 0
+                },
+                "2": {
+                  "text": "검토 중",
+                  "color": "yellow",
+                  "index": 1
+                },
+                "1": {
+                  "text": "조치 필요",
+                  "color": "orange",
+                  "index": 2
+                },
+                "0": {
+                  "text": "알 수 없음",
+                  "color": "blue",
+                  "index": 3
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 20
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 37,
+      "gridPos": {
+        "x": 0,
+        "y": 45,
+        "w": 14,
+        "h": 6
+      }
+    },
+    {
+      "type": "stat",
+      "title": "매칭률 (7일)",
+      "description": "[무엇] 광고 요청 중 광고가 채워진 비율입니다.\n\n[보는 법] 승인 전 앱은 0%가 정상입니다. 승인된 앱이 낮으면 차단 설정과 정책 센터를 확인합니다.\n\n[범위] 🟢 80% 이상 / 🟡 50~80% / 🔴 50% 미만 (승인된 앱, 요청 20회 이상이면 WARN)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (app, platform) (app_admob_matched{window=\"7d\"}) / (sum by (app, platform) (app_admob_requests{window=\"7d\"}) > 0)",
+          "legendFormat": "{{app}} {{platform}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "noValue": "AdMob 토큰 설정 필요",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.5
+              },
+              {
+                "color": "green",
+                "value": 0.8
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 28
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 38,
+      "gridPos": {
+        "x": 14,
+        "y": 45,
+        "w": 10,
+        "h": 6
+      }
+    },
+    {
+      "type": "table",
+      "title": "광고 단위별 요청 → 매칭 → 노출 (7일, AdMob 콘솔 기준)",
+      "description": "[무엇] 광고 단위마다 요청이 매칭되고 실제로 보여지기까지의 비율입니다.\n\n[보는 법] 매칭률이 낮으면 광고가 없는 것이고, 노출률이 낮으면 앱이 받은 광고를 보여주지 못한 것입니다.\n\n[범위] 매칭률 🟢 80% / 🟡 50~80% / 🔴 50% 미만, 노출률 🟢 60% / 🟡 40~60% / 🔴 40% 미만",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "max by (app, platform, ad_unit) (app_admob_requests{window=\"7d\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "max by (app, platform, ad_unit) (app_admob_matched{window=\"7d\"}) / (max by (app, platform, ad_unit) (app_admob_requests{window=\"7d\"}) > 0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "C",
+          "expr": "max by (app, platform, ad_unit) (app_admob_impressions{window=\"7d\"}) / (max by (app, platform, ad_unit) (app_admob_matched{window=\"7d\"}) > 0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "D",
+          "expr": "max by (app, platform, ad_unit) (app_admob_impressions{window=\"7d\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "E",
+          "expr": "max by (app, platform, ad_unit) (app_admob_earnings_usd{window=\"7d\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "F",
+          "expr": "1000 * max by (app, platform, ad_unit) (app_admob_earnings_usd{window=\"7d\"}) / (max by (app, platform, ad_unit) (app_admob_impressions{window=\"7d\"}) > 0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "job": true,
+              "namespace": true,
+              "service": true,
+              "window": true
+            },
+            "indexByName": {
+              "app": 0,
+              "platform": 1,
+              "ad_unit": 2,
+              "Value #A": 3,
+              "Value #B": 4,
+              "Value #C": 5,
+              "Value #D": 6,
+              "Value #E": 7,
+              "Value #F": 8
+            },
+            "renameByName": {
+              "app": "앱",
+              "platform": "플랫폼",
+              "ad_unit": "광고 단위",
+              "Value #A": "요청",
+              "Value #B": "매칭률",
+              "Value #C": "노출률",
+              "Value #D": "노출",
+              "Value #E": "수입",
+              "Value #F": "eCPM"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "AdMob 토큰 설정 필요",
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "매칭률"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.5
+                    },
+                    {
+                      "color": "green",
+                      "value": 0.8
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "노출률"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.4
+                    },
+                    {
+                      "color": "green",
+                      "value": 0.6
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "수입"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "eCPM"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.5
+                    },
+                    {
+                      "color": "green",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "수입",
+            "desc": true
+          }
+        ]
+      },
+      "id": 39,
+      "gridPos": {
+        "x": 0,
+        "y": 51,
+        "w": 24,
+        "h": 9
+      }
+    },
+    {
+      "type": "row",
       "id": 23,
       "title": "유입 (Google Ads)",
       "collapsed": false,
       "panels": [],
       "gridPos": {
         "x": 0,
-        "y": 44,
+        "y": 60,
         "w": 24,
         "h": 1
       }
@@ -1928,7 +2416,7 @@
       "id": 24,
       "gridPos": {
         "x": 0,
-        "y": 45,
+        "y": 61,
         "w": 6,
         "h": 5
       }
@@ -2010,7 +2498,7 @@
       "id": 25,
       "gridPos": {
         "x": 6,
-        "y": 45,
+        "y": 61,
         "w": 6,
         "h": 5
       }
@@ -2080,7 +2568,7 @@
       "id": 26,
       "gridPos": {
         "x": 12,
-        "y": 45,
+        "y": 61,
         "w": 6,
         "h": 5
       }
@@ -2162,7 +2650,7 @@
       "id": 27,
       "gridPos": {
         "x": 18,
-        "y": 45,
+        "y": 61,
         "w": 6,
         "h": 5
       }
@@ -2175,7 +2663,7 @@
       "panels": [],
       "gridPos": {
         "x": 0,
-        "y": 50,
+        "y": 66,
         "w": 24,
         "h": 1
       }
@@ -2291,7 +2779,7 @@
       "id": 29,
       "gridPos": {
         "x": 0,
-        "y": 51,
+        "y": 67,
         "w": 9,
         "h": 10
       }
@@ -2350,7 +2838,7 @@
       "id": 30,
       "gridPos": {
         "x": 9,
-        "y": 51,
+        "y": 67,
         "w": 6,
         "h": 10
       }
@@ -2430,7 +2918,7 @@
       "id": 31,
       "gridPos": {
         "x": 15,
-        "y": 51,
+        "y": 67,
         "w": 9,
         "h": 10
       }
@@ -2443,7 +2931,7 @@
       "panels": [],
       "gridPos": {
         "x": 0,
-        "y": 61,
+        "y": 77,
         "w": 24,
         "h": 1
       }
@@ -2614,7 +3102,7 @@
       "id": 33,
       "gridPos": {
         "x": 0,
-        "y": 62,
+        "y": 78,
         "w": 8,
         "h": 8
       }
@@ -2803,7 +3291,7 @@
       "id": 34,
       "gridPos": {
         "x": 8,
-        "y": 62,
+        "y": 78,
         "w": 8,
         "h": 8
       }
@@ -2992,7 +3480,7 @@
       "id": 35,
       "gridPos": {
         "x": 16,
-        "y": 62,
+        "y": 78,
         "w": 8,
         "h": 8
       }
