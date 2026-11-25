@@ -1,0 +1,10 @@
+env: prod
+revision: main
+repoURL: https://github.com/ggorockee/infra.git
+chartName: app-metrics-exporter
+# 앱 지표(GA4·Remote Config·스토어·app-ads.txt) → Prometheus
+# 릴리스명 = KSA 이름 (Terraform modules/monitoring 의 Workload Identity 바인딩 대상)
+appName: app-metrics-exporter
+namespace: monitoring
+# override: charts/argocd/applicationsets/valuefiles/prod/app-metrics-exporter/values.yaml
+valuesDir: app-metrics-exporter

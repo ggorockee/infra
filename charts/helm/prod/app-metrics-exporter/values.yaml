@@ -1,0 +1,32 @@
+# app-metrics-exporter 기본값 (prod override: valuefiles/prod/app-metrics-exporter/values.yaml)
+image:
+  repository: python
+  tag: "3.13-alpine"
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  name: app-metrics-exporter
+  # GA4·Remote Config 읽기용 GSA (Terraform modules/monitoring)
+  gcpServiceAccount: ""
+
+port: 9100
+
+# 수집 주기(초)
+intervals:
+  ga4: 3600
+  fast: 600
+
+# 수집 대상 앱. 예시는 prod override 참고
+apps: []
+
+serviceMonitor:
+  interval: 1m
+  scrapeTimeout: 20s
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 48Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi

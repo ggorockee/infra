@@ -1,0 +1,6 @@
+apiVersion: v2
+name: app-metrics-exporter
+description: 앱 지표 수집기 (GA4·Firebase Remote Config·스토어·app-ads.txt → Prometheus)
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

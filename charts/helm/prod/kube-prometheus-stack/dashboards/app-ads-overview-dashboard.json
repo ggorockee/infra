@@ -1,0 +1,2997 @@
+{
+  "uid": "app-ads-overview",
+  "title": "앱·광고·스토어 현황",
+  "tags": [
+    "app",
+    "admob",
+    "google-ads",
+    "firebase"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5m",
+  "editable": true,
+  "graphTooltip": 1,
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "links": [
+    {
+      "type": "link",
+      "title": "클러스터 전체 현황",
+      "url": "/d/cluster-overview",
+      "icon": "dashboard",
+      "targetBlank": false
+    },
+    {
+      "type": "link",
+      "title": "라익찍스",
+      "url": "/d/like-zzix",
+      "icon": "dashboard",
+      "targetBlank": false
+    },
+    {
+      "type": "link",
+      "title": "돌려받엔",
+      "url": "/d/yen-back",
+      "icon": "dashboard",
+      "targetBlank": false
+    },
+    {
+      "type": "link",
+      "title": "AdMob",
+      "url": "https://admob.google.com/v2/home",
+      "icon": "external link",
+      "targetBlank": true
+    },
+    {
+      "type": "link",
+      "title": "Google Ads",
+      "url": "https://ads.google.com/aw/campaigns",
+      "icon": "external link",
+      "targetBlank": true
+    },
+    {
+      "type": "link",
+      "title": "Crashlytics (리뷰맵)",
+      "url": "https://console.firebase.google.com/project/reviewmap-c03f1/crashlytics",
+      "icon": "external link",
+      "targetBlank": true
+    }
+  ],
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "type": "row",
+      "id": 1,
+      "collapsed": true,
+      "title": "📖 이 대시보드 보는 법 — 정상/경고/알람 범위표 (펼치기)",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [
+        {
+          "type": "text",
+          "id": 2,
+          "title": "이 대시보드 보는 법",
+          "gridPos": {
+            "x": 0,
+            "y": 1,
+            "w": 24,
+            "h": 22
+          },
+          "options": {
+            "mode": "markdown",
+            "content": "### 세 앱(리뷰맵·돌려받엔·라익찍스)의 사용자, 품질, 광고 수입, 광고비, 버전, 스토어 상태\n\n**모니터링되지 않는 것은 관리할 수 없다.** 위에서 아래로 '지금 문제 → 최근 7일 요약 → 광고 → 유입 → 버전 → 추이' 순서로 봅니다.\n\n| 차트 | 🟢 정상 | 🟡 경고 | 🔴 조치 | 알림 (등급) | 조치 방법 |\n|---|---|---|---|---|---|\n| 스토어 공개 | 공개 | 공개됐는데 목록 미갱신 | 공개여야 하는데 안 보임 30분 | AppStoreListingMissing (CRITICAL) | 스토어 콘솔의 정책 위반·판매 중지 확인 |\n| 강제 업데이트 최소 버전 | 스토어 버전 이하 | - | 스토어 버전보다 높음 10분 | AppForceUpdateLockout (CRITICAL) | Remote Config min_version을 즉시 내림 |\n| app-ads.txt | 정상 | - | 이상 1시간 | AppAdsTxtInvalid (ERROR) | 서버 응답·Content-Type·게시자 줄 확인 |\n| 어제 광고 노출 | 1회 이상 | - | 사용자 5명 이상인데 0회 | AdImpressionsZero (ERROR) | AdMob 앱 승인, 정책 센터, 광고 스위치 확인 |\n| 비정상 종료 없는 사용자 (7일) | 95% 이상 (목표 99%) | 85~95% | 85% 미만 | AppCrashFreeLow (WARN) / AppCrashFreeCritical (ERROR) | Crashlytics 상위 문제 수정, 핫픽스 |\n| 앱 오프닝 광고 표시율 (7일) | 60% 이상 | 40~60% | 40% 미만 | AppOpenAdShowRateLow (WARN) | 로드 시점과 표시 조건 확인 |\n| 광고 수입 (이전 7일 대비) | 80% 이상 | 50~80% | 50% 미만 | AdRevenueDropped (WARN) | 사용자 감소인지 1인당 수입 감소인지 구분 |\n| Google Ads 비용 대비 설치 | 신규 1명당 $1 이하 | $1~2 | $2 초과, 또는 $3 넘게 쓰고 설치 0 | AdsSpendWithoutInstalls (WARN) | 전환 연결·대상 확인, 필요하면 중지 |\n| 최근 7일 신규 사용자 | 35명 이상 | 7~35명 | 7명 미만 | 없음 (대시보드만) | 광고·스토어 문구·블로그 유입 점검 |\n| 세션당 광고 수입 (7일) | $0.010 이상 | $0.005~0.010 | $0.005 미만 | 없음 (대시보드만) | 광고 단위별 eCPM·노출 수 확인 |\n| Remote Config 선택 업데이트 기준 | 스토어 버전 이상 | 하루 넘게 낮음 | - | AppRemoteConfigLatestBehind (INFO) | latest_version을 올림 |\n| Remote Config 변경 | - | - | - | AppRemoteConfigChanged (INFO) | 의도한 변경인지 확인 |\n| 지표 수집 | 최근 성공 | GA4 4시간, 그 밖 1시간 초과 | 수집기 중단 10분 | AppMetricsCollectStale (WARN) / AppMetricsExporterDown (ERROR) | app-metrics-exporter 로그, 권한 확인 |\n\n- 등급: CRITICAL 서비스 중단(즉시), ERROR 기능 실패(당일 조치), WARN 정상 범위 벗어남(추이 확인), INFO 참고.\n- **GA4는 하루 단위로 집계되고 최대 48시간 동안 값이 바뀔 수 있습니다.** 그래서 '어제까지'의 값만 씁니다.\n- 사용자가 적어 비율이 크게 흔들립니다. 알림은 최소 건수 조건을 함께 봅니다.\n- AdMob 앱 승인 상태(검토 필요/준비됨), 정책 센터, 지급 정보는 API가 없어 콘솔에서 확인해야 합니다.\n- 라익찍스는 App Store 심사 통과 뒤 GA4를 연결합니다. 그 전에는 자체 서버 이벤트만 봅니다."
+          }
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "id": 3,
+      "title": "지금 상황",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "x": 0,
+        "y": 1,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "stat",
+      "title": "조치가 필요한 알림",
+      "description": "[무엇] 이 대시보드와 관련된 알림 중 지금 발생 중인 수입니다.\n\n[보는 법] 0이 아닌 칸이 있으면 오른쪽 목록에서 앱과 알림 이름을 확인합니다.\n\n[범위] CRITICAL·ERROR 🟢 0 / 🔴 1 이상, WARN 🟢 0 / 🟠 1 이상",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "count(ALERTS{severity=~\"critical|error\", alertstate=\"firing\", alertname=~\"App(Metrics|ForceUpdate|Store|RemoteConfig|CrashFree|AdsTxt|OpenAd).*|AdImpressionsZero|AdRevenueDropped|AdsSpendWithoutInstalls\"}) or vector(0)",
+          "legendFormat": "CRITICAL·ERROR",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "count(ALERTS{severity=\"warning\", alertstate=\"firing\", alertname=~\"App(Metrics|ForceUpdate|Store|RemoteConfig|CrashFree|AdsTxt|OpenAd).*|AdImpressionsZero|AdRevenueDropped|AdsSpendWithoutInstalls\"}) or vector(0)",
+          "legendFormat": "WARN",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "WARN"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 18,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 4,
+      "gridPos": {
+        "x": 0,
+        "y": 2,
+        "w": 5,
+        "h": 7
+      }
+    },
+    {
+      "type": "table",
+      "title": "발생 중 알림 목록",
+      "description": "[무엇] 지금 발생 중인 앱·광고·스토어 알림입니다.\n\n[보는 법] 같은 내용의 메일이 발송됩니다. 조치 방법은 맨 위 범위표에 있습니다.\n\n[범위] 🟢 목록 비어 있음 / 그 외 등급에 따름",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "max by (severity, alertname, app, platform) (ALERTS{alertstate=\"firing\", alertname=~\"App(Metrics|ForceUpdate|Store|RemoteConfig|CrashFree|AdsTxt|OpenAd).*|AdImpressionsZero|AdRevenueDropped|AdsSpendWithoutInstalls\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "job": true,
+              "namespace": true,
+              "service": true,
+              "Value": true
+            },
+            "indexByName": {
+              "severity": 0,
+              "alertname": 1,
+              "app": 2,
+              "platform": 3
+            },
+            "renameByName": {
+              "severity": "등급",
+              "alertname": "알림",
+              "app": "앱",
+              "platform": "플랫폼"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "발생 중인 알림 없음",
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "등급"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "critical": {
+                        "text": "CRITICAL",
+                        "color": "dark-red",
+                        "index": 0
+                      },
+                      "error": {
+                        "text": "ERROR",
+                        "color": "red",
+                        "index": 1
+                      },
+                      "warning": {
+                        "text": "WARN",
+                        "color": "orange",
+                        "index": 2
+                      },
+                      "info": {
+                        "text": "INFO",
+                        "color": "blue",
+                        "index": 3
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": []
+      },
+      "id": 5,
+      "gridPos": {
+        "x": 5,
+        "y": 2,
+        "w": 9,
+        "h": 7
+      }
+    },
+    {
+      "type": "stat",
+      "title": "스토어 공개 상태",
+      "description": "[무엇] App Store(국내)와 Google Play에서 앱이 조회되는지 10분마다 확인합니다.\n\n[보는 법] 미출시는 아직 공개 목록(released)에 넣지 않은 앱입니다. '목록 갱신 필요'는 공개됐는데 설정을 안 바꾼 상태입니다.\n\n[범위] 🟢 공개 / 🔵 미출시 / 🟡 목록 갱신 필요 / 🔴 안 보임 (30분이면 CRITICAL)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "app_store_listed + 2 * (1 - app_store_expected)",
+          "legendFormat": "{{app}} {{platform}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "안 보임",
+                  "color": "red",
+                  "index": 0
+                },
+                "1": {
+                  "text": "공개",
+                  "color": "green",
+                  "index": 1
+                },
+                "2": {
+                  "text": "미출시",
+                  "color": "blue",
+                  "index": 2
+                },
+                "3": {
+                  "text": "목록 갱신 필요",
+                  "color": "yellow",
+                  "index": 3
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 20
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 6,
+      "gridPos": {
+        "x": 14,
+        "y": 2,
+        "w": 10,
+        "h": 7
+      }
+    },
+    {
+      "type": "stat",
+      "title": "app-ads.txt",
+      "description": "[무엇] 광고 판매자 확인 파일이 200, Content-Type text/plain 하나, AdMob 게시자 줄을 모두 만족하는지 확인합니다.\n\n[보는 법] 이상이면 AdMob이 광고 게재를 제한할 수 있습니다.\n\n[범위] 🟢 정상 / 🔴 이상 (1시간이면 ERROR)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "label_replace(app_ads_txt_ok, \"host\", \"$1\", \"url\", \"https://([^/]+)/.*\")",
+          "legendFormat": "{{host}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "이상",
+                  "color": "red",
+                  "index": 0
+                },
+                "1": {
+                  "text": "정상",
+                  "color": "green",
+                  "index": 1
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 20
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 7,
+      "gridPos": {
+        "x": 0,
+        "y": 9,
+        "w": 10,
+        "h": 5
+      }
+    },
+    {
+      "type": "stat",
+      "title": "지표 갱신 후 지난 시간",
+      "description": "[무엇] 앱마다 가장 오래된 수집원이 마지막으로 성공한 뒤 지난 시간입니다.\n\n[보는 법] GA4는 1시간, 그 밖은 10분마다 수집합니다.\n\n[범위] 🟢 1시간 30분 미만 / 🟡 1시간 30분 이상 / 🔴 4시간 이상",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "max by (app) (time() - app_metrics_last_success_timestamp_seconds)",
+          "legendFormat": "{{app}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dthms",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5400
+              },
+              {
+                "color": "red",
+                "value": 14400
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 24
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 8,
+      "gridPos": {
+        "x": 10,
+        "y": 9,
+        "w": 7,
+        "h": 5
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Remote Config 마지막 변경 후",
+      "description": "[무엇] Firebase Remote Config를 마지막으로 바꾼 뒤 지난 시간입니다.\n\n[보는 법] 바꾼 기억이 없는데 짧으면 변경 기록을 확인합니다.\n\n[범위] 색 기준 없음 (30분 안에 바뀌면 INFO 메일)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "time() - max by (app) (app_remote_config_updated_timestamp_seconds)",
+          "legendFormat": "{{app}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 24
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 9,
+      "gridPos": {
+        "x": 17,
+        "y": 9,
+        "w": 7,
+        "h": 5
+      }
+    },
+    {
+      "type": "row",
+      "id": 10,
+      "title": "최근 7일 요약 (어제까지)",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "x": 0,
+        "y": 14,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "stat",
+      "title": "활성 사용자 (7일)",
+      "description": "[무엇] 최근 7일 동안 앱을 한 번 이상 쓴 사용자 수입니다.\n\n[보는 법] 광고 수입은 사용자 수에 거의 비례합니다. 강제 업데이트 직후에는 일시적으로 늘어납니다.\n\n[범위] 🟢 100명 이상 / 🟡 30~100명 / 🔴 30명 미만",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "app_active_users{window=\"7d\"} and on (app, platform) app_store_expected == 1",
+          "legendFormat": "{{app}} {{platform}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 30
+              },
+              {
+                "color": "green",
+                "value": 100
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 28
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 11,
+      "gridPos": {
+        "x": 0,
+        "y": 15,
+        "w": 8,
+        "h": 6
+      }
+    },
+    {
+      "type": "stat",
+      "title": "신규 사용자 (7일)",
+      "description": "[무엇] 최근 7일 동안 처음 앱을 연 사용자 수입니다.\n\n[보는 법] 유입이 없으면 광고 수입은 줄기만 합니다.\n\n[범위] 🟢 35명 이상 (하루 5명) / 🟡 7~35명 / 🔴 7명 미만",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "app_new_users{window=\"7d\"} and on (app, platform) app_store_expected == 1",
+          "legendFormat": "{{app}} {{platform}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 7
+              },
+              {
+                "color": "green",
+                "value": 35
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 28
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 12,
+      "gridPos": {
+        "x": 8,
+        "y": 15,
+        "w": 8,
+        "h": 6
+      }
+    },
+    {
+      "type": "stat",
+      "title": "비정상 종료 없는 사용자 (7일)",
+      "description": "[무엇] 최근 7일 사용자 중 비정상 종료(fatal로 기록된 오류 포함)를 겪지 않은 비율입니다.\n\n[보는 법] 리뷰맵 2.2.0 이하는 종료되지 않은 오류도 fatal로 기록해 낮게 나옵니다. 2.2.1부터 실제 종료만 집계합니다.\n\n[범위] 🟢 95% 이상 (목표 99%) / 🟡 85~95% (2명 이상 WARN) / 🔴 85% 미만 (3명 이상 ERROR)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "app_crash_free_users_ratio{window=\"7d\"} and on (app, platform) app_store_expected == 1",
+          "legendFormat": "{{app}} {{platform}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.85
+              },
+              {
+                "color": "green",
+                "value": 0.95
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 28
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 13,
+      "gridPos": {
+        "x": 16,
+        "y": 15,
+        "w": 8,
+        "h": 6
+      }
+    },
+    {
+      "type": "stat",
+      "title": "광고 수입 (7일)",
+      "description": "[무엇] AdMob 예상 광고 수입(미국 달러)입니다.\n\n[보는 법] AdMob 콘솔 값과 조금 다를 수 있습니다. 돌려받엔은 AdMob 앱 인증 전이라 0입니다.\n\n[범위] 색 기준 없음 (감소율은 오른쪽)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (app) (app_ad_revenue_usd{window=\"7d\", ad_unit=\"전체\"})",
+          "legendFormat": "{{app}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 28
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 14,
+      "gridPos": {
+        "x": 0,
+        "y": 21,
+        "w": 8,
+        "h": 5
+      }
+    },
+    {
+      "type": "stat",
+      "title": "광고 수입 (이전 7일 대비)",
+      "description": "[무엇] 최근 7일 수입을 그 전 7일 수입으로 나눈 비율입니다.\n\n[보는 법] 활성 사용자도 같은 비율로 줄었다면 유입 문제, 사용자는 그대로인데 줄었다면 광고 문제입니다.\n\n[범위] 🟢 80% 이상 / 🟡 50~80% / 🔴 50% 미만 (이전 7일이 $0.3 이상이면 WARN)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (app) (app_ad_revenue_usd{window=\"7d\", ad_unit=\"전체\"}) / (sum by (app) (app_ad_revenue_usd{window=\"prev7d\", ad_unit=\"전체\"}) > 0)",
+          "legendFormat": "{{app}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "noValue": "비교할 이전 값 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.5
+              },
+              {
+                "color": "green",
+                "value": 0.8
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 28
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 15,
+      "gridPos": {
+        "x": 8,
+        "y": 21,
+        "w": 8,
+        "h": 5
+      }
+    },
+    {
+      "type": "stat",
+      "title": "앱 오프닝 광고 표시율 (7일)",
+      "description": "[무엇] 불러온 앱 오프닝 광고 중 실제로 보여준 비율입니다. 단가가 가장 높은 광고입니다.\n\n[보는 법] 낮으면 광고를 불러오기만 하고 버리고 있다는 뜻입니다. 앱 시작 시 로드가 늦거나, 다시 쓰지 못할 광고를 미리 받는 경우입니다.\n\n[범위] 🟢 60% 이상 / 🟡 40~60% / 🔴 40% 미만 (20회 이상 로드면 WARN)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "app_events{event=\"app_open_ad_shown\", window=\"7d\"} / ignoring(event) (app_events{event=\"app_open_ad_loaded\", window=\"7d\"} > 0)",
+          "legendFormat": "{{app}} {{platform}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "noValue": "앱 오프닝 광고 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.4
+              },
+              {
+                "color": "green",
+                "value": 0.6
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 28
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 16,
+      "gridPos": {
+        "x": 16,
+        "y": 21,
+        "w": 8,
+        "h": 5
+      }
+    },
+    {
+      "type": "row",
+      "id": 17,
+      "title": "광고 (AdMob)",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "x": 0,
+        "y": 26,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "table",
+      "title": "광고 단위별 실적 (7일)",
+      "description": "[무엇] 광고 단위마다 최근 7일 노출·클릭·수입·eCPM(1,000회 노출당 수입)입니다.\n\n[보는 법] eCPM이 높은데 노출이 적은 단위(앱 오프닝)의 노출을 늘리는 것이 가장 효과가 큽니다.\n\n[범위] eCPM 🟢 $1 이상 / 🟡 $0.5~1 / 🔴 $0.5 미만",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "max by (app, platform, ad_unit) (app_ad_impressions{window=\"7d\", ad_unit!=\"전체\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "max by (app, platform, ad_unit) (app_ad_clicks{window=\"7d\", ad_unit!=\"전체\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "C",
+          "expr": "max by (app, platform, ad_unit) (app_ad_revenue_usd{window=\"7d\", ad_unit!=\"전체\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "D",
+          "expr": "1000 * max by (app, platform, ad_unit) (app_ad_revenue_usd{window=\"7d\", ad_unit!=\"전체\"}) / (max by (app, platform, ad_unit) (app_ad_impressions{window=\"7d\", ad_unit!=\"전체\"}) > 0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "job": true,
+              "namespace": true,
+              "service": true,
+              "window": true
+            },
+            "indexByName": {
+              "app": 0,
+              "platform": 1,
+              "ad_unit": 2,
+              "Value #A": 3,
+              "Value #B": 4,
+              "Value #C": 5,
+              "Value #D": 6
+            },
+            "renameByName": {
+              "app": "앱",
+              "platform": "플랫폼",
+              "ad_unit": "광고 단위",
+              "Value #A": "노출",
+              "Value #B": "클릭",
+              "Value #C": "수입",
+              "Value #D": "eCPM"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "광고 노출 없음",
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "수입"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "eCPM"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.5
+                    },
+                    {
+                      "color": "green",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "수입",
+            "desc": true
+          }
+        ]
+      },
+      "id": 18,
+      "gridPos": {
+        "x": 0,
+        "y": 27,
+        "w": 14,
+        "h": 9
+      }
+    },
+    {
+      "type": "stat",
+      "title": "세션당 광고 수입 (7일)",
+      "description": "[무엇] 최근 7일 광고 수입 ÷ 세션 수입니다.\n\n[보는 법] 설치 1건 비용(Google Ads 화면 기준 약 755원 ≈ $0.5)을 회수하려면 몇 번 접속해야 하는지 가늠할 수 있습니다.\n\n[범위] 🟢 $0.010 이상 / 🟡 $0.005~0.010 / 🔴 $0.005 미만",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (app, platform) (app_ad_revenue_usd{window=\"7d\", ad_unit=\"전체\"}) / (sum by (app, platform) (app_sessions{window=\"7d\"}) > 0)",
+          "legendFormat": "{{app}} {{platform}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.005
+              },
+              {
+                "color": "green",
+                "value": 0.01
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 4
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 24
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 19,
+      "gridPos": {
+        "x": 14,
+        "y": 27,
+        "w": 10,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "라익찍스 광고 이벤트 (24시간)",
+      "description": "[무엇] 라익찍스 앱이 서버로 보낸 광고 노출·로드 실패 횟수입니다.\n\n[보는 법] AdMob에 스토어가 연결되기 전에는 광고 게재가 제한되어 실패가 정상입니다. 출시 후에도 실패가 노출보다 많으면 광고 단위와 승인 상태를 확인합니다.\n\n[범위] 출시 전 색 기준 없음",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum(increase(likezzix_app_events_total{event=~\"ad_native_shown|ad_interstitial_shown\"}[24h])) or vector(0)",
+          "legendFormat": "노출",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "sum(increase(likezzix_app_events_total{event=\"ad_load_failed\"}[24h])) or vector(0)",
+          "legendFormat": "로드 실패",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 28
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 20,
+      "gridPos": {
+        "x": 14,
+        "y": 31,
+        "w": 10,
+        "h": 5
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "광고 수입 추이 (7일 합계)",
+      "description": "[무엇] 매시간 갱신한 '최근 7일 광고 수입'의 변화입니다.\n\n[보는 법] 선이 계속 내려가면 유입이나 광고에 문제가 있습니다.\n\n[범위] 이전 7일의 50% 미만이면 WARN",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (app, platform) (app_ad_revenue_usd{window=\"7d\", ad_unit=\"전체\"})",
+          "legendFormat": "{{app}} {{platform}}",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "noValue": "데이터 없음",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 2
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "리뷰맵 android"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3987e5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "리뷰맵 ios"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#d95926"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "돌려받엔 ios"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#199e70"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "돌려받엔 android"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#d55181"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "리뷰맵"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3987e5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "돌려받엔"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#199e70"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "라익찍스"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#c98500"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 21,
+      "gridPos": {
+        "x": 0,
+        "y": 36,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "광고 노출 추이 (7일 합계)",
+      "description": "[무엇] 매시간 갱신한 '최근 7일 광고 노출 수'의 변화입니다.\n\n[보는 법] 활성 사용자 추이와 함께 봅니다.\n\n[범위] 어제 노출 0회(사용자 5명 이상)면 ERROR",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (app, platform) (app_ad_impressions{window=\"7d\", ad_unit=\"전체\"})",
+          "legendFormat": "{{app}} {{platform}}",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "데이터 없음",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "리뷰맵 android"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3987e5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "리뷰맵 ios"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#d95926"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "돌려받엔 ios"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#199e70"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "돌려받엔 android"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#d55181"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "리뷰맵"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3987e5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "돌려받엔"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#199e70"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "라익찍스"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#c98500"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 22,
+      "gridPos": {
+        "x": 12,
+        "y": 36,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "type": "row",
+      "id": 23,
+      "title": "유입 (Google Ads)",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "x": 0,
+        "y": 44,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "stat",
+      "title": "광고비 (7일)",
+      "description": "[무엇] 최근 7일 Google Ads 비용(달러 환산)입니다.\n\n[보는 법] 0이면 게재되지 않고 있습니다. 실제 청구액은 Google Ads 결제 화면이 기준입니다.\n\n[범위] 색 기준 없음. $3 넘게 쓰고 설치 0이면 WARN",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "app_ads_cost{window=\"7d\", campaign=\"전체\"}",
+          "legendFormat": "{{app}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 26
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 24,
+      "gridPos": {
+        "x": 0,
+        "y": 45,
+        "w": 6,
+        "h": 5
+      }
+    },
+    {
+      "type": "stat",
+      "title": "광고 노출 / 클릭 (7일)",
+      "description": "[무엇] 최근 7일 Google Ads 노출과 클릭입니다.\n\n[보는 법] 노출이 0이면 예산·대상·전환 설정을 확인합니다.\n\n[범위] 노출 0 = 게재 안 됨",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "app_ads_impressions{window=\"7d\", campaign=\"전체\"}",
+          "legendFormat": "{{app}} 노출",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "app_ads_clicks{window=\"7d\", campaign=\"전체\"}",
+          "legendFormat": "{{app}} 클릭",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 26
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 25,
+      "gridPos": {
+        "x": 6,
+        "y": 45,
+        "w": 6,
+        "h": 5
+      }
+    },
+    {
+      "type": "stat",
+      "title": "광고로 들어온 신규 사용자 (7일)",
+      "description": "[무엇] 첫 유입이 유료 Google 광고인 신규 사용자 수입니다.\n\n[보는 법] iOS는 추적 동의에 따라 적게 잡힐 수 있습니다.\n\n[범위] 광고비가 있는데 0이면 조치",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "app_ads_new_users{window=\"7d\"}",
+          "legendFormat": "{{app}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 26
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 26,
+      "gridPos": {
+        "x": 12,
+        "y": 45,
+        "w": 6,
+        "h": 5
+      }
+    },
+    {
+      "type": "stat",
+      "title": "신규 1명당 광고비 (28일)",
+      "description": "[무엇] 최근 28일 광고비 ÷ 광고로 들어온 신규 사용자입니다.\n\n[보는 법] Google Ads 화면의 지역 평균은 약 755원($0.5)입니다.\n\n[범위] 🟢 $1 이하 / 🟡 $1~2 / 🔴 $2 초과",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "app_ads_cost{window=\"28d\", campaign=\"전체\"} / on (app) (app_ads_new_users{window=\"28d\"} > 0)",
+          "legendFormat": "{{app}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "noValue": "광고 유입 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 2
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value_and_name",
+        "wideLayout": false,
+        "orientation": "auto",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 26
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 27,
+      "gridPos": {
+        "x": 18,
+        "y": 45,
+        "w": 6,
+        "h": 5
+      }
+    },
+    {
+      "type": "row",
+      "id": 28,
+      "title": "버전 · Remote Config",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "x": 0,
+        "y": 50,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "table",
+      "title": "버전 관리 현황",
+      "description": "[무엇] 스토어 공개 버전과 Remote Config의 선택(latest)·강제(min) 업데이트 기준입니다. Google Play는 공개 API가 없어 스토어 버전이 비어 있습니다.\n\n[보는 법] 순서: 스토어 공개 확인 → latest 올림 → 꼭 필요할 때만 min 올림.\n\n[범위] 🔴 강제 기준 > 스토어 버전이면 사용자가 앱을 못 씀 (CRITICAL)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "max by (app, platform, kind, version) (app_version_info)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "job": true,
+              "namespace": true,
+              "service": true,
+              "Value": true
+            },
+            "indexByName": {
+              "app": 0,
+              "platform": 1,
+              "kind": 2,
+              "version": 3
+            },
+            "renameByName": {
+              "app": "앱",
+              "platform": "플랫폼",
+              "kind": "구분",
+              "version": "버전"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "없음",
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "구분"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "store": {
+                        "text": "스토어 공개",
+                        "color": "green",
+                        "index": 0
+                      },
+                      "rc_latest": {
+                        "text": "선택 업데이트 기준",
+                        "color": "blue",
+                        "index": 1
+                      },
+                      "rc_min": {
+                        "text": "강제 업데이트 기준",
+                        "color": "orange",
+                        "index": 2
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "앱",
+            "desc": false
+          }
+        ]
+      },
+      "id": 29,
+      "gridPos": {
+        "x": 0,
+        "y": 51,
+        "w": 9,
+        "h": 10
+      }
+    },
+    {
+      "type": "bargauge",
+      "title": "앱 버전별 사용자 (7일)",
+      "description": "[무엇] 최근 7일 활성 사용자를 앱 버전별로 나눈 수입니다.\n\n[보는 법] 강제 업데이트 뒤 구버전이 줄어드는지 봅니다. 아직 스토어에 없는 버전은 테스트 기기입니다.\n\n[범위] 구버전 0명이 이상적",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sort_desc(sum by (app, platform, version) (app_version_users))",
+          "legendFormat": "{{app}} {{platform}} {{version}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "min": 0,
+          "noValue": "데이터 없음",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#3987e5"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "displayMode": "basic",
+        "orientation": "horizontal",
+        "showUnfilled": false,
+        "text": {
+          "titleSize": 14,
+          "valueSize": 18
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "id": 30,
+      "gridPos": {
+        "x": 9,
+        "y": 51,
+        "w": 6,
+        "h": 10
+      }
+    },
+    {
+      "type": "table",
+      "title": "Remote Config 현재 값",
+      "description": "[무엇] 광고 스위치·빈도와 업데이트 기준의 현재 값입니다.\n\n[보는 법] 광고가 갑자기 안 나오면 show_* 값이 false인지 먼저 봅니다. 키가 없으면 앱 기본값이 쓰입니다.\n\n[범위] 색 기준 없음",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "max by (app, key, value) (app_remote_config_info{key!~\".*store_url|update_message.*\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "job": true,
+              "namespace": true,
+              "service": true,
+              "Value": true
+            },
+            "indexByName": {
+              "app": 0,
+              "key": 1,
+              "value": 2
+            },
+            "renameByName": {
+              "app": "앱",
+              "key": "키",
+              "value": "값"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "없음",
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "앱",
+            "desc": false
+          }
+        ]
+      },
+      "id": 31,
+      "gridPos": {
+        "x": 15,
+        "y": 51,
+        "w": 9,
+        "h": 10
+      }
+    },
+    {
+      "type": "row",
+      "id": 32,
+      "title": "추이",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "x": 0,
+        "y": 61,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "활성 사용자 (7일)",
+      "description": "[무엇] 매시간 갱신한 최근 7일 활성 사용자 수의 변화입니다.\n\n[보는 법] 광고 수입 추이와 같은 모양이면 유입이 원인입니다.\n\n[범위] 🔴 30명 미만 / 🟡 30~100명 / 🟢 100명 이상",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "app_active_users{window=\"7d\"} and on (app, platform) app_store_expected == 1",
+          "legendFormat": "{{app}} {{platform}}",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "데이터 없음",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "리뷰맵 android"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3987e5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "리뷰맵 ios"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#d95926"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "돌려받엔 ios"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#199e70"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "돌려받엔 android"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#d55181"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "리뷰맵"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3987e5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "돌려받엔"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#199e70"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "라익찍스"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#c98500"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 33,
+      "gridPos": {
+        "x": 0,
+        "y": 62,
+        "w": 8,
+        "h": 8
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "비정상 종료 없는 사용자 (7일)",
+      "description": "[무엇] 매시간 갱신한 최근 7일 비율의 변화입니다.\n\n[보는 법] 새 버전 배포 뒤 내려가면 그 버전이 원인일 가능성이 큽니다.\n\n[범위] 점선 95% 경고, 85% 조치",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "app_crash_free_users_ratio{window=\"7d\"} and on (app, platform) app_store_expected == 1",
+          "legendFormat": "{{app}} {{platform}}",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "noValue": "데이터 없음",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.85
+              },
+              {
+                "color": "green",
+                "value": 0.95
+              }
+            ]
+          },
+          "max": 1
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "리뷰맵 android"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3987e5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "리뷰맵 ios"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#d95926"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "돌려받엔 ios"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#199e70"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "돌려받엔 android"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#d55181"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "리뷰맵"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3987e5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "돌려받엔"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#199e70"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "라익찍스"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#c98500"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 34,
+      "gridPos": {
+        "x": 8,
+        "y": 62,
+        "w": 8,
+        "h": 8
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "앱 오프닝 광고 표시율 (7일)",
+      "description": "[무엇] 매시간 갱신한 최근 7일 표시율의 변화입니다.\n\n[보는 법] 2.2.1 배포 뒤 올라가야 합니다.\n\n[범위] 점선 60% 정상, 40% 조치",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "app_events{event=\"app_open_ad_shown\", window=\"7d\"} / ignoring(event) (app_events{event=\"app_open_ad_loaded\", window=\"7d\"} > 0)",
+          "legendFormat": "{{app}} {{platform}}",
+          "instant": false,
+          "range": true,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "noValue": "데이터 없음",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.4
+              },
+              {
+                "color": "green",
+                "value": 0.6
+              }
+            ]
+          },
+          "max": 1
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "리뷰맵 android"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3987e5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "리뷰맵 ios"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#d95926"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "돌려받엔 ios"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#199e70"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "돌려받엔 android"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#d55181"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "리뷰맵"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3987e5"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "돌려받엔"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#199e70"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "라익찍스"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#c98500"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 35,
+      "gridPos": {
+        "x": 16,
+        "y": 62,
+        "w": 8,
+        "h": 8
+      }
+    }
+  ]
+}
