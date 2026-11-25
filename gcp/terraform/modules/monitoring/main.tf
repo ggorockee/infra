@@ -37,3 +37,23 @@ resource "google_service_account_iam_member" "monitoring_reader_workload_identit
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.project_id}.svc.id.goog[${var.namespace}/${var.kubernetes_service_account}]"
 }
+
+# 앱 지표 읽기 전용 GCP 서비스 계정 (app-metrics-exporter)
+# - GA4 Data API(사용자·설치·비정상 종료·광고 수입·광고비)와 Firebase Remote Config 값을 읽어 Prometheus로 노출한다.
+# - 이 프로젝트에는 아무 권한도 주지 않는다. 실제 권한은 프로젝트 밖에서 부여한다 (Terraform 서비스 계정이 접근할 수 없는 곳):
+#   - GA4 속성 513036605(리뷰맵), 565832639(돌려받엔): 속성 액세스 관리에서 뷰어
+#   - reviewmap-c03f1, like-zzix, yen-back: roles/firebaseremoteconfig.viewer
+# - 문서: claudedocs/app-metrics-monitoring.md
+resource "google_service_account" "app_metrics_reader" {
+  account_id   = "app-metrics-reader-${var.environment}"
+  display_name = "App Metrics Reader for ${var.environment}"
+  project      = var.project_id
+  description  = "app-metrics-exporter가 GA4와 Firebase Remote Config를 읽기 위한 계정 (읽기 전용)"
+}
+
+# Workload Identity: KSA monitoring/app-metrics-exporter → GSA
+resource "google_service_account_iam_member" "app_metrics_reader_workload_identity" {
+  service_account_id = google_service_account.app_metrics_reader.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[${var.namespace}/${var.app_metrics_kubernetes_service_account}]"
+}

@@ -19,3 +19,9 @@ variable "kubernetes_service_account" {
   type        = string
   default     = "prometheus-stackdriver-exporter"
 }
+
+variable "app_metrics_kubernetes_service_account" {
+  description = "Kubernetes ServiceAccount name used by app-metrics-exporter (Helm release name)"
+  type        = string
+  default     = "app-metrics-exporter"
+}

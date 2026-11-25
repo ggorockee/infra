@@ -1,6 +1,6 @@
 # GCP Terraform 리소스 현황
 
-**최종 업데이트**: 2026-11-13 (Cloud Monitoring 읽기 전용 서비스 계정 추가)
+**최종 업데이트**: 2026-11-26 (앱 지표 읽기 전용 서비스 계정 추가)
 **프로젝트**: infra-480802
 **리전**: asia-northeast3 (서울)
 
@@ -37,13 +37,15 @@
 - Network: woohalabs-prod-vpc
 - Subnet: woohalabs-prod-private-subnet
 
-### ✅ 모니터링 IAM (3개 리소스, `module.monitoring`)
+### ✅ 모니터링 IAM (5개 리소스, `module.monitoring`)
 
 | 리소스 유형 | 이름 | 상태 | 설명 |
 |------------|------|------|------|
 | Service Account | `monitoring-reader-prod@yanggo-514212.iam.gserviceaccount.com` | 🟢 Active | Cloud Monitoring 지표 읽기 전용 계정 |
 | Project IAM Member | `roles/monitoring.viewer` → monitoring-reader-prod | 🟢 Active | 지표 조회만 가능 (쓰기·설정 변경 불가) |
 | Service Account IAM Member | `roles/iam.workloadIdentityUser` → `yanggo-514212.svc.id.goog[monitoring/prometheus-stackdriver-exporter]` | 🟢 Active | Workload Identity (키 파일 없음) |
+| Service Account | `app-metrics-reader-prod@yanggo-514212.iam.gserviceaccount.com` | 🟢 Active | 앱 지표(GA4, Firebase Remote Config) 읽기 전용 계정. 이 프로젝트 권한 없음, GA4 뷰어와 `roles/firebaseremoteconfig.viewer`는 대상 쪽에서 부여 |
+| Service Account IAM Member | `roles/iam.workloadIdentityUser` → `yanggo-514212.svc.id.goog[monitoring/app-metrics-exporter]` | 🟢 Active | Workload Identity (키 파일 없음) |
 
 **용도**: Cloud SQL CPU·메모리·디스크 사용률을 prometheus-stackdriver-exporter가 읽어 Prometheus 알림·대시보드에 사용. 상세는 `claudedocs/cloudsql-monitoring.md`.
 
@@ -76,6 +78,21 @@
 ---
 
 ## 📈 리소스 히스토리
+
+### 2026-11-26: 앱 지표 읽기 전용 서비스 계정 추가
+
+**배포된 리소스**: 2개 (`module.monitoring`)
+
+**변경 내역**:
+- GSA `app-metrics-reader-prod` 생성 (이 프로젝트 권한 없음)
+- Workload Identity 바인딩: KSA `monitoring/app-metrics-exporter` → GSA
+- 용도: GA4와 Firebase Remote Config 값을 Grafana 대시보드·알림에 사용 (`claudedocs/app-metrics-monitoring.md`)
+- 프로젝트 밖 권한: GA4 속성 뷰어, 앱 Firebase 프로젝트의 `roles/firebaseremoteconfig.viewer` (Terraform 관리 대상 아님)
+- 수동 활성화한 API: `analyticsdata.googleapis.com`, `firebaseremoteconfig.googleapis.com`
+
+**비용 영향**: 없음 (서비스 계정·IAM·GA4 Data API·Remote Config API 무료)
+
+---
 
 ### 2026-11-13: Cloud Monitoring 읽기 전용 서비스 계정 추가
 

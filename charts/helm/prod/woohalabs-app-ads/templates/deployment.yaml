@@ -13,6 +13,9 @@ spec:
     metadata:
       labels:
         {{- include "woohalabs-app-ads.selectorLabels" . | nindent 8 }}
+      annotations:
+        # subPath로 마운트한 ConfigMap은 자동 갱신되지 않으므로 내용이 바뀌면 Pod를 다시 만든다
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       containers:
       - name: nginx
