@@ -562,7 +562,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | ServerSideApply 앱의 ExternalSecret | ESO 기본값(`conversionStrategy`, `decodingStrategy`, `metadataPolicy`, `deletionPolicy`)을 명시하지 않으면 계속 OutOfSync |
 | GSM 시크릿 JSON 형식 | 점이 들어간 평면 키 (`"google.clientId"`), 중첩 객체 아님 |
 | Google OAuth 클라이언트 | `yanggo-514212` 프로젝트 웹 클라이언트 (Grafana, ArgoCD Dex 공용). 리디렉션 URI: `monitoring.ggorockee.com/login/generic_oauth`, `argocd.ggorockee.com/api/dex/callback`. 동의 화면 Testing 상태라 Test users만 로그인 가능 |
-| 로컬 자격증명 파일 | `.secrets/` (gitignore). 예: `.secrets/oauth-client_yanggo-514212_monitoring-argocd.json` |
+| 로컬 자격증명 파일 | `.secrets/` (gitignore). 비밀번호·키 위치 목록은 `.secrets/README.md` (공개 저장소라 커밋 금지). 예: `.secrets/oauth-client_yanggo-514212_monitoring-argocd.json` |
 | ArgoCD 관리자 | `charts/helm/prod/argo-cd/values.yaml`의 `configs.rbac.policy.csv`에 직접 지정 (ExternalSecret 방식은 ConfigMap 대상이라 동작 안 함) |
 | ArgoCD Google 로그인 (Dex) | `dex.config` google 커넥터에 `hostedDomains` 사용 금지. 개인 Gmail 계정은 ID 토큰에 `hd` 클레임이 없어 `oidc: unexpected hd claim`으로 전원 로그인 실패 (#1144에서 제거). 로그인 문제는 `kubectl -n argocd logs deploy/argocd-dex-server`로 확인 |
 | ArgoCD 접근 범위 | 도메인 제한 없음. OAuth 동의 화면 Test users만 로그인 가능, `policy.csv` 3개 계정만 admin, 나머지는 `policy.default: role:readonly`. 동의 화면을 Production으로 바꾸면 모든 Google 계정이 readonly 로그인 가능 → 막으려면 `policy.default`를 빈 값으로 |

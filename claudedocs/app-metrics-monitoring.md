@@ -38,7 +38,7 @@
 | AppMetricsExporterDown | UP | 10분 수집 불가 | ERROR |
 | AppAdsTxtInvalid | 1 | 0이 1시간 | ERROR |
 | AdmobApprovalLost | 준비됨 | 하루 전 준비됨이었는데 1시간 벗어남 | ERROR |
-| AdmobActionRequired | 준비됨 | 공개 앱이 조치 필요 24시간 | WARN |
+| AdmobNotApproved | 준비됨 | 공개 앱이 준비됨이 아닌 채 24시간 | WARN |
 | AdmobMatchRateLow | 80% 이상 | 승인 앱 7일 50% 미만, 요청 20회 이상 | WARN |
 | AdImpressionsZero | 1회 이상 | 어제 사용자 5명 이상인데 노출 0 | ERROR |
 | AppCrashFreeCritical | 95% 이상 (목표 99%) | 7일 85% 미만, 3명 이상 | ERROR |
@@ -63,11 +63,11 @@ AdMob API는 서비스 계정을 쓸 수 없어 사람 계정의 OAuth 토큰이
 | 권한 | `admob.readonly` | 읽기만 가능 |
 | 게시 상태 | 프로덕션 | 테스트 상태에서는 갱신 토큰이 7일 뒤 만료됨 |
 
-설정 순서 (개발자, 최초 1회)
+설정 순서 (최초 1회, 2026-11-26 완료)
 
-- [ ] `yen-back` 프로젝트의 Google 인증 플랫폼에서 브랜딩 입력, 대상 "외부", 프로덕션으로 게시
-- [ ] 클라이언트 만들기 → "데스크톱 앱" → JSON을 infra `.secrets/`에 저장 (gitignore 대상)
-- [ ] `python3 scripts/admob-oauth-setup.py .secrets/<파일>.json` 실행 → woohalabs 계정으로 허용 ("확인되지 않은 앱" 경고는 본인 앱이므로 고급에서 계속)
+- [x] `yen-back` 프로젝트의 Google 인증 플랫폼에서 브랜딩 입력, 대상 "외부", 프로덕션으로 게시
+- [x] 클라이언트 만들기 → "데스크톱 앱" → JSON을 infra `.secrets/`에 저장 (gitignore 대상)
+- [x] `python3 scripts/admob-oauth-setup.py .secrets/<파일>.json` 실행 → woohalabs 계정으로 허용 ("확인되지 않은 앱" 경고는 본인 앱이므로 고급에서 계속)
 
 토큰이 취소되거나 6개월 동안 쓰이지 않으면 만료됩니다. AppMetricsCollectStale(source=admob) 알림이 오면 마지막 단계를 다시 실행합니다.
 
