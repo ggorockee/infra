@@ -440,6 +440,7 @@ feat: Cloud SQL 모듈 추가
 | blackbox exporter 11.21.3 | 차트 `charts/helm/prod/prometheus-blackbox-exporter`, override `valuefiles/prod/prometheus-blackbox-exporter/values.yaml` | 외부 URL 9개(2xx) + 내부 Redis 2개(PING) (오점너 4개는 2026-11-15 제거) 접속 검사, 인증서 만료일. 대상 추가는 override `serviceMonitor.targets` |
 | postgres-exporter 8.2.5 | 차트 `charts/helm/prod/prometheus-postgres-exporter`, override `valuefiles/prod/prometheus-postgres-exporter/values.yaml` | Cloud SQL `prod-woohalabs-cloudsql`(172.29.0.3, max_connections 100, 디스크 20GB 자동 확장). 계정은 Secret `grafana-reviewmaps-db` 재사용 |
 | stackdriver-exporter 5.2.2 | 차트 `charts/helm/prod/prometheus-stackdriver-exporter`, override `valuefiles/prod/prometheus-stackdriver-exporter/values.yaml` | Cloud SQL CPU·메모리·디스크 (Cloud Monitoring → Prometheus, 2분 간격·2~5분 지연). Workload Identity: KSA `monitoring/prometheus-stackdriver-exporter` → GSA `monitoring-reader-prod` (`roles/monitoring.viewer`, Terraform `modules/monitoring`). 문서 `claudedocs/cloudsql-monitoring.md` |
+| app-metrics-exporter (자체 차트) | 차트 `charts/helm/prod/app-metrics-exporter`(코드 `files/exporter.py`, ConfigMap 마운트), override `valuefiles/prod/app-metrics-exporter/values.yaml`의 `apps` 목록 | GA4(사용자·비정상 종료·AdMob 수입·Google Ads 비용), Firebase Remote Config 값, 스토어 공개·버전, app-ads.txt. GA4 1시간, 그 밖 10분 주기. Workload Identity: KSA `monitoring/app-metrics-exporter` → GSA `app-metrics-reader-prod`(GA4 속성 뷰어 + 앱 Firebase 프로젝트 `roles/cloudconfig.viewer`). 앱 출시 시 `released` 갱신. 문서 `claudedocs/app-metrics-monitoring.md` |
 | 추가 수집 대상 | kube-prometheus-stack override `prometheus.additionalServiceMonitors` / `additionalPodMonitors`, cert-manager 차트 values | istiod, Istio ingress gateway(서비스별 요청·응답 코드·지연), ArgoCD, External Secrets, cert-manager (오점너 수집은 2026-11-15 중지로 제거) |
 | Grafana | `https://monitoring.ggorockee.com` (Istio VS `grafana-vs`) | Google OAuth + 관리자 `woohaen88` (비밀번호는 GSM `prod-monitoring-smtp-credentials.password`) |
 | Prometheus / Alertmanager | 외부 노출 없음 | 필요 시 `kubectl -n monitoring port-forward` |
@@ -465,6 +466,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | ReviewMaps CronJob & DB 적재 (Home) | `reviewmaps-cronjob` | CronJob 성공/실패, Cloud SQL campaign 적재 건수 |
 | ReviewMaps 수집 서버 | `reviewmaps-scraper` | 지금 수집 중인 Job·키워드·진행률, go-scraper 키워드별 마지막 실행 결과 (Pushgateway) |
 | ReviewMaps HTTP Metrics | `reviewmaps-http-metrics` | Go API 서버 요청 수, P95, 5xx |
+| 앱·광고·스토어 현황 | `app-ads-overview` | 세 앱의 사용자·신규, 비정상 종료, AdMob 광고 단위별 수입·eCPM, 앱 오프닝 표시율, Google Ads 비용·유입, 스토어 공개·버전·Remote Config 값, app-ads.txt |
 | 라익찍스 (like-zzix) | `like-zzix` | API 서버 상태, 촬영 퍼널(프리셋 선택 → Perfect Match → 저장), 앱 버전 분포·업데이트 반응, 저장 실패·카메라 사용 불가 비율, 관리자 콘솔·DB 연결·프리셋 갱신 |
 
 차트 색상 기준값 = 알림 규칙 기준값이므로 한쪽을 바꾸면 다른 쪽도 같이 바꿉니다. 대시보드를 새로 만들거나 고칠 때 아래 작성 규칙을 따릅니다 (사용자가 가독성을 직접 지적해 정한 규칙).
@@ -515,6 +517,10 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | LikeZzixEventsRejected | 앱 이벤트 거부 지속 30분 (앱·서버 허용 목록 불일치) | WARN |
 | LikeZzixPhotoSaveFailing | 1시간 사진 저장 실패율 20% 초과 (시도 5회 이상) | WARN |
 | LikeZzixCameraUnavailableHigh | 1시간 카메라 사용 불가 비율 20% 초과 (실행 5회 이상) | WARN |
+| AppForceUpdateLockout / AppStoreListingMissing | 강제 업데이트 최소 버전 > 스토어 버전 10분 / 공개 앱이 스토어에서 30분 안 보임 | CRITICAL |
+| AppMetricsExporterDown / AppAdsTxtInvalid / AdImpressionsZero / AppCrashFreeCritical | 수집기 중단 / app-ads.txt 이상 / 어제 광고 노출 0(사용자 5명 이상) / 7일 비정상 종료 없는 사용자 85% 미만 | ERROR |
+| AppCrashFreeLow / AdRevenueDropped / AppOpenAdShowRateLow / AdsSpendWithoutInstalls / AppMetricsCollectStale | 95% 미만 / 수입 이전 7일의 50% 미만 / 표시율 40% 미만 / 7일 $3 초과인데 유입 0 / 지표 갱신 지연 | WARN |
+| AppRemoteConfigChanged / AppRemoteConfigLatestBehind | Remote Config 변경 / latest가 스토어보다 하루 넘게 낮음 | INFO |
 
 클러스터 전체 규칙 (kube-prometheus-stack override, 그룹 이름 기준):
 
@@ -580,6 +586,17 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | cleanup | 4,259건 soft delete (기준일 수정 첫 실행), 약 3초 |
 | 네이버 API (보강) | inflexer 호출 425 / 에러 0, reviewnote 호출 65 / 에러 0 |
 | 내부 배치 API | `/v1/internal/process-campaign-alerts` P95 약 0.9초 (정상) |
+
+### 앱·광고 운영 메모 (2026-11-26)
+
+| 항목 | 내용 |
+|------|------|
+| 계정 | AdMob(pub-8516861197467665), Google Ads, Firebase(`reviewmap-c03f1`, `yen-back`, `like-zzix`) 모두 `woohalabs@gmail.com` |
+| GA4 | 측정은 어제까지 값만 사용. AdMob 콘솔과 수입이 거의 같음. 라익찍스는 GA4 미연결(심사 통과 뒤) |
+| Google Ads | 리뷰맵-안드로이드만 운영(대한민국). 리뷰맵-iOS·돌려받엔-iOS는 일시중지. 예산 변경은 개발자가 금액을 정한 뒤에만 |
+| AdMob 앱 승인 | API가 없어 콘솔 확인. 스토어 공개 전 앱은 "검토 필요·광고 게재 제한"이 정상 |
+| Remote Config 배포 | 각 앱 레포 `firebase/remoteconfig.template.json`이 원본, `firebase deploy --only remoteconfig --project <프로젝트>` |
+| nginx Content-Type | `add_header Content-Type`은 mime.types 값과 합쳐져 `text/plain,text/plain`이 됨 → `types { }` + `default_type` 사용 (#1204) |
 
 ### 중지된 서비스
 

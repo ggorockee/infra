@@ -1,0 +1,48 @@
+# app-metrics-exporter prod override
+# - 차트: charts/helm/prod/app-metrics-exporter (수집 코드 files/exporter.py)
+# - 용도: 앱 사용자·비정상 종료·광고 수입(AdMob)·광고비(Google Ads)·Remote Config·스토어·app-ads.txt를 Prometheus로 노출
+# - 인증: 키 파일 없이 Workload Identity
+#         KSA monitoring/app-metrics-exporter → GSA app-metrics-reader-prod (Terraform modules/monitoring)
+#         GA4 속성 뷰어, 앱 Firebase 프로젝트 roles/cloudconfig.viewer (모두 읽기 전용)
+# - 문서: claudedocs/app-metrics-monitoring.md
+
+serviceAccount:
+  gcpServiceAccount: app-metrics-reader-prod@yanggo-514212.iam.gserviceaccount.com
+
+# 앱을 추가하거나 스토어에 공개되면 이 목록을 고친다
+# - released: 스토어에 공개되어 있어야 하는 플랫폼 (빠지면 AppStoreListingMissing 알림)
+# - googleAds: 이 GA4 속성에 Google Ads 계정이 연결되어 있으면 true
+apps:
+  - name: 리뷰맵
+    platforms: [android, ios]
+    released: [android, ios]
+    ga4Property: "513036605"
+    googleAds: true
+    firebaseProject: reviewmap-c03f1
+    appStoreId: "6751343880"
+    playPackage: com.reviewmaps.mobile
+    publisher: pub-8516861197467665
+    appAdsTxt:
+      - https://review-maps.com/app-ads.txt
+  - name: 돌려받엔
+    platforms: [android, ios]
+    released: [ios]
+    ga4Property: "565832639"
+    googleAds: true
+    firebaseProject: yen-back
+    appStoreId: "6835096650"
+    playPackage: com.woohalabs.yenback
+    publisher: pub-8516861197467665
+    appAdsTxt:
+      - https://yen-back.woohalabs.com/app-ads.txt
+      - https://woohalabs.com/app-ads.txt
+  - name: 라익찍스
+    platforms: [android, ios]
+    released: []
+    # GA4는 App Store 심사 통과 뒤에 연결 (claudedocs/app-metrics-monitoring.md)
+    firebaseProject: like-zzix
+    appStoreId: "6836852971"
+    playPackage: com.woohalabs.likezzix
+    publisher: pub-8516861197467665
+    appAdsTxt:
+      - https://like-zzix.woohalabs.com/app-ads.txt

@@ -1,0 +1,115 @@
+{{- $name := .Release.Name }}
+{{- $labels := printf "app.kubernetes.io/name: %s\napp.kubernetes.io/instance: %s" .Chart.Name $name }}
+{{- $config := dict "apps" .Values.apps "port" .Values.port "intervals" .Values.intervals }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.serviceAccount.name }}
+  labels:
+    {{- $labels | nindent 4 }}
+  {{- with .Values.serviceAccount.gcpServiceAccount }}
+  annotations:
+    iam.gke.io/gcp-service-account: {{ . }}
+  {{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- $labels | nindent 4 }}
+data:
+  config.json: {{ $config | toJson | quote }}
+  exporter.py: {{ .Files.Get "files/exporter.py" | toJson }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- $labels | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- $labels | nindent 8 }}
+      annotations:
+        checksum/config: {{ printf "%s%s" ($config | toJson) (.Files.Get "files/exporter.py") | sha256sum }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: exporter
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["python3", "-B", "-u", "/app/exporter.py"]
+          env:
+            - name: CONFIG_PATH
+              value: /app/config.json
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.port }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            periodSeconds: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: app
+              mountPath: /app
+      volumes:
+        - name: app
+          configMap:
+            name: {{ $name }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  selector:
+    {{- $labels | nindent 4 }}
+  ports:
+    - name: metrics
+      port: {{ .Values.port }}
+      targetPort: metrics
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- $labels | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- $labels | nindent 6 }}
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
+      # Pod가 바뀌어도 같은 시계열로 이어지도록 Pod 식별 라벨을 뺀다 (알림 for 시간이 초기화되지 않게)
+      metricRelabelings:
+        - action: labeldrop
+          regex: pod|instance|container|endpoint
