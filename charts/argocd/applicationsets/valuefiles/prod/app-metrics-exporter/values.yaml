@@ -9,6 +9,9 @@
 serviceAccount:
   gcpServiceAccount: app-metrics-reader-prod@yanggo-514212.iam.gserviceaccount.com
 
+admob:
+  publisher: pub-8516861197467665
+
 # 앱을 추가하거나 스토어에 공개되면 이 목록을 고친다
 # - released: 스토어에 공개되어 있어야 하는 플랫폼 (빠지면 AppStoreListingMissing 알림)
 # - crashlytics: 앱에 Crashlytics가 들어 있으면 true (없으면 비정상 종료 비율을 내보내지 않음)
@@ -21,6 +24,9 @@ apps:
     googleAds: true
     crashlytics: true
     firebaseProject: reviewmap-c03f1
+    admobAppIds:
+      android: ca-app-pub-8516861197467665~2285990824
+      ios: ca-app-pub-8516861197467665~7038364871
     appStoreId: "6751343880"
     playPackage: com.reviewmaps.mobile
     publisher: pub-8516861197467665
@@ -32,6 +38,9 @@ apps:
     ga4Property: "565832639"
     googleAds: true
     firebaseProject: yen-back
+    admobAppIds:
+      android: ca-app-pub-8516861197467665~8757073285
+      ios: ca-app-pub-8516861197467665~1203171840
     appStoreId: "6835096650"
     playPackage: com.woohalabs.yenback
     publisher: pub-8516861197467665
@@ -43,6 +52,9 @@ apps:
     released: []
     # GA4는 App Store 심사 통과 뒤에 연결 (claudedocs/app-metrics-monitoring.md)
     firebaseProject: like-zzix
+    admobAppIds:
+      android: ca-app-pub-8516861197467665~4570324371
+      ios: ca-app-pub-8516861197467665~7224407879
     appStoreId: "6836852971"
     playPackage: com.woohalabs.likezzix
     publisher: pub-8516861197467665

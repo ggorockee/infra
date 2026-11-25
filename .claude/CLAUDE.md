@@ -594,7 +594,8 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | 계정 | AdMob(pub-8516861197467665), Google Ads, Firebase(`reviewmap-c03f1`, `yen-back`, `like-zzix`) 모두 `woohalabs@gmail.com` |
 | GA4 | 측정은 어제까지 값만 사용. AdMob 콘솔과 수입이 거의 같음. 라익찍스는 GA4 미연결(심사 통과 뒤) |
 | Google Ads | 리뷰맵-안드로이드만 운영(대한민국). 리뷰맵-iOS·돌려받엔-iOS는 일시중지. 예산 변경은 개발자가 금액을 정한 뒤에만 |
-| AdMob 앱 승인 | API가 없어 콘솔 확인. 스토어 공개 전 앱은 "검토 필요·광고 게재 제한"이 정상 |
+| AdMob API | 사람 계정 토큰이 Secret `monitoring/app-metrics-admob-oauth`에 있음(GSM·Git 아님, 비용 0 조건). 만료 시 `python3 scripts/admob-oauth-setup.py` 재실행. OAuth 프로젝트는 결제가 꺼진 `yen-back` |
+| AdMob 앱 승인 | 스토어 공개 전 앱은 "검토 필요·광고 게재 제한"이 정상 |
 | Remote Config 배포 | 각 앱 레포 `firebase/remoteconfig.template.json`이 원본, `firebase deploy --only remoteconfig --project <프로젝트>` |
 | nginx Content-Type | `add_header Content-Type`은 mime.types 값과 합쳐져 `text/plain,text/plain`이 됨 → `types { }` + `default_type` 사용 (#1204) |
 

@@ -11,7 +11,7 @@
 | 수집기 | 차트 `charts/helm/prod/app-metrics-exporter`, 코드 `files/exporter.py` | 이미지 빌드 없이 `python:3.13-alpine`에 ConfigMap으로 마운트. 표준 라이브러리만 사용 |
 | 앱 목록 | `valuefiles/prod/app-metrics-exporter/values.yaml`의 `apps` | 앱 추가·출시 시 이 파일만 고침 |
 | 인증 | KSA `monitoring/app-metrics-exporter` → GSA `app-metrics-reader-prod` (Terraform `modules/monitoring`) | Workload Identity. 키 파일 없음 |
-| 알림 규칙 | kube-prometheus-stack override의 `app-metrics` | 13종 |
+| 알림 규칙 | kube-prometheus-stack override의 `app-metrics` | 16종 |
 | 대시보드 | `charts/helm/prod/kube-prometheus-stack/dashboards/app-ads-overview-dashboard.json` | 색 기준 = 알림 기준 |
 
 ## 수집원
@@ -20,11 +20,12 @@
 |---|---|---|---|
 | GA4 Data API | 1시간 | 활성·신규 사용자, 세션, 비정상 종료, AdMob 노출·수입, Google Ads 비용·클릭, 이벤트, 앱 버전 | GA4 속성 뷰어 (513036605 리뷰맵, 565832639 돌려받엔), yanggo-514212의 `analyticsdata.googleapis.com` |
 | Firebase Remote Config | 10분 | 모든 키의 현재 값, 템플릿 버전, 변경 시각 | `reviewmap-c03f1`, `yen-back`, `like-zzix`의 `roles/cloudconfig.viewer`, yanggo-514212의 `firebaseremoteconfig.googleapis.com` |
+| AdMob API (v1beta) | 1시간 | 앱 승인 상태, 광고 단위별 요청·매칭·노출·수입 | 사람 계정(woohalabs)의 읽기 토큰. 아래 "AdMob API 연동" |
 | App Store 조회 API, Google Play 페이지 | 10분 | 공개 여부, iOS 버전·평점 (Google Play는 버전을 제공하지 않음) | 없음 |
 | app-ads.txt | 10분 | 200, Content-Type, 게시자 줄 | 없음 |
 
 - GA4는 하루 단위로 집계되고 값이 최대 48시간 동안 바뀔 수 있어 어제까지의 값만 씁니다.
-- AdMob 앱 승인 상태, 정책 센터, 지급 정보는 가져오지 않습니다. AdMob API는 서비스 계정을 지원하지 않아 사람 계정의 토큰이 필요하기 때문입니다. 콘솔에서 확인합니다.
+- AdMob 정책 센터와 지급 정보는 API가 없어 콘솔에서 확인합니다.
 - Google Ads 금액은 GA4가 달러로 환산한 값입니다. 청구액 기준은 Google Ads 결제 화면입니다.
 - 수집에 실패하면 이전 값을 유지하고 `app_metrics_collect_ok`가 0이 됩니다.
 
@@ -36,6 +37,9 @@
 | AppStoreListingMissing | 공개 | `released` 앱이 30분 안 보임 | CRITICAL |
 | AppMetricsExporterDown | UP | 10분 수집 불가 | ERROR |
 | AppAdsTxtInvalid | 1 | 0이 1시간 | ERROR |
+| AdmobApprovalLost | 준비됨 | 하루 전 준비됨이었는데 1시간 벗어남 | ERROR |
+| AdmobActionRequired | 준비됨 | 공개 앱이 조치 필요 24시간 | WARN |
+| AdmobMatchRateLow | 80% 이상 | 승인 앱 7일 50% 미만, 요청 20회 이상 | WARN |
 | AdImpressionsZero | 1회 이상 | 어제 사용자 5명 이상인데 노출 0 | ERROR |
 | AppCrashFreeCritical | 95% 이상 (목표 99%) | 7일 85% 미만, 3명 이상 | ERROR |
 | AppCrashFreeLow | 95% 이상 (목표 99%) | 7일 95% 미만, 2명 이상 | WARN |
@@ -47,6 +51,25 @@
 | AppRemoteConfigChanged | - | 변경 감지 | INFO |
 
 사용자가 적어 비율이 크게 흔들리므로 비율 알림에는 최소 건수 조건이 있습니다.
+
+## AdMob API 연동
+
+AdMob API는 서비스 계정을 쓸 수 없어 사람 계정의 OAuth 토큰이 필요합니다. 토큰이 없으면 AdMob 수집만 건너뜁니다.
+
+| 항목 | 결정 | 이유 |
+|---|---|---|
+| OAuth 프로젝트 | `yen-back` (2026-11-26 `admob.googleapis.com` 활성화) | 결제가 꺼져 있어 비용이 청구될 수 없음 |
+| 토큰 보관 | Kubernetes Secret `monitoring/app-metrics-admob-oauth` | Secret Manager는 활성 버전 무료 한도를 이미 넘어 쓰지 않음. Git에도 두지 않음 |
+| 권한 | `admob.readonly` | 읽기만 가능 |
+| 게시 상태 | 프로덕션 | 테스트 상태에서는 갱신 토큰이 7일 뒤 만료됨 |
+
+설정 순서 (개발자, 최초 1회)
+
+- [ ] `yen-back` 프로젝트의 Google 인증 플랫폼에서 브랜딩 입력, 대상 "외부", 프로덕션으로 게시
+- [ ] 클라이언트 만들기 → "데스크톱 앱" → JSON을 infra `.secrets/`에 저장 (gitignore 대상)
+- [ ] `python3 scripts/admob-oauth-setup.py .secrets/<파일>.json` 실행 → woohalabs 계정으로 허용 ("확인되지 않은 앱" 경고는 본인 앱이므로 고급에서 계속)
+
+토큰이 취소되거나 6개월 동안 쓰이지 않으면 만료됩니다. AppMetricsCollectStale(source=admob) 알림이 오면 마지막 단계를 다시 실행합니다.
 
 ## 2026-11-26 점검 결과
 

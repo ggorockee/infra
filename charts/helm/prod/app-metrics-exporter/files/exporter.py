@@ -11,8 +11,9 @@ import re
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 TOKEN_URL = (
@@ -61,6 +62,12 @@ HELP = {
     "app_store_rating": "App Store 평점",
     "app_store_rating_count": "App Store 평점 수",
     "app_ads_txt_ok": "app-ads.txt가 200, text/plain, 게시자 줄 포함이면 1",
+    "app_admob_approval": "AdMob 앱 승인 상태 (3 준비됨, 2 검토 중, 1 조치 필요, 0 알 수 없음)",
+    "app_admob_requests": "AdMob 광고 요청 수",
+    "app_admob_matched": "AdMob 매칭된 요청 수",
+    "app_admob_impressions": "AdMob 노출 수",
+    "app_admob_clicks": "AdMob 클릭 수",
+    "app_admob_earnings_usd": "AdMob 예상 수입 (USD)",
     "app_metrics_collect_ok": "마지막 수집 성공 여부",
     "app_metrics_last_success_timestamp_seconds": "마지막 수집 성공 시각",
 }
@@ -339,6 +346,98 @@ def collect_ads_txt(app):
     return out
 
 
+APPROVAL = {"APPROVED": 3, "IN_REVIEW": 2, "ACTION_REQUIRED": 1}
+KST = timezone(timedelta(hours=9))
+
+
+class UserToken:
+    """사람 계정(woohalabs)의 갱신 토큰으로 받은 접근 토큰. AdMob API는 서비스 계정을 지원하지 않는다."""
+
+    def __init__(self, path):
+        self.path, self.value, self.expires = path, "", 0.0
+
+    def available(self):
+        return bool(self.path) and os.path.isfile(self.path)
+
+    def header(self):
+        if time.time() > self.expires - 120:
+            with open(self.path, encoding="utf-8") as file:
+                secret = json.load(file)
+            request = urllib.request.Request(
+                "https://oauth2.googleapis.com/token",
+                data=urllib.parse.urlencode({**secret, "grant_type": "refresh_token"}).encode(),
+            )
+            with urllib.request.urlopen(request, timeout=30) as response:
+                data = json.load(response)
+            self.value = data["access_token"]
+            self.expires = time.time() + data["expires_in"]
+        return {"Authorization": "Bearer " + self.value, "Content-Type": "application/json"}
+
+
+USER_TOKEN = UserToken(os.environ.get("ADMOB_OAUTH_PATH", ""))
+
+
+def admob_dates(window, today):
+    """AdMob 보고서 기간. 오늘은 집계 중이라 어제까지만 본다."""
+    start, end = {"1d": (1, 1), "7d": (7, 1), "prev7d": (14, 8), "28d": (28, 1)}[window]
+
+    def part(days):
+        day = today - timedelta(days=days)
+        return {"year": day.year, "month": day.month, "day": day.day}
+
+    return {"startDate": part(start), "endDate": part(end)}
+
+
+def admob_samples(rows, names, window):
+    """networkReport 행 → 표본. names: AdMob 앱 ID → (앱 이름, 플랫폼)"""
+    out = []
+    for row in rows:
+        dims = row.get("dimensionValues", {})
+        app = names.get(dims.get("APP", {}).get("value"))
+        if not app:
+            continue
+        unit = dims.get("AD_UNIT", {})
+        labels = {
+            "app": app[0], "platform": app[1], "window": window,
+            "ad_unit": unit.get("displayLabel") or unit.get("value", "(없음)"),
+        }
+        metrics = row.get("metricValues", {})
+        for name, key, field, scale in (
+            ("app_admob_requests", "AD_REQUESTS", "integerValue", 1),
+            ("app_admob_matched", "MATCHED_REQUESTS", "integerValue", 1),
+            ("app_admob_impressions", "IMPRESSIONS", "integerValue", 1),
+            ("app_admob_clicks", "CLICKS", "integerValue", 1),
+            ("app_admob_earnings_usd", "ESTIMATED_EARNINGS", "microsValue", 1e-6),
+        ):
+            out.append((name, labels, float(metrics.get(key, {}).get(field, 0)) * scale))
+    return out
+
+
+def collect_admob(account):
+    base = f"https://admob.googleapis.com/v1beta/accounts/{account['publisher']}"
+    names = {value: (a["name"], p) for a in account["apps"] for p, value in a.get("admobAppIds", {}).items()}
+
+    _, _, raw = fetch(base + "/apps?pageSize=1000", headers=USER_TOKEN.header())
+    out = []
+    for item in json.loads(raw).get("apps", []):
+        app = names.get(item.get("appId"))
+        if app:
+            state = item.get("appApprovalState", "")
+            out.append(("app_admob_approval", {"app": app[0], "platform": app[1]}, APPROVAL.get(state, 0)))
+
+    today = datetime.now(KST).date()
+    for window in WINDOWS:
+        spec = {
+            "dateRange": admob_dates(window, today),
+            "dimensions": ["APP", "AD_UNIT"],
+            "metrics": ["AD_REQUESTS", "MATCHED_REQUESTS", "IMPRESSIONS", "CLICKS", "ESTIMATED_EARNINGS"],
+            "localizationSettings": {"currencyCode": "USD", "languageCode": "ko"},
+        }
+        _, _, raw = fetch(base + "/networkReport:generate", {"reportSpec": spec}, USER_TOKEN.header())
+        out += admob_samples([line["row"] for line in json.loads(raw) if "row" in line], names, window)
+    return out
+
+
 class Collector:
     """수집원마다 마지막 성공 결과를 보관한다. 실패하면 이전 값을 유지하고 실패 사실만 노출한다."""
 
@@ -413,6 +512,15 @@ def main():
         ("store", "platforms", collect_stores),
         ("app_ads_txt", "appAdsTxt", collect_ads_txt),
     ]
+    if USER_TOKEN.available():
+        publisher = config["admobPublisher"]
+        account = {"name": "AdMob", "publisher": publisher, "apps": config["apps"]}
+        threading.Thread(
+            target=loop, args=(collector, [account], [("admob", "publisher", collect_admob)], config["intervals"]["ga4"]),
+            daemon=True,
+        ).start()
+    else:
+        print("AdMob 토큰이 없어 AdMob API는 수집하지 않음", flush=True)
     for jobs, interval in ((ga4, config["intervals"]["ga4"]), (fast, config["intervals"]["fast"])):
         threading.Thread(target=loop, args=(collector, config["apps"], jobs, interval), daemon=True).start()
     serve(collector, config["port"])
