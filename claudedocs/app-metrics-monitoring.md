@@ -89,10 +89,12 @@
 
 ## 할 일
 
-- [ ] 리뷰맵 2.2.1 스토어 배포 → Remote Config `{platform}_latest_version`을 2.2.1로 올림
+- [x] 리뷰맵 2.2.1 코드 머지 (reviewmaps #293), Remote Config v3 배포
+- [ ] 리뷰맵 2.2.1 실기기 확인 후 스토어 배포 → Remote Config `{platform}_latest_version`을 2.2.1로 올림
 - [ ] 리뷰맵-안드로이드 예산 결정 (개발자)
 - [ ] 돌려받엔 iOS AdMob 앱 인증 재확인
 - [ ] 돌려받엔 1.1.0 출시 → first_open 전환을 Google Ads로 가져오기 → 캠페인 재개
+- [ ] 돌려받엔에 Crashlytics 추가 여부 결정 (개인정보처리방침, App Store 개인정보 신고, 새 빌드 필요). 추가하면 `apps`의 `crashlytics: true`
 - [ ] 라익찍스 App Store 심사 통과 → `released`에 추가, AdMob 스토어 연결, GA4 연결, 개인정보 신고 갱신
 - [ ] AdMob 세금 정보 입력, Google Ads 보안 제안(관리자 2명, 허용 이메일 도메인) 검토 (계정 소유자)
 - [ ] 리뷰맵 2.2.1 배포 1~2주 뒤 앱 오프닝 표시율 60% 이상, 비정상 종료 없는 사용자 95% 이상인지 확인
