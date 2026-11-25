@@ -161,11 +161,14 @@ def collect_ga4(app):
                 ("app_new_users", labels, new),
                 ("app_sessions", labels, sessions),
                 ("app_session_seconds", labels, seconds),
-                ("app_crash_affected_users", labels, crashed),
             ]
-            # 사용자가 없으면 비율은 의미가 없으므로 내보내지 않는다 (0%로 보이면 오탐)
-            if users > 0:
-                out.append(("app_crash_free_users_ratio", labels, free))
+            # Crashlytics가 없는 앱은 GA4가 항상 100%로 보여 오해를 주고,
+            # 사용자가 없으면 비율이 0%로 보여 오탐이 되므로 내보내지 않는다
+            if app.get("crashlytics") and users > 0:
+                out += [
+                    ("app_crash_affected_users", labels, crashed),
+                    ("app_crash_free_users_ratio", labels, free),
+                ]
 
         # 광고 수입: 광고 단위별. 노출이 없는 (not set) 행은 제외
         ads = ga4_report(

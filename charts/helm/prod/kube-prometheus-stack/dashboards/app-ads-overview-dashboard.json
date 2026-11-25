@@ -846,7 +846,7 @@
     {
       "type": "stat",
       "title": "비정상 종료 없는 사용자 (7일)",
-      "description": "[무엇] 최근 7일 사용자 중 비정상 종료(fatal로 기록된 오류 포함)를 겪지 않은 비율입니다.\n\n[보는 법] 리뷰맵 2.2.0 이하는 종료되지 않은 오류도 fatal로 기록해 낮게 나옵니다. 2.2.1부터 실제 종료만 집계합니다.\n\n[범위] 🟢 95% 이상 (목표 99%) / 🟡 85~95% (2명 이상 WARN) / 🔴 85% 미만 (3명 이상 ERROR)",
+      "description": "[무엇] 최근 7일 사용자 중 비정상 종료(fatal로 기록된 오류 포함)를 겪지 않은 비율입니다.\n\n[보는 법] Crashlytics가 들어 있는 앱만 표시합니다(돌려받엔은 없어서 제외). 리뷰맵 2.2.0 이하는 종료되지 않은 오류도 fatal로 기록해 낮게 나옵니다. 2.2.1부터 실제 종료만 집계합니다.\n\n[범위] 🟢 95% 이상 (목표 99%) / 🟡 85~95% (2명 이상 WARN) / 🔴 85% 미만 (3명 이상 ERROR)",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -2088,7 +2088,7 @@
     {
       "type": "stat",
       "title": "신규 1명당 광고비 (28일)",
-      "description": "[무엇] 최근 28일 광고비 ÷ 광고로 들어온 신규 사용자입니다.\n\n[보는 법] Google Ads 화면의 지역 평균은 약 755원($0.5)입니다.\n\n[범위] 🟢 $1 이하 / 🟡 $1~2 / 🔴 $2 초과",
+      "description": "[무엇] 최근 28일 광고비 ÷ 광고로 들어온 신규 사용자입니다.\n\n[보는 법] Google Ads 화면의 지역 평균은 약 755원($0.5)입니다.\n\n[범위] 🔵 광고 유입 없음 / 🟢 $1 이하 / 🟡 $1~2 / 🔴 $2 초과",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -2118,8 +2118,12 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "blue",
                 "value": null
+              },
+              {
+                "color": "green",
+                "value": 0
               },
               {
                 "color": "yellow",
