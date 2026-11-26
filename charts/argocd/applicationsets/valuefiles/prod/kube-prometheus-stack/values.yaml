@@ -646,7 +646,7 @@ additionalPrometheusRulesMap:
           - alert: LikeZzixCameraUnavailableHigh
             expr: |
               clamp_max(
-                sum(increase(likezzix_app_events_total{event="camera_unavailable"}[1h]))
+                sum(increase(likezzix_app_events_total{event=~"camera_unavailable|camera_failed"}[1h]))
                   / sum(increase(likezzix_app_events_total{event="app_open"}[1h])), 1) > 0.2
               and sum(increase(likezzix_app_events_total{event="app_open"}[1h])) >= 5
             for: 15m

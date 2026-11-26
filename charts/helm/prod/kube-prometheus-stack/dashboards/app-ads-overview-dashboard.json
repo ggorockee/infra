@@ -2008,7 +2008,7 @@
     {
       "type": "stat",
       "title": "라익찍스 문제 신호",
-      "description": "[무엇] 카메라를 열지 못한 비율(실행 대비, 최대 100%)과 광고 로드 실패율입니다.\n\n[보는 법] AdMob 승인 전에는 광고 실패율이 높은 것이 정상입니다. 카메라 사용 불가가 5%를 넘으면 기기·OS별로 원인을 봅니다.\n\n[범위] 카메라: 🟢 5% 미만 / 🟡 5~20% / 🔴 20% 초과",
+      "description": "[무엇] 카메라를 열지 못한 비율(실행 대비, 최대 100%)과 광고 로드 실패율입니다.\n\n[보는 법] AdMob 승인 전에는 광고 실패율이 높은 것이 정상입니다. 카메라 사용 불가가 5%를 넘으면 기기·OS별로 원인을 봅니다.\n\n[범위] 카메라: 🟢 5% 미만 / 🟡 5~20% / 🔴 20% 초과\n\n카메라 사용 불가 비율은 권한 거부를 뺀 실패만 셉니다 (1.0.0+6 이하는 구분 없이 포함).",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -2020,7 +2020,7 @@
             "uid": "prometheus"
           },
           "refId": "A",
-          "expr": "clamp_max((sum(increase(likezzix_app_events_total{event=~\"camera_unavailable\"}[7d])) or vector(0)) / clamp_min(sum(increase(likezzix_app_events_total{event=\"app_open\"}[7d])), 1), 1)",
+          "expr": "clamp_max((sum(increase(likezzix_app_events_total{event=~\"camera_unavailable|camera_failed\"}[7d])) or vector(0)) / clamp_min(sum(increase(likezzix_app_events_total{event=\"app_open\"}[7d])), 1), 1)",
           "legendFormat": "카메라 사용 불가 / 실행",
           "instant": true,
           "range": false,
