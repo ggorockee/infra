@@ -180,6 +180,58 @@ def ga4_report(prop, dims, metrics, window, event_filter=None):
     ]
 
 
+PAID_SOURCES = ("google / cpc", "google / paid")
+
+
+def retention_samples(name, platforms, rows):
+    """GA4 코호트 행 → 유입(광고/그 외)·플랫폼별 1일·7일 잔존율.
+
+    rows: ([cohort, nthDay, platform, source], [activeUsers, totalUsers]).
+    코호트 크기는 0일째 사용자 수, 잔존은 n일째 다시 쓴 사용자 수. 0일째가 없으면 내보내지 않는다.
+    """
+    base, kept = {}, {}
+    for (cohort, nth, platform, source), (active, _total) in rows:
+        platform = platform.lower()
+        if platform not in platforms:
+            continue
+        group = "ads" if source.lower() in PAID_SOURCES else "other"
+        day = int(nth)
+        if day == 0:
+            base[(platform, group)] = base.get((platform, group), 0) + active
+        elif day in (1, 7):
+            kept[(platform, group, day)] = kept.get((platform, group, day), 0) + active
+    out = []
+    for (platform, group), users in base.items():
+        labels = {"app": name, "platform": platform, "source": group}
+        out.append(("app_retention_cohort_users", labels, users))
+        for day in (1, 7):
+            ratio = kept.get((platform, group, day), 0) / users if users else 0
+            out.append(("app_retention_ratio", dict(labels, day=str(day)), ratio))
+    return out
+
+
+def ga4_cohort_rows(prop, today):
+    """8~28일 전에 처음 들어온 사용자의 일별 코호트(0~7일째)."""
+    cohorts = [
+        {"name": f"d{k}", "dimension": "firstSessionDate",
+         "dateRange": {"startDate": str(today - timedelta(days=k)), "endDate": str(today - timedelta(days=k))}}
+        for k in range(8, 29)
+    ]
+    body = {
+        "dimensions": [{"name": d} for d in ("cohort", "cohortNthDay", "platform", "firstUserSourceMedium")],
+        "metrics": [{"name": "cohortActiveUsers"}, {"name": "cohortTotalUsers"}],
+        "cohortSpec": {"cohorts": cohorts, "cohortsRange": {"granularity": "DAILY", "startOffset": 0, "endOffset": 7}},
+        "limit": 10000,
+    }
+    _, _, raw = fetch(
+        f"https://analyticsdata.googleapis.com/v1beta/properties/{prop}:runReport", body, TOKEN.header()
+    )
+    return [
+        ([d["value"] for d in row["dimensionValues"]], [float(m["value"]) for m in row["metricValues"]])
+        for row in json.loads(raw).get("rows", [])
+    ]
+
+
 def collect_ga4(app):
     prop, name, out = app["ga4Property"], app["name"], []
     platforms = app["platforms"]
@@ -264,8 +316,10 @@ def collect_ga4(app):
                 ("app_ads_impressions", labels, total[2]),
             ]
             paid = ga4_report(prop, ["firstUserSourceMedium"], ["newUsers"], window)
-            count = sum(vals[0] for (source,), vals in paid if source.lower() in ("google / cpc", "google / paid"))
+            count = sum(vals[0] for (source,), vals in paid if source.lower() in PAID_SOURCES)
             out.append(("app_ads_new_users", {"app": name, "window": window}, count))
+
+    out += retention_samples(name, platforms, ga4_cohort_rows(prop, datetime.now(KST).date()))
 
     daily_metrics = ["activeUsers", "newUsers"] + (["crashFreeUsersRate"] if app.get("crashlytics") else [])
     names = {"activeUsers": "active_users", "newUsers": "new_users", "crashFreeUsersRate": "crash_free_users_ratio"}

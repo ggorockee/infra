@@ -18,7 +18,7 @@
 
 | 수집원 | 주기 | 가져오는 값 | 필요한 권한 |
 |---|---|---|---|
-| GA4 Data API | 1시간 | 활성·신규 사용자, 세션, 비정상 종료, AdMob 노출·수입, Google Ads 비용·클릭, 이벤트, 앱 버전 | GA4 속성 뷰어 (513036605 리뷰맵, 565832639 돌려받엔), yanggo-514212의 `analyticsdata.googleapis.com` |
+| GA4 Data API | 1시간 | 활성·신규 사용자, 세션, 비정상 종료, AdMob 노출·수입, Google Ads 비용·클릭, 이벤트, 앱 버전, 신규 사용자 잔존율(코호트) | GA4 속성 뷰어 (513036605 리뷰맵, 565832639 돌려받엔), yanggo-514212의 `analyticsdata.googleapis.com` |
 | Firebase Remote Config | 10분 | 모든 키의 현재 값, 템플릿 버전, 변경 시각 | `reviewmap-c03f1`, `yen-back`, `like-zzix`의 `roles/cloudconfig.viewer`, yanggo-514212의 `firebaseremoteconfig.googleapis.com` |
 | AdMob API (v1beta) | 1시간 | 앱 승인 상태, 광고 단위별 요청·매칭·노출·수입 | 사람 계정(woohalabs)의 읽기 토큰. 아래 "AdMob API 연동" |
 | App Store 조회 API, Google Play 페이지 | 10분 | 공개 여부, iOS 버전·평점 (Google Play는 버전을 제공하지 않음) | 없음 |
@@ -27,6 +27,7 @@
 - GA4는 하루 단위로 집계되고 값이 최대 48시간 동안 바뀔 수 있어 어제까지의 값만 씁니다.
 - AdMob 정책 센터와 지급 정보는 API가 없어 콘솔에서 확인합니다.
 - Google Ads 금액은 GA4가 달러로 환산한 값입니다. 청구액 기준은 Google Ads 결제 화면입니다.
+- 잔존율(`app_retention_ratio{day="1"|"7", source="ads"|"other"}`)은 8~28일 전 처음 앱을 연 사용자(일별 코호트)가 1일째·7일째 다시 쓴 비율입니다. `source`는 첫 유입이 Google 광고(`google / cpc`, `google / paid`)면 ads, 나머지는 other. 분모는 `app_retention_cohort_users`이며 10명 미만이면 참고만 합니다.
 - 수집에 실패하면 이전 값을 유지하고 `app_metrics_collect_ok`가 0이 됩니다.
 
 ## 정상 범위와 알림

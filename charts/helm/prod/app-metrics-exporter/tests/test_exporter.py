@@ -106,6 +106,23 @@ class Phase1Test(unittest.TestCase):
         self.assertAlmostEqual(s[1][2], 0.02)
 
 
+class RetentionTest(unittest.TestCase):
+    def test_groups_by_source_and_day(self):
+        rows = [
+            (["d8", "0000", "Android", "google / cpc"], [4, 4]),
+            (["d8", "0001", "Android", "google / cpc"], [2, 4]),
+            (["d9", "0000", "Android", "google-play / organic"], [10, 10]),
+            (["d9", "0007", "Android", "google-play / organic"], [1, 10]),
+            (["d9", "0000", "web", "(direct) / (none)"], [5, 5]),
+        ]
+        s = {(m, l["source"], l.get("day")): v for m, l, v in exporter.retention_samples("a", ["android"], rows)}
+        self.assertEqual(s[("app_retention_cohort_users", "ads", None)], 4)
+        self.assertEqual(s[("app_retention_ratio", "ads", "1")], 0.5)
+        self.assertEqual(s[("app_retention_ratio", "ads", "7")], 0)
+        self.assertEqual(s[("app_retention_ratio", "other", "7")], 0.1)
+        self.assertNotIn(("app_retention_cohort_users", "web", None), s)
+
+
 class RenderTest(unittest.TestCase):
     def test_escapes_labels(self):
         self.assertIn('v="a\\"b\\\\c\\n"', exporter.render([("m", {"v": 'a"b\\c\n'}, 1)]))
