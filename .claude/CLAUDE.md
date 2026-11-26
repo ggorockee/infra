@@ -516,7 +516,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | LikeZzixSlow | 라익찍스 API P95 1초 초과 15분 | WARN |
 | LikeZzixEventsRejected | 앱 이벤트 거부 지속 30분 (앱·서버 허용 목록 불일치) | WARN |
 | LikeZzixPhotoSaveFailing | 1시간 사진 저장 실패율 20% 초과 (시도 5회 이상) | WARN |
-| LikeZzixCameraUnavailableHigh | 1시간 카메라 사용 불가 비율 20% 초과 (실행 5회 이상) | WARN |
+| LikeZzixCameraUnavailableHigh | 1시간 카메라 실패(카메라 없음·열기 실패, 권한 거부 제외) 비율 20% 초과 (실행 5회 이상) | WARN |
 | AppForceUpdateLockout / AppStoreListingMissing | 강제 업데이트 최소 버전 > 스토어 버전 10분 / 공개 앱이 스토어에서 30분 안 보임 | CRITICAL |
 | AppMetricsExporterDown / AppAdsTxtInvalid / AdImpressionsZero / AppCrashFreeCritical | 수집기 중단 / app-ads.txt 이상 / 어제 광고 노출 0(사용자 5명 이상) / 7일 비정상 종료 없는 사용자 85% 미만 | ERROR |
 | AppCrashFreeLow / AdRevenueDropped / AppOpenAdShowRateLow / AdsSpendWithoutInstalls / AppMetricsCollectStale | 95% 미만 / 수입 이전 7일의 50% 미만 / 표시율 40% 미만 / 7일 $3 초과인데 유입 0 / 지표 갱신 지연 | WARN |

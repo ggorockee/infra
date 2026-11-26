@@ -846,7 +846,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "[무엇] 앱 실행 중 카메라를 열지 못한 비율 (권한 거부·기기 오류)\n[보는 법] 특정 앱 버전 배포 후 오르면 카메라 초기화 회귀\n[범위] 🟢 5% 미만 / 🟡 5~20% / 🔴 20% 초과 15분(실행 5회 이상) = WARN\n\n[주의] 한 번 실행에 여러 번 기록될 수 있어 실행 대비 비율이 100%를 넘을 수 있으므로 100%를 상한으로 둡니다.",
+      "description": "[무엇] 앱 실행 중 카메라를 열지 못한 비율 (권한 거부·기기 오류)\n[보는 법] 특정 앱 버전 배포 후 오르면 카메라 초기화 회귀\n[범위] 🟢 5% 미만 / 🟡 5~20% / 🔴 20% 초과 15분(실행 5회 이상) = WARN\n\n[주의] 한 번 실행에 여러 번 기록될 수 있어 실행 대비 비율이 100%를 넘을 수 있으므로 100%를 상한으로 둡니다.\n\n[구분] 카메라 실패 = 카메라 없음·열기 실패(앱·기기 문제, 알림 대상). 권한 거부 = 사용자가 카메라 권한을 거부(알림 없음). 1.0.0+6 이하 앱은 모든 경우를 \"카메라 없음\"으로 보내므로 실패에 섞여 있습니다. 출시 전 심사·테스트 기기의 요청도 포함됩니다.",
       "type": "timeseries",
       "title": "카메라 사용 불가 비율 (1시간)",
       "id": 16,
@@ -914,9 +914,18 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "clamp_max(sum(increase(likezzix_app_events_total{event=\"camera_unavailable\"}[1h])) / clamp_min(sum(increase(likezzix_app_events_total{event=\"app_open\"}[1h])), 1), 1)",
-          "legendFormat": "사용 불가 비율",
+          "expr": "clamp_max(sum(increase(likezzix_app_events_total{event=~\"camera_unavailable|camera_failed\"}[1h])) / clamp_min(sum(increase(likezzix_app_events_total{event=\"app_open\"}[1h])), 1), 1)",
+          "legendFormat": "카메라 실패",
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "clamp_max(sum(increase(likezzix_app_events_total{event=\"camera_permission_denied\"}[1h])) / clamp_min(sum(increase(likezzix_app_events_total{event=\"app_open\"}[1h])), 1), 1)",
+          "legendFormat": "권한 거부",
+          "refId": "B"
         }
       ]
     },
