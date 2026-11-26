@@ -2,6 +2,13 @@
 
 This file provides guidance to Claude Code when working with infrastructure code in this repository.
 
+## 🔴 최우선 원칙 (모든 작업에 다른 규칙보다 먼저 적용)
+
+1. **모든 것은 문서로 남긴다.** 결정·절차·겪은 문제·남은 일을 작업이 끝나기 전에 문서에 적는다. 문서 갱신이 빠진 작업은 끝난 작업이 아니다.
+2. **모니터링할 수 없는 것은 관리할 수 없다.** 새로 만들거나 바꾼 것은 지표·대시보드·알림(또는 점검 날짜)까지 갖춰야 끝난 것이다. 확인하지 않은 상태를 정상으로 보고하지 않는다.
+
+세부 기준과 어디에 무엇을 적는지는 `claudedocs/00-원칙.md`. 작업 시작 시 진행 중인 계획 문서(`claudedocs/planning/`, 로컬 전용)의 "다음 세션 시작 가이드"를 먼저 읽고, 앱 상태는 `python3 scripts/app-status.py`로 확인한다. 출시·광고 연동 절차와 겪은 문제는 `claudedocs/app-release-runbook.md`.
+
 ## 프로젝트 개요
 
 Kubernetes 기반 멀티 클라우드 인프라 관리 저장소입니다. AWS와 GCP 환경을 모두 지원하며, Helm 차트, Terraform, ArgoCD를 활용한 GitOps 방식의 인프라 관리를 수행합니다.
