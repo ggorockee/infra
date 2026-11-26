@@ -645,15 +645,16 @@ additionalPrometheusRulesMap:
               description: "최근 1시간 저장 시도 중 20% 이상이 실패했습니다(시도 5회 이상). 사진 저장 권한 거부 또는 특정 앱 버전·OS의 저장 오류입니다. Crashlytics와 대시보드 '앱 버전별 요청'을 함께 확인하세요. 정상: 5% 미만."
           - alert: LikeZzixCameraUnavailableHigh
             expr: |
-              sum(increase(likezzix_app_events_total{event="camera_unavailable"}[1h]))
-                / sum(increase(likezzix_app_events_total{event="app_open"}[1h])) > 0.2
+              clamp_max(
+                sum(increase(likezzix_app_events_total{event="camera_unavailable"}[1h]))
+                  / sum(increase(likezzix_app_events_total{event="app_open"}[1h])), 1) > 0.2
               and sum(increase(likezzix_app_events_total{event="app_open"}[1h])) >= 5
             for: 15m
             labels:
               severity: warning
             annotations:
               summary: "⚠️ 라익찍스 카메라 사용 불가 비율 {{ $value | humanizePercentage }}"
-              description: "최근 1시간 앱 실행 중 20% 이상이 카메라를 열지 못했습니다(실행 5회 이상). 새 앱 버전 배포 직후라면 카메라 초기화 회귀를 의심하세요. 정상: 5% 미만."
+              description: "최근 1시간 앱 실행 대비 카메라 사용 불가 이벤트가 20% 이상입니다(실행 5회 이상). 한 번 실행에 여러 번 기록될 수 있어 비율은 100%로 상한을 둡니다. 새 앱 버전 배포 직후라면 카메라 초기화 회귀를 의심하세요. 정상: 5% 미만."
 
   # 앱·광고·스토어 (app-metrics-exporter) — 대시보드 "앱·광고·스토어 현황"(uid app-ads-overview)과 동일 기준
   # GA4는 하루 단위 집계라 어제까지의 값으로 판정한다. 사용자가 적어 비율이 크게 흔들리므로 최소 건수를 함께 본다.
@@ -713,6 +714,16 @@ additionalPrometheusRulesMap:
             annotations:
               summary: "ℹ️ {{ $labels.app }} {{ $labels.platform }} Remote Config latest_version이 스토어보다 낮음"
               description: "새 버전이 공개됐는데 선택 업데이트 안내 기준이 하루 넘게 그대로입니다. {{ $labels.platform }}_latest_version을 올리세요. 정상: latest_version = 스토어 버전."
+          - alert: AppOutdatedUsersHigh
+            expr: |
+              app_outdated_users_ratio > 0.3
+              and on (app, platform) sum by (app, platform) (app_active_users{window="7d"}) >= 10
+            for: 7d
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ {{ $labels.app }} {{ $labels.platform }} 구버전 사용자 {{ $value | humanizePercentage }}"
+              description: "최근 7일 사용자 중 30% 넘게 최신 버전(스토어 또는 Remote Config latest_version)보다 낮은 버전을 일주일째 쓰고 있습니다. 선택 업데이트 안내가 켜져 있는지 확인하고, 필요하면 min_version을 올려 강제 업데이트하세요. 정상: 10% 미만, 경고: 10~30%, 조치: 30% 초과 7일."
           - alert: AppRemoteConfigChanged
             expr: |
               max by (app) (app_remote_config_version)

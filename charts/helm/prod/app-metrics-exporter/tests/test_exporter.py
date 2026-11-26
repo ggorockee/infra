@@ -74,6 +74,38 @@ class AdmobTest(unittest.TestCase):
         self.assertEqual(samples["app_admob_impressions"][2], 0)
 
 
+class Phase1Test(unittest.TestCase):
+    def test_outdated_ratio(self):
+        rows = [("2.2.0", 6), ("2.1.1", 2), ("2.3.0", 2)]
+        self.assertAlmostEqual(exporter.outdated_ratio(rows, 2_002_000), 0.2)
+        self.assertIsNone(exporter.outdated_ratio(rows, None))
+        self.assertIsNone(exporter.outdated_ratio([], 2_002_000))
+
+    def test_unknown_version_counts_as_old(self):
+        self.assertEqual(exporter.outdated_ratio([("(not set)", 1)], 1), 1)
+
+    def test_store_stage(self):
+        app = {"released": ["ios"], "stage": {"android": "testing"}}
+        self.assertEqual(exporter.store_stage(app, "ios", True), 3)
+        self.assertEqual(exporter.store_stage(app, "ios", False), -1)
+        self.assertEqual(exporter.store_stage(app, "android", False), 1)
+        self.assertEqual(exporter.store_stage({}, "android", False), 0)
+
+    def test_remember_reference(self):
+        exporter.REFERENCE.clear()
+        exporter.remember([("app_version_number", {"app": "a", "platform": "ios", "kind": "store"}, 5),
+                           ("app_version_number", {"app": "a", "platform": "ios", "kind": "seen"}, 9)])
+        self.assertEqual(exporter.REFERENCE, {("a", "ios"): {"store": 5}})
+
+    def test_admob_daily(self):
+        rows = [{"dimensionValues": {"DATE": {"value": "20261125"}, "APP": {"value": "x"}},
+                 "metricValues": {"IMPRESSIONS": {"integerValue": "3"}, "ESTIMATED_EARNINGS": {"microsValue": "20000"}}}]
+        s = exporter.admob_daily_samples(rows, {"x": ("리뷰맵", "ios")})
+        self.assertEqual(s[0][1]["date"], "2026-11-25")
+        self.assertEqual(s[0][2], 3)
+        self.assertAlmostEqual(s[1][2], 0.02)
+
+
 class RenderTest(unittest.TestCase):
     def test_escapes_labels(self):
         self.assertIn('v="a\\"b\\\\c\\n"', exporter.render([("m", {"v": 'a"b\\c\n'}, 1)]))
