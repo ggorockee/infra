@@ -563,9 +563,9 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "[무엇] 선택 대비 Perfect Match 비율 (선택이 있었던 프리셋만)\n[보는 법] 유난히 낮은 프리셋은 레퍼런스 구도가 어렵거나 판정 기준(10%/13%)이 엄격한 것\n[범위] 참고 지표 (알림 없음)",
+      "description": "[무엇] 선택 대비 Perfect Match 비율 (선택이 있었던 프리셋만)\n[보는 법] 유난히 낮은 프리셋은 레퍼런스 구도가 어렵거나 판정 기준(10%/13%)이 엄격한 것\n[범위] 참고 지표 (알림 없음)\n\n[주의] 한 번 구도를 고른 뒤 완벽 구도가 여러 번 기록될 수 있어 원래 계산으로는 100%를 넘었습니다. 100%를 상한으로 둡니다. 앱에서 선택당 1회만 기록하도록 고치면 상한 없이 정확해집니다.",
       "type": "bargauge",
-      "title": "프리셋별 Perfect Match 전환율 (24시간)",
+      "title": "프리셋별 Perfect Match 도달률 (24시간, 최대 100%)",
       "id": 12,
       "gridPos": {
         "x": 8,
@@ -619,7 +619,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sort_desc(sum by (preset) (increase(likezzix_preset_events_total{event=\"perfect_match\"}[24h])) / (sum by (preset) (increase(likezzix_preset_events_total{event=\"preset_selected\"}[24h])) > 0))",
+          "expr": "sort_desc(clamp_max(sum by (preset) (increase(likezzix_preset_events_total{event=\"perfect_match\"}[24h])) / (sum by (preset) (increase(likezzix_preset_events_total{event=\"preset_selected\"}[24h])) > 0), 1))",
           "legendFormat": "{{preset}}",
           "refId": "A",
           "instant": true,
@@ -846,7 +846,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "[무엇] 앱 실행 중 카메라를 열지 못한 비율 (권한 거부·기기 오류)\n[보는 법] 특정 앱 버전 배포 후 오르면 카메라 초기화 회귀\n[범위] 🟢 5% 미만 / 🟡 5~20% / 🔴 20% 초과 15분(실행 5회 이상) = WARN",
+      "description": "[무엇] 앱 실행 중 카메라를 열지 못한 비율 (권한 거부·기기 오류)\n[보는 법] 특정 앱 버전 배포 후 오르면 카메라 초기화 회귀\n[범위] 🟢 5% 미만 / 🟡 5~20% / 🔴 20% 초과 15분(실행 5회 이상) = WARN\n\n[주의] 한 번 실행에 여러 번 기록될 수 있어 실행 대비 비율이 100%를 넘을 수 있으므로 100%를 상한으로 둡니다.",
       "type": "timeseries",
       "title": "카메라 사용 불가 비율 (1시간)",
       "id": 16,
@@ -914,7 +914,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(likezzix_app_events_total{event=\"camera_unavailable\"}[1h])) / clamp_min(sum(increase(likezzix_app_events_total{event=\"app_open\"}[1h])), 1)",
+          "expr": "clamp_max(sum(increase(likezzix_app_events_total{event=\"camera_unavailable\"}[1h])) / clamp_min(sum(increase(likezzix_app_events_total{event=\"app_open\"}[1h])), 1), 1)",
           "legendFormat": "사용 불가 비율",
           "refId": "A"
         }
@@ -1459,7 +1459,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(likezzix_http_requests_total{status=~\"5..\"}[5m])) / clamp_min(sum(rate(likezzix_http_requests_total[5m])), 1e-9)",
+          "expr": "(sum(rate(likezzix_http_requests_total{status=~\"5..\"}[5m])) or vector(0)) / clamp_min(sum(rate(likezzix_http_requests_total[5m])), 1e-9)",
           "legendFormat": "5xx 비율",
           "refId": "A"
         }

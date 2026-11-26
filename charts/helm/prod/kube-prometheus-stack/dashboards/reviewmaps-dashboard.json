@@ -348,7 +348,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(rate(reviewmaps_http_requests_total{status=~\"5..\"}[5m])) / sum(rate(reviewmaps_http_requests_total[5m]))",
+          "expr": "(sum(rate(reviewmaps_http_requests_total{status=~\"5..\"}[5m])) or vector(0)) / sum(rate(reviewmaps_http_requests_total[5m]))",
           "legendFormat": "Error Rate",
           "range": true,
           "refId": "A"

@@ -665,7 +665,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(yenback_http_requests_total{status=~\"5..\"}[5m])) / clamp_min(sum(rate(yenback_http_requests_total[5m])), 1e-9)",
+          "expr": "(sum(rate(yenback_http_requests_total{status=~\"5..\"}[5m])) or vector(0)) / clamp_min(sum(rate(yenback_http_requests_total[5m])), 1e-9)",
           "legendFormat": "5xx 비율",
           "refId": "A"
         }
@@ -813,7 +813,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "X-App-Version 헤더 기준. 구버전 사용 비율 확인용",
+      "description": "X-App-Version 헤더 기준. Android는 아직 출시 전이라 Play 자동 테스트 기기와 비공개 테스터 요청입니다(실사용자 아님).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -858,9 +858,11 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sort_desc(sum by (app_version) (increase(yenback_app_requests_total{platform=~\"ios|android\"}[24h])))",
-          "legendFormat": "{{app_version}}",
-          "refId": "A"
+          "expr": "sort_desc(sum by (platform, app_version) (increase(yenback_app_requests_total{platform=~\"ios|android\"}[24h])))",
+          "legendFormat": "{{platform}} {{app_version}}",
+          "refId": "A",
+          "instant": true,
+          "range": false
         }
       ],
       "title": "앱 버전별 요청 (24시간)",
@@ -871,7 +873,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "앱 실행, 상품 담기, 매장 추가, 영수증 등록 등",
+      "description": "앱 실행, 상품 담기, 매장 추가, 영수증 등록 등\n\nAndroid는 출시 전 테스트 트래픽입니다. 실제 사용은 ios 줄만 봅니다. Android 앱 실행이 12시간 간격으로 몰리는 것은 Play 출시 전 자동 테스트입니다.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -916,9 +918,11 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sort_desc(sum by (event) (increase(yenback_app_events_total[24h])))",
-          "legendFormat": "{{event}}",
-          "refId": "A"
+          "expr": "sort_desc(sum by (platform, event) (increase(yenback_app_events_total[24h])))",
+          "legendFormat": "{{platform}} {{event}}",
+          "refId": "A",
+          "instant": true,
+          "range": false
         }
       ],
       "title": "활동 이벤트 (24시간)",

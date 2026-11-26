@@ -62,6 +62,10 @@ HELP = {
     "app_store_rating": "App Store 평점",
     "app_store_rating_count": "App Store 평점 수",
     "app_ads_txt_ok": "app-ads.txt가 200, text/plain, 게시자 줄 포함이면 1",
+    "app_daily": "일별 값 (최근 28일, date 라벨 YYYY-MM-DD, metric 라벨로 구분)",
+    "app_store_stage": "스토어 단계 (3 공개, 2 심사 중, 1 테스트 중, 0 미출시, -1 공개여야 하는데 안 보임)",
+    "app_outdated_users_ratio": "최근 7일 사용자 중 최신 버전(스토어 또는 Remote Config latest)보다 낮은 버전 비율",
+    "app_known_issue": "이미 원인을 아는 알림 (값은 항상 1, note 라벨에 설명)",
     "app_admob_approval": "AdMob 앱 승인 상태 (3 준비됨, 2 검토 중, 1 조치 필요, 0 알 수 없음)",
     "app_admob_requests": "AdMob 광고 요청 수",
     "app_admob_matched": "AdMob 매칭된 요청 수",
@@ -107,6 +111,33 @@ def fetch(url, body=None, headers=None, timeout=30):
     )
     with urllib.request.urlopen(request, timeout=timeout) as response:
         return response.status, response.headers, response.read()
+
+
+# 수집원끼리 공유하는 최신 버전 기준값 {(앱, 플랫폼): {"store": n, "rc_latest": n}}
+REFERENCE = {}
+STAGES = {"released": 3, "review": 2, "testing": 1, "none": 0}
+
+
+def remember(samples):
+    """버전 표본을 REFERENCE에 기록한다 (구버전 비율 계산용)."""
+    for name, labels, value in samples:
+        if name == "app_version_number" and labels.get("kind") in ("store", "rc_latest"):
+            REFERENCE.setdefault((labels["app"], labels["platform"]), {})[labels["kind"]] = value
+    return samples
+
+
+def outdated_ratio(rows, reference):
+    """[(버전 문자열, 사용자 수)] 중 기준보다 낮은 버전 사용자 비율. 계산할 수 없으면 None."""
+    total = sum(users for _, users in rows)
+    if not reference or total <= 0:
+        return None
+    old = sum(users for version, users in rows if (version_number(version) or 0) < reference)
+    return old / total
+
+
+def daily_label(text):
+    """GA4 date(YYYYMMDD) → YYYY-MM-DD"""
+    return f"{text[:4]}-{text[4:6]}-{text[6:8]}"
 
 
 class Token:
@@ -236,17 +267,34 @@ def collect_ga4(app):
             count = sum(vals[0] for (source,), vals in paid if source.lower() in ("google / cpc", "google / paid"))
             out.append(("app_ads_new_users", {"app": name, "window": window}, count))
 
-    newest = {}
+    daily_metrics = ["activeUsers", "newUsers"] + (["crashFreeUsersRate"] if app.get("crashlytics") else [])
+    names = {"activeUsers": "active_users", "newUsers": "new_users", "crashFreeUsersRate": "crash_free_users_ratio"}
+    for (day, platform), vals in ga4_report(prop, ["date", "platform"], daily_metrics, "28d"):
+        platform = platform.lower()
+        if platform not in platforms:
+            continue
+        for metric, value in zip(daily_metrics, vals):
+            labels = {"app": name, "platform": platform, "date": daily_label(day),
+                      "metric": names[metric], "series": f"{name} {platform}"}
+            out.append(("app_daily", labels, value))
+
+    newest, by_platform = {}, {}
     for (platform, version), vals in ga4_report(prop, ["platform", "appVersion"], ["activeUsers"], "7d"):
         platform = platform.lower()
         if platform not in platforms:
             continue
         out.append(("app_version_users", {"app": name, "platform": platform, "version": version}, vals[0]))
+        by_platform.setdefault(platform, []).append((version, vals[0]))
         number = version_number(version)
         if number is not None:
             newest[platform] = max(newest.get(platform, 0), number)
     for platform, number in newest.items():
         out.append(("app_version_number", {"app": name, "platform": platform, "kind": "seen"}, number))
+    for platform, rows in by_platform.items():
+        ref = REFERENCE.get((name, platform), {})
+        ratio = outdated_ratio(rows, ref.get("store") or ref.get("rc_latest"))
+        if ratio is not None:
+            out.append(("app_outdated_users_ratio", {"app": name, "platform": platform}, ratio))
     return out
 
 
@@ -255,7 +303,7 @@ def collect_remote_config(app):
     _, _, raw = fetch(
         f"https://firebaseremoteconfig.googleapis.com/v1/projects/{project}/remoteConfig", headers=TOKEN.header()
     )
-    return remote_config_samples(name, json.loads(raw), app["platforms"])
+    return remember(remote_config_samples(name, json.loads(raw), app["platforms"]))
 
 
 def remote_config_samples(name, template, platforms):
@@ -299,6 +347,7 @@ def collect_stores(app):
         labels = {"app": name, "platform": "ios"}
         out.append(("app_store_listed", labels, int(bool(results))))
         out.append(("app_store_expected", labels, int("ios" in app.get("released", []))))
+        out.append(("app_store_stage", labels, store_stage(app, "ios", bool(results))))
         if results:
             info = results[0]
             out.append(("app_store_rating", labels, info.get("averageUserRating", 0)))
@@ -318,7 +367,20 @@ def collect_stores(app):
         labels = {"app": name, "platform": "android"}
         out.append(("app_store_listed", labels, int(status == 200)))
         out.append(("app_store_expected", labels, int("android" in app.get("released", []))))
-    return out
+        out.append(("app_store_stage", labels, store_stage(app, "android", status == 200)))
+    for issue in app.get("knownIssues", []):
+        labels = {"app": name, "alertname": issue["alertname"], "note": issue["note"]}
+        out.append(("app_known_issue", labels, 1))
+    return remember(out)
+
+
+def store_stage(app, platform, listed):
+    """공개 여부와 설정(released, stage)으로 스토어 단계를 정한다."""
+    if listed:
+        return STAGES["released"]
+    if platform in app.get("released", []):
+        return -1
+    return STAGES.get(app.get("stage", {}).get(platform, "none"), 0)
 
 
 def ads_txt_ok(status, content_type, body, publisher):
@@ -435,6 +497,31 @@ def collect_admob(account):
         }
         _, _, raw = fetch(base + "/networkReport:generate", {"reportSpec": spec}, USER_TOKEN.header())
         out += admob_samples([line["row"] for line in json.loads(raw) if "row" in line], names, window)
+
+    spec = {
+        "dateRange": admob_dates("28d", today),
+        "dimensions": ["DATE", "APP"],
+        "metrics": ["IMPRESSIONS", "ESTIMATED_EARNINGS"],
+        "localizationSettings": {"currencyCode": "USD", "languageCode": "ko"},
+    }
+    _, _, raw = fetch(base + "/networkReport:generate", {"reportSpec": spec}, USER_TOKEN.header())
+    out += admob_daily_samples([line["row"] for line in json.loads(raw) if "row" in line], names)
+    return out
+
+
+def admob_daily_samples(rows, names):
+    out = []
+    for row in rows:
+        dims, metrics = row.get("dimensionValues", {}), row.get("metricValues", {})
+        app = names.get(dims.get("APP", {}).get("value"))
+        if not app:
+            continue
+        base = {"app": app[0], "platform": app[1], "date": daily_label(dims["DATE"]["value"]),
+                "series": f"{app[0]} {app[1]}"}
+        out.append(("app_daily", {**base, "metric": "ad_impressions"},
+                    float(metrics.get("IMPRESSIONS", {}).get("integerValue", 0))))
+        out.append(("app_daily", {**base, "metric": "ad_revenue_usd"},
+                    float(metrics.get("ESTIMATED_EARNINGS", {}).get("microsValue", 0)) * 1e-6))
     return out
 
 
