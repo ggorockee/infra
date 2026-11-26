@@ -60,10 +60,10 @@ apps:
       - https://woohalabs.com/app-ads.txt
   - name: 라익찍스
     platforms: [android, ios]
-    released: []
+    released: [ios]
     stage:
       android: testing
-      ios: review
+      ios: released
     # GA4는 App Store 심사 통과 뒤에 연결 (claudedocs/app-metrics-monitoring.md)
     firebaseProject: like-zzix
     admobAppIds:
