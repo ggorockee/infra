@@ -1,0 +1,136 @@
+# 앱 출시·광고 연동 절차서 (리뷰맵 · 돌려받엔 · 라익찍스)
+
+작성일: 2026-11-27. 2026-11-26~27 작업에서 실제로 겪은 절차와 문제를 정리했습니다. 비밀번호·키 값은 적지 않습니다(위치는 로컬 `.secrets/README.md`). 이 저장소는 공개라 수입·예산 금액도 적지 않습니다.
+
+## 1. 앱 기본 정보
+
+| 항목 | 리뷰맵 | 돌려받엔 | 라익찍스 |
+|---|---|---|---|
+| 저장소 | ggorockee/reviewmaps | ggorockee/yen-back | ggorockee/like-zzix |
+| App Store ID | 6751343880 | 6835096650 | 6836852971 |
+| Android 패키지 | com.reviewmaps.mobile | com.woohalabs.yenback | com.woohalabs.likezzix |
+| Firebase 프로젝트 | reviewmap-c03f1 | yen-back | like-zzix |
+| GA4 속성 | 513036605 | 565832639 | 없음 (연결 예정) |
+| 개발자 웹사이트(app-ads.txt) | review-maps.com | yen-back.woohalabs.com | like-zzix.woohalabs.com |
+| Crashlytics | iOS·Android | iOS(1.1.1부터) | 없음 |
+| Android 서명 키 | `~/upload-keystore.jks` (리뷰맵·돌려받엔 공용) | 같음 | `~/likezzix-upload-keystore.jks` |
+
+AdMob 게시자: pub-8516861197467665. 계정은 모두 woohalabs@gmail.com.
+
+## 2. iOS 출시 (GitHub Actions)
+
+개발 맥(Intel MacBook Pro 2019)은 macOS 27·Xcode 27을 설치할 수 없습니다. 2027년 4월부터 iOS 27 SDK가 필수라(ITMS-90725) iOS 빌드는 GitHub의 `xcode-27` 러너에서 합니다. 공개 저장소라 무료입니다.
+
+| 단계 | 방법 |
+|---|---|
+| 1. 버전 올리기 | 앱 저장소 `mobile/pubspec.yaml`의 `version:` 이름 부분(예: 2.2.3)을 올려 PR 머지. 빌드 번호는 워크플로가 정함 |
+| 2. 빌드·업로드 | 저장소 Actions → iOS Release → Run workflow. 빌드 번호를 비우면 실행 시각(UTC, 예: 202611261240). 업로드를 끄면 서명한 ipa만 만들어 확인 |
+| 3. 처리 대기 | App Store Connect에서 빌드가 VALID가 될 때까지 10~30분. `python3 scripts/app-status.py` 또는 App Store Connect API로 확인 |
+| 4. 버전 만들기 | App Store Connect → 앱 → iOS 앱 옆 + → 버전 번호. "이 버전의 새로운 기능" 입력 (이전 버전 문구가 앞에 붙어 있으면 지움) |
+| 5. 빌드 연결 | Build → Add Build → 방금 빌드 선택 → 수출 규정(암호화): 표준 HTTPS만 쓰므로 "None of the algorithms mentioned above" |
+| 6. 출시 방식 | "Automatically release this version"(심사 후 자동) 또는 수동. 저장 |
+| 7. 제출 | Add for Review → Submit for Review. 심사 최대 48시간 |
+| 8. 출시 후 | 수동 출시면 출시 요청(App Store Connect API `appStoreVersionReleaseRequests`로도 가능), Remote Config 최신 버전 올리기(5장) |
+
+워크플로가 쓰는 저장소 시크릿 (값의 위치는 `.secrets/README.md`)
+
+| 시크릿 | 내용 |
+|---|---|
+| ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8_BASE64 | App Store Connect API 팀 키 (Admin). 프로비저닝 프로필 자동 관리·업로드 |
+| IOS_SIGNING_P12_BASE64, IOS_SIGNING_P12_PASSWORD | Apple Development·Distribution 인증서. 실행 중에만 임시 키체인에 넣고 끝나면 삭제 |
+| IOS_BUILD_FILES_BASE64 | git에 없는 빌드 파일 묶음(tar.gz). 리뷰맵 `.env`·`GoogleService-Info.plist`·`ios/Flutter/Release.xcconfig`·`Debug.xcconfig`, 돌려받엔 `GoogleService-Info.plist`, 라익찍스 `env/prod.json`·`Secrets.xcconfig`·`GoogleService-Info.plist`·`firebase_options.dart`. 이 파일을 바꾸면 시크릿도 다시 등록 |
+
+배포 인증서 갱신 (만료 2027-11-26, 약 한 달 전에)
+
+| 단계 | 방법 |
+|---|---|
+| 1 | 개인 키·CSR 생성: `openssl genrsa` → `openssl req -new` |
+| 2 | App Store Connect API `POST /v1/certificates` (certificateType DISTRIBUTION, csrContent)로 발급 |
+| 3 | 키+인증서를 p12로 묶어 로그인 키체인에 `security import` |
+| 4 | `security export -t identities -f pkcs12`로 키체인의 서명 인증서 전체를 다시 내보냄 (키체인 허용 창에서 로그인 암호 입력) |
+| 5 | 세 저장소 `IOS_SIGNING_P12_BASE64` 교체 → 아무 앱이나 iOS Release(업로드 끔)로 서명 확인 |
+
+갱신해도 이미 출시된 앱, 심사 중인 빌드, 푸시·Apple 로그인·AdMob·Firebase에는 영향이 없습니다. 새 빌드 서명에만 쓰입니다.
+
+## 3. Android 출시
+
+| 단계 | 방법 |
+|---|---|
+| 1. 빌드 | `flutter build appbundle --release --build-name <버전> --build-number <이전보다 큰 수>`. Play에 한 번 올린 번호는 다시 못 씀 |
+| 2. 실행 확인 (필수) | 같은 코드로 `flutter build apk --release` → 에뮬레이터에 설치·실행 → `adb logcat -b crash`가 비어 있는지. 릴리스 빌드는 R8이 코드를 지워 디버그에서 안 보이던 종료가 생길 수 있음 |
+| 3. 업로드 | Play Console → 프로덕션 → 새 버전 만들기 → AAB를 직접 드래그 (브라우저 자동 업로드는 10MB 제한) |
+| 4. 출시 노트 | `<ko-KR>` 태그 안에 입력 |
+| 5. 검토 전송 | 게시 개요 → 검토를 위해 변경사항 전송. 자동 검사(출시 전 보고서)에서 문제가 나오면 제출이 막힘 → 보고서의 스택 트레이스 확인 |
+
+개인 개발자 계정의 새 앱은 비공개 테스트에서 테스터 12명 이상이 14일 이상 참여해야 프로덕션 액세스를 신청할 수 있습니다(라익찍스는 2026-11-24 시작, 빠르면 12-08).
+
+## 4. 겪은 문제와 해결 (같은 증상이 나오면 여기부터)
+
+| 증상 | 원인 | 해결 |
+|---|---|---|
+| Play 출시 전 검사: "16KB 페이지 크기를 지원하지 않을 수 있음", `Failed to create an instance of androidx.work.impl.WorkDatabase` | 16KB 문제가 아님. AGP 9의 R8이 Room 데이터베이스 기본 생성자를 지움. Unity Ads SDK 규칙이 가려 주다가 Unity를 빼며 드러남 | `proguard-rules.pro`에 `-keep class * extends androidx.room.RoomDatabase { <init>(); }` (reviewmaps #295, like-zzix #25) |
+| Apple 메일 ITMS-90725 (iOS 27 SDK 필요) | 업로드는 성공, 2027-04부터 필수 | GitHub Actions iOS Release로 빌드 (2장) |
+| Actions: `Unable to open base configuration reference file .../Release.xcconfig` | 리뷰맵은 xcconfig가 gitignore(네이버 키 포함) | IOS_BUILD_FILES_BASE64에 xcconfig 포함 |
+| Actions: `firebase-ios-sdk/Crashlytics/run: No such file or directory` | Swift 패키지가 아직 안 받아진 상태에서 dSYM 업로드 스크립트 실행 | 아카이브 전에 `flutter build ios --config-only` → `xcodebuild -resolvePackageDependencies`. 스크립트는 파일이 없으면 경고만 (reviewmaps #298, #299) |
+| Actions 업로드: `Invalid Signature ... GoogleMobileAds.framework is not properly signed` | 서명 없이 아카이브하면 외부 프레임워크가 업로드 단계에서 거부됨 | 인증서 p12를 임시 키체인에 넣고 서명해서 아카이브 (#300 등) |
+| 로컬 iOS 아카이브 Crashlytics 스크립트 실패 | 위와 같음 | `xcodebuild -resolvePackageDependencies` 후 다시 빌드 |
+| Actions: Flutter 설치 중 `curl: (56)` | 일시적 네트워크 오류 | 다시 실행 |
+| AdMob 앱 인증 "app-ads.txt를 확인할 수 없음" (새로 공개한 앱) | 파일이 정상이어도 AdMob이 새 스토어 정보·app-ads.txt를 아직 안 읽음 | 파일 확인(200, text/plain 한 개, 게시자 줄) 후 24시간 안에 "업데이트 확인". AdMob에서 ID로 앱이 안 찾아지면 `https://apps.apple.com/us/app/id<ID>`로 검색 |
+| 출시 직후 App Store 검색 API 한국(country=kr) 0건 | 국가별 캐시가 몇 시간~하루 늦음 (미국은 먼저 나옴) | 수집기 `released`는 한국 API에 나온 뒤 변경 (먼저 바꾸면 AppStoreListingMissing 오탐) |
+| Google Ads 캠페인이 "운영 가능"인데 노출·비용 0 | 하루 예산이 너무 작으면 앱 캠페인 경매에서 거의 지지 않음 | 예산 확인, 소재(문구·이미지·동영상) 보강 |
+| Google Ads 화면에서 캠페인·광고그룹 링크가 안 넘어감 | 브라우저 광고 차단 확장 | ads.google.com에서 끔 |
+| Play 스토어 등록정보 저장 시 "AI 애셋 선언" | 2026-11부터 저장 단계에서 선언 필요 | 개발자가 선택 (11-27 리뷰맵: 라벨 지정 안 함) |
+| GA4 Admin API 403 | yanggo-514212에서 API가 꺼져 있음 | 켜려면 개발자 승인. 연결 여부는 Google Ads 전환 설정 화면에서 확인 가능 |
+
+## 5. Remote Config 최신 버전 올리기
+
+| 단계 | 방법 |
+|---|---|
+| 1 | 앱이 해당 스토어에 실제 공개됐는지 확인 (`scripts/app-status.py`) |
+| 2 | 앱 저장소 `firebase/remoteconfig.template.json`의 `{ios,android}_latest_version` 변경 PR → 머지 |
+| 3 | `firebase remoteconfig:get --project <프로젝트>`로 라이브 값과 원본이 같은지 확인 후 `firebase deploy --only remoteconfig --project <프로젝트>` |
+| 4 | 최소 버전(`*_min_version`)은 올리지 않으면 선택 업데이트 안내만 나감. 강제 업데이트는 별도 결정 |
+
+## 6. 광고 연동 점검 (앱 검색 → Firebase → AdMob → Google Ads)
+
+| 단계 | 확인 | 연결 방법 |
+|---|---|---|
+| ① 스토어 | App Store 검색 API(kr·us), Play 공개 페이지 200 | - |
+| ② Firebase | `firebase apps:list --project <프로젝트>`에 플랫폼별 앱, Firebase 프로젝트에 Google 애널리틱스(GA4) 사용 | Firebase 콘솔 → 프로젝트 설정 → 통합 → Google 애널리틱스 |
+| ③ AdMob | 앱 목록 "스토어 추가"·승인 상태, 설정 → 연결된 서비스 → 앱별 Firebase "연결됨" | 앱 → 스토어 추가 → 앱 인증(app-ads.txt) → 2~3일 검토 |
+| ④ Google Ads | 목표 → 전환 → 새 전환 → 앱에서의 전환에 GA4 속성이 보이는지, 전환 액션(설치 / first_open) | 새 전환 → 앱 → 다운로드 → 데이터 소스(GA4 앱) → first_open |
+
+`scripts/app-status.py`가 ①·③(AdMob API)을 자동으로 확인합니다. ②의 GA4 연결과 ④는 콘솔에서 확인합니다. 2026-11-27 점검 결과: 리뷰맵 두 플랫폼과 돌려받엔 iOS는 네 단계 모두 연결, 라익찍스는 GA4가 없어 ②에서 끊김(연결 예정), Android 두 앱(돌려받엔·라익찍스)은 Play 정식 출시 전.
+
+## 7. 광고 운영 원칙
+
+| 원칙 | 이유 |
+|---|---|
+| 예산은 개발자가 금액을 정한 뒤에만 바꿈 | 실제 청구 |
+| 소액이면 노출이 거의 없음 → 증액 후 1주 단위로 노출 → 설치당 비용 → 7일 잔존 순서로 점검 | 2026-11 리뷰맵-안드로이드 사례 |
+| 광고비는 "광고 유입 사용자가 남는지" 보는 실험 비용으로 봄 | 사용자 1명당 광고 수입이 작아 광고비로 수익을 직접 키우기 어려움 |
+| 잔존율(`app_retention_ratio{source="ads"}`)이 다른 유입보다 낮으면 감액·중지하고 첫 경험부터 개선 | 남지 않는 설치는 수입이 되지 않음 |
+| AdMob IDFA 설명 메시지(iOS)는 앱 업데이트 없이 게시 가능 | UMP를 ATT보다 먼저 실행하는 앱(리뷰맵 2.2.0+)에서 UMP가 설명 화면 뒤 ATT를 띄움 |
+
+## 8. 새 앱을 만들 때 처음부터 넣을 것
+
+| 항목 | 기준 앱 |
+|---|---|
+| 핵심 기능 사용 이벤트 (자체 서버 `/v1/events` 허용 목록 또는 GA4) | 돌려받엔·라익찍스 telemetry |
+| Firebase Analytics(GA4), Crashlytics(릴리스 빌드만, silent 오류는 비정상 종료로 세지 않음) | 리뷰맵 `firebase_service.dart`, 돌려받엔 `crash_reporting.dart` |
+| Remote Config: 광고 스위치, 최신·최소 버전, 저장소에 `firebase/remoteconfig.template.json` | 리뷰맵 |
+| UMP 동의 → (iOS) ATT 순서, AdMob IDFA 설명 메시지 | 리뷰맵 |
+| app-ads.txt를 개발자 웹사이트 도메인에 (단일 text/plain) | 세 앱 |
+| GitHub Actions iOS Release 워크플로·시크릿 | 세 앱 |
+| 수집기(app-metrics-exporter) `apps` 항목, 대시보드 범위표 | infra |
+| 릴리스 R8 규칙(Room 생성자 보존) | 리뷰맵·라익찍스 |
+
+## 9. 관련 문서
+
+| 문서 | 내용 |
+|---|---|
+| `.claude/CLAUDE.md` 운영 현황 | 배포 경로, 알림 목록, 앱·광고 운영 메모 |
+| `claudedocs/app-metrics-monitoring.md` | 수집기·알림·대시보드 |
+| `claudedocs/planning/2026-11-app-ops-plan.md` (로컬 전용) | 단계별 계획, 승인 표시, 진행 기록, 수익 전망, 다음 세션 시작 가이드 |
+| `.secrets/README.md` (로컬 전용) | 비밀번호·키·인증서 위치 |
+| `scripts/app-status.py` | 상태 점검 (읽기 전용) |
