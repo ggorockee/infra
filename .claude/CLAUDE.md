@@ -423,6 +423,7 @@ feat: Cloud SQL 모듈 추가
 | 리뷰맵 이미지 | reviewmaps 레포 main 머지 → CI가 이미지 빌드 → infra에 태그 PR 생성·자동 머지 | infra `charts/helm/prod/reviewmaps/values.yaml` 태그만 바뀜 |
 | 라익찍스 이미지 | like-zzix 레포 main 머지 → CI(`ci-server.yml`)가 `ggorockee/like-zzix-server` 빌드 → infra 태그 PR 생성·자동 머지 | infra `charts/helm/prod/like-zzix/values.yaml` 태그만 바뀜. like-zzix 레포에 DOCKERHUB_USERNAME/DOCKERHUB_TOKEN/INFRA_GITHUB_TOKEN 시크릿 필요 |
 | 라익찍스 관리자 콘솔 이미지 | like-zzix 레포 main 머지(`admin/**`) → CI(`ci-admin.yml`)가 `ggorockee/like-zzix-admin` 빌드 → infra 태그 PR(`admin.image.tag`) 자동 머지 | https://like-zzix-admin.woohalabs.com. 로그인은 Google(yanggo-514212 웹 클라이언트, 승인된 JS 출처에 콘솔 주소 등록 필요) + GSM `prod-like-zzix-credentials`의 ADMIN_EMAILS. 같은 GSM 키로 Terraform이 Cloud SQL DB·사용자 `like_zzix`를 만듦 |
+| iOS 앱 빌드·업로드 (세 앱 공통) | 각 앱 레포 Actions → `iOS Release` → Run workflow (빌드 번호 비우면 실행 시각, 업로드 끄면 빌드·서명만). `xcode-27` 러너(Xcode 27.2) | 개발 맥은 Intel이라 Xcode 27 불가(2027-04부터 iOS 27 SDK 필수). 시크릿 ASC_KEY_*, IOS_SIGNING_P12_*, IOS_BUILD_FILES_BASE64 (위치는 `.secrets/README.md`). 업로드 뒤 App Store Connect에서 버전에 빌드 연결·제출. 배포 인증서 만료 2027-11-26 |
 
 | ApplicationSet | generator 파일 패턴 | values |
 |----------------|--------------------|--------|
@@ -466,7 +467,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | ReviewMaps CronJob & DB 적재 (Home) | `reviewmaps-cronjob` | CronJob 성공/실패, Cloud SQL campaign 적재 건수 |
 | ReviewMaps 수집 서버 | `reviewmaps-scraper` | 지금 수집 중인 Job·키워드·진행률, go-scraper 키워드별 마지막 실행 결과 (Pushgateway) |
 | ReviewMaps HTTP Metrics | `reviewmaps-http-metrics` | Go API 서버 요청 수, P95, 5xx |
-| 앱·광고·스토어 현황 | `app-ads-overview` | 세 앱의 사용자·신규, 비정상 종료, AdMob 광고 단위별 수입·eCPM, 앱 오프닝 표시율, Google Ads 비용·유입, 스토어 공개·버전·Remote Config 값, app-ads.txt |
+| 앱·광고·스토어 현황 | `app-ads-overview` | 세 앱의 사용자·신규, 비정상 종료, AdMob 광고 단위별 수입·eCPM, 앱 오프닝 표시율, Google Ads 비용·유입, 신규 사용자 1일·7일 잔존율(광고/그 외), 스토어 공개·버전·Remote Config 값, app-ads.txt |
 | 라익찍스 (like-zzix) | `like-zzix` | API 서버 상태, 촬영 퍼널(프리셋 선택 → Perfect Match → 저장), 앱 버전 분포·업데이트 반응, 저장 실패·카메라 사용 불가 비율, 관리자 콘솔·DB 연결·프리셋 갱신 |
 
 차트 색상 기준값 = 알림 규칙 기준값이므로 한쪽을 바꾸면 다른 쪽도 같이 바꿉니다. 대시보드를 새로 만들거나 고칠 때 아래 작성 규칙을 따릅니다 (사용자가 가독성을 직접 지적해 정한 규칙).
@@ -587,15 +588,21 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | 네이버 API (보강) | inflexer 호출 425 / 에러 0, reviewnote 호출 65 / 에러 0 |
 | 내부 배치 API | `/v1/internal/process-campaign-alerts` P95 약 0.9초 (정상) |
 
-### 앱·광고 운영 메모 (2026-11-26)
+### 앱·광고 운영 메모 (2026-11-27)
 
 | 항목 | 내용 |
 |------|------|
 | 계정 | AdMob(pub-8516861197467665), Google Ads, Firebase(`reviewmap-c03f1`, `yen-back`, `like-zzix`) 모두 `woohalabs@gmail.com` |
-| GA4 | 측정은 어제까지 값만 사용. AdMob 콘솔과 수입이 거의 같음. 라익찍스는 GA4 미연결(심사 통과 뒤) |
-| Google Ads | 리뷰맵-안드로이드만 운영(대한민국). 리뷰맵-iOS·돌려받엔-iOS는 일시중지. 예산 변경은 개발자가 금액을 정한 뒤에만 |
+| GA4 | 측정은 어제까지 값만 사용. AdMob 콘솔과 수입이 거의 같음. 라익찍스는 GA4 미연결 → 연결하기로 결정(2026-11-27, 다음 버전) |
+| Google Ads | 리뷰맵-안드로이드만 운영(대한민국). 리뷰맵-iOS·돌려받엔-iOS는 일시중지. 예산 변경은 개발자가 금액을 정한 뒤에만. 예산이 너무 작으면 "운영 가능"이어도 거의 게재되지 않음(2026-11 확인) → 노출·비용이 0이면 예산부터 의심. 전환 액션: 리뷰맵 Android 설치·iOS first_open, 돌려받엔 iOS first_open(GA4 가져오기) |
 | AdMob API | 사람 계정 토큰이 Secret `monitoring/app-metrics-admob-oauth`에 있음(GSM·Git 아님, 비용 0 조건). 만료 시 `python3 scripts/admob-oauth-setup.py` 재실행. OAuth 프로젝트는 결제가 꺼진 `yen-back` |
 | AdMob 앱 승인 | 스토어 공개 전 앱은 "검토 필요·광고 게재 제한"이 정상 |
+| AdMob IDFA 설명 메시지 | 리뷰맵 iOS에 게시(2026-11-27). UMP가 ATT 시스템 창 전에 설명 화면을 띄우므로 앱 업데이트 불필요(2.2.0+는 UMP를 ATT보다 먼저 실행). 표시 수·ATT 동의 비율은 AdMob 개인 정보 보호 및 메시지 > IDFA 설명 |
+| AdMob 앱 인증 (신규 공개 앱) | 스토어 연결 직후 "app-ads.txt 확인 불가"로 실패할 수 있음. 파일이 정상이면 크롤링 대기(최대 24시간) 후 "업데이트 확인". App Store 검색은 국가별로 늦게 반영되어 AdMob에서 ID로 안 찾아지면 `https://apps.apple.com/us/app/id<ID>`로 검색 |
+| App Store 검색 API 지연 | 출시 직후 `itunes.apple.com/lookup?country=kr`는 몇 시간~하루 늦게 나옴. 수집기 `released`는 이 API에 나온 뒤 바꿔야 AppStoreListingMissing 오탐이 없음 |
+| Crashlytics | 리뷰맵 iOS·Android, 돌려받엔 iOS(1.1.1부터, yen-back #20). 돌려받엔 Android는 Firebase에 앱 미등록. 수집기 `crashlytics: true`는 수집이 시작된 뒤에만 |
+| 라익찍스 카메라 이벤트 | `camera_permission_denied`(권한 거부) / `camera_failed`(열기 실패) / `camera_unavailable`(카메라 없음, 1.0.0+6 이하는 전부 이 이름). 알림은 권한 거부 제외 (like-zzix #30, infra #1213) |
+| 신규 사용자 잔존율 | 수집기가 GA4 코호트로 `app_retention_ratio{day=1|7, source=ads|other}` 수집(8~28일 전 첫 방문). 광고 증액 판단 기준 (#1211) |
 | Remote Config 배포 | 각 앱 레포 `firebase/remoteconfig.template.json`이 원본, `firebase deploy --only remoteconfig --project <프로젝트>` |
 | nginx Content-Type | `add_header Content-Type`은 mime.types 값과 합쳐져 `text/plain,text/plain`이 됨 → `types { }` + `default_type` 사용 (#1204) |
 
