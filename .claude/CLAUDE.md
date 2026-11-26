@@ -594,7 +594,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 |------|------|
 | 계정 | AdMob(pub-8516861197467665), Google Ads, Firebase(`reviewmap-c03f1`, `yen-back`, `like-zzix`) 모두 `woohalabs@gmail.com` |
 | GA4 | 측정은 어제까지 값만 사용. AdMob 콘솔과 수입이 거의 같음. 라익찍스는 GA4 미연결 → 연결하기로 결정(2026-11-27, 다음 버전) |
-| Google Ads | 리뷰맵-안드로이드만 운영(대한민국). 리뷰맵-iOS·돌려받엔-iOS는 일시중지. 예산 변경은 개발자가 금액을 정한 뒤에만. 예산이 너무 작으면 "운영 가능"이어도 거의 게재되지 않음(2026-11 확인) → 노출·비용이 0이면 예산부터 의심. 전환 액션: 리뷰맵 Android 설치·iOS first_open, 돌려받엔 iOS first_open(GA4 가져오기) |
+| Google Ads | 리뷰맵-안드로이드·리뷰맵-iOS 운영(대한민국, 2026-11-27 iOS 재개). 돌려받엔-iOS는 일시중지. 예산 변경은 개발자가 금액을 정한 뒤에만. 예산이 너무 작으면 "운영 가능"이어도 거의 게재되지 않음(2026-11 확인) → 노출·비용이 0이면 예산부터 의심. 전환 액션: 리뷰맵 Android 설치·iOS first_open, 돌려받엔 iOS first_open(GA4 가져오기) |
 | AdMob API | 사람 계정 토큰이 Secret `monitoring/app-metrics-admob-oauth`에 있음(GSM·Git 아님, 비용 0 조건). 만료 시 `python3 scripts/admob-oauth-setup.py` 재실행. OAuth 프로젝트는 결제가 꺼진 `yen-back` |
 | AdMob 앱 승인 | 스토어 공개 전 앱은 "검토 필요·광고 게재 제한"이 정상 |
 | AdMob IDFA 설명 메시지 | 리뷰맵 iOS에 게시(2026-11-27). UMP가 ATT 시스템 창 전에 설명 화면을 띄우므로 앱 업데이트 불필요(2.2.0+는 UMP를 ATT보다 먼저 실행). 표시 수·ATT 동의 비율은 AdMob 개인 정보 보호 및 메시지 > IDFA 설명 |
