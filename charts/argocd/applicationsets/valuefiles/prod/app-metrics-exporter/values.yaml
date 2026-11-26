@@ -27,11 +27,11 @@ apps:
     crashlytics: true
     knownIssues:
       - alertname: AppOpenAdShowRateLow
-        note: 2.2.1에서 수정, 스토어 배포 대기
+        note: 2.2.2에서 수정. Android 11-27 공개, iOS 심사 중. 7일 평균이라 12월 초까지 남음
       - alertname: AppCrashFreeLow
-        note: 대부분 종료가 아닌 오류를 종료로 기록한 것. 2.2.1에서 수정, 스토어 배포 대기
+        note: 대부분 종료가 아닌 오류를 종료로 기록한 것. 2.2.2에서 수정(Android 11-27 공개, iOS 심사 중). 7일 평균이라 12월 초까지 남음
       - alertname: AdRevenueDropped
-        note: 직전 주 강제 업데이트로 사용자가 일시적으로 늘었던 영향. 신규 유입 부족은 Phase 3
+        note: 직전 주 강제 업데이트로 사용자가 일시적으로 늘었던 영향과 신규 유입 부족. Google Ads 증액(11-27) 효과 점검 중
     firebaseProject: reviewmap-c03f1
     admobAppIds:
       android: ca-app-pub-8516861197467665~2285990824
