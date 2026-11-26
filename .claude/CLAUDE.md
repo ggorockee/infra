@@ -404,7 +404,7 @@ feat: Cloud SQL 모듈 추가
 
 ## 운영 현황 (prod, 2026-11-13 기준)
 
-새 세션에서 prod 작업 전 이 섹션을 먼저 확인합니다. 상세 설계는 `claudedocs/monitoring-grafana-prometheus-design.md`.
+새 세션에서 prod 작업 전 이 섹션을 먼저 확인합니다. **앱(리뷰맵·돌려받엔·라익찍스) 운영·광고 작업은 로컬 전용 계획 문서 `claudedocs/planning/2026-11-app-ops-plan.md`의 "다음 세션 시작 가이드"부터 읽고, `python3 scripts/app-status.py`로 현재 상태를 확인합니다** (계획 문서는 금액이 있어 커밋하지 않음). 상세 설계는 `claudedocs/monitoring-grafana-prometheus-design.md`.
 
 ### 클러스터 및 배포 경로
 
