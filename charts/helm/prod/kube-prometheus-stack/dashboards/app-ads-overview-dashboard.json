@@ -3496,7 +3496,6 @@
           "unit": "short",
           "decimals": 0,
           "min": 0,
-          "noValue": "데이터 없음",
           "color": {
             "mode": "palette-classic"
           },
@@ -3607,7 +3606,7 @@
         "barWidth": 0.9,
         "showValue": "never",
         "xTickLabelRotation": -45,
-        "xTickLabelSpacing": 100,
+        "xTickLabelSpacing": 0,
         "legend": {
           "displayMode": "list",
           "placement": "bottom",
@@ -3674,7 +3673,6 @@
           "unit": "short",
           "decimals": 0,
           "min": 0,
-          "noValue": "데이터 없음",
           "color": {
             "mode": "palette-classic"
           },
@@ -3785,7 +3783,7 @@
         "barWidth": 0.9,
         "showValue": "never",
         "xTickLabelRotation": -45,
-        "xTickLabelSpacing": 100,
+        "xTickLabelSpacing": 0,
         "legend": {
           "displayMode": "list",
           "placement": "bottom",
@@ -3852,7 +3850,6 @@
           "unit": "currencyUSD",
           "decimals": 3,
           "min": 0,
-          "noValue": "데이터 없음",
           "color": {
             "mode": "palette-classic"
           },
@@ -3963,7 +3960,7 @@
         "barWidth": 0.9,
         "showValue": "never",
         "xTickLabelRotation": -45,
-        "xTickLabelSpacing": 100,
+        "xTickLabelSpacing": 0,
         "legend": {
           "displayMode": "list",
           "placement": "bottom",
@@ -4030,7 +4027,6 @@
           "unit": "short",
           "decimals": 0,
           "min": 0,
-          "noValue": "데이터 없음",
           "color": {
             "mode": "palette-classic"
           },
@@ -4141,7 +4137,7 @@
         "barWidth": 0.9,
         "showValue": "never",
         "xTickLabelRotation": -45,
-        "xTickLabelSpacing": 100,
+        "xTickLabelSpacing": 0,
         "legend": {
           "displayMode": "list",
           "placement": "bottom",
