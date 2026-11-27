@@ -113,11 +113,14 @@ def draft(name: str, listing: Path) -> None:
     def section(title: str) -> str:
         return md.split(f"## {title}\n")[1].split("\n## ")[0].strip()
 
-    v = find_version(name) or call("POST", "/v1/appStoreVersions", {"data": {
-        "type": "appStoreVersions",
-        "attributes": {"platform": "IOS", "versionString": name, "releaseType": "AFTER_APPROVAL"},
-        "relationships": {"app": rel("apps", APP_ID)},
-    }})["data"]
+    if find_version(name):
+        v = draft_version(name)  # 공개·심사 중인 버전이면 여기서 멈춘다
+    else:
+        v = call("POST", "/v1/appStoreVersions", {"data": {
+            "type": "appStoreVersions",
+            "attributes": {"platform": "IOS", "versionString": name, "releaseType": "AFTER_APPROVAL"},
+            "relationships": {"app": rel("apps", APP_ID)},
+        }})["data"]
     loc = korean_localization(v["id"])
     call("PATCH", f"/v1/appStoreVersionLocalizations/{loc['id']}", {"data": {
         "type": "appStoreVersionLocalizations", "id": loc["id"],
