@@ -561,7 +561,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | 항목 | 내용 |
 |------|------|
 | CronJob (KST) | inflexer 00:05 (키워드 81개, 약 12분), reviewnote 02:00 (약 2~3분), cleanup 05:00 (수 초), reviewnote-detail 00:00~08:00 (여행 상세를 천천히, 아래 줄) |
-| 리뷰노트 여행 상세 (reviewnote-detail, 2026-11-28~) | 로그인 필요한 상세 API에서 이용 가능·불가 요일·시간·당일 방문·예약 주의사항 수집 → `campaign_stay_detail`(원본) → campaign 컬럼 복사, 02:00 reviewnote 는 보관값을 붙여 저장. 차단 방지: 00:00+0~30분 무작위 시작, 07:50까지 고르게(최소 30초), 14일 안에 받은 것 제외, 401·403·429·5xx 즉시 중단·재시도 없음, 하루 최대 `REVIEWNOTE_DETAIL_MAX_FETCH`(첫날 100 → 450). 세션 쿠키는 GSM `prod-reviewmaps-reviewnote-session`(REVIEWNOTE_SESSION, REVIEWNOTE_SESSION_EXPIRES_AT) → ExternalSecret `reviewnote-session`(optional). **약 15일마다 수집 전용 계정으로 재로그인·GSM 갱신 필요**, 만료 3일 전 [WARN] 메일. 절차는 reviewmaps 레포 `claudedocs/reviewnote-travel-selenium.md` |
+| 리뷰노트 여행 상세 (reviewnote-detail, 2026-11-28~) | 로그인 필요한 상세 API에서 이용 가능·불가 요일·시간·당일 방문·예약 주의사항 수집 → `campaign_stay_detail`(원본) → campaign 컬럼 복사, 02:00 reviewnote 는 보관값을 붙여 저장. 차단 방지: 00:00+0~30분 무작위 시작, 07:50까지 고르게(최소 30초), 14일 안에 받은 것 제외, 401·403·429·5xx 즉시 중단·재시도 없음, 하루 최대 `REVIEWNOTE_DETAIL_MAX_FETCH` 450 (첫 운영 2026-11-28부터, 100건 시험 생략). 세션 쿠키는 GSM `prod-reviewmaps-reviewnote-session`(REVIEWNOTE_SESSION, REVIEWNOTE_SESSION_EXPIRES_AT) → ExternalSecret `reviewnote-session`(optional). **약 15일마다 수집 전용 계정으로 재로그인·GSM 갱신 필요**, 만료 3일 전 [WARN] 메일. 절차는 reviewmaps 레포 `claudedocs/reviewnote-travel-selenium.md` |
 | 저장 방식 | go-scraper는 DELETE 후 INSERT → `created_at` = 마지막 수집 시각 |
 | cleanup | 물리 삭제가 아니라 soft delete (`deleted_at`). DB 조회 시 항상 `deleted_at IS NULL` 조건 |
 | cleanup 기준일 | KST 자정 (`cleanup.StartOfDay`). `time.Truncate(24h)`는 UTC 기준이라 사용 금지 |
