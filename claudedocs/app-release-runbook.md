@@ -23,7 +23,7 @@ AdMob 게시자: pub-8516861197467665. 계정은 모두 woohalabs@gmail.com.
 
 | 단계 | 방법 |
 |---|---|
-| 1. 버전 올리기 | 앱 저장소 `mobile/pubspec.yaml`의 `version:` 이름 부분(예: 2.2.3)을 올려 PR 머지. 빌드 번호는 워크플로가 정함 |
+| 1. 버전 올리기 | 앱 저장소 `mobile/pubspec.yaml`의 `version:` 이름 부분(예: 2.2.3)을 올려 PR 머지. 빌드 번호는 워크플로가 정함. **리뷰맵은 `mobile/lib/config/app_version.dart`의 `current`도 함께** 올림 (업데이트 안내가 이 값을 씀, 2.2.3부터 다르면 테스트 실패) |
 | 2. 빌드·업로드 | 저장소 Actions → iOS Release → Run workflow. 빌드 번호를 비우면 실행 시각(UTC, 예: 202611261240). 업로드를 끄면 서명한 ipa만 만들어 확인 |
 | 3. 처리 대기 | App Store Connect에서 빌드가 VALID가 될 때까지 10~30분. `python3 scripts/app-status.py` 또는 App Store Connect API로 확인 |
 | 4. 버전 만들기 | App Store Connect → 앱 → iOS 앱 옆 + → 버전 번호. "이 버전의 새로운 기능" 입력 (이전 버전 문구가 앞에 붙어 있으면 지움) |
@@ -79,8 +79,24 @@ AdMob 게시자: pub-8516861197467665. 계정은 모두 woohalabs@gmail.com.
 | 출시 직후 App Store 검색 API 한국(country=kr) 0건 | 국가별 캐시가 몇 시간~하루 늦음 (미국은 먼저 나옴) | 수집기 `released`는 한국 API에 나온 뒤 변경 (먼저 바꾸면 AppStoreListingMissing 오탐) |
 | Google Ads 캠페인이 "운영 가능"인데 노출·비용 0 | 하루 예산이 너무 작으면 앱 캠페인 경매에서 거의 지지 않음 | 예산 확인, 소재(문구·이미지·동영상) 보강 |
 | Google Ads 화면에서 캠페인·광고그룹 링크가 안 넘어감 | 브라우저 광고 차단 확장 | ads.google.com에서 끔 |
+| 새 버전 빌드가 옛 버전 번호를 표시 (리뷰맵 2.2.3 첫 빌드 `v.2.2.2`) | `pubspec.yaml`만 올리고 앱 안의 버전 상수를 그대로 둠 | `app_version.dart` 수정, pubspec과 비교하는 테스트 추가 (reviewmaps #317). 빌드 뒤 첫 화면의 버전을 눈으로 확인 |
+| 다른 도구가 만든 스토어 이미지에 빨간 오류 화면·권한 팝업·iPhone 틀의 Android 이미지·가짜 캠페인 | 캡처 결과를 검수하지 않음 | 올리기 전에 모든 장을 눈으로 확인. 캡처 스크립트는 화면 오류가 있으면 멈춤 (reviewmaps `mobile/tool/`) |
+| 스토어 캡처 중 홈 화면 빨간 오류 `_elements.contains(element)` | 캡처 진입점에서 Firebase를 초기화하지 않아 광고 위젯이 예외 (첫 예외는 `[core/no-app]`) | 초기화하되 분석·충돌 수집은 끔. 화면에 보이는 단언문은 두 번째 오류이므로 `FlutterError.onError`의 첫 항목을 볼 것 |
+| 캡처한 지도에 영문 지명, 홈에 "8728km" | 시뮬레이터 언어가 영어, 에뮬레이터 위치가 해외 | 캡처 스크립트가 한국어 설정과 위치 고정 |
 | Play 스토어 등록정보 저장 시 "AI 애셋 선언" | 2026-11부터 저장 단계에서 선언 필요 | 개발자가 선택 (11-27 리뷰맵: 라벨 지정 안 함) |
 | GA4 Admin API 403 | yanggo-514212에서 API가 꺼져 있음 | 켜려면 개발자 승인. 연결 여부는 Google Ads 전환 설정 화면에서 확인 가능 |
+
+## 4-1. 스토어 이미지·문구 갱신
+
+| 단계 | 방법 |
+|---|---|
+| 1. 문구 원본 | 앱 저장소 `mobile/store/listing.md`를 먼저 고침. 타사·타 앱 이름 금지, 숫자는 실제 값 |
+| 2. 이미지 만들기 (리뷰맵) | `listing.md`의 "이미지 만드는 방법" 표. 운영 API 실제 데이터, iOS 시뮬레이터 2종 + Android 에뮬레이터(휴대전화·태블릿 크기), `tool/store_assets.py`로 합성 |
+| 3. 검수 | 모든 장을 눈으로 확인 (오류 화면, 팝업, 문구와 화면 일치) |
+| 4. App Store 초안 | `uv run --with 'pyjwt[crypto]' python scripts/asc-store.py draft <버전> <listing.md>` → `screenshots <버전> <mobile/store/ios> <슬라이드 목록>` |
+| 5. 빌드 연결 | iOS Release 업로드 후 10~30분 → `asc-store.py attach-build <버전>` |
+| 6. 제출 (개발자 확인 후) | `asc-store.py submit <버전>`. 이름·부제·설명·이미지는 제출해야 공개됨 (홍보 문구만 심사 없이 변경) |
+| 7. Play 이미지 | Play Console(개발자 계정은 크롬의 `u/2`) → 사용자 늘리기 → 스토어 등록정보 → 기본 등록정보 수정 → 휴대전화·7인치·10인치·그래픽 이미지 교체 → 저장(AI 애셋 선언) → 게시 개요에서 검토 전송 |
 
 ## 5. Remote Config 최신 버전 올리기
 
