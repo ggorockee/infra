@@ -550,7 +550,7 @@ go-scraper:
       # 리뷰노트 여행 카테고리 상세(이용 요일 등) 수집 — reviewnote-detail 만 사용
       # 차단 방지: 00:00 + 0~30분 무작위 시작, 07:50까지 남은 시간에 고르게(최소 30초), 401·403·429·5xx 즉시 중단
       REVIEWNOTE_DETAIL_WINDOW_END: "08:00"
-      REVIEWNOTE_DETAIL_MAX_FETCH: "100"   # 첫 운영(2026-11-28) 100건 시험. 이상 없으면 450으로
+      REVIEWNOTE_DETAIL_MAX_FETCH: "450"   # 하루 최대. 100건 시험 없이 첫 운영(2026-11-28)부터 450 (개발자 결정 2026-11-27)
       REVIEWNOTE_DETAIL_REFRESH_DAYS: "14"
       REVIEWNOTE_DETAIL_MIN_DELAY_SECONDS: "30"
 
