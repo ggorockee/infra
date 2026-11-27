@@ -674,4 +674,5 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 - **Terraform 검증**: 로컬에서는 불가능, Git CI/CD 파이프라인으로만 검증
 - **prod 반영 확인**: 머지로 끝내지 않고 ArgoCD Synced/Healthy, Pod 상태, 실제 동작(메트릭·메일·로그)까지 확인
 - **ArgoCD·ApplicationSet**: Git 머지만으로 반영되지 않음 → 위 "배포 경로" 표의 수동 명령 실행
+- **리뷰맵 하위 차트(`charts/helm/prod/reviewmaps/charts/<이름>/`)를 고치면 `<이름>-<버전>.tgz`도 `helm package charts/<이름> -d charts/`로 다시 만들기**: ArgoCD는 tgz로 렌더링할 수 있음. 2026-11-27 admin tgz가 Nuxt 전환(#1227) 전 템플릿(포트 8000)이라 새 Pod가 헬스체크 실패 (로컬 `helm template`은 디렉터리를 써서 안 보임)
 - **모니터링 변경**: 대시보드 색상 기준과 알림 규칙 기준을 함께 변경, 대시보드는 범위표·차트 설명 형식 유지
