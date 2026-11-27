@@ -474,7 +474,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | 클러스터 전체 현황 | `cluster-overview` | 발생 중 알림, 서비스 접속 상태, 노드·용량, 워크로드, 서비스별 트래픽(Istio), 인증서, ArgoCD, Secret, Cloud SQL |
 | ReviewMaps CronJob & DB 적재 (Home) | `reviewmaps-cronjob` | CronJob 성공/실패, Cloud SQL campaign 적재 건수 |
 | ReviewMaps 수집 서버 | `reviewmaps-scraper` | 지금 수집 중인 Job·키워드·진행률, go-scraper 키워드별 마지막 실행 결과 (Pushgateway) |
-| ReviewMaps HTTP Metrics | `reviewmaps-http-metrics` | Go API 서버 요청 수, P95, 5xx |
+| ReviewMaps HTTP Metrics | `reviewmaps-http-metrics` | Go API 서버 요청 수, P95, 5xx, 관리자 로그인·변경·세션·최근 변경 표(ReviewMaps-DB), 카테고리 매핑(미매핑 원본, 출처별 카테고리 없는 캠페인 비율) |
 | 앱·광고·스토어 현황 | `app-ads-overview` | 세 앱의 사용자·신규, 비정상 종료, AdMob 광고 단위별 수입·eCPM, 앱 오프닝 표시율, Google Ads 비용·유입, 신규 사용자 1일·7일 잔존율(광고/그 외), 스토어 공개·버전·Remote Config 값, app-ads.txt |
 | 라익찍스 (like-zzix) | `like-zzix` | API 서버 상태, 촬영 퍼널(프리셋 선택 → Perfect Match → 저장), 앱 버전 분포·업데이트 반응, 저장 실패·카메라 사용 불가 비율, 관리자 콘솔·DB 연결·프리셋 갱신 |
 
@@ -520,6 +520,9 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | ReviewmapsServerHighErrorRate | API 5xx 5% 초과 10분 | ERROR |
 | ReviewmapsServerSlow | API P95 1초 초과 15분 (헬스체크, `/v1/internal/*` 내부 배치 제외) | WARN |
 | ReviewmapsServerDown | API 서버 메트릭 수집 불가 5분 | CRITICAL |
+| ReviewmapsAdminLoginFailures | 관리자 로그인 실패·거부 10분 10회 초과 | WARN |
+| ReviewmapsAdminUnauthorizedLogin | 허용 목록(ADMIN_EMAILS) 밖 계정 관리자 로그인 시도 | INFO |
+| ReviewmapsCategoryUnmappedBacklog | 미매핑 원본 카테고리 50개 이상 7일 (관리자 화면 카테고리 매핑에서 처리) | INFO |
 | LikeZzixServerDown | 라익찍스 API 메트릭 수집 불가 5분 | CRITICAL |
 | LikeZzixHighErrorRate | 라익찍스 API 5xx 5% 초과 10분 | ERROR |
 | LikeZzixSlow | 라익찍스 API P95 1초 초과 15분 | WARN |

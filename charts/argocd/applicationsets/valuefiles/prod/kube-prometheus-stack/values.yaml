@@ -471,6 +471,35 @@ additionalPrometheusRulesMap:
             annotations:
               summary: "❌ API 서버 메트릭 수집 불가 (서버 다운 가능성)"
               description: "Prometheus가 5분간 reviewmaps-server /metrics를 수집하지 못했습니다. kubectl -n reviewmaps get pods 로 확인하세요."
+      - name: reviewmaps.admin
+        rules:
+          - alert: ReviewmapsAdminLoginFailures
+            expr: sum(increase(reviewmaps_admin_logins_total{result!="success"}[10m])) > 10
+            for: 0m
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 리뷰맵 관리자 로그인 실패·거부 {{ $value | humanize }}회 (10분)"
+              description: "10분간 관리자 로그인이 10회 넘게 실패·거부되었습니다. 무단 시도이거나 ADMIN_GOOGLE_CLIENT_ID·OAuth 출처 설정 오류입니다. 대시보드 https://monitoring.ggorockee.com/d/reviewmaps-http-metrics '관리자 로그인 결과'의 result 라벨을 확인하세요. 정상: 0회."
+          - alert: ReviewmapsAdminUnauthorizedLogin
+            expr: sum(increase(reviewmaps_admin_logins_total{result="not_allowed"}[10m])) > 0
+            for: 0m
+            labels:
+              severity: info
+            annotations:
+              summary: "ℹ️ 리뷰맵 관리자: 허용 목록 밖 Google 계정의 로그인 시도"
+              description: "Google 로그인은 됐지만 ADMIN_EMAILS(GSM prod-reviewmaps-api-credentials)에 없는 계정입니다. 새 관리자라면 GSM에 추가 → ExternalSecret 갱신 → kubectl -n reviewmaps rollout restart deploy/reviewmaps-server. 모르는 계정이면 무시해도 들어올 수 없습니다."
+          - alert: ReviewmapsCategoryUnmappedBacklog
+            # 6일 전 데이터가 있어야(지표 수집 7일 경과) 울림: 최근 7일 내내 50개 이상
+            expr: |
+              min_over_time(max(reviewmaps_raw_categories_unmapped)[7d:10m]) >= 50
+              and on() count_over_time(max(reviewmaps_raw_categories_unmapped)[1d:10m] offset 6d) > 0
+            for: 1h
+            labels:
+              severity: info
+            annotations:
+              summary: "ℹ️ 리뷰맵 미매핑 원본 카테고리 {{ $value | humanize }}개가 7일째"
+              description: "수집 원본 카테고리가 앱 카테고리에 연결되지 않아 그 캠페인은 앱 카테고리 필터에 나오지 않습니다. 관리자 화면 https://admin.review-maps.com/categories/mapping 에서 사용량 순으로 매핑하세요(신뢰도 80% 이상 일괄 선택). 정상: 50개 미만."
 
 
   # 돌려받엔 API 서버(yen-back) — 대시보드 "돌려받엔 (yen-back)"와 동일 기준

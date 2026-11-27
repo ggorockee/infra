@@ -57,7 +57,7 @@
           },
           "options": {
             "mode": "markdown",
-            "content": "### 리뷰맵 API 서버 (HTTP)\n\n앱이 호출하는 Go API 서버(reviewmaps-server)의 요청 수, 응답 시간, 오류율입니다. 서버 Pod의 /metrics를 30초마다 수집합니다.\n\n| 차트 | 🟢 정상 | 🟠 경고 | 🔴 알람 |\n|---|---|---|---|\n| 응답 시간 P95 (헬스체크·/v1/internal 제외) | 0.5초 미만 | 0.5~1초 | 1초 초과 ([WARN] 메일) |\n| 5xx 오류율 | 1% 미만 | 1~5% | 5% 초과 ([ERROR] 메일) |\n| 활성 연결 | 50 미만 | 50~100 | 100 초과 |\n| 서버 수집 대상 | up | - | down 5분 ([ERROR] 메일) |\n\n**메일 알림** (woohaen88@gmail.com)\n\n- [CRITICAL] API 서버 수집 불가 5분 (서버 다운)\n- [ERROR] 5xx 오류율 5% 초과 10분\n- [WARN] P95 응답 시간 1초 초과 15분\n\n각 차트 제목 옆 ⓘ 에 마우스를 올리면 차트별 설명이 나옵니다."
+            "content": "### 리뷰맵 API 서버 (HTTP)\n\n앱이 호출하는 Go API 서버(reviewmaps-server)의 요청 수, 응답 시간, 오류율입니다. 서버 Pod의 /metrics를 30초마다 수집합니다.\n\n| 차트 | 🟢 정상 | 🟠 경고 | 🔴 알람 |\n|---|---|---|---|\n| 응답 시간 P95 (헬스체크·/v1/internal 제외) | 0.5초 미만 | 0.5~1초 | 1초 초과 ([WARN] 메일) |\n| 5xx 오류율 | 1% 미만 | 1~5% | 5% 초과 ([ERROR] 메일) |\n| 활성 연결 | 50 미만 | 50~100 | 100 초과 |\n| 서버 수집 대상 | up | - | down 5분 ([ERROR] 메일) |\n| 관리자 로그인 실패·거부 (10분) | 0 | 1~10 | 10 초과 ([WARN] 메일) |\n| 허용 목록 밖 계정 로그인 | 0 | - | 1회 이상 ([INFO] 메일) |\n| 미매핑 원본 카테고리 | 50 미만 | 50 이상 | 50 이상 7일 ([INFO] 메일) |\n| 카테고리 없는 캠페인 비율 | 10% 미만 | 10~30% | 30% 초과 (메일 없음) |\n\n**메일 알림** (woohaen88@gmail.com)\n\n- [CRITICAL] API 서버 수집 불가 5분 (서버 다운)\n- [ERROR] 5xx 오류율 5% 초과 10분\n- [WARN] P95 응답 시간 1초 초과 15분\n- [WARN] 관리자 로그인 실패·거부 10분 10회 초과\n- [INFO] 허용 목록 밖 계정의 관리자 로그인 시도\n- [INFO] 미매핑 원본 카테고리 50개 이상 7일\n\n각 차트 제목 옆 ⓘ 에 마우스를 올리면 차트별 설명이 나옵니다."
           },
           "id": 9
         }
@@ -852,6 +852,676 @@
       ],
       "type": "table",
       "description": "[무엇] 경로별 초당 요청 수와 P95 응답 시간 요약입니다.\n\n[보는 법] 느린 API를 찾을 때 P95 열로 정렬하세요.\n\n[범위] P95 🟢 0.5초 미만 / 🟠 0.5~1초 / 🔴 1초 초과"
+    },
+    {
+      "type": "row",
+      "title": "관리자 화면 (admin.review-maps.com, 서버 /admin/v1)",
+      "id": 9,
+      "gridPos": {
+        "x": 0,
+        "y": 25,
+        "w": 24,
+        "h": 1
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 관리자 화면 로그인 성공 횟수 (Google·예비 로그인 합계)\n[보는 법] 누가 무엇을 바꿨는지는 아래 '최근 관리자 변경' 표\n[범위] 참고 값",
+      "type": "stat",
+      "title": "관리자 로그인 성공 (24시간)",
+      "id": 10,
+      "gridPos": {
+        "x": 0,
+        "y": 26,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(reviewmaps_admin_logins_total{result=\"success\"}[24h])) or vector(0)",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 잘못된 토큰·비밀번호, 허용 목록 밖 계정, 분당 5회 초과로 거부된 로그인\n[보는 법] 반복되면 무단 시도 또는 ADMIN_GOOGLE_CLIENT_ID 설정 오류. result 라벨은 오른쪽 아래 차트\n[범위] 🟢 0 / 🟡 1~10 / 🔴 10 초과 = WARN 메일",
+      "type": "stat",
+      "title": "로그인 실패·거부 (10분)",
+      "id": 11,
+      "gridPos": {
+        "x": 6,
+        "y": 26,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 10.5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(reviewmaps_admin_logins_total{result!=\"success\"}[10m])) or vector(0)",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] Google 로그인은 됐지만 ADMIN_EMAILS에 없는 계정\n[보는 법] 관리자를 새로 추가했는데 0이 아니면 GSM ADMIN_EMAILS 갱신·서버 재시작 누락\n[범위] 🟢 0 / 🔵 1 이상 = INFO 메일",
+      "type": "stat",
+      "title": "허용 목록 밖 계정 시도 (24시간)",
+      "id": 12,
+      "gridPos": {
+        "x": 12,
+        "y": 26,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "blue",
+                "value": 0.5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(reviewmaps_admin_logins_total{result=\"not_allowed\"}[24h])) or vector(0)",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 만료되지 않은 로그인 세션 수 (12시간 유효)\n[보는 법] 관리자 수보다 훨씬 많으면 세션이 비정상적으로 생기는 것\n[범위] 🟢 0~5 / 🟡 6 이상",
+      "type": "stat",
+      "title": "활성 관리자 세션",
+      "id": 13,
+      "gridPos": {
+        "x": 18,
+        "y": 26,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 6
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(reviewmaps_admin_sessions_active) or vector(0)",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 관리자 화면에서 저장한 변경 수 (변경 기록 테이블과 같은 시점에 증가)\n[보는 법] 일괄 삭제·매핑처럼 큰 변경 직후 앱 동작 확인\n[범위] 참고 값",
+      "type": "timeseries",
+      "title": "관리자 변경 (시간당, 대상·동작별)",
+      "id": 14,
+      "gridPos": {
+        "x": 0,
+        "y": 30,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (entity, action) (increase(reviewmaps_admin_changes_total[1h]))",
+          "legendFormat": "{{entity}} {{action}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 로그인 시도 결과별 횟수\n[보는 법] success 정상 / invalid_token·invalid_password 인증 실패 / not_allowed 허용 목록 밖 / rate_limited 분당 5회 초과\n[범위] 실패 합계 10분 10회 초과 = WARN",
+      "type": "timeseries",
+      "title": "관리자 로그인 결과 (시간당)",
+      "id": 15,
+      "gridPos": {
+        "x": 12,
+        "y": 30,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (method, result) (increase(reviewmaps_admin_logins_total[1h]))",
+          "legendFormat": "{{method}} {{result}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "reviewmaps-db"
+      },
+      "description": "[무엇] 관리자 변경 기록(admin_audit_logs) 최근 20건\n[보는 법] 전·후 값은 관리자 화면 '변경 기록'에서 펼쳐 보기\n[범위] 참고 값",
+      "type": "table",
+      "title": "최근 관리자 변경",
+      "id": 16,
+      "gridPos": {
+        "x": 0,
+        "y": 38,
+        "w": 24,
+        "h": 7
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "reviewmaps-db"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "refId": "A",
+          "rawSql": "SELECT created_at AS \"시각\", admin_email AS \"관리자\", entity AS \"대상\", action AS \"동작\", entity_id AS \"ID\" FROM admin_audit_logs ORDER BY created_at DESC LIMIT 20"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "카테고리 매핑 (수집 원본 → 앱 카테고리)",
+      "id": 17,
+      "gridPos": {
+        "x": 0,
+        "y": 45,
+        "w": 24,
+        "h": 1
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 앱 카테고리에 연결되지 않은 수집 원본 카테고리 수 (서버가 5분마다 DB 조회)\n[보는 법] 관리자 화면 '카테고리 매핑'에서 사용량 순으로 매핑. 매핑은 다음 수집부터 반영\n[범위] 🟢 50 미만 / 🔵 50 이상이 7일 = INFO 메일",
+      "type": "stat",
+      "title": "미매핑 원본 카테고리",
+      "id": 18,
+      "gridPos": {
+        "x": 0,
+        "y": 46,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "blue",
+                "value": 50
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(reviewmaps_raw_categories_unmapped)",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 활성 캠페인 중 카테고리가 없는 비율 (앱 카테고리 필터에 안 나옴)\n[보는 법] 출처별 추이는 오른쪽. 매핑 후 다음 날 수집 뒤 내려가야 정상\n[범위] 🟢 10% 미만 / 🟡 10~30% / 🔴 30% 초과",
+      "type": "stat",
+      "title": "카테고리 없는 활성 캠페인 (전체)",
+      "id": 19,
+      "gridPos": {
+        "x": 0,
+        "y": 50,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "unit": "percentunit",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.1
+              },
+              {
+                "color": "red",
+                "value": 0.3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(reviewmaps_campaigns_uncategorized_ratio{source=\"전체\"})",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "[무엇] 출처(source)별 활성 캠페인 중 카테고리 없는 비율\n[보는 법] 한 출처만 높으면 그 수집처의 새 원본 카테고리가 매핑되지 않은 것\n[범위] 🟢 10% 미만 / 🟡 10~30% / 🔴 30% 초과",
+      "type": "timeseries",
+      "title": "카테고리 없는 캠페인 비율 (출처별)",
+      "id": 20,
+      "gridPos": {
+        "x": 6,
+        "y": 46,
+        "w": 18,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "percentunit",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.1
+              },
+              {
+                "color": "red",
+                "value": 0.3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (source) (reviewmaps_campaigns_uncategorized_ratio)",
+          "legendFormat": "{{source}}",
+          "refId": "A"
+        }
+      ]
     }
   ],
   "refresh": "30s",
