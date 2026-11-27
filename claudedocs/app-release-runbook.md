@@ -125,6 +125,18 @@ AdMob 게시자: pub-8516861197467665. 계정은 모두 woohalabs@gmail.com.
 | 수집기(app-metrics-exporter) `apps` 항목, 대시보드 범위표 | infra |
 | 릴리스 R8 규칙(Room 생성자 보존) | 리뷰맵·라익찍스 |
 
+## 8-1. 리뷰맵 관리자 계정 추가·제거
+
+| 순서 | 할 일 |
+|---|---|
+| 1 | GSM `prod-reviewmaps-api-credentials`의 `ADMIN_EMAILS`(쉼표 구분)를 고친 새 버전 추가 (실행 직전 개발자 승인) |
+| 2 | Google Cloud `yanggo-514212` → Google 인증 플랫폼 → 대상 → 테스트 사용자에 같은 계정 추가 (동의 화면이 테스트 중이라 없으면 Google 로그인 창에서 막힘). 콘솔 저장이 반응하지 않으면 광고 차단 확장을 끄고 다시 |
+| 3 | `kubectl -n reviewmaps annotate externalsecret reviewmaps-api-credentials force-sync=$(date +%s) --overwrite` 로 Secret 갱신 (기다리면 1시간 안에 자동) |
+| 4 | `kubectl -n reviewmaps rollout restart deploy/reviewmaps-server` (환경변수는 재시작해야 반영) |
+| 5 | 확인: 대시보드 `reviewmaps-http-metrics` 관리자 행의 로그인 성공 증가, 허용 목록 밖 시도(INFO 메일)가 없는지 |
+
+예비 로그인(아이디·비밀번호)은 Google 로그인을 쓸 수 없을 때만. 위치는 `.secrets/README.md`.
+
 ## 9. 관련 문서
 
 | 문서 | 내용 |
