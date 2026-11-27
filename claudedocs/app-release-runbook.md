@@ -96,7 +96,7 @@ AdMob 게시자: pub-8516861197467665. 계정은 모두 woohalabs@gmail.com.
 | 3. 검수 | 모든 장을 눈으로 확인 (오류 화면, 팝업, 문구와 화면 일치) |
 | 4. App Store 초안 | `uv run --with 'pyjwt[crypto]' python scripts/asc-store.py draft <버전> <listing.md>` → `screenshots <버전> <mobile/store/ios> <슬라이드 목록>` |
 | 5. 빌드 연결 | iOS Release 업로드 후 10~30분 → `asc-store.py attach-build <버전>` |
-| 6. 제출 (개발자 확인 후) | `asc-store.py submit <버전>`. 이름·부제·설명·이미지는 제출해야 공개됨 (홍보 문구만 심사 없이 변경) |
+| 6. 제출 준비 | `asc-store.py prepare <버전>` → 심사 목록에 추가까지. 개발자가 App Store Connect에서 "심사에 제출"을 누름 (대신 누를 때만 `submit`). 이름·부제·설명·이미지는 제출해야 공개됨 (홍보 문구만 심사 없이 변경) |
 | 7. Play 이미지 | Play Console(개발자 계정은 크롬의 `u/2`) → 사용자 늘리기 → 스토어 등록정보 → 기본 등록정보 수정 → 휴대전화·7인치·10인치·그래픽 이미지 교체 → 저장(AI 애셋 선언) → 게시 개요에서 검토 전송 |
 
 캡처 팁: 숙박 요일 화면은 서버의 상세 요일 칸이 비어 있어도 제공 문구로 배지가 보이므로, 앱의 판정 함수(`stayAvailability`)로 공고를 골라야 합니다. Play 스크린샷을 한 번에 여러 장 올리면 업로드가 끝난 순서로 섞이므로 한 장씩 올리거나 끌어서 순서를 맞춥니다.
