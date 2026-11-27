@@ -393,7 +393,7 @@ admin:
     repository: ggorockee/reviewmaps-admin
     pullPolicy: IfNotPresent
     # CI(reviewmaps ci-admin.yml)가 ADMIN_AUTO_DEPLOY=true일 때 main 머지마다 갱신
-    tag: "20261127-068d75f"
+    tag: "20261127-cca6712"
 
   imagePullSecrets: []
   nameOverride: ""
