@@ -382,16 +382,18 @@ server:
 #########################################################################
 admin:
   enabled: true
-  # Django Admin for ReviewMaps
-  # This is a YAML-formatted file.
-
+  # 리뷰맵 관리자 화면: Nuxt 정적 SPA를 nginx(비루트, 8080)로 서빙 (reviewmaps admin/, 2026-11-27 Django에서 전환)
+  # 데이터·로그인은 reviewmaps-server의 /admin/v1 (DB·Secret 불필요)
+  # 되돌리기: 이 블록을 Django 설정(이미지 20261110-7ed5b97, 포트 8000 django, 프로브 /liveness/ /readiness/,
+  #           configMap·secret·migration 사용)으로 되돌리는 PR. 기록은 infra #1227 이전 커밋
   replicaCount: 1
   revisionHistoryLimit: 1
 
   image:
     repository: ggorockee/reviewmaps-admin
     pullPolicy: IfNotPresent
-    tag: "20261110-7ed5b97"
+    # CI(reviewmaps ci-admin.yml)가 ADMIN_AUTO_DEPLOY=true일 때 main 머지마다 갱신
+    tag: "20261127-068d75f"
 
   imagePullSecrets: []
   nameOverride: ""
@@ -399,7 +401,7 @@ admin:
 
   serviceAccount:
     create: true
-    automount: true
+    automount: false
     annotations: {}
     name: ""
 
@@ -408,52 +410,47 @@ admin:
     app: "reviewmaps-admin"
     job: "reviewmaps-admin"
 
-  podSecurityContext: {}
-  securityContext: {}
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 101
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: ["ALL"]
 
+  # Service 포트는 8000 그대로(istio VirtualService reviewmaps-admin-vs가 8000으로 보냄), 컨테이너는 nginx 8080
   service:
     type: ClusterIP
     port: 8000
-    portName: "django"
+    portName: "http"
+  containerPort: 8080
 
   resources:
     requests:
-      cpu: 20m
-      memory: 180Mi
+      cpu: 5m
+      memory: 16Mi
     limits:
       cpu: 100m
-      memory: 256Mi
+      memory: 64Mi
 
-  # Health check probes using dedicated endpoints
   livenessProbe:
     httpGet:
-      path: /liveness/
-      port: django
-      scheme: HTTP
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 5
+      path: /healthz
+      port: http
+    periodSeconds: 20
+    timeoutSeconds: 3
     failureThreshold: 3
 
   readinessProbe:
     httpGet:
-      path: /readiness/
-      port: django
-      scheme: HTTP
-    initialDelaySeconds: 15
+      path: /healthz
+      port: http
     periodSeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 3
-
-  startupProbe:
-    httpGet:
-      path: /health/
-      port: django
-      scheme: HTTP
-    initialDelaySeconds: 5
-    periodSeconds: 5
     timeoutSeconds: 3
-    failureThreshold: 12
+    failureThreshold: 3
 
   autoscaling:
     enabled: false
@@ -461,34 +458,28 @@ admin:
     maxReplicas: 2
     targetCPUUtilizationPercentage: 80
 
-  volumes: []
-  volumeMounts: []
+  # nginx가 /tmp(pid·임시 파일)에만 씀 → 루트 파일시스템 읽기 전용
+  volumes:
+    - name: tmp
+      emptyDir: {}
+  volumeMounts:
+    - name: tmp
+      mountPath: /tmp
   nodeSelector: {}
   tolerations: []
   affinity: {}
 
   configMap:
-    enabled: true
+    enabled: false
     name: ""
-    data:
-      DEBUG: "False"
-      ALLOWED_HOSTS: "admin.review-maps.com,localhost,127.0.0.1"
-      # POSTGRES_* 환경변수는 reviewmaps-db-credentials secret에서 주입됨
-      POSTGRES_SSLMODE: "disable"
+    data: {}
 
   secret:
-    enabled: true
-    names:
-      - reviewmaps-db-credentials
-      - reviewmaps-api-credentials
+    enabled: false
+    names: []
 
   migration:
-    enabled: true
-    command: ["python", "manage.py", "migrate"]
-    args: []
-    backoffLimit: 3
-    ttlSecondsAfterFinished: 3600
-    restartPolicy: OnFailure
+    enabled: false
 
   metrics:
     enabled: false
