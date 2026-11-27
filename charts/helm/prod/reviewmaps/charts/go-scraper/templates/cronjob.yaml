@@ -17,7 +17,11 @@ spec:
   failedJobsHistoryLimit: {{ $s.failedJobsHistoryLimit | default 3 }}
   jobTemplate:
     spec:
-      backoffLimit: {{ $s.backoffLimit | default 3 }}
+      {{- /* 0(재시도 없음)도 쓸 수 있게 hasKey로 확인 ("| default"는 0을 기본값으로 바꿔 버림) */}}
+      backoffLimit: {{ if hasKey $s "backoffLimit" }}{{ $s.backoffLimit }}{{ else }}3{{ end }}
+      {{- with $s.activeDeadlineSeconds }}
+      activeDeadlineSeconds: {{ . }}
+      {{- end }}
       {{- with $s.ttlSecondsAfterFinished }}
       ttlSecondsAfterFinished: {{ . }}
       {{- end}}
@@ -50,6 +54,12 @@ spec:
                 - secretRef:
                     name: {{ . | quote }}
               {{- end }}
+              {{- end }}
+              {{- /* 없어도 Pod가 뜨는 Secret (예: 리뷰노트 세션 쿠키, 없으면 상세 수집만 건너뜀) */}}
+              {{- range $.Values.secret.optionalNames }}
+                - secretRef:
+                    name: {{ . | quote }}
+                    optional: true
               {{- end }}
               resources:
                 {{- toYaml $.Values.resources | nindent 16 }}

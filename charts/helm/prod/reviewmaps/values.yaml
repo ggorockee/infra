@@ -547,6 +547,12 @@ go-scraper:
       # Server API 연동 설정 (키워드 알림용)
       SERVER_API_BASE_URL: "http://reviewmaps-server:3000"
       SERVER_API_ENABLED: "true"
+      # 리뷰노트 여행 카테고리 상세(이용 요일 등) 수집 — reviewnote-detail 만 사용
+      # 차단 방지: 00:00 + 0~30분 무작위 시작, 07:50까지 남은 시간에 고르게(최소 30초), 401·403·429·5xx 즉시 중단
+      REVIEWNOTE_DETAIL_WINDOW_END: "08:00"
+      REVIEWNOTE_DETAIL_MAX_FETCH: "100"   # 첫 운영(2026-11-28) 100건 시험. 이상 없으면 450으로
+      REVIEWNOTE_DETAIL_REFRESH_DAYS: "14"
+      REVIEWNOTE_DETAIL_MIN_DELAY_SECONDS: "30"
 
   secret:
     enabled: true
@@ -554,6 +560,9 @@ go-scraper:
       - "reviewmaps-db-credentials"
       - "naver-api-creds"
       - "reviewmaps-api-credentials"  # SERVER_API_KEY (INTERNAL_API_KEY 값)
+    # 없어도 Pod가 뜨는 Secret: 리뷰노트 세션 쿠키 (templates/externalsecret-reviewnote-session.yaml)
+    optionalNames:
+      - "reviewnote-session"
 
   # CronJob 설정
   runner:
@@ -571,6 +580,21 @@ go-scraper:
         # 키워드 없이 전체 수집
         keywords: []
         restartPolicy: "OnFailure"
+
+      # 여행 카테고리 상세 이용 조건(요일·시간·당일 방문·예약 주의사항). 로그인 세션 필요
+      # 00:00 시작 → 프로그램이 0~30분 무작위 대기 후 07:50까지 천천히 수집. 재시도 없음(차단 방지)
+      - name: reviewnote-detail
+        schedule: "0 0 * * *"              # 매일 00:00 (실제 요청 시작은 무작위로 늦춤)
+        timeZone: "Asia/Seoul"
+        concurrencyPolicy: "Forbid"
+        startingDeadlineSeconds: 900
+        successfulJobsHistoryLimit: 1
+        failedJobsHistoryLimit: 3
+        backoffLimit: 0
+        activeDeadlineSeconds: 30600       # 8시간 30분 (08:30에는 반드시 종료)
+        ttlSecondsAfterFinished: 3600
+        keywords: []
+        restartPolicy: "Never"
 
       - name: inflexer
         schedule: "5 0 * * *"              # 매일 00:05

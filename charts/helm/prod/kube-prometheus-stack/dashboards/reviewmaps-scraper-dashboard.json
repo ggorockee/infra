@@ -57,7 +57,7 @@
           },
           "options": {
             "mode": "markdown",
-            "content": "### 리뷰맵 수집 서버 (go-scraper)\n\n수집 서버는 CronJob으로 하루 한 번 키워드마다 실행됩니다 (inflexer 00:05 키워드 81개, reviewnote 02:00 전체, cleanup 05:00). 실행이 끝날 때마다 결과를 Pushgateway로 보내며, 이 대시보드의 값은 **키워드별 마지막 실행 결과**입니다. 위쪽 요약에서 빨강/주황이 있으면 아래 '키워드별 결과' 표에서 해당 키워드를 찾으세요.\n\n| 차트 | 🟢 정상 | 🟠 경고 | 🔴 알람 |\n|---|---|---|---|\n| 지금 수집 중인 키워드 (경과) | 5분 미만 | 5~15분 | 15분 초과 |\n| 실패 키워드 | 0 | - | 1개 이상 (15분 지속 시 [ERROR] 메일) |\n| 키워드 성공률 | 100% | 90~99% | 90% 미만 |\n| 가장 오래된 성공 | 24시간 이내 | 24~26시간 | 26시간 초과 ([ERROR] 메일) |\n| 0건 수집 키워드 | 0 | 1개 이상 ([WARN] 메일) | - |\n| 보강(네이버 API) 에러율 | 5% 미만 | 5~20% | 20% 초과 ([WARN] 메일) |\n| 키워드 실행 시간 | 5분 미만 | 5~15분 | 15분 초과 |\n| 전일 대비 수집량 | 50% 이상 유지 | 50% 미만으로 감소 ([WARN] 메일) | - |\n\n**메일 알림** (woohaen88@gmail.com)\n\n- [ERROR] 키워드 실행 실패, 키워드 26시간 미성공\n- [WARN] 0건 수집, 전일 대비 수집량 급감, 보강 에러율 20% 초과, 키워드 알림 서버 API 실패\n- [INFO] CronJob 성공 (CronJob 대시보드 참고)\n\n각 차트 제목 옆 ⓘ 에 마우스를 올리면 차트별 설명이 나옵니다."
+            "content": "### 리뷰맵 수집 서버 (go-scraper)\n\n수집 서버는 CronJob으로 하루 한 번 키워드마다 실행됩니다 (inflexer 00:05 키워드 81개, reviewnote 02:00 전체, cleanup 05:00, reviewnote-detail 00:00~08:00 여행 상세를 천천히). 실행이 끝날 때마다 결과를 Pushgateway로 보내며, 이 대시보드의 값은 **키워드별 마지막 실행 결과**입니다. 위쪽 요약에서 빨강/주황이 있으면 아래 '키워드별 결과' 표에서 해당 키워드를 찾으세요.\n\n| 차트 | 🟢 정상 | 🟠 경고 | 🔴 알람 |\n|---|---|---|---|\n| 지금 수집 중인 키워드 (경과) | 5분 미만 | 5~15분 | 15분 초과 |\n| 실패 키워드 | 0 | - | 1개 이상 (15분 지속 시 [ERROR] 메일) |\n| 키워드 성공률 | 100% | 90~99% | 90% 미만 |\n| 가장 오래된 성공 | 24시간 이내 | 24~26시간 | 26시간 초과 ([ERROR] 메일) |\n| 0건 수집 키워드 | 0 | 1개 이상 ([WARN] 메일) | - |\n| 보강(네이버 API) 에러율 | 5% 미만 | 5~20% | 20% 초과 ([WARN] 메일) |\n| 키워드 실행 시간 | 5분 미만 | 5~15분 | 15분 초과 |\n| 전일 대비 수집량 | 50% 이상 유지 | 50% 미만으로 감소 ([WARN] 메일) | - |\n| 리뷰노트 세션 만료까지 | 3일 이상 | 3일 미만 ([WARN] 메일) | 만료·401·만료일 모름 ([ERROR] 메일) |\n| 리뷰노트 상세 차단 신호 | 없음 | - | 403·429·5xx로 멈춤 ([ERROR] 메일) |\n| 여행 요일 정보 채움률 | 90% 이상 | 50~90% | 50% 미만 (알림 없음) |\n\n**메일 알림** (woohaen88@gmail.com)\n\n- [ERROR] 키워드 실행 실패, 키워드 26시간 미성공, 리뷰노트 세션 만료·만료일 모름, 리뷰노트 차단 신호\n- [WARN] 리뷰노트 세션 만료 3일 전, 0건 수집, 전일 대비 수집량 급감, 보강 에러율 20% 초과, 키워드 알림 서버 API 실패\n- [INFO] CronJob 성공 (CronJob 대시보드 참고)\n\n각 차트 제목 옆 ⓘ 에 마우스를 올리면 차트별 설명이 나옵니다."
           },
           "id": 19
         }
@@ -80,7 +80,7 @@
     {
       "type": "stat",
       "title": "실행 중 Job (CronJob · Job / 경과 시간)",
-      "description": "[무엇] 지금 실행 중인 Job 이름과 그 Job을 만든 CronJob, 시작 후 경과 시간입니다. 수동 실행(kubectl create job --from=cronjob)도 원래 CronJob 이름으로 표시됩니다.\n\n[보는 법] 스케줄 시간대(00:05 inflexer, 02:00 reviewnote, 05:00 cleanup)에 나타났다가 끝나면 '실행 중인 Job 없음'으로 바뀝니다.\n\n[범위] 🔵 30분 미만 / 🟠 30분~2시간 / 🔴 2시간 초과 → [WARN] 메일",
+      "description": "[무엇] 지금 실행 중인 Job 이름과 그 Job을 만든 CronJob, 시작 후 경과 시간입니다. 수동 실행(kubectl create job --from=cronjob)도 원래 CronJob 이름으로 표시됩니다.\n\n[보는 법] reviewnote-detail(새벽 내내 천천히 도는 여행 상세 수집)은 아래 '리뷰노트 여행 상세' 행에서 봅니다. 스케줄 시간대(00:05 inflexer, 02:00 reviewnote, 05:00 cleanup)에 나타났다가 끝나면 '실행 중인 Job 없음'으로 바뀝니다.\n\n[범위] 🔵 30분 미만 / 🟠 30분~2시간 / 🔴 2시간 초과 → [WARN] 메일",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -96,7 +96,7 @@
           "range": false,
           "format": "time_series",
           "legendFormat": "{{name}}  ·  {{jobname}}",
-          "expr": "label_replace(label_replace(max by (owner_name, job_name) (((time() - kube_job_status_start_time{namespace=\"reviewmaps\"}) and on (namespace, job_name) (kube_job_status_active{namespace=\"reviewmaps\"} > 0)) * on (namespace, job_name) group_left (owner_name) max by (namespace, job_name, owner_name) (kube_job_owner{namespace=\"reviewmaps\", owner_kind=\"CronJob\"})), \"name\", \"$1\", \"owner_name\", \"reviewmaps-go-(?:cron-)?(.*)\"), \"jobname\", \"$1\", \"job_name\", \"(?:reviewmaps-go-(?:cron-)?)?(.*)\")"
+          "expr": "label_replace(label_replace(max by (owner_name, job_name) (((time() - kube_job_status_start_time{namespace=\"reviewmaps\", job_name!~\".*reviewnote-detail.*\"}) and on (namespace, job_name) (kube_job_status_active{namespace=\"reviewmaps\"} > 0)) * on (namespace, job_name) group_left (owner_name) max by (namespace, job_name, owner_name) (kube_job_owner{namespace=\"reviewmaps\", owner_kind=\"CronJob\"})), \"name\", \"$1\", \"owner_name\", \"reviewmaps-go-(?:cron-)?(.*)\"), \"jobname\", \"$1\", \"job_name\", \"(?:reviewmaps-go-(?:cron-)?)?(.*)\")"
         }
       ],
       "fieldConfig": {
@@ -317,11 +317,457 @@
     },
     {
       "type": "row",
+      "title": "리뷰노트 여행 상세 (reviewnote-detail, 매일 00:00~08:00 천천히)",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 24,
+        "h": 1
+      },
+      "id": 19
+    },
+    {
+      "type": "stat",
+      "title": "세션 만료까지",
+      "description": "[무엇] 리뷰노트 상세(로그인 필요) 수집용 세션 쿠키가 만료될 때까지 남은 시간입니다. 쿠키는 약 15일짜리라 사람이 다시 로그인해 갱신해야 합니다.\n\n[보는 법] 3일 아래로 내려가면 갱신하세요 (selenium-scraper login → session → GSM prod-reviewmaps-reviewnote-session 새 버전). 값이 없으면 만료일을 모르는 상태입니다.\n\n[범위] 🟢 3일 이상 / 🟠 3일 미만 → [WARN] 메일 / 🔴 만료 → [ERROR] 메일 / 값 없음 1시간 → [ERROR] 메일",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "instant": true,
+          "range": false,
+          "format": "time_series",
+          "legendFormat": "남은 시간",
+          "expr": "reviewmaps_scraper_detail_session_expiry_timestamp_seconds{job=\"reviewmaps_scraper\", scraper=\"reviewnote-detail\"} - time()"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dtdurations",
+          "noValue": "만료일 정보 없음",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "green",
+                "value": 259200
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 9,
+        "w": 5,
+        "h": 7
+      },
+      "id": 20
+    },
+    {
+      "type": "stat",
+      "title": "세션 상태",
+      "description": "[무엇] 마지막 실행에서 세션 쿠키로 상세 API를 받을 수 있었는지입니다.\n\n[보는 법] '없음·만료'면 상세 API가 401을 돌려줬거나 쿠키가 등록되지 않은 것입니다. 수집 계정이 제재돼도 401이 납니다.\n\n[범위] 🟢 정상 / 🔴 없음·만료 → [ERROR] 메일",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "instant": true,
+          "range": false,
+          "format": "time_series",
+          "legendFormat": "세션",
+          "expr": "reviewmaps_scraper_detail_session_ok{job=\"reviewmaps_scraper\", scraper=\"reviewnote-detail\"}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "아직 실행 안 됨",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "없음·만료",
+                  "color": "red"
+                },
+                "1": {
+                  "text": "정상",
+                  "color": "green"
+                }
+              }
+            }
+          ],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
+      },
+      "gridPos": {
+        "x": 5,
+        "y": 9,
+        "w": 4,
+        "h": 7
+      },
+      "id": 21
+    },
+    {
+      "type": "stat",
+      "title": "차단 신호",
+      "description": "[무엇] 마지막 실행에서 403·429·5xx(차단·과부하 신호)를 받아 그날 수집을 멈췄는지입니다. 한 번이라도 받으면 재시도 없이 즉시 멈춥니다.\n\n[보는 법] '멈춤'이면 계정 상태를 확인하고, 반복되면 REVIEWNOTE_DETAIL_MAX_FETCH를 줄이거나 CronJob을 suspend 하세요.\n\n[범위] 🟢 없음 / 🔴 멈춤 → [ERROR] 메일",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "instant": true,
+          "range": false,
+          "format": "time_series",
+          "legendFormat": "차단",
+          "expr": "reviewmaps_scraper_detail_blocked{job=\"reviewmaps_scraper\", scraper=\"reviewnote-detail\"}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "아직 실행 안 됨",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "없음",
+                  "color": "green"
+                },
+                "1": {
+                  "text": "멈춤",
+                  "color": "red"
+                }
+              }
+            }
+          ],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
+      },
+      "gridPos": {
+        "x": 9,
+        "y": 9,
+        "w": 4,
+        "h": 7
+      },
+      "id": 22
+    },
+    {
+      "type": "stat",
+      "title": "마지막 실행 결과 (건)",
+      "description": "[무엇] 마지막 상세 수집의 건수입니다. 대상 = 여행·모집 중 캠페인, 새로 받음 = 이번에 상세 API로 받은 수, 실패 = 상세 API 실패(차단·만료 제외), 아직 없음 = 상세 값이 하나도 없는 캠페인.\n\n[보는 법] 처음 며칠은 '아직 없음'이 크고, 하루 최대 건수(REVIEWNOTE_DETAIL_MAX_FETCH)만큼씩 줄어듭니다. 14일 안에 받은 것은 다시 받지 않아 평소 '새로 받음'은 새 캠페인 수 정도입니다.\n\n[범위] 참고용 (실패가 3건이면 그날 수집을 멈춤)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "instant": true,
+          "range": false,
+          "format": "time_series",
+          "legendFormat": "대상",
+          "expr": "reviewmaps_scraper_last_run_detail{job=\"reviewmaps_scraper\", scraper=\"reviewnote-detail\", type=\"target\"}"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "instant": true,
+          "range": false,
+          "format": "time_series",
+          "legendFormat": "새로 받음",
+          "expr": "reviewmaps_scraper_last_run_detail{job=\"reviewmaps_scraper\", scraper=\"reviewnote-detail\", type=\"fetched\"}"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "C",
+          "instant": true,
+          "range": false,
+          "format": "time_series",
+          "legendFormat": "실패",
+          "expr": "reviewmaps_scraper_last_run_detail{job=\"reviewmaps_scraper\", scraper=\"reviewnote-detail\", type=\"error\"}"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "D",
+          "instant": true,
+          "range": false,
+          "format": "time_series",
+          "legendFormat": "아직 없음",
+          "expr": "reviewmaps_scraper_last_run_detail{job=\"reviewmaps_scraper\", scraper=\"reviewnote-detail\", type=\"missing\"}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "아직 실행 안 됨",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 16,
+          "valueSize": 30
+        }
+      },
+      "gridPos": {
+        "x": 13,
+        "y": 9,
+        "w": 7,
+        "h": 7
+      },
+      "id": 23
+    },
+    {
+      "type": "stat",
+      "title": "요일 정보 채움률",
+      "description": "[무엇] 여행·모집 중 캠페인 중 이용 가능·불가 요일 값이 있는 비율입니다 (앱 제공 내역 아래 요일 표시에 쓰임).\n\n[보는 법] 첫 수집이 끝나면 90% 이상이 정상입니다. 계속 낮으면 세션·차단 패널을 먼저 보세요.\n\n[범위] 🟢 90% 이상 / 🟠 50~90% / 🔴 50% 미만 (알림 없음, 첫 며칠은 낮음)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "instant": true,
+          "range": false,
+          "format": "time_series",
+          "legendFormat": "채움률",
+          "expr": "reviewmaps_scraper_last_run_detail{job=\"reviewmaps_scraper\", scraper=\"reviewnote-detail\", type=\"with_days\"} / reviewmaps_scraper_last_run_detail{job=\"reviewmaps_scraper\", scraper=\"reviewnote-detail\", type=\"target\"}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "noValue": "아직 실행 안 됨",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.5
+              },
+              {
+                "color": "green",
+                "value": 0.9
+              }
+            ]
+          },
+          "mappings": [],
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "textMode": "value",
+        "orientation": "horizontal",
+        "justifyMode": "auto",
+        "text": {
+          "titleSize": 22,
+          "valueSize": 40
+        }
+      },
+      "gridPos": {
+        "x": 20,
+        "y": 9,
+        "w": 4,
+        "h": 7
+      },
+      "id": 24
+    },
+    {
+      "type": "row",
       "title": "실행 상태 요약 (키워드별 마지막 실행 기준)",
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 8,
+        "y": 16,
         "w": 24,
         "h": 1
       },
@@ -388,7 +834,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 9,
+        "y": 17,
         "w": 4,
         "h": 7
       },
@@ -459,7 +905,7 @@
       },
       "gridPos": {
         "x": 4,
-        "y": 9,
+        "y": 17,
         "w": 4,
         "h": 7
       },
@@ -534,7 +980,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 9,
+        "y": 17,
         "w": 6,
         "h": 7
       },
@@ -600,7 +1046,7 @@
       },
       "gridPos": {
         "x": 14,
-        "y": 9,
+        "y": 17,
         "w": 4,
         "h": 7
       },
@@ -666,7 +1112,7 @@
       },
       "gridPos": {
         "x": 18,
-        "y": 9,
+        "y": 17,
         "w": 6,
         "h": 7
       },
@@ -678,7 +1124,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 16,
+        "y": 24,
         "w": 24,
         "h": 1
       },
@@ -690,7 +1136,7 @@
       "title": "키워드별 마지막 실행 결과",
       "gridPos": {
         "x": 0,
-        "y": 17,
+        "y": 25,
         "w": 24,
         "h": 14
       },
@@ -1067,7 +1513,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 31,
+        "y": 39,
         "w": 24,
         "h": 1
       },
@@ -1098,7 +1544,7 @@
       ],
       "gridPos": {
         "x": 0,
-        "y": 32,
+        "y": 40,
         "w": 12,
         "h": 8
       },
@@ -1168,7 +1614,7 @@
       ],
       "gridPos": {
         "x": 12,
-        "y": 32,
+        "y": 40,
         "w": 12,
         "h": 8
       },
@@ -1250,7 +1696,7 @@
       ],
       "gridPos": {
         "x": 0,
-        "y": 40,
+        "y": 48,
         "w": 12,
         "h": 8
       },
@@ -1308,7 +1754,7 @@
       ],
       "gridPos": {
         "x": 12,
-        "y": 40,
+        "y": 48,
         "w": 12,
         "h": 8
       },
