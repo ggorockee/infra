@@ -366,7 +366,8 @@ additionalPrometheusRulesMap:
               summary: "✅ 리뷰맵 CronJob {{ $labels.owner_name }} 성공"
               description: "Job {{ $labels.job_name }} 이 정상 완료되었습니다 (실행 시간 {{ $value | humanizeDuration }}). DB 적재 건수는 대시보드에서 확인하세요: https://monitoring.ggorockee.com/d/reviewmaps-cronjob"
           - alert: ReviewmapsJobRunningTooLong
-            expr: (time() - kube_job_status_start_time{namespace="reviewmaps"}) > 7200 and on (namespace, job_name) (kube_job_status_active{namespace="reviewmaps"} > 0)
+            # reviewnote-detail 은 일부러 새벽 내내(최대 8시간 30분) 천천히 돌므로 제외 (activeDeadlineSeconds로 끊기면 JobFailed로 알림)
+            expr: (time() - kube_job_status_start_time{namespace="reviewmaps", job_name!~".*reviewnote-detail.*"}) > 7200 and on (namespace, job_name) (kube_job_status_active{namespace="reviewmaps"} > 0)
             for: 5m
             labels:
               severity: warning
@@ -436,6 +437,44 @@ additionalPrometheusRulesMap:
             annotations:
               summary: "⚠️ 키워드 알림 처리 실패: {{ $labels.scraper }} / {{ $labels.keyword }}"
               description: "수집 후 서버 API(/v1/internal/process-campaign-alerts) 호출에 실패해 사용자 키워드 알림이 생성되지 않았을 수 있습니다."
+          # 리뷰노트 상세(여행 카테고리 이용 요일) 수집 — reviewnote-detail, 로그인 세션 쿠키 필요 (약 15일마다 갱신)
+          # 갱신 절차: reviewmaps 레포 claudedocs/reviewnote-travel-selenium.md "세션 갱신"
+          - alert: ReviewnoteSessionExpiringSoon
+            expr: |
+              (reviewmaps_scraper_detail_session_expiry_timestamp_seconds{job="reviewmaps_scraper"} - time()) < 3 * 86400
+              and (reviewmaps_scraper_detail_session_expiry_timestamp_seconds{job="reviewmaps_scraper"} - time()) > 0
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 리뷰노트 로그인 세션 {{ $value | humanizeDuration }} 뒤 만료 — 다시 로그인해 갱신하세요"
+              description: "리뷰노트 상세(여행 이용 요일) 수집용 세션 쿠키가 3일 안에 만료됩니다. 수집 전용 계정으로 selenium-scraper login → session 명령으로 새 쿠키를 받아 GSM prod-reviewmaps-reviewnote-session 새 버전으로 등록하세요. 만료되면 새 여행 캠페인의 요일 정보가 들어오지 않습니다 (기존 값·목록 수집은 유지)."
+          - alert: ReviewnoteSessionExpired
+            expr: |
+              reviewmaps_scraper_detail_session_ok{job="reviewmaps_scraper"} == 0
+              or (reviewmaps_scraper_detail_session_expiry_timestamp_seconds{job="reviewmaps_scraper"} - time()) <= 0
+            for: 5m
+            labels:
+              severity: error
+            annotations:
+              summary: "❌ 리뷰노트 로그인 세션 없음·만료 — 여행 상세 수집 중단"
+              description: "세션 쿠키가 없거나 만료(상세 API 401)되어 여행 캠페인 이용 요일을 받지 못하고 있습니다. 수집 전용 계정으로 다시 로그인해 GSM prod-reviewmaps-reviewnote-session 을 갱신하세요. 계정이 제재된 경우에도 401이 납니다."
+          - alert: ReviewnoteSessionExpiryUnknown
+            expr: absent(reviewmaps_scraper_detail_session_expiry_timestamp_seconds{job="reviewmaps_scraper"})
+            for: 1h
+            labels:
+              severity: error
+            annotations:
+              summary: "❌ 리뷰노트 세션 만료일 지표 없음 — 만료 3일 전 메일을 보낼 수 없음"
+              description: "reviewnote-detail 이 세션 만료 시각을 Pushgateway에 보내지 않았습니다. GSM prod-reviewmaps-reviewnote-session 의 REVIEWNOTE_SESSION_EXPIRES_AT, ExternalSecret reviewnote-session, CronJob reviewmaps-go-cron-reviewnote-detail 실행 여부를 확인하세요."
+          - alert: ReviewnoteDetailBlocked
+            expr: reviewmaps_scraper_detail_blocked{job="reviewmaps_scraper"} == 1
+            for: 5m
+            labels:
+              severity: error
+            annotations:
+              summary: "❌ 리뷰노트 상세 수집이 차단·과부하 신호(403·429·5xx)로 멈춤"
+              description: "reviewnote-detail 이 차단 신호를 받아 그날 수집을 중단했습니다. 계정 상태를 확인하고, 다시 오면 REVIEWNOTE_DETAIL_MAX_FETCH를 줄이거나 CronJob을 일시 중지(suspend)하세요."
 
   # 리뷰맵 API 서버(reviewmaps-server) — 대시보드 "ReviewMaps HTTP Metrics"와 동일 기준
   reviewmaps-server:
