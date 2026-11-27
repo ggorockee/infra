@@ -33,7 +33,7 @@
 
 ## 내용 형식
 
-앱에 든 `asset/release_notes.json`(업데이트 후)과 Remote Config `release_note`(업데이트 전·후)가 같은 형식을 쓴다.
+앱에 든 `release_notes.json`(업데이트 후. 리뷰맵 `asset/`, 돌려받엔·라익찍스 `assets/`)과 Remote Config `release_note`(업데이트 전·후)가 같은 형식을 쓴다.
 
 ```json
 {
@@ -54,7 +54,7 @@
 | version | 설치된 버전(업데이트 후) 또는 Remote Config의 latest(업데이트 전)와 같아야 사용 |
 | pages | 3장까지. 제목 없는 장은 무시. 알릴 것이 없는 버전은 빈 배열 |
 | title / body | 제목은 20자 안팎, 설명은 두 문장까지. 사용자가 얻는 것을 씀 (코드·내부 용어 금지) |
-| image | 앱에 든 `asset/...` 또는 `https://` 주소만. 업데이트 전 카드는 옛 앱에 새 그림이 없으므로 https 주소를 쓰거나 생략 |
+| image | 앱에 든 그림(리뷰맵 `asset/...`, 폴더 이름이 다른 앱은 이식할 때 그 경로를 허용: 돌려받엔·라익찍스 `assets/...`) 또는 `https://` 주소만. 업데이트 전 카드는 옛 앱에 새 그림이 없으므로 https 주소를 쓰거나 생략 |
 | icon | bell, calendar, map, new, star, text, update 중 하나. 그림이 없거나 못 불러올 때 표시 |
 | 그림 | 가로 900px 안팎 PNG, 100KB 안팎. 실제 업체명 대신 "예시"를 표시한 데이터. 지난 버전 그림은 지움 |
 
