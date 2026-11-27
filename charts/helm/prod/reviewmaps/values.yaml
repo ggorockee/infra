@@ -553,6 +553,10 @@ go-scraper:
       REVIEWNOTE_DETAIL_MAX_FETCH: "450"   # 하루 최대. 100건 시험 없이 첫 운영(2026-11-28)부터 450 (개발자 결정 2026-11-27)
       REVIEWNOTE_DETAIL_REFRESH_DAYS: "14"
       REVIEWNOTE_DETAIL_MIN_DELAY_SECONDS: "30"
+      # 피클리(picklykorea.kr) 공개 API — 피클리 운영자가 목록 추가를 요청(2026-11-27). 중단 요청 시 "false"
+      PICKLY_ENABLED: "true"
+      PICKLY_MAX_DETAIL_FETCH: "60"
+      PICKLY_REQUEST_DELAY_MS: "2000"
 
   secret:
     enabled: true
@@ -592,6 +596,19 @@ go-scraper:
         failedJobsHistoryLimit: 3
         backoffLimit: 0
         activeDeadlineSeconds: 30600       # 8시간 30분 (08:30에는 반드시 종료)
+        ttlSecondsAfterFinished: 3600
+        keywords: []
+        restartPolicy: "Never"
+
+      # 피클리 체험단 (네이버 블로그, 약 30건). 목록 1번 + 새 공고만 상세
+      - name: pickly
+        schedule: "30 2 * * *"             # 매일 02:30 (리뷰노트 02:00 다음)
+        timeZone: "Asia/Seoul"
+        concurrencyPolicy: "Forbid"
+        startingDeadlineSeconds: 900
+        successfulJobsHistoryLimit: 1
+        failedJobsHistoryLimit: 3
+        backoffLimit: 1
         ttlSecondsAfterFinished: 3600
         keywords: []
         restartPolicy: "Never"
