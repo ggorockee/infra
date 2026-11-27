@@ -318,6 +318,10 @@ server:
       JWT_REFRESH_TOKEN_EXPIRE_DAYS: "30"
       # POSTGRES_* 환경변수는 reviewmaps-db-credentials secret에서 주입됨
       POSTGRES_SSLMODE: "disable"
+      # 관리자 API(/admin/v1): ADMIN_ORIGIN이 있어야 등록됨. 허용 계정·예비 로그인은 GSM(ExternalSecret)
+      ADMIN_ORIGIN: "https://admin.review-maps.com"
+      # yanggo-514212 웹 OAuth 클라이언트 (Grafana·ArgoCD·라익찍스 관리자 공용, 공개 값)
+      ADMIN_GOOGLE_CLIENT_ID: "488227135751-7511k2qh18lstjprn6btgi4bftfdbai3.apps.googleusercontent.com"
       # BASE_URL: "https://inflexer.net"
       # HEADLESS: "true"
       # # 배치 스케줄 동작 (코드의 Settings와 매핑)
