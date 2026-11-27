@@ -454,6 +454,7 @@ feat: Cloud SQL 모듈 추가
 | Grafana | `https://monitoring.ggorockee.com` (Istio VS `grafana-vs`) | Google OAuth + 관리자 `woohaen88` (비밀번호는 GSM `prod-monitoring-smtp-credentials.password`) |
 | Prometheus / Alertmanager | 외부 노출 없음 | 필요 시 `kubectl -n monitoring port-forward` |
 | GKE Managed Prometheus | 비활성화 (Terraform `managed_prometheus.enabled=false`) | 다시 켜지 않도록 주의 |
+| OpenTelemetry·SigNoz | **사용하지 않음** (2026-11-28 개발자 확인). 새 설정에 넣지 말 것 | 리뷰맵 go-scraper 설정에 주소가 남아 전송 실패 로그가 남음 → 정리 예정 `claudedocs/otel-signoz-cleanup.md` |
 | Cloud Logging | 시스템 로그만 수집 (앱 로그 미수집) | CronJob Pod는 완료 1시간 후 삭제 → 과거 Job 로그 없음 |
 
 kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이드 시 반드시 보존):
