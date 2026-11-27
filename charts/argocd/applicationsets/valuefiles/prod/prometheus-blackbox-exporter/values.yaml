@@ -55,7 +55,7 @@ serviceMonitor:
       url: https://www.review-maps.com/
       additionalMetricsRelabels: {app: reviewmaps, kind: external}
     - name: reviewmaps-admin
-      url: https://admin.review-maps.com/login/
+      url: https://admin.review-maps.com/healthz
       additionalMetricsRelabels: {app: reviewmaps, kind: external}
     # ---------- woohalabs app-ads.txt (광고 인증 파일, 없으면 광고 수익 중단) ----------
     # (오점너 api/web/admin/redis 검사는 2026-11-15 서비스 중지로 제거)
