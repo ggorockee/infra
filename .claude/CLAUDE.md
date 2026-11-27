@@ -621,6 +621,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | 신규 사용자 잔존율 | 수집기가 GA4 코호트로 `app_retention_ratio{day=1|7, source=ads|other}` 수집(8~28일 전 첫 방문). 광고 증액 판단 기준 (#1211) |
 | Remote Config 배포 | 각 앱 레포 `firebase/remoteconfig.template.json`이 원본, `firebase deploy --only remoteconfig --project <프로젝트>` |
 | 스토어 문구·이미지 (리뷰맵) | 원본 reviewmaps `mobile/store/listing.md`, 촬영·합성 `mobile/tool/`(운영 API 실제 데이터, 이미지는 커밋 안 함), App Store는 `scripts/asc-store.py`(`submit`만 공개로 이어짐). 절차 `claudedocs/app-release-runbook.md` 4-1. Play Console 개발자 계정은 크롬 `u/2` |
+| 업데이트 안내 (세 앱 공통, 2026-11-27 결정) | 화면 대부분을 덮는 넘김 카드(최대 3장), 업데이트 전·후. 표준 `claudedocs/app-update-card.md`. 리뷰맵 2.2.3부터, 돌려받엔 1.1.1·라익찍스 다음 버전부터 적용. 릴리스마다 `release_notes.json` 갱신, Remote Config 배포 전 라이브·원본 비교 |
 | 리뷰맵 앱 버전 | `mobile/pubspec.yaml`과 `mobile/lib/config/app_version.dart`를 함께 올림 (다르면 테스트 실패, reviewmaps #317) |
 | 피클리 카테고리 | 원본 6개 매핑 완료(2026-11-27): 맛집→맛집, 뷰티→뷰티/헬스, 여행→여행, 배송형→쇼핑, 반려동물→반려동물, 서비스→생활서비스 |
 | nginx Content-Type | `add_header Content-Type`은 mime.types 값과 합쳐져 `text/plain,text/plain`이 됨 → `types { }` + `default_type` 사용 (#1204) |

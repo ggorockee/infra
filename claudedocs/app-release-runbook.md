@@ -24,6 +24,7 @@ AdMob 게시자: pub-8516861197467665. 계정은 모두 woohalabs@gmail.com.
 | 단계 | 방법 |
 |---|---|
 | 1. 버전 올리기 | 앱 저장소 `mobile/pubspec.yaml`의 `version:` 이름 부분(예: 2.2.3)을 올려 PR 머지. 빌드 번호는 워크플로가 정함. **리뷰맵은 `mobile/lib/config/app_version.dart`의 `current`도 함께** 올림 (업데이트 안내가 이 값을 씀, 2.2.3부터 다르면 테스트 실패) |
+| 1-1. 업데이트 안내 | `asset/release_notes.json`을 새 버전 내용으로 갱신. 표준·확인 방법 `claudedocs/app-update-card.md` |
 | 2. 빌드·업로드 | 저장소 Actions → iOS Release → Run workflow. 빌드 번호를 비우면 실행 시각(UTC, 예: 202611261240). 업로드를 끄면 서명한 ipa만 만들어 확인 |
 | 3. 처리 대기 | App Store Connect에서 빌드가 VALID가 될 때까지 10~30분. `python3 scripts/app-status.py` 또는 App Store Connect API로 확인 |
 | 4. 버전 만들기 | App Store Connect → 앱 → iOS 앱 옆 + → 버전 번호. "이 버전의 새로운 기능" 입력 (이전 버전 문구가 앞에 붙어 있으면 지움) |
@@ -98,12 +99,14 @@ AdMob 게시자: pub-8516861197467665. 계정은 모두 woohalabs@gmail.com.
 | 6. 제출 (개발자 확인 후) | `asc-store.py submit <버전>`. 이름·부제·설명·이미지는 제출해야 공개됨 (홍보 문구만 심사 없이 변경) |
 | 7. Play 이미지 | Play Console(개발자 계정은 크롬의 `u/2`) → 사용자 늘리기 → 스토어 등록정보 → 기본 등록정보 수정 → 휴대전화·7인치·10인치·그래픽 이미지 교체 → 저장(AI 애셋 선언) → 게시 개요에서 검토 전송 |
 
+캡처 팁: 숙박 요일 화면은 서버의 상세 요일 칸이 비어 있어도 제공 문구로 배지가 보이므로, 앱의 판정 함수(`stayAvailability`)로 공고를 골라야 합니다. Play 스크린샷을 한 번에 여러 장 올리면 업로드가 끝난 순서로 섞이므로 한 장씩 올리거나 끌어서 순서를 맞춥니다.
+
 ## 5. Remote Config 최신 버전 올리기
 
 | 단계 | 방법 |
 |---|---|
 | 1 | 앱이 해당 스토어에 실제 공개됐는지 확인 (`scripts/app-status.py`) |
-| 2 | 앱 저장소 `firebase/remoteconfig.template.json`의 `{ios,android}_latest_version` 변경 PR → 머지 |
+| 2 | 앱 저장소 `firebase/remoteconfig.template.json`의 `{ios,android}_latest_version`과 업데이트 안내 `release_note` 변경 PR → 머지 |
 | 3 | `firebase remoteconfig:get --project <프로젝트>`로 라이브 값과 원본이 같은지 확인 후 `firebase deploy --only remoteconfig --project <프로젝트>` |
 | 4 | 최소 버전(`*_min_version`)은 올리지 않으면 선택 업데이트 안내만 나감. 강제 업데이트는 별도 결정 |
 
@@ -135,6 +138,7 @@ AdMob 게시자: pub-8516861197467665. 계정은 모두 woohalabs@gmail.com.
 | 핵심 기능 사용 이벤트 (자체 서버 `/v1/events` 허용 목록 또는 GA4) | 돌려받엔·라익찍스 telemetry |
 | Firebase Analytics(GA4), Crashlytics(릴리스 빌드만, silent 오류는 비정상 종료로 세지 않음) | 리뷰맵 `firebase_service.dart`, 돌려받엔 `crash_reporting.dart` |
 | Remote Config: 광고 스위치, 최신·최소 버전, 저장소에 `firebase/remoteconfig.template.json` | 리뷰맵 |
+| 업데이트 안내 카드 (첫 실행 표시 저장 포함, `claudedocs/app-update-card.md`) | 리뷰맵 |
 | UMP 동의 → (iOS) ATT 순서, AdMob IDFA 설명 메시지 | 리뷰맵 |
 | app-ads.txt를 개발자 웹사이트 도메인에 (단일 text/plain) | 세 앱 |
 | GitHub Actions iOS Release 워크플로·시크릿 | 세 앱 |
