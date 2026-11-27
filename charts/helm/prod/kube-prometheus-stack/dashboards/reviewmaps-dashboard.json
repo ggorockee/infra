@@ -1165,7 +1165,8 @@
             "lineWidth": 1,
             "showPoints": "never",
             "spanNulls": true
-          }
+          },
+          "noValue": "관리자 변경 없음"
         },
         "overrides": []
       },
@@ -1222,7 +1223,8 @@
             "lineWidth": 1,
             "showPoints": "never",
             "spanNulls": true
-          }
+          },
+          "noValue": "로그인 시도 없음"
         },
         "overrides": []
       },
@@ -1271,7 +1273,8 @@
         "defaults": {
           "custom": {
             "align": "auto"
-          }
+          },
+          "noValue": "아직 변경 기록 없음 (관리자 화면 전환 전)"
         },
         "overrides": []
       },
@@ -1395,7 +1398,7 @@
             "mode": "thresholds"
           },
           "unit": "percentunit",
-          "decimals": 0,
+          "decimals": 1,
           "thresholds": {
             "mode": "absolute",
             "steps": [
