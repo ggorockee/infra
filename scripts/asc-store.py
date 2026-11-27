@@ -9,9 +9,11 @@
   screenshots <버전> <store/ios 폴더> <01_map,02_feed,...>
                              초안의 이미지를 iPhone 6.9인치·iPad 13인치 두 세트로 교체
   attach-build <버전>         처리가 끝난 최신 빌드를 초안에 연결
+  prepare <버전>              심사 목록에 추가까지만 (제출 안 함). 개발자는 "심사에 제출"만 누르면 됨
   submit <버전>               심사 제출 (공개로 이어지므로 개발자 확인 후에만)
 
 submit을 빼면 어느 명령도 사용자에게 보이는 스토어를 바꾸지 않는다.
+prepare 뒤에는 버전이 잠기므로 문구·이미지를 고치려면 App Store Connect에서 심사 항목을 먼저 제거한다.
 listing.md는 앱 저장소의 `mobile/store/listing.md` 표·절 이름을 읽는다.
 """
 
@@ -194,10 +196,19 @@ def attach_build(name: str) -> None:
     print(f"{name} 초안에 빌드 {b['attributes']['version']} 연결")
 
 
-def submit(name: str) -> None:
-    v = draft_version(name)
-    if not call("GET", f"/v1/appStoreVersions/{v['id']}/build").get("data"):
+def prepare(name: str) -> str:
+    """연결된 빌드를 확인하고 심사 목록에 추가한다. 제출 묶음 ID를 돌려준다."""
+    v = find_version(name)
+    state = v and v["attributes"]["appStoreState"]
+    if state not in (EDITABLE, "READY_FOR_REVIEW"):
+        raise SystemExit(f"{name}: 심사에 추가할 수 없는 상태 {state}")
+    build = call("GET", f"/v1/appStoreVersions/{v['id']}/build").get("data")
+    if not build:
         raise SystemExit("연결된 빌드가 없음 (attach-build 먼저)")
+    newest = call("GET", f"/v1/builds?filter[app]={APP_ID}&filter[preReleaseVersion.version]={name}"
+                         "&sort=-uploadedDate&limit=1")["data"][0]
+    if newest["id"] != build["id"]:
+        raise SystemExit(f"더 새로운 빌드 {newest['attributes']['version']}가 있음 (연결된 것 {build['attributes']['version']})")
     pending = call("GET", f"/v1/reviewSubmissions?filter[app]={APP_ID}&filter[platform]=IOS"
                           "&filter[state]=READY_FOR_REVIEW")["data"]
     sub = pending[0] if pending else call("POST", "/v1/reviewSubmissions", {"data": {
@@ -210,8 +221,14 @@ def submit(name: str) -> None:
                 "reviewSubmission": rel("reviewSubmissions", sub["id"]),
                 "appStoreVersion": rel("appStoreVersions", v["id"]),
             }}})
-    done = call("PATCH", f"/v1/reviewSubmissions/{sub['id']}", {"data": {
-        "type": "reviewSubmissions", "id": sub["id"], "attributes": {"submitted": True}}})
+    print(f"{name} (빌드 {build['attributes']['version']}) 심사 목록에 추가, 제출 안 함")
+    return sub["id"]
+
+
+def submit(name: str) -> None:
+    ident = prepare(name)
+    done = call("PATCH", f"/v1/reviewSubmissions/{ident}", {"data": {
+        "type": "reviewSubmissions", "id": ident, "attributes": {"submitted": True}}})
     print(f"{name} 심사 제출: {done['data']['attributes']['state']}")
 
 
@@ -221,6 +238,7 @@ def main() -> None:
         "draft": (2, lambda a: draft(a[0], Path(a[1]))),
         "screenshots": (3, lambda a: screenshots(a[0], Path(a[1]), a[2].split(","))),
         "attach-build": (1, lambda a: attach_build(a[0])),
+        "prepare": (1, lambda a: prepare(a[0])),
         "submit": (1, lambda a: submit(a[0])),
     }
     args = sys.argv[1:]
