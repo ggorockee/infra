@@ -476,6 +476,19 @@ additionalPrometheusRulesMap:
               summary: "❌ 리뷰노트 상세 수집이 차단·과부하 신호(403·429·5xx)로 멈춤"
               description: "reviewnote-detail 이 차단 신호를 받아 그날 수집을 중단했습니다. 계정 상태를 확인하고, 다시 오면 REVIEWNOTE_DETAIL_MAX_FETCH에 상한을 두거나 CronJob을 일시 중지(suspend)하세요."
           # 2026-11-28 첫 실행: Job은 성공했지만 목록 상한 때문에 400건 중 41건만 대상이었음 → 대상 수·남은 수를 따로 감시
+          # 다음 요청 예정 시각은 이번 실행에서 push 한 값만 본다 (이전 실행 값은 시작 시각보다 이름)
+          - alert: ReviewnoteDetailStalled
+            expr: |
+              (time() - reviewmaps_scraper_detail_progress_next_timestamp_seconds{job="reviewmaps_scraper"}) > 600
+              and on (scraper, keyword) (reviewmaps_scraper_detail_progress_next_timestamp_seconds{job="reviewmaps_scraper"}
+                > on (scraper, keyword) reviewmaps_scraper_run_started_timestamp_seconds{job="reviewmaps_scraper"})
+              and on (scraper, keyword) reviewmaps_scraper_running{job="reviewmaps_scraper"} == 1
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 리뷰노트 상세 수집이 멈춤 — 다음 요청 예정보다 {{ $value | humanizeDuration }} 지남"
+              description: "상세 수집이 실행 중으로 표시되는데 진행이 없습니다. Job·Pod 상태와 로그(kubectl -n reviewmaps logs)를 확인하세요."
           - alert: ReviewnoteDetailTargetsLow
             expr: |
               reviewmaps_scraper_last_run_detail{job="reviewmaps_scraper", type="target"} < 200
