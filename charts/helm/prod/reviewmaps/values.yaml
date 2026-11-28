@@ -548,9 +548,10 @@ go-scraper:
       SERVER_API_BASE_URL: "http://reviewmaps-server:3000"
       SERVER_API_ENABLED: "true"
       # 리뷰노트 여행 카테고리 상세(이용 요일 등) 수집 — reviewnote-detail 만 사용
+      # 목록(로그인 불필요)은 여행 categoryId로 걸러 1~2초 간격, 상세(로그인)만 천천히
       # 차단 방지: 00:00 + 0~30분 무작위 시작, 07:50까지 남은 시간에 고르게(최소 30초), 401·403·429·5xx 즉시 중단
       REVIEWNOTE_DETAIL_WINDOW_END: "08:00"
-      REVIEWNOTE_DETAIL_MAX_FETCH: "450"   # 하루 최대. 100건 시험 없이 첫 운영(2026-11-28)부터 450 (개발자 결정 2026-11-27)
+      REVIEWNOTE_DETAIL_MAX_FETCH: "0"     # 0 = 상한 없음. 모집 중 여행 공고 전부 (개발자 결정 2026-11-28)
       REVIEWNOTE_DETAIL_REFRESH_DAYS: "14"
       REVIEWNOTE_DETAIL_MIN_DELAY_SECONDS: "30"
       # 피클리(picklykorea.kr) 공개 API — 피클리 운영자가 목록 추가를 요청(2026-11-27). 중단 요청 시 "false"
@@ -596,7 +597,7 @@ go-scraper:
         failedJobsHistoryLimit: 3
         backoffLimit: 0
         activeDeadlineSeconds: 30600       # 8시간 30분 (08:30에는 반드시 종료)
-        ttlSecondsAfterFinished: 3600
+        ttlSecondsAfterFinished: 86400     # 다음 날 로그를 볼 수 있게 1일 보관 (앱 로그는 Cloud Logging에 없음)
         keywords: []
         restartPolicy: "Never"
 
