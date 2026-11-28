@@ -500,6 +500,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | 수신자 | `woohaen88@gmail.com` (`files/alertmanager.yaml.tmpl`에 고정) |
 | 발신 | GSM의 SMTP 계정(Gmail) 그대로 사용, 표시 이름 "woohalabs 모니터링" — `noreply@woohalabs.com`은 SPF(Zoho만 허용) 실패로 스팸 처리되므로 쓰지 않음 |
 | 제목 접두어 | `[CRITICAL]` critical(서비스 중단), `[ERROR]` error(기능 실패), `[WARN]` warning(정상 범위 벗어남), `[INFO]` info(참고), `[RESOLVED]` 해제 |
+| 해제 메일 | 제목 `[RESOLVED] ✅ 해결됨: …`, 본문 첫 줄에 "지금은 조치가 필요 없습니다"와 발생 당시 내용 구분 (2026-11-28). 광고비 알림은 "해제"로 쓰고 쓴 금액은 그대로임을 표시 — 새 규칙에서 해제가 "고쳐짐"이 아니면 annotation `resolved_summary`·`resolved_note` 추가 |
 | 발송 범위 | 초기 단계라 INFO까지 전부 발송 (INFO는 해제 메일 없음). 줄일 때는 `files/alertmanager.yaml.tmpl`의 info 라우트 → warning 라우트 순으로 receiver를 `"null"`로 변경 |
 | 반복 발송 | CRITICAL 2시간, ERROR 6시간, WARN 12시간, INFO 24시간 |
 | 정상 범위·알림 기준 전체 | `claudedocs/monitoring-grafana-prometheus-design.md` 10.4, 대시보드 `cluster-overview` 범위표 |

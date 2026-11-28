@@ -3,13 +3,22 @@
   - 기본 템플릿 email.default.subject / email.default.html 을 재정의하여 제목·본문을 한글로 단순화
   - 수집 서버 알림(job=reviewmaps_scraper)은 Pushgateway를 거쳐 들어와 pod/namespace가 Pushgateway 자신이므로 표시하지 않음
   - 제목 접두어: [CRITICAL]=critical, [ERROR]=error, [WARN]=warning, [INFO]=info, [RESOLVED]=해제
+  - 해제된 알림은 요약의 발생 기호(❌ ⚠️ 🚨)를 떼고 "✅ 해결됨:"으로 시작한다. 발생 때 문구가 그대로 반복되면 문제로 오해한다
+  - 해제가 "문제가 고쳐짐"이 아닌 규칙(광고비)은 annotation resolved_summary(제목 전체)·resolved_note(안내문)로 바꾼다
 */}}
 
 {{ define "custom.tag" }}{{ if eq .Status "resolved" }}[RESOLVED]{{ else if eq .CommonLabels.severity "critical" }}[CRITICAL]{{ else if eq .CommonLabels.severity "error" }}[ERROR]{{ else if eq .CommonLabels.severity "warning" }}[WARN]{{ else }}[INFO]{{ end }}{{ end }}
 
 {{ define "custom.color" }}{{ if eq .Status "resolved" }}#2e7d32{{ else if eq .CommonLabels.severity "critical" }}#8e0000{{ else if eq .CommonLabels.severity "error" }}#c62828{{ else if eq .CommonLabels.severity "warning" }}#ef6c00{{ else }}#1565c0{{ end }}{{ end }}
 
-{{ define "email.default.subject" }}{{ template "custom.tag" . }} {{ with index .Alerts 0 }}{{ if .Annotations.summary }}{{ .Annotations.summary }}{{ else }}{{ .Labels.alertname }}{{ end }}{{ end }}{{ if gt (len .Alerts) 1 }} (총 {{ len .Alerts }}건){{ end }}{{ end }}
+{{/* 알림 1건의 요약에서 앞의 기호를 뗀 문구 */}}
+{{ define "custom.plain" }}{{ reReplaceAll "^(🚨|❌|⚠\ufe0f?|✅|ℹ\ufe0f?)[ ]*" "" (or .Annotations.summary .Labels.alertname) }}{{ end }}
+
+{{/* 알림 1건의 제목 */}}
+{{ define "custom.title" }}{{ if ne .Status "resolved" }}{{ or .Annotations.summary .Labels.alertname }}{{ else if .Annotations.resolved_summary }}{{ .Annotations.resolved_summary }}{{ else }}✅ 해결됨: {{ template "custom.plain" . }}{{ end }}{{ end }}
+
+{{/* 발생 메일에 해제된 알림이 섞이면 제목과 건수는 발생 중인 것만 쓴다 */}}
+{{ define "email.default.subject" }}{{ template "custom.tag" . }} {{ if eq .Status "resolved" }}{{ with index .Alerts 0 }}{{ template "custom.title" . }}{{ end }}{{ if gt (len .Alerts) 1 }} (총 {{ len .Alerts }}건){{ end }}{{ else }}{{ with index .Alerts.Firing 0 }}{{ template "custom.title" . }}{{ end }}{{ if gt (len .Alerts.Firing) 1 }} (총 {{ len .Alerts.Firing }}건){{ end }}{{ end }}{{ end }}
 
 {{ define "email.default.html" }}<!DOCTYPE html>
 <html>
@@ -20,8 +29,9 @@
   </div>
   {{ range .Alerts }}
   <table cellpadding="6" cellspacing="0" style="border-collapse: collapse; width: 100%; max-width: 720px; margin-bottom: 16px; font-size: 14px;">
-    {{ if .Annotations.summary }}<tr><td style="width: 110px; color: #616161; border-bottom: 1px solid #eee;">요약</td><td style="border-bottom: 1px solid #eee;">{{ .Annotations.summary }}</td></tr>{{ end }}
-    {{ if .Annotations.description }}<tr><td style="color: #616161; border-bottom: 1px solid #eee;">내용</td><td style="border-bottom: 1px solid #eee;">{{ .Annotations.description }}</td></tr>{{ end }}
+    {{ if eq .Status "resolved" }}<tr><td colspan="2" style="background: #e8f5e9; color: #1b5e20; font-weight: bold; border-bottom: 1px solid #eee;">{{ template "custom.title" . }}<br><span style="font-weight: normal;">{{ if .Annotations.resolved_note }}{{ .Annotations.resolved_note }}{{ else }}알림 조건이 더 이상 맞지 않아 해제됐습니다. 지금은 조치가 필요 없습니다.{{ end }} 아래는 발생했을 때의 내용입니다.</span></td></tr>{{ end }}
+    {{ if .Annotations.summary }}<tr><td style="width: 110px; color: #616161; border-bottom: 1px solid #eee;">{{ if eq .Status "resolved" }}발생했던 문제{{ else }}요약{{ end }}</td><td style="border-bottom: 1px solid #eee;">{{ if eq .Status "resolved" }}{{ template "custom.plain" . }}{{ else }}{{ .Annotations.summary }}{{ end }}</td></tr>{{ end }}
+    {{ if .Annotations.description }}<tr><td style="color: #616161; border-bottom: 1px solid #eee;">{{ if eq .Status "resolved" }}발생 당시 안내{{ else }}내용{{ end }}</td><td style="border-bottom: 1px solid #eee;">{{ .Annotations.description }}</td></tr>{{ end }}
     {{ if .Labels.scraper }}<tr><td style="color: #616161; border-bottom: 1px solid #eee;">스크래퍼</td><td style="border-bottom: 1px solid #eee;">{{ .Labels.scraper }}</td></tr>{{ end }}
     {{ if .Labels.keyword }}<tr><td style="color: #616161; border-bottom: 1px solid #eee;">키워드</td><td style="border-bottom: 1px solid #eee;">{{ .Labels.keyword }}</td></tr>{{ end }}
     {{ if .Labels.owner_name }}<tr><td style="color: #616161; border-bottom: 1px solid #eee;">CronJob</td><td style="border-bottom: 1px solid #eee;">{{ .Labels.owner_name }}</td></tr>{{ end }}

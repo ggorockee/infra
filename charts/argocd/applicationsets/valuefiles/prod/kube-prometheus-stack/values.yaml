@@ -952,6 +952,8 @@ additionalPrometheusRulesMap:
             annotations:
               summary: '🚨 광고비가 하루 상한(예산 2.2배)을 넘고 늘고 있음: {{ $labels.campaign }} 오늘 {{ printf "%.0f" $value }}원'
               description: "지금 Google Ads에서 이 캠페인을 일시중지하세요 (자동 중지는 없음). 중지하면 비용 증가가 멈추고 최대 3시간(+Google 집계 지연) 뒤 해제 메일이 옵니다. Google Ads는 하루에 예산의 2배까지만 쓰므로 예산 변경·계정 이상도 확인하세요."
+              resolved_summary: '✅ 해제: 광고비 증가가 멈춤 — {{ $labels.campaign }} (쓴 금액은 그대로)'
+              resolved_note: "최근 3시간 동안 광고비가 늘지 않았거나 날짜가 바뀌어 해제됐습니다. 이미 쓴 금액은 줄지 않습니다. 중지하려던 캠페인이면 Google Ads에서 상태를 확인하세요."
           - alert: AdsCostOverDailyLimitYesterday
             expr: |
               max by (campaign) (app_ads_cost_krw{window="yesterday"})
@@ -962,6 +964,8 @@ additionalPrometheusRulesMap:
             annotations:
               summary: '❌ 어제 광고비가 하루 상한(예산 2.2배)을 넘음: {{ $labels.campaign }} {{ printf "%.0f" $value }}원'
               description: "뒤늦게 집계된 어제 비용입니다. 캠페인 예산·변경 내역과 결제 화면을 확인하세요."
+              resolved_summary: '✅ 해제: 어제 광고비 상한 알림 — {{ $labels.campaign }} (쓴 금액은 그대로)'
+              resolved_note: "날짜가 바뀌었거나 예산 기준이 달라져 해제됐습니다. 이미 쓴 금액은 줄지 않습니다."
           - alert: AdsCostOverBudget
             expr: |
               max by (campaign, window) (app_ads_cost_krw{window=~"today|yesterday"})
@@ -972,6 +976,8 @@ additionalPrometheusRulesMap:
             annotations:
               summary: '⚠️ 광고비가 하루 예산의 1.5배를 넘음: {{ $labels.campaign }} ({{ $labels.window }}) {{ printf "%.0f" $value }}원'
               description: "Google Ads는 하루에 예산의 2배까지 쓸 수 있고 한 달 합계는 예산의 30.4배를 넘지 않습니다. 예상 밖이면 캠페인을 일시중지하세요."
+              resolved_summary: '✅ 해제: 광고비 1.5배 알림 — {{ $labels.campaign }} ({{ $labels.window }}, 쓴 금액은 그대로)'
+              resolved_note: "날짜가 바뀌었거나 예산 기준이 달라져 해제됐습니다. 이미 쓴 금액은 줄지 않습니다."
           - alert: AdsCostUnbudgetedCampaign
             expr: |
               (max by (campaign, window) (app_ads_cost_krw{window=~"today|yesterday", campaign!="전체"}) > 0)
@@ -983,6 +989,8 @@ additionalPrometheusRulesMap:
             annotations:
               summary: '🚨 예산 목록에 없는 캠페인에서 비용: {{ $labels.campaign }} ({{ $labels.window }}) {{ printf "%.0f" $value }}원'
               description: "켜기로 한 적 없는 캠페인(중지한 캠페인 포함)에서 돈이 나갔습니다. Google Ads에서 바로 일시중지하고 변경 내역을 확인하세요. 새로 만든 캠페인이면 Secret app-metrics-ads-budget 에 예산을 추가하세요."
+              resolved_summary: '✅ 해제: 예산 목록에 없는 캠페인 알림 — {{ $labels.campaign }} (쓴 금액은 그대로)'
+              resolved_note: "날짜가 바뀌었거나 예산 목록에 추가돼 해제됐습니다. 켜기로 한 적 없는 캠페인이면 Google Ads에서 상태를 확인하세요."
           - alert: AdsCostOverMonthlyLimit
             expr: |
               sum(max by (campaign) (app_ads_cost_krw{window="mtd", campaign!="전체"}))
@@ -993,6 +1001,8 @@ additionalPrometheusRulesMap:
             annotations:
               summary: '🚨 이번 달 광고비가 월 상한을 넘음: {{ printf "%.0f" $value }}원'
               description: "이번 달 광고비가 (하루 예산 합 × 30.4)를 넘었습니다. Google Ads에서 캠페인을 일시중지하고 확인하세요. 월 중간에 예산을 낮췄다면 낮추기 전에 쓴 금액 때문일 수 있습니다."
+              resolved_summary: '✅ 해제: 월 광고비 상한 알림 (쓴 금액은 그대로)'
+              resolved_note: "달이 바뀌었거나 예산 기준이 달라져 해제됐습니다. 이미 쓴 금액은 줄지 않습니다."
           - alert: AdsCostCollectFailing
             expr: |
               time() - app_metrics_last_success_timestamp_seconds{source="ads_cost"} > 3600
