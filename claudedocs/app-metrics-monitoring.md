@@ -26,9 +26,23 @@
 
 - GA4는 하루 단위로 집계되고 값이 최대 48시간 동안 바뀔 수 있어 어제까지의 값만 씁니다.
 - AdMob 정책 센터와 지급 정보는 API가 없어 콘솔에서 확인합니다.
-- Google Ads 금액은 GA4가 달러로 환산한 값입니다. 청구액 기준은 Google Ads 결제 화면입니다.
+- Google Ads 금액: `app_ads_cost`는 GA4가 달러로 환산한 값(어제까지), `app_ads_cost_krw`는 원화(부가세 별도, window today·yesterday·mtd·last_month, 캠페인별과 앱별 "전체")이고 일별은 `app_daily{metric="ads_cost_krw"}`입니다. 대시보드 "광고비 · 청구" 행, 알림 AdsCostIncurred(어제 비용 발생, INFO).
+- **광고비 조회 기준은 `firstUserGoogleAdsCampaignName`** (2026-11-28 수정). `sessionGoogleAdsCampaignName`은 앱 캠페인에서 행이 없어 비용이 발생해도 0으로 보였습니다. 수정 후 값이 결제 화면과 일치함을 확인했습니다 (순비용 = GA4 비용 − 초과 게재 크레딧, 청구 = 순비용 × 1.1).
+- 같은 Google Ads 계정을 연결한 GA4 속성에는 다른 앱 캠페인도 나오므로 앱별 합계는 캠페인 이름이 앱 이름으로 시작하는 것만 더합니다. 캠페인 이름은 "<앱 이름>-<플랫폼>"으로 만드세요.
+- 청구 잔액·결제 내역은 API로 가져오지 않습니다. 기준은 Google Ads 결제 화면입니다.
 - 잔존율(`app_retention_ratio{day="1"|"7", source="ads"|"other"}`)은 8~28일 전 처음 앱을 연 사용자(일별 코호트)가 1일째·7일째 다시 쓴 비율입니다. `source`는 첫 유입이 Google 광고(`google / cpc`, `google / paid`)면 ads, 나머지는 other. 분모는 `app_retention_cohort_users`이며 10명 미만이면 참고만 합니다.
 - 수집에 실패하면 이전 값을 유지하고 `app_metrics_collect_ok`가 0이 됩니다.
+
+### 광고비 감시 (돈이 걸린 항목, 2026-11-28)
+
+| 구성 | 내용 |
+|------|------|
+| 수집 | 수집원 `ads_cost` 10분 주기 (다른 GA4 지표와 분리). 응답 통화가 원이 아니거나 행이 잘리면 실패 처리 |
+| 예산 기준 | Secret `monitoring/app-metrics-ads-budget` 의 `budgets.json` (`{"캠페인 이름": 하루 예산 원}`). 금액이라 Git·GSM에 두지 않고 직접 만듦. 파일 마운트라 갱신하면 약 10분 안에 반영 |
+| 예산 설정·변경 | `kubectl -n monitoring create secret generic app-metrics-ads-budget --from-file=budgets.json=<파일> --dry-run=client -o yaml \| kubectl apply -f -` (파일은 저장소 밖). 켜지 않는 캠페인은 넣지 않아야 비용이 나갈 때 알림이 옴 |
+| 알림 | CRITICAL: 하루 예산 2.2배 초과, 예산에 없는 캠페인 비용, 월 상한(예산 합 × 30.4) 초과. ERROR: 수집 실패, 예산 기준 없음. WARN: 1.5배 초과, 36시간 0. INFO: 어제 비용 |
+| 한계 | GA4 집계가 몇 시간 늦음 → 즉시 차단이 필요하면 Google Ads 안의 자동 규칙·스크립트를 별도로 둠. 초과 게재 크레딧은 반영되지 않아 실제 청구보다 조금 클 수 있음 |
+| 정기 대조 | 캠페인을 바꾼 다음 날과 매주, 결제 화면의 캠페인별 비용과 대시보드를 대조 (GA4에 안 잡히는 캠페인이 없는지) |
 
 ## 정상 범위와 알림
 
@@ -117,7 +131,7 @@ AdMob API는 서비스 계정을 쓸 수 없어 사람 계정의 OAuth 토큰이
 - [ ] 리뷰맵 2.2.1 실기기 확인 후 스토어 배포 → Remote Config `{platform}_latest_version`을 2.2.1로 올림
 - [ ] 리뷰맵-안드로이드 예산 결정 (개발자)
 - [ ] 돌려받엔 iOS AdMob 앱 인증 재확인
-- [ ] 돌려받엔 1.1.0 출시 → first_open 전환을 Google Ads로 가져오기 → 캠페인 재개
+- [x] 돌려받엔 1.1.0 출시 → first_open 전환을 Google Ads로 가져오기 → 캠페인 재개 (2026-11-28)
 - [ ] 돌려받엔에 Crashlytics 추가 여부 결정 (개인정보처리방침, App Store 개인정보 신고, 새 빌드 필요). 추가하면 `apps`의 `crashlytics: true`
 - [ ] 라익찍스 App Store 심사 통과 → `released`에 추가, AdMob 스토어 연결, GA4 연결, 개인정보 신고 갱신
 - [ ] AdMob 세금 정보 입력, Google Ads 보안 제안(관리자 2명, 허용 이메일 도메인) 검토 (계정 소유자)

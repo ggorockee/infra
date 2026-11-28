@@ -926,6 +926,87 @@ additionalPrometheusRulesMap:
             annotations:
               summary: "⚠️ {{ $labels.app }} {{ $labels.platform }} 앱 오프닝 광고 표시율 {{ $value | humanizePercentage }}"
               description: "불러온 앱 오프닝 광고 중 실제로 보여준 비율이 40% 아래입니다. 단가가 가장 높은 광고가 버려지고 있습니다. 정상: 60% 이상, 경고: 40~60%, 조치: 40% 미만."
+          # --- Google Ads 비용 (돈이 걸린 항목, 2026-11-28). 예산 금액은 공개 저장소에 두지 않고
+          # Secret app-metrics-ads-budget → app_ads_daily_budget_krw 로 비교한다
+          - alert: AdsCostOverDailyLimit
+            expr: |
+              max by (campaign, window) (app_ads_cost_krw{window=~"today|yesterday"})
+              > on (campaign) group_left () (2.2 * max by (campaign) (app_ads_daily_budget_krw))
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: '🚨 광고비가 하루 상한을 넘음: {{ $labels.campaign }} ({{ $labels.window }}) {{ printf "%.0f" $value }}원'
+              description: "하루 예산의 2.2배를 넘었습니다. Google Ads는 하루에 예산의 2배까지만 쓰므로 예산이 바뀌었거나 계정에 이상이 있을 수 있습니다. 바로 Google Ads에서 캠페인을 일시중지하고 변경 내역·보안 알림을 확인하세요."
+          - alert: AdsCostOverBudget
+            expr: |
+              max by (campaign, window) (app_ads_cost_krw{window=~"today|yesterday"})
+              > on (campaign) group_left () (1.5 * max by (campaign) (app_ads_daily_budget_krw))
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: '⚠️ 광고비가 하루 예산의 1.5배를 넘음: {{ $labels.campaign }} ({{ $labels.window }}) {{ printf "%.0f" $value }}원'
+              description: "Google Ads는 하루에 예산의 2배까지 쓸 수 있고 한 달 합계는 예산의 30.4배를 넘지 않습니다. 예상 밖이면 캠페인을 일시중지하세요."
+          - alert: AdsCostUnbudgetedCampaign
+            expr: |
+              (max by (campaign, window) (app_ads_cost_krw{window=~"today|yesterday", campaign!="전체"}) > 0)
+              unless on (campaign) app_ads_daily_budget_krw
+              and on () count(app_ads_daily_budget_krw) > 0
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: '🚨 예산 목록에 없는 캠페인에서 비용: {{ $labels.campaign }} ({{ $labels.window }}) {{ printf "%.0f" $value }}원'
+              description: "켜기로 한 적 없는 캠페인(중지한 캠페인 포함)에서 돈이 나갔습니다. Google Ads에서 바로 일시중지하고 변경 내역을 확인하세요. 새로 만든 캠페인이면 Secret app-metrics-ads-budget 에 예산을 추가하세요."
+          - alert: AdsCostOverMonthlyLimit
+            expr: |
+              sum(max by (campaign) (app_ads_cost_krw{window="mtd", campaign!="전체"}))
+              > 30.4 * sum(max by (campaign) (app_ads_daily_budget_krw))
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: '🚨 이번 달 광고비가 월 상한을 넘음: {{ printf "%.0f" $value }}원'
+              description: "이번 달 광고비가 (하루 예산 합 × 30.4)를 넘었습니다. Google Ads에서 캠페인을 일시중지하고 확인하세요. 월 중간에 예산을 낮췄다면 낮추기 전에 쓴 금액 때문일 수 있습니다."
+          - alert: AdsCostCollectFailing
+            expr: |
+              time() - app_metrics_last_success_timestamp_seconds{source="ads_cost"} > 3600
+              or app_metrics_collect_ok{source=~"ads_cost|ads_budget"} == 0
+              or absent(app_ads_cost_krw{window="today"})
+            for: 30m
+            labels:
+              severity: error
+            annotations:
+              summary: "❌ 광고비를 수집하지 못함 {{ $labels.app }} {{ $labels.source }} — 비용 감시가 멈춤"
+              description: "광고비 지표가 갱신되지 않아 비용 이상 알림이 울리지 않습니다. 해결될 때까지 Google Ads 결제 화면에서 직접 확인하세요. 로그: kubectl -n monitoring logs deploy/app-metrics-exporter"
+          - alert: AdsBudgetNotConfigured
+            expr: absent(app_ads_daily_budget_krw)
+            for: 30m
+            labels:
+              severity: error
+            annotations:
+              summary: "❌ 광고 예산 기준이 없음 — 비용 초과 알림이 울리지 않음"
+              description: "Secret monitoring/app-metrics-ads-budget 의 budgets.json 이 없거나 읽지 못합니다. 설정 방법: infra claudedocs/app-metrics-monitoring.md"
+          - alert: AdsCostZeroWithBudget
+            expr: |
+              (sum(app_ads_cost_krw{window="yesterday", campaign="전체"}) == 0)
+              and on () count(app_ads_daily_budget_krw) > 0
+            for: 36h
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 켜 둔 캠페인이 있는데 광고비가 계속 0 — 수집 또는 게재 확인"
+              description: "수집이 틀리면 비용이 나가도 0으로 보입니다(2026-11-28 실제 발생). Google Ads 결제 화면의 비용과 비교하세요. 결제 화면도 0이면 광고가 게재되지 않는 것입니다."
+          # 광고비가 나간 날을 놓치지 않도록 하루 한 번 알림 (INFO 반복 24시간). 예산 금액은 공개 저장소에 두지 않음
+          - alert: AdsCostIncurred
+            expr: sum(max by (campaign) (app_ads_cost_krw{window="yesterday", campaign!="전체"})) > 0
+            for: 10m
+            labels:
+              severity: info
+            annotations:
+              summary: 'ℹ️ 어제 Google Ads 광고비 {{ printf "%.0f" $value }}원 (부가세 별도)'
+              description: "GA4 집계 기준입니다. 캠페인별 금액은 Grafana 앱·광고·스토어 현황의 '광고비 · 청구' 행, 잔액·결제는 Google Ads 결제 화면에서 확인하세요."
           - alert: AdsSpendWithoutInstalls
             expr: |
               app_ads_cost{window="7d", campaign="전체"} > 3

@@ -16,6 +16,10 @@ intervals:
   ga4: 3600
   fast: 600
 
+googleAds:
+  # 키 budgets.json: {"캠페인 이름": 하루 예산(원)}. 설정 방법은 claudedocs/app-metrics-monitoring.md
+  budgetSecret: app-metrics-ads-budget
+
 admob:
   publisher: ""
   # 키 oauth.json (client_id, client_secret, refresh_token). 없으면 AdMob API 수집을 건너뜀
