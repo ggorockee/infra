@@ -474,7 +474,26 @@ additionalPrometheusRulesMap:
               severity: error
             annotations:
               summary: "❌ 리뷰노트 상세 수집이 차단·과부하 신호(403·429·5xx)로 멈춤"
-              description: "reviewnote-detail 이 차단 신호를 받아 그날 수집을 중단했습니다. 계정 상태를 확인하고, 다시 오면 REVIEWNOTE_DETAIL_MAX_FETCH를 줄이거나 CronJob을 일시 중지(suspend)하세요."
+              description: "reviewnote-detail 이 차단 신호를 받아 그날 수집을 중단했습니다. 계정 상태를 확인하고, 다시 오면 REVIEWNOTE_DETAIL_MAX_FETCH에 상한을 두거나 CronJob을 일시 중지(suspend)하세요."
+          # 2026-11-28 첫 실행: Job은 성공했지만 목록 상한 때문에 400건 중 41건만 대상이었음 → 대상 수·남은 수를 따로 감시
+          - alert: ReviewnoteDetailTargetsLow
+            expr: |
+              reviewmaps_scraper_last_run_detail{job="reviewmaps_scraper", type="target"} < 200
+              and on (scraper, keyword) reviewmaps_scraper_detail_session_ok{job="reviewmaps_scraper"} == 1
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 리뷰노트 상세 대상이 {{ $value }}건뿐 — 여행 목록이 일부만 수집됐을 수 있음"
+              description: "여행 모집 중 공고는 보통 약 400건입니다 (2026-11-28). 목록 API 응답 형식·categoryId 변경, 쪽 제한을 확인하세요 (reviewmaps 레포 claudedocs/reviewnote-travel-selenium.md)."
+          - alert: ReviewnoteDetailIncomplete
+            expr: reviewmaps_scraper_last_run_detail{job="reviewmaps_scraper", type="missing"} > 20
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "⚠️ 리뷰노트 상세를 못 받은 여행 공고 {{ $value }}건"
+              description: "상세 수집이 끝났는데 요일 정보가 하나도 없는 모집 중 여행 공고가 20건을 넘습니다. Job 로그의 '상세 수집을 멈춤' 사유(마감 시각, 실패, 차단, 세션)를 확인하세요. Job 로그는 1일 보관됩니다."
 
   # 리뷰맵 API 서버(reviewmaps-server) — 대시보드 "ReviewMaps HTTP Metrics"와 동일 기준
   reviewmaps-server:
