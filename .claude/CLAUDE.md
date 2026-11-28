@@ -539,7 +539,9 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | AppForceUpdateLockout / AppStoreListingMissing | 강제 업데이트 최소 버전 > 스토어 버전 10분 / 공개 앱이 스토어에서 30분 안 보임 | CRITICAL |
 | AppMetricsExporterDown / AppAdsTxtInvalid / AdImpressionsZero / AppCrashFreeCritical | 수집기 중단 / app-ads.txt 이상 / 어제 광고 노출 0(사용자 5명 이상) / 7일 비정상 종료 없는 사용자 85% 미만 | ERROR |
 | AppCrashFreeLow / AdRevenueDropped / AppOpenAdShowRateLow / AdsSpendWithoutInstalls / AppMetricsCollectStale | 95% 미만 / 수입 이전 7일의 50% 미만 / 표시율 40% 미만 / 7일 $3 초과인데 유입 0 / 지표 갱신 지연 | WARN |
-| AdsCostOverDailyLimit / AdsCostUnbudgetedCampaign / AdsCostOverMonthlyLimit | 캠페인 하루 광고비가 예산의 2.2배 초과 / 예산 목록에 없는 캠페인에서 비용 / 이번 달이 (예산 합 × 30.4) 초과 → **바로 일시중지** | CRITICAL |
+| AdsCostOverDailyLimit | 오늘 광고비가 예산의 2.2배를 넘고 최근 3시간에 늘고 있음 → **직접 일시중지**. 해제까지 **10분마다** 메일, 3시간 동안 늘지 않으면 해제 | CRITICAL |
+| AdsCostUnbudgetedCampaign / AdsCostOverMonthlyLimit | 예산 목록에 없는 캠페인에서 비용 / 이번 달이 (예산 합 × 30.4) 초과 | CRITICAL |
+| AdsCostOverDailyLimitYesterday | 어제 광고비가 예산의 2.2배 초과 (뒤늦게 집계) | ERROR |
 | AdsCostCollectFailing / AdsBudgetNotConfigured | 광고비 수집 1시간 중단·실패 / 예산 기준 없음 (비용 감시 멈춤) | ERROR |
 | AdsCostOverBudget / AdsCostZeroWithBudget | 하루 예산의 1.5배 초과 / 예산이 있는데 36시간 비용 0 (수집 또는 게재 확인) | WARN |
 | AdsCostIncurred | 어제 Google Ads 광고비 발생 (하루 한 번) | INFO |

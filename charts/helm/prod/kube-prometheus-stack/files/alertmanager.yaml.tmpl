@@ -49,6 +49,13 @@ route:
       group_by: ["alertname"]
       group_wait: 1m
       repeat_interval: 4h
+    # 광고비 하루 상한 초과(돈이 계속 나가는 중): 해제될 때까지 10분마다 (2026-11-28 개발자 요청)
+    - receiver: email
+      matchers: ['alertname = "AdsCostOverDailyLimit"']
+      group_by: ["alertname", "campaign"]
+      group_wait: 10s
+      group_interval: 5m
+      repeat_interval: 10m
     # 앱·광고 지표(app-metrics-exporter): GA4·AdMob은 하루 단위로 바뀌므로 하루 1통으로 묶음
     # (CRITICAL과 수집기 장애는 아래 등급별 경로로 즉시 발송)
     - receiver: email
