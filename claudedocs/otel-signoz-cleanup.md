@@ -12,9 +12,11 @@
 
 | 상태 | 순서 | 할 일 |
 |---|---|---|
-| [ ] | 1 | 위 `SIGNOZ_ENDPOINT` 줄 삭제 (중지 중인 `hotsao` 차트의 같은 줄도) → PR → 머지. 수집기 코드는 주소가 없으면 아무것도 보내지 않아 이미지 빌드는 필요 없음 |
-| [ ] | 2 | ArgoCD Synced 확인, `kubectl -n reviewmaps get cm`에서 `SIGNOZ_ENDPOINT`가 사라졌는지 확인 |
-| [ ] | 3 | 반영 뒤 새로 시작한 Job 로그에 `otel-collector` 줄이 없는지 확인. 실행 중이던 Job은 시작할 때의 환경 변수를 그대로 씀 |
+| [x] | 1 | 위 `SIGNOZ_ENDPOINT` 줄 삭제 (중지 중인 `hotsao` 차트의 같은 줄도) → PR → 머지. 수집기 코드는 주소가 없으면 아무것도 보내지 않아 이미지 빌드는 필요 없음 |
+| [x] | 2 | ArgoCD Synced 확인, `kubectl -n reviewmaps get cm`에서 `SIGNOZ_ENDPOINT`가 사라졌는지 확인 |
+| [x] | 3 | 반영 뒤 새로 시작한 Job 로그에 `otel-collector` 줄이 없는지 확인. 실행 중이던 Job은 시작할 때의 환경 변수를 그대로 씀 |
+
+확인 결과 (2026-11-28): infra #1246으로 주소 삭제, 저장소 `charts`와 리뷰맵 ConfigMap에 `SIGNOZ_ENDPOINT` 없음, ArgoCD Synced/Healthy, 반영 뒤 시작한 상세·목록 Job 로그에 전송 관련 줄 0.
 
 ## 동작에는 영향 없는 잔여 (지울지 개발자 결정)
 
