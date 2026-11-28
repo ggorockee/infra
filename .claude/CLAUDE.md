@@ -539,6 +539,10 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 | AppForceUpdateLockout / AppStoreListingMissing | 강제 업데이트 최소 버전 > 스토어 버전 10분 / 공개 앱이 스토어에서 30분 안 보임 | CRITICAL |
 | AppMetricsExporterDown / AppAdsTxtInvalid / AdImpressionsZero / AppCrashFreeCritical | 수집기 중단 / app-ads.txt 이상 / 어제 광고 노출 0(사용자 5명 이상) / 7일 비정상 종료 없는 사용자 85% 미만 | ERROR |
 | AppCrashFreeLow / AdRevenueDropped / AppOpenAdShowRateLow / AdsSpendWithoutInstalls / AppMetricsCollectStale | 95% 미만 / 수입 이전 7일의 50% 미만 / 표시율 40% 미만 / 7일 $3 초과인데 유입 0 / 지표 갱신 지연 | WARN |
+| AdsCostOverDailyLimit / AdsCostUnbudgetedCampaign / AdsCostOverMonthlyLimit | 캠페인 하루 광고비가 예산의 2.2배 초과 / 예산 목록에 없는 캠페인에서 비용 / 이번 달이 (예산 합 × 30.4) 초과 → **바로 일시중지** | CRITICAL |
+| AdsCostCollectFailing / AdsBudgetNotConfigured | 광고비 수집 1시간 중단·실패 / 예산 기준 없음 (비용 감시 멈춤) | ERROR |
+| AdsCostOverBudget / AdsCostZeroWithBudget | 하루 예산의 1.5배 초과 / 예산이 있는데 36시간 비용 0 (수집 또는 게재 확인) | WARN |
+| AdsCostIncurred | 어제 Google Ads 광고비 발생 (하루 한 번) | INFO |
 | AppRemoteConfigChanged / AppRemoteConfigLatestBehind | Remote Config 변경 / latest가 스토어보다 하루 넘게 낮음 | INFO |
 
 클러스터 전체 규칙 (kube-prometheus-stack override, 그룹 이름 기준):
@@ -613,7 +617,7 @@ kube-prometheus-stack 차트에 직접 추가한 파일 (upstream 업그레이�
 |------|------|
 | 계정 | AdMob(pub-8516861197467665), Google Ads, Firebase(`reviewmap-c03f1`, `yen-back`, `like-zzix`) 모두 `woohalabs@gmail.com` |
 | GA4 | 측정은 어제까지 값만 사용. AdMob 콘솔과 수입이 거의 같음. 라익찍스는 GA4 미연결 → 연결하기로 결정(2026-11-27, 다음 버전) |
-| Google Ads | 리뷰맵-안드로이드·리뷰맵-iOS 운영(대한민국, 2026-11-27 iOS 재개). 돌려받엔-iOS는 일시중지. 예산 변경은 개발자가 금액을 정한 뒤에만. 예산이 너무 작으면 "운영 가능"이어도 거의 게재되지 않음(2026-11 확인) → 노출·비용이 0이면 예산부터 의심. 전환 액션: 리뷰맵 Android 설치·iOS first_open, 돌려받엔 iOS first_open(GA4 가져오기) |
+| Google Ads | 리뷰맵-안드로이드·리뷰맵-iOS·돌려받엔-iOS 운영 (2026-11-28 돌려받엔 재개, 리뷰맵-iOS 위치는 서울로 남아 있어 확인 필요). 광고비는 비용이 발생하는 항목(하루 예산의 2배까지 쓰일 수 있음)이므로 대시보드 "광고비 · 청구" 행과 Ads* 알림으로 감시. **예산을 바꾸거나 캠페인을 새로 만들면 Secret `monitoring/app-metrics-ads-budget`도 갱신**(방법 `claudedocs/app-metrics-monitoring.md`). 광고비 지표는 `firstUserGoogleAdsCampaignName` 기준 — session 기준은 앱 캠페인에서 0으로 나옴(11-28 수정). 예산 변경은 개발자가 금액을 정한 뒤에만. 예산이 너무 작으면 "운영 가능"이어도 거의 게재되지 않음(2026-11 확인) → 노출·비용이 0이면 예산부터 의심. 전환 액션: 리뷰맵 Android 설치·iOS first_open, 돌려받엔 iOS first_open(GA4 가져오기) |
 | AdMob API | 사람 계정 토큰이 Secret `monitoring/app-metrics-admob-oauth`에 있음(GSM·Git 아님, 비용 0 조건). 만료 시 `python3 scripts/admob-oauth-setup.py` 재실행. OAuth 프로젝트는 결제가 꺼진 `yen-back` |
 | AdMob 앱 승인 | 스토어 공개 전 앱은 "검토 필요·광고 게재 제한"이 정상 |
 | AdMob IDFA 설명 메시지 | 리뷰맵 iOS에 게시(2026-11-27). UMP가 ATT 시스템 창 전에 설명 화면을 띄우므로 앱 업데이트 불필요(2.2.0+는 UMP를 ATT보다 먼저 실행). 표시 수·ATT 동의 비율은 AdMob 개인 정보 보호 및 메시지 > IDFA 설명 |

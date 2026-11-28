@@ -2,6 +2,7 @@
 
 import sys
 import unittest
+from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "files"))
@@ -19,6 +20,70 @@ class VersionTest(unittest.TestCase):
         self.assertEqual(exporter.version_number("1.0"), exporter.version_number("1.0.0"))
         self.assertIsNone(exporter.version_number("(not set)"))
         self.assertIsNone(exporter.version_number(""))
+
+
+class AdsCostKrwTest(unittest.TestCase):
+    def samples(self, rows, today):
+        out = exporter.ads_cost_samples("리뷰맵", rows, today)
+        windows = {(l["window"], l["campaign"]): v for n, l, v in out if n == "app_ads_cost_krw"}
+        daily = {l["date"]: v for n, l, v in out if n == "app_daily"}
+        return windows, daily
+
+    def test_sums_by_period_and_own_campaigns(self):
+        rows = [
+            (["20261128", "리뷰맵-안드로이드"], [1000.0]),
+            (["20261128", "돌려받엔-iOS"], [500.0]),
+            (["20261127", "리뷰맵-iOS"], [70.0]),
+            (["20261127", "(not set)"], [3.0]),
+            (["20261101", "리뷰맵-iOS"], [20.0]),
+            (["20261031", "리뷰맵-안드로이드"], [5.0]),
+        ]
+        windows, daily = self.samples(rows, date(2026, 11, 28))
+        self.assertEqual(windows[("today", "전체")], 1000)  # 다른 앱 캠페인은 합계에서 제외
+        self.assertEqual(windows[("today", "돌려받엔-iOS")], 500)  # 캠페인별 값은 남김
+        self.assertEqual(windows[("yesterday", "전체")], 70)
+        self.assertNotIn(("yesterday", "(not set)"), windows)
+        self.assertEqual(windows[("mtd", "전체")], 1090)
+        self.assertEqual(windows[("mtd", "리뷰맵-iOS")], 90)
+        self.assertEqual(windows[("last_month", "전체")], 5)
+        self.assertEqual(len(daily), 28)
+        self.assertEqual(daily["2026-11-28"], 1000)
+        self.assertEqual(daily["2026-11-26"], 0)
+
+    def test_no_rows_is_zero(self):
+        windows, daily = self.samples([], date(2027, 1, 1))
+        self.assertEqual(set(windows.values()), {0})
+        self.assertEqual({w for w, _ in windows}, {"today", "yesterday", "mtd", "last_month"})
+        self.assertEqual(sum(daily.values()), 0)
+
+    def test_periods_cross_year(self):
+        p = exporter.ads_cost_periods(date(2027, 1, 1))
+        self.assertEqual(p["last_month"], (date(2026, 12, 1), date(2026, 12, 31)))
+        self.assertEqual(p["yesterday"][0], date(2026, 12, 31))
+
+
+class AdsMoneySafetyTest(unittest.TestCase):
+    REPORT = {"metadata": {"currencyCode": "KRW"}, "rowCount": 1,
+              "rows": [{"dimensionValues": [{"value": "20260101"}, {"value": "a"}], "metricValues": [{"value": "10"}]}]}
+
+    def test_accepts_requested_currency(self):
+        self.assertEqual(exporter.report_rows(self.REPORT, "KRW", 10), [(["20260101", "a"], [10.0])])
+
+    def test_wrong_currency_or_truncation_fails(self):
+        with self.assertRaises(ValueError):
+            exporter.report_rows(dict(self.REPORT, metadata={"currencyCode": "USD"}), "KRW", 10)
+        with self.assertRaises(ValueError):
+            exporter.report_rows(dict(self.REPORT, rowCount=11), "KRW", 10)
+
+    def test_budget_values(self):
+        out = exporter.budget_samples('{"앱-iOS": 100, "앱-안드로이드": 200}')
+        self.assertEqual({l["campaign"]: v for _, l, v in out}, {"앱-iOS": 100, "앱-안드로이드": 200})
+        for bad in ("{}", "[]", '{"a": 0}', '{"a": "100"}', '{"a": true}', "not json"):
+            with self.assertRaises(ValueError, msg=bad):
+                exporter.budget_samples(bad)
+
+    def test_missing_budget_file_gives_no_metrics(self):
+        self.assertEqual(exporter.collect_ads_budget({"adsBudget": "/nonexistent/budgets.json"}), [])
 
 
 class AdsTxtTest(unittest.TestCase):

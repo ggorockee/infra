@@ -81,6 +81,9 @@ spec:
             - name: admob-oauth
               mountPath: /secrets/admob
               readOnly: true
+            - name: ads-budget
+              mountPath: /secrets/ads-budget
+              readOnly: true
       volumes:
         - name: app
           configMap:
@@ -89,6 +92,11 @@ spec:
         - name: admob-oauth
           secret:
             secretName: {{ .Values.admob.oauthSecret }}
+            optional: true
+        # 캠페인 하루 예산(금액이라 Git에 두지 않음). 직접 만든다. 없으면 AdsBudgetNotConfigured 알림
+        - name: ads-budget
+          secret:
+            secretName: {{ .Values.googleAds.budgetSecret }}
             optional: true
 ---
 apiVersion: v1

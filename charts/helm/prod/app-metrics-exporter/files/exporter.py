@@ -51,6 +51,8 @@ HELP = {
     "app_ads_clicks": "Google Ads 클릭 수 (GA4 연동)",
     "app_ads_impressions": "Google Ads 노출 수 (GA4 연동)",
     "app_ads_new_users": "첫 유입이 유료 광고(Paid/Google Ads)인 신규 사용자 수",
+    "app_ads_cost_krw": "Google Ads 비용 (원, 부가세 별도, GA4 연동). window: today(집계 중)·yesterday·mtd(이번 달)·last_month",
+    "app_ads_daily_budget_krw": "캠페인 하루 예산 (원). Git 밖 Secret 에 사람이 적은 값, 비용 이상 알림의 기준",
     "app_remote_config_version": "Remote Config 템플릿 버전 번호",
     "app_remote_config_updated_timestamp_seconds": "Remote Config 마지막 변경 시각",
     "app_remote_config_value": "Remote Config 값 (참/거짓은 1/0, 숫자는 그대로)",
@@ -156,14 +158,17 @@ class Token:
 TOKEN = Token()
 
 
-def ga4_report(prop, dims, metrics, window, event_filter=None):
-    start, end = WINDOWS[window]
+def ga4_report(prop, dims, metrics, window, event_filter=None, currency=None):
+    """window: WINDOWS 이름 또는 (시작일, 종료일)."""
+    start, end = WINDOWS[window] if isinstance(window, str) else window
     body = {
         "dateRanges": [{"startDate": start, "endDate": end}],
         "dimensions": [{"name": d} for d in dims],
         "metrics": [{"name": m} for m in metrics],
-        "limit": 250,
+        "limit": 250 if isinstance(window, str) else 1000,
     }
+    if currency:
+        body["currencyCode"] = currency
     if event_filter:
         body["dimensionFilter"] = {
             "filter": {"fieldName": "eventName", "inListFilter": {"values": event_filter}}
@@ -171,13 +176,112 @@ def ga4_report(prop, dims, metrics, window, event_filter=None):
     _, _, raw = fetch(
         f"https://analyticsdata.googleapis.com/v1beta/properties/{prop}:runReport", body, TOKEN.header()
     )
+    return report_rows(json.loads(raw), currency, body["limit"])
+
+
+def report_rows(report, currency, limit):
+    """runReport 응답 → [(차원 값, 지표 값)]. 금액을 요청했으면 통화와 잘림을 확인한다.
+
+    틀린 금액을 보여주느니 실패로 처리한다 (수집 실패 알림이 울림).
+    """
+    if currency:
+        got = report.get("metadata", {}).get("currencyCode")
+        if got != currency:
+            raise ValueError(f"GA4 통화가 {currency}가 아님: {got}")
+        if report.get("rowCount", 0) > limit:
+            raise ValueError(f"GA4 행이 잘림: {report['rowCount']} > {limit}")
     return [
         (
             [d["value"] for d in row.get("dimensionValues", [])],
             [float(m["value"]) for m in row["metricValues"]],
         )
-        for row in json.loads(raw).get("rows", [])
+        for row in report.get("rows", [])
     ]
+
+
+ADS_DAILY_DAYS = 28
+# 광고비는 "첫 유입 캠페인" 기준으로만 나온다. sessionGoogleAdsCampaignName 은 앱 캠페인에서 행이 없어
+# 비용이 0으로 보였다 (2026-11-28, 결제 화면과 대조해 확인)
+ADS_CAMPAIGN_DIMENSION = "firstUserGoogleAdsCampaignName"
+
+
+def own_campaign(app_name, campaign):
+    """이 앱의 캠페인인지. 같은 Google Ads 계정을 연결한 GA4 속성에는 다른 앱 캠페인도 나온다.
+    캠페인 이름은 "<앱 이름>-<플랫폼>" 규칙."""
+    return campaign.startswith(app_name)
+
+
+def ads_cost_periods(today):
+    """원화 광고비를 합칠 기간: 이름 → (첫날, 끝날)."""
+    first = today.replace(day=1)
+    last_month_end = first - timedelta(days=1)
+    return {
+        "today": (today, today),
+        "yesterday": (today - timedelta(days=1), today - timedelta(days=1)),
+        "mtd": (first, today),
+        "last_month": (last_month_end.replace(day=1), last_month_end),
+    }
+
+
+def ads_cost_samples(name, rows, today):
+    """GA4 [date, 캠페인] × 광고비(원) 행 → 기간별·캠페인별 합계와 최근 28일 일별 값.
+
+    캠페인별 값은 보이는 캠페인 전부(계정 합계는 대시보드에서 캠페인 중복을 제거해 더함),
+    "전체"와 일별 값은 이 앱의 캠페인만 합친다. 광고비가 없으면 GA4는 행을 주지 않으므로 0으로 채운다.
+    """
+    spent = [
+        (datetime.strptime(day, "%Y%m%d").date(), campaign, vals[0])
+        for (day, campaign), vals in rows
+        if campaign != "(not set)"
+    ]
+    own = [(day, cost) for day, campaign, cost in spent if own_campaign(name, campaign)]
+    out = []
+    for window, (start, end) in ads_cost_periods(today).items():
+        by_campaign = {}
+        for day, campaign, cost in spent:
+            if start <= day <= end:
+                by_campaign[campaign] = by_campaign.get(campaign, 0) + cost
+        for campaign, cost in by_campaign.items():
+            out.append(("app_ads_cost_krw", {"app": name, "window": window, "campaign": campaign}, cost))
+        out.append(("app_ads_cost_krw", {"app": name, "window": window, "campaign": "전체"},
+                    sum(cost for day, cost in own if start <= day <= end)))
+    for back in range(ADS_DAILY_DAYS):
+        day = today - timedelta(days=back)
+        labels = {"app": name, "date": day.isoformat(), "metric": "ads_cost_krw", "series": name}
+        out.append(("app_daily", labels, sum(cost for d, cost in own if d == day)))
+    return out
+
+
+def collect_ads_cost(app):
+    """원화 광고비. 다른 GA4 지표와 따로, 더 자주 모은다 (비용 이상을 빨리 알아야 함)."""
+    today = datetime.now(KST).date()
+    start = min(ads_cost_periods(today)["last_month"][0], today - timedelta(days=ADS_DAILY_DAYS - 1))
+    rows = ga4_report(
+        app["ga4Property"], ["date", ADS_CAMPAIGN_DIMENSION], ["advertiserAdCost"],
+        (start.isoformat(), today.isoformat()), currency="KRW",
+    )
+    return ads_cost_samples(app["name"], rows, today)
+
+
+def budget_samples(text):
+    """{"캠페인 이름": 하루 예산(원)} JSON → 지표. 형식이 틀리면 예외 (수집 실패 알림)."""
+    budgets = json.loads(text)
+    if not isinstance(budgets, dict) or not budgets:
+        raise ValueError("예산은 {캠페인: 원} 객체여야 함")
+    out = []
+    for campaign, won in budgets.items():
+        if isinstance(won, bool) or not isinstance(won, (int, float)) or won <= 0:
+            raise ValueError(f"{campaign}: 하루 예산은 0보다 큰 수여야 함")
+        out.append(("app_ads_daily_budget_krw", {"campaign": campaign}, won))
+    return out
+
+
+def collect_ads_budget(account):
+    path = account["adsBudget"]
+    if not os.path.exists(path):
+        return []  # Secret 이 없으면 지표를 내지 않음 → AdsBudgetNotConfigured 알림
+    with open(path, encoding="utf-8") as file:
+        return budget_samples(file.read())
 
 
 PAID_SOURCES = ("google / cpc", "google / paid")
@@ -296,19 +400,20 @@ def collect_ga4(app):
         if app.get("googleAds"):
             # 비용·클릭·노출이 하나도 없으면 GA4는 행을 돌려주지 않는다 → 0으로 채운다
             spend = ga4_report(
-                prop, ["sessionGoogleAdsCampaignName"],
+                prop, [ADS_CAMPAIGN_DIMENSION],
                 ["advertiserAdCost", "advertiserAdClicks", "advertiserAdImpressions"], window,
             )
             total = [0.0, 0.0, 0.0]
             for (campaign,), vals in spend:
+                if not own_campaign(name, campaign):
+                    continue
                 total = [a + b for a, b in zip(total, vals)]
-                if campaign != "(not set)":
-                    labels = {"app": name, "window": window, "campaign": campaign}
-                    out += [
-                        ("app_ads_cost", labels, vals[0]),
-                        ("app_ads_clicks", labels, vals[1]),
-                        ("app_ads_impressions", labels, vals[2]),
-                    ]
+                labels = {"app": name, "window": window, "campaign": campaign}
+                out += [
+                    ("app_ads_cost", labels, vals[0]),
+                    ("app_ads_clicks", labels, vals[1]),
+                    ("app_ads_impressions", labels, vals[2]),
+                ]
             labels = {"app": name, "window": window, "campaign": "전체"}
             out += [
                 ("app_ads_cost", labels, total[0]),
@@ -649,6 +754,7 @@ def main():
     collector = Collector()
     ga4 = [("ga4", "ga4Property", collect_ga4)]
     fast = [
+        ("ads_cost", "googleAds", collect_ads_cost),
         ("remote_config", "firebaseProject", collect_remote_config),
         ("store", "platforms", collect_stores),
         ("app_ads_txt", "appAdsTxt", collect_ads_txt),
@@ -662,6 +768,11 @@ def main():
         ).start()
     else:
         print("AdMob 토큰이 없어 AdMob API는 수집하지 않음", flush=True)
+    budget = {"name": "Google Ads", "adsBudget": os.environ.get("ADS_BUDGET_PATH", "/secrets/ads-budget/budgets.json")}
+    threading.Thread(
+        target=loop, args=(collector, [budget], [("ads_budget", "adsBudget", collect_ads_budget)], config["intervals"]["fast"]),
+        daemon=True,
+    ).start()
     for jobs, interval in ((ga4, config["intervals"]["ga4"]), (fast, config["intervals"]["fast"])):
         threading.Thread(target=loop, args=(collector, config["apps"], jobs, interval), daemon=True).start()
     serve(collector, config["port"])
