@@ -752,7 +752,7 @@
           "range": false,
           "format": "time_series",
           "legendFormat": "채움률",
-          "expr": "reviewmaps_scraper_last_run_detail{job=\"reviewmaps_scraper\", scraper=\"reviewnote-detail\", type=\"with_days\"} / reviewmaps_scraper_last_run_detail{job=\"reviewmaps_scraper\", scraper=\"reviewnote-detail\", type=\"target\"}"
+          "expr": "reviewmaps_scraper_last_run_detail{job=\"reviewmaps_scraper\", scraper=\"reviewnote-detail\", type=\"with_days\"} / ignoring(type) (reviewmaps_scraper_last_run_detail{job=\"reviewmaps_scraper\", scraper=\"reviewnote-detail\", type=\"target\"} > 0)"
         }
       ],
       "fieldConfig": {
@@ -1418,7 +1418,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (scraper, keyword) ((reviewmaps_scraper_last_run_enrich{job=\"reviewmaps_scraper\", type=\"error\"} / clamp_min(reviewmaps_scraper_last_run_enrich{job=\"reviewmaps_scraper\", type=\"total\"}, 1)))",
+          "expr": "max by (scraper, keyword) ((reviewmaps_scraper_last_run_enrich{job=\"reviewmaps_scraper\", type=\"error\"} / ignoring(type) clamp_min(reviewmaps_scraper_last_run_enrich{job=\"reviewmaps_scraper\", type=\"total\"}, 1)))",
           "legendFormat": "",
           "instant": true,
           "range": false,

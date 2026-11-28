@@ -92,7 +92,7 @@ GSM `prod-ojeomneo-api-credentials`에 들어 있는 키다. Google이 아니어
 
 ## 7. 남은 정리 (선택)
 
-- [ ] 예전 대시보드 `database-performance`, `systems-overview`의 오점너 패널 정리 (지금은 No data로 표시, 알림 없음)
+- [x] 예전 대시보드 `database-performance`, `systems-overview` 삭제 (2026-11-28, `claudedocs/monitoring-audit-2026-11-28.md`)
 - [ ] 완전히 접을 경우: Cloud SQL `ojeomneo` DB, GSM 시크릿 4개, Redis PV, 차트 디렉터리, Firebase 프로젝트, Gemini 프로젝트 삭제
 - [ ] 5장 외부 키(OpenAI 등) 폐기 여부 결정
 - [ ] 스토어에 배포된 오점너 모바일 앱 처리 (API가 404를 반환하는 상태)
