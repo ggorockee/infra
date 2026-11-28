@@ -1,5 +1,7 @@
 # Observability 개선 작업 요약
 
+> 2026-11-28: 아래의 Systems Overview·Database Performance 대시보드는 삭제됐습니다 (패널 대부분이 빈칸·오류, `claudedocs/monitoring-audit-2026-11-28.md`). 이 문서는 당시 기록입니다.
+
 **날짜**: 2025-12-20
 **목적**: ReviewMaps와 Ojeomneo 애플리케이션의 Observability 가시성 최대화
 **범위**: 데이터베이스 메트릭, Grafana 대시보드, Alert Rules
